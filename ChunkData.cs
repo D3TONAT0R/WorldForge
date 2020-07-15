@@ -309,14 +309,30 @@ namespace MCUtils {
 					//It's the "new" format
 					long[] hmlongs = (long[])sourceNBT.contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
 					string hmbits = "";
-					for(int i = 0; i < 36; i++) {
-						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
-						//Array.Reverse(bytes);
-						for(int j = 0; j < 8; j++) {
-							hmbits += ByteToBinary(bytes[j], true);
+					if(sourceNBT.dataVersion >= 2504) {
+						//1.16 format
+						for(int i = 0; i < 37; i++) {
+							byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
+							string s = "";
+							for(int j = 0; j < 8; j++) {
+								s += ByteToBinary(bytes[j], true);
+							}
+							hmbits += s.Substring(0, 63); //Remove the last unused bit
+						}
+					} else {
+						//pre 1.16 "full bit range" format
+						for(int i = 0; i < 36; i++) {
+							byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
+							for(int j = 0; j < 8; j++) {
+								hmbits += ByteToBinary(bytes[j], true);
+							}
 						}
 					}
 					ushort[] hmap = new ushort[256];
+					for(int i = 0; i < 256; i++) {
+						hmap[i] = Read9BitValue(hmbits, i);
+					}
+
 					for(int i = 0; i < 256; i++) {
 						hmap[i] = Read9BitValue(hmbits, i);
 					}
