@@ -20,22 +20,26 @@ namespace MCUtils {
 			chunks = new ChunkData[32,32];
 		}
 
+		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
 		public bool IsAir(int x, int y, int z) {
 			var b = GetBlock(x, y, z);
 			return b == null || b == "minecraft:air";
 		}
 
+		///<summary>Is the location within the region's bounds?</summary>
 		public bool IsWithinBoundaries(int x, int y, int z) {
 			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return false;
 			else return true;
 		}
 
+		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone)</summary>
 		public bool IsDefaultBlock(int x, int y, int z) {
 			var b = GetBlock(x, y, z);
 			if(b == null) return false;
 			return b == defaultBlock;
 		}
 
+		///<summary>Gets the block at the given location</summary>
 		public string GetBlock(int x, int y, int z) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
@@ -48,6 +52,7 @@ namespace MCUtils {
 			}
 		}
 
+		///<summary>Sets the block at the given location</summary>
 		public bool SetBlock(int x, int y, int z, string block) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
@@ -60,12 +65,15 @@ namespace MCUtils {
 			}
 		}
 
+		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlock(int x, int y, int z) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
 			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
 		}
 
+
+		///<summary>Sets the biome at the given location</summary>
 		public void SetBiome(int x, int z, byte biome) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
@@ -77,6 +85,7 @@ namespace MCUtils {
 			}
 		}
 
+		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks</summary>
 		public ushort[,] GetHeightmap() {
 			ushort[,] hm = new ushort[512,512];
 			for(int x = 0; x < 32; x++) {
@@ -90,6 +99,7 @@ namespace MCUtils {
 			return hm;
 		}
 
+		///<summary>Generates a full .mca file stream for use in Minecraft</summary>
 		public void WriteRegionToStream(FileStream stream, int regionX, int regionZ) {
 			DateTime time = System.DateTime.Now;
 			int[] locations = new int[1024];
@@ -105,22 +115,22 @@ namespace MCUtils {
 					List<byte> bytes = new List<byte>();
 					chunkData.WriteToBytes(bytes);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
-					stream.Write(Reverse(BitConverter.GetBytes(compressed.Length)));
+					stream.Write(Converter.ToBigEndianByteArray(BitConverter.GetBytes(compressed.Length)));
 					stream.WriteByte(2);
 					stream.Write(compressed);
 					var paddingMod = stream.Length % 4096;
+					//Pad the data to the next 4096 bytes
 					if(paddingMod > 0) {
 						byte[] padding = new byte[4096-paddingMod];
 						stream.Write(padding);
 					}
-					//while(stream.Length % 4096 != 0) stream.WriteByte(0); //Padding
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}
 				Program.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z*32, 1024), (z*32f)/1024f);
 			}
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++) {
-				byte[] offsetBytes = Reverse(BitConverter.GetBytes(locations[i]));
+				byte[] offsetBytes = Converter.ToBigEndianByteArray(BitConverter.GetBytes(locations[i]));
 				stream.WriteByte(offsetBytes[1]);
 				stream.WriteByte(offsetBytes[2]);
 				stream.WriteByte(offsetBytes[3]);
@@ -161,11 +171,6 @@ namespace MCUtils {
 			} else {
 				return NBTTag.UNSPECIFIED;
 			}
-		}
-
-		byte[] Reverse(byte[] input) {
-			if(BitConverter.IsLittleEndian) Array.Reverse(input);
-			return input;
 		}
 	}
 }

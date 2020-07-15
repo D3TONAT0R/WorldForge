@@ -23,6 +23,7 @@ namespace MCUtils {
 			public abstract void Add(string key, object value);
 		}
 
+		///<summary>A container for the TAG_Compound tag.</summary>
 		public class CompoundContainer : Container {
 
 			public override NBTTag containerType {
@@ -77,6 +78,7 @@ namespace MCUtils {
 			}
 		}
 
+		///<summary>A container for the TAG_List tag.</summary>
 		public class ListContainer : Container {
 
 			public override NBTTag containerType {
@@ -139,34 +141,32 @@ namespace MCUtils {
 				{ typeof(long[]), NBTTag.TAG_Long_Array }
 			};
 
+		///<summary>The compound container containing all stored data</summary>
 		public CompoundContainer contents;
+
+		///<summary>
+		///The version number this nbt compound was created with.
+		///1022 = Release 1.12,
+		///1444 = Release 1.13,
+		///1901 = Release 1.14,
+		///2200 = Release 1.15,
+		///2504 = Release 1.16
+		///</summary>
 		public int dataVersion;
 
 		List<Container> parentTree;
-		public Container currentCompound {
-			get {
-				return actualCompound;
-			}
-			set {
-				
-				if(actualCompound != null && value != null && actualCompound.GetType() == typeof(ListContainer) && value.GetType() == typeof(CompoundContainer)) {
-					//Program.writeWarning("CHANGE");
-				}
-				actualCompound = value;
-			}
-		}
-		Container actualCompound;
 
+		///<summary>Instantiates an empty NBT structure.</summary>
 		public NBTContent() {
 			contents = new CompoundContainer();
 			parentTree = new List<Container>();
-			currentCompound = contents;
 		}
 
+		///<summary>Creates an NBT structure from the given bytes.</summary>
 		public NBTContent(byte[] nbt) : this() {
 			int i = 0;
 			while(i < nbt.Length) {
-				RegisterTag(nbt, currentCompound, ref i);
+				RegisterTag(nbt, contents, ref i);
 			}
 			var root = contents.GetAsCompound("");
 			if(root != null) {
@@ -209,7 +209,7 @@ namespace MCUtils {
 			if(tag != NBTTag.TAG_End) {
 				string name = "";
 				if(predef == NBTTag.UNSPECIFIED) {
-					short nameLength = BitConverter.ToInt16(Reverse(new byte[] { data[i], data[i + 1] }));
+					short nameLength = BitConverter.ToInt16(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1] }));
 					if(nameLength > 64) {
 						Console.WriteLine("NL=" + nameLength + "! Something is going wrong");
 					}
@@ -284,19 +284,19 @@ namespace MCUtils {
 				ret = data[i];
 				i++;
 			} else if(typeof(T) == typeof(short)) {
-				ret = BitConverter.ToInt16(Reverse(new byte[] { data[i], data[i + 1] }));
+				ret = BitConverter.ToInt16(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1] }));
 				i += 2;
 			} else if(typeof(T) == typeof(int)) {
-				ret = BitConverter.ToInt32(Reverse(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
+				ret = BitConverter.ToInt32(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
 				i += 4;
 			} else if(typeof(T) == typeof(long)) {
-				ret = BitConverter.ToInt64(Reverse(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
+				ret = BitConverter.ToInt64(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
 				i += 8;
 			} else if(typeof(T) == typeof(float)) {
-				ret = BitConverter.ToSingle(Reverse(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
+				ret = BitConverter.ToSingle(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
 				i += 4;
 			} else if(typeof(T) == typeof(double)) {
-				ret = BitConverter.ToDouble(Reverse(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
+				ret = BitConverter.ToDouble(Converter.ToBigEndianByteArray(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
 				i += 8;
 			} else if(typeof(T) == typeof(byte[])) {
 				int len = Get<int>(data, ref i);
@@ -342,6 +342,7 @@ namespace MCUtils {
 			return (T)Convert.ChangeType(ret, typeof(T));
 		}
 
+		///<summary>Generates a byte array from the content of this NBT structure.</summary>
 		public void WriteToBytes(List<byte> bytes) {
 			//Repackage into the original structure
 			
@@ -359,7 +360,7 @@ namespace MCUtils {
 			var tag = NBTTagDictionary[o.GetType()];
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-			byte[] lengthBytes = Reverse(BitConverter.GetBytes((short)nameBytes.Length));
+			byte[] lengthBytes = Converter.ToBigEndianByteArray(BitConverter.GetBytes((short)nameBytes.Length));
 			bytes.AddRange(lengthBytes);
 			bytes.AddRange(nameBytes);
 			WriteValue(bytes, tag, o);
@@ -369,15 +370,15 @@ namespace MCUtils {
 			if(tag == NBTTag.TAG_Byte) {
 				bytes.Add((byte)o);
 			} else if(tag == NBTTag.TAG_Short) {
-				bytes.AddRange(Reverse(BitConverter.GetBytes((short)o)));
+				bytes.AddRange(Converter.ToBigEndianByteArray(BitConverter.GetBytes((short)o)));
 			} else if(tag == NBTTag.TAG_Int) {
-				bytes.AddRange(Reverse(BitConverter.GetBytes((int)o)));
+				bytes.AddRange(Converter.ToBigEndianByteArray(BitConverter.GetBytes((int)o)));
 			} else if(tag == NBTTag.TAG_Long) {
-				bytes.AddRange(Reverse(BitConverter.GetBytes((long)o)));
+				bytes.AddRange(Converter.ToBigEndianByteArray(BitConverter.GetBytes((long)o)));
 			} else if(tag == NBTTag.TAG_Float) {
-				bytes.AddRange(Reverse(BitConverter.GetBytes((float)o)));
+				bytes.AddRange(Converter.ToBigEndianByteArray(BitConverter.GetBytes((float)o)));
 			} else if(tag == NBTTag.TAG_Double) {
-				bytes.AddRange(Reverse(BitConverter.GetBytes((double)o)));
+				bytes.AddRange(Converter.ToBigEndianByteArray(BitConverter.GetBytes((double)o)));
 			} else if(tag == NBTTag.TAG_Byte_Array) {
 				WriteValue(bytes, NBTTag.TAG_Int, ((byte[])o).Length);
 				foreach(byte b in (byte[])o) {
@@ -413,9 +414,74 @@ namespace MCUtils {
 			}
 		}
 
-		byte[] Reverse(byte[] input) {
-			if(BitConverter.IsLittleEndian) Array.Reverse(input);
-			return input;
+		///<summary>Finds and reads the heightmap data stored in a chunk NBT.</summary>
+		public ushort[,] GetHeightmapFromChunkNBT() {
+			try {
+				if(contents.Contains("Heightmaps")) {
+					//It's the "new" format
+					long[] hmlongs = (long[])contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
+					return GetHeightmap(hmlongs);
+				} else {
+					//It's the old, simple format
+					int[] hmints = (int[])contents.Get("HeightMap");
+					ushort[,] hm = new ushort[16,16];
+					for(int z = 0; z < 16; z++) {
+						for(int x = 0; x < 16; x++) {
+							var value = hmints[z * 16 + x];
+							hm[x, z] = (ushort)value;
+						}
+					}
+					return hm;
+				}
+			} catch {
+				return null;
+			}
+		}
+		
+		///<summary>Reads the heightmap stored in the given long array.</summary>
+		public ushort[,] GetHeightmap(long[] hmlongs) {
+			ushort[,] hm = new ushort[16,16];
+			try {
+				string hmbits = "";
+				if(hmlongs.Length == 37) {
+					//1.16 format
+					for(int i = 0; i < 37; i++) {
+						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
+						string s = "";
+						for(int j = 0; j < 8; j++) {
+							s += Converter.ByteToBinary(bytes[j], true);
+						}
+						hmbits += s.Substring(0, 63); //Remove the last unused bit
+					}
+				} else {
+					//pre 1.16 "full bit range" format
+					for(int i = 0; i < 36; i++) {
+						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
+						for(int j = 0; j < 8; j++) {
+							hmbits += Converter.ByteToBinary(bytes[j], true);
+						}
+					}
+				}
+				ushort[] hmap = new ushort[256];
+				for(int i = 0; i < 256; i++) {
+					hmap[i] = Converter.Read9BitValue(hmbits, i);
+				}
+
+				for(int i = 0; i < 256; i++) {
+					hmap[i] = Converter.Read9BitValue(hmbits, i);
+				}
+				if(hmbits != null) {
+					for(int z = 0; z < 16; z++) {
+						for(int x = 0; x < 16; x++) {
+							var value = hmap[z * 16 + x];
+							hm[x,z] = value;
+						}
+					}
+				}
+				return hm;
+			} catch {
+				return null;
+			}
 		}
 	}
 }

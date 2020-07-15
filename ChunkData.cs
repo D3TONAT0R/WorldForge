@@ -72,6 +72,7 @@ namespace MCUtils {
 			return (ushort)(palettes[section].Count-1);
 		}
 
+		///<summary>Sets the block at the given chunk coordinate</summary>
 		public void SetBlockAt(int x, int y, int z, BlockState block) {
 			int section = (int)Math.Floor(y/16f);
 			ushort index = GetPaletteIndex(block, section);
@@ -82,22 +83,26 @@ namespace MCUtils {
 			blocks[section][x,y%16,z] = index;
 		}
 
+		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(int x, int y, int z) {
 			int section = (int)Math.Floor(y/16f);
 			if(blocks[section] == null) blocks[section] = new ushort[16,16,16];
 			blocks[section][x,y%16,z] = 1; //1 is always the default block in a region generated from scratch
 		}
 
+		///<summary>Gets the block at the given chunk coordinate</summary>
 		public BlockState GetBlockAt(int x, int y, int z) {
 			int section = (int)Math.Floor(y/16f);
 			if(blocks[section] == null) return new BlockState("minecraft:air");
 			return palettes[section][blocks[section][x,y%16,z]];
 		}
 
+		///<summary>Sets the biome at the given chunk coordinate</summary>
 		public void SetBiomeAt(int x, int z, byte biomeID) {
 			biomes[x, z] = biomeID;
 		}
 
+		///<summary>Reads all blocks in the given chunk</summary>
 		public void ReadFromNBT(ListContainer sectionsList, bool isVersion_prior_1_16) {
 			foreach(var o in sectionsList.cont) {
 				var compound = (CompoundContainer)o;
@@ -137,6 +142,7 @@ namespace MCUtils {
 			}
 		}
 
+		///<summary>Converts the two-dimensional per-block biome array into a Minecraft compatible biome array (4x4x4 block volumes)</summary>
 		public void MakeBiomeArray() {
 			finalBiomeArray = new int[4,64,4];
 			for(int x = 0; x < 4; x++) {
@@ -192,6 +198,7 @@ namespace MCUtils {
 			return new string(chrs);
 		}
 
+		///<summary>Generates the full NBT data of a chunk</summary>
 		public void WriteToNBT(CompoundContainer level, bool use_1_16_Format) {
 			ListContainer sectionsList = level.GetAsList("Sections");
 			for(byte secY = 0; secY < 16; secY++) {
@@ -296,6 +303,7 @@ namespace MCUtils {
 			return null;
 		}
 
+		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
 		public void WriteToHeightmap(ushort[,] hm, int x, int z) {
 			if(!WriteHeightmapFromNBT(hm, x, z)) {
 				WriteHeightmapFromBlocks(hm, x, z);
@@ -304,61 +312,14 @@ namespace MCUtils {
 
 		private bool WriteHeightmapFromNBT(ushort[,] hm, int localChunkX, int localChunkZ) {
 			if(sourceNBT == null) return false;
-			try {
-				if(sourceNBT.contents.Contains("Heightmaps")) {
-					//It's the "new" format
-					long[] hmlongs = (long[])sourceNBT.contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
-					string hmbits = "";
-					if(sourceNBT.dataVersion >= 2504) {
-						//1.16 format
-						for(int i = 0; i < 37; i++) {
-							byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
-							string s = "";
-							for(int j = 0; j < 8; j++) {
-								s += ByteToBinary(bytes[j], true);
-							}
-							hmbits += s.Substring(0, 63); //Remove the last unused bit
-						}
-					} else {
-						//pre 1.16 "full bit range" format
-						for(int i = 0; i < 36; i++) {
-							byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
-							for(int j = 0; j < 8; j++) {
-								hmbits += ByteToBinary(bytes[j], true);
-							}
-						}
-					}
-					ushort[] hmap = new ushort[256];
-					for(int i = 0; i < 256; i++) {
-						hmap[i] = Read9BitValue(hmbits, i);
-					}
-
-					for(int i = 0; i < 256; i++) {
-						hmap[i] = Read9BitValue(hmbits, i);
-					}
-					//TODO: support for 1.16's "full bit range" format
-					if(hmbits != null) {
-						for(int z = 0; z < 16; z++) {
-							for(int x = 0; x < 16; x++) {
-								var value = hmap[z * 16 + x];
-								hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = value;
-							}
-						}
-					}
-				} else {
-					//It's the old, simple format
-					int[] hmints = (int[])sourceNBT.contents.Get("HeightMap");
-					for(int z = 0; z < 16; z++) {
-						for(int x = 0; x < 16; x++) {
-							var value = hmints[z * 16 + x];
-							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = (ushort)value;
-						}
-					}
+			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT();
+			if(chunkHM == null) return false;
+			for(int x = 0; x < 16; x++) {
+				for(int z = 0; z < 16; z++) {
+					hm[localChunkX*16+x,localChunkZ*16+z] = chunkHM[x,z];
 				}
-				return true;
-			} catch {
-				return false;
 			}
+			return true;
 		}
 
 		private void WriteHeightmapFromBlocks(ushort[,] hm, int localChunkX, int localChunkZ) {
@@ -428,16 +389,6 @@ namespace MCUtils {
 				case "redstone": return true;
 			}
 			return false;
-		}
-
-		private ushort Read9BitValue(string bitString, int index) {
-			string bits = ReverseString(bitString.Substring(index * 9, 9));
-			bits = "0000000" + bits;
-			bool[] bitArr = new bool[16];
-			for(int i = 0; i < 16; i++) {
-				bitArr[i] = bits[i] == '1';
-			}
-			return Convert.ToUInt16(bits, 2);
 		}
 	}
 }
