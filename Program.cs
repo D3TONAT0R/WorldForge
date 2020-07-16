@@ -8,6 +8,20 @@ namespace MCUtils {
 		static string progressString;
 
 		static void Main(string[] args) {
+			Console.Clear();
+			WriteLine("--------------");
+			WriteLine("MinecraftUtils");
+			WriteLine("--------------");
+			string input = "";
+			while(input != "exit") {
+				WriteLine("Chose an operation to perform:");
+				WriteLine("- mergeregions       Merges region files based on an input map.");
+				input = GetInput();
+				if(input.StartsWith("mergeregions")) {
+					var m = new RegionMerger();
+					m.Run();
+				}
+			}
 		}
 		
 		public static string GetInput() {

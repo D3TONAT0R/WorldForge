@@ -123,7 +123,7 @@ namespace MCUtils {
 					string newBits = "";
 					byte[] bytes = BitConverter.GetBytes(longs[i]);
 					for(int j = 0; j < 8; j++) {
-						newBits += ByteToBinary(bytes[j], true);
+						newBits += Converter.ByteToBinary(bytes[j], true);
 					}
 					if(isVersion_prior_1_16) {
 						bits += newBits;
@@ -135,7 +135,7 @@ namespace MCUtils {
 				for(int y = 0; y < 16; y++) {
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
-							blocks[secY][x,y,z] = BitsToValue(bits, y*256+z*16+x, indexLength);
+							blocks[secY][x,y,z] = Converter.BitsToValue(bits, y*256+z*16+x, indexLength);
 						}
 					}
 				}
@@ -151,51 +151,6 @@ namespace MCUtils {
 					for(int y = 0; y < 64; y++) finalBiomeArray[x,y,z] = biome;
 				}
 			}
-		}
-
-		private int GetPredominantBiomeIn4x4Area(int x, int z) {
-			Dictionary<byte,byte> occurences = new Dictionary<byte, byte>();
-			for(int x1 = 0; x1 < 4; x1++) {
-				for(int z1 = 0; z1 < 4; z1++) {
-					var b = biomes[x*4+x1,z*4+z1];
-					if(!occurences.ContainsKey(b)) {
-						occurences.Add(b, 0);
-					}
-					occurences[b]++;
-				}
-			}
-			int predominantBiome = 0;
-			int predominantCells = 0;
-			foreach(var k in occurences.Keys) {
-				if(occurences[k] > predominantCells) {
-					predominantCells = occurences[k];
-					predominantBiome = k;
-				}
-			}
-			return predominantBiome;
-		}
-
-		private string ByteToBinary(byte b, bool bigendian) {
-			string s = Convert.ToString((int)b, 2);
-			s = s.PadLeft(8, '0');
-			if(bigendian) s = ReverseString(s);
-			return s;
-		}
-
-		private ushort BitsToValue(string bitString, int index, int length) {
-			string bits = ReverseString(bitString.Substring(index * length, length));
-			bits = bits.PadLeft(16, '0');
-			bool[] bitArr = new bool[16];
-			for(int i = 0; i < 16; i++) {
-				bitArr[i] = bits[i] == '1';
-			}
-			return Convert.ToUInt16(bits, 2);
-		}
-
-		private string ReverseString(string input) {
-			char[] chrs = input.ToCharArray();
-			Array.Reverse(chrs);
-			return new string(chrs);
 		}
 
 		///<summary>Generates the full NBT data of a chunk</summary>
@@ -221,9 +176,11 @@ namespace MCUtils {
 						palette.Add("", paletteBlock);
 					}
 					comp.Add("Palette", palette);
-					//Encode block indexes to bits and longs, oof
-					int indexLength = Math.Max(4, (int)Math.Log(palettes[secY].Count-1, 2.0) + 1); 
-					long[] longs = new long[(int)Math.Ceiling(4096*indexLength/64.0)];
+					//Encode block indices to bits and longs, oof
+					int indexLength = Math.Max(4, (int)Math.Log(palettes[secY].Count-1, 2.0) + 1);
+					//How many block indices fit inside a long?
+					int indicesPerLong = (int)Math.Floor(64f/indexLength);
+					long[] longs = new long[(int)Math.Ceiling(4096f/indicesPerLong)];
 					string[] longsBinary = new string[longs.Length];
 					Array.Fill(longsBinary, "");
 					int i = 0;
@@ -231,7 +188,7 @@ namespace MCUtils {
 						for(int z = 0; z < 16; z++) {
 							for(int x = 0; x < 16; x++) {
 								string bin = NumToBits(blocks[secY][x,y,z], indexLength);
-								bin = ReverseString(bin);
+								bin = Converter.ReverseString(bin);
 								if(use_1_16_Format) {
 									if(longsBinary[i].Length + indexLength > 64) {
 										//The full value doesn't fit, start on the next long
@@ -250,7 +207,7 @@ namespace MCUtils {
 					for(int j = 0; j < longs.Length; j++) {
 						string s = longsBinary[j];
 						s = s.PadRight(64, '0');
-						s = ReverseString(s);
+						s = Converter.ReverseString(s);
 						longs[j] = Convert.ToInt64(s, 2);
 					}
 					comp.Add("BlockStates", longs); 
@@ -262,45 +219,12 @@ namespace MCUtils {
 			for(int y = 0; y < 64; y++) {
 				for(int x = 0; x < 4; x++) {
 					for(int z = 0; z < 4; z++) {
-						biomes.Add(finalBiomeArray[x,y,z]);
+						var b = finalBiomeArray != null ? finalBiomeArray[x,y,z] : 1;
+						biomes.Add(b);
 					}
 				}
 			}
 			level.Add("Biomes", biomes.ToArray());
-		}
-
-		private bool IsSectionEmpty(int secY) {
-			var arr = blocks[secY];
-			if(arr == null) return true;
-			bool allSame = true;
-			var i = arr[0,0,0];
-			foreach(var j in arr) {
-				allSame &= i == j;
-			}
-			if(allSame && palettes[secY][i].block == "minecraft:air") return true;
-			return false;
-		}
-
-		private long BitsToLong(string bits) {
-			bits = bits.PadLeft(64, '0');
-			return Convert.ToInt64(bits, 2);
-		}
-
-		private string NumToBits(ushort num, int length) {
-			string s = Convert.ToString(num, 2);
-			if(s.Length > length) {
-				throw new IndexOutOfRangeException("The number "+num+" does not fit in a binary string with length "+length);
-			}
-			return s.PadLeft(length, '0');
-		}
-
-		private CompoundContainer GetSection(ListContainer sectionsList, byte y) {
-			foreach(var o in sectionsList.cont) {
-				var compound = (CompoundContainer)o;
-				if(!compound.Contains("Y") || (byte)compound.Get("Y") > 15 || !compound.Contains("Palette")) continue;
-				if((byte)compound.Get("Y") == y) return compound;
-			}
-			return null;
 		}
 
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
@@ -389,6 +313,62 @@ namespace MCUtils {
 				case "redstone": return true;
 			}
 			return false;
+		}
+	
+		private bool IsSectionEmpty(int secY) {
+			var arr = blocks[secY];
+			if(arr == null) return true;
+			bool allSame = true;
+			var i = arr[0,0,0];
+			foreach(var j in arr) {
+				allSame &= i == j;
+			}
+			if(allSame && palettes[secY][i].block == "minecraft:air") return true;
+			return false;
+		}
+
+		private long BitsToLong(string bits) {
+			bits = bits.PadLeft(64, '0');
+			return Convert.ToInt64(bits, 2);
+		}
+
+		private string NumToBits(ushort num, int length) {
+			string s = Convert.ToString(num, 2);
+			if(s.Length > length) {
+				throw new IndexOutOfRangeException("The number "+num+" does not fit in a binary string with length "+length);
+			}
+			return s.PadLeft(length, '0');
+		}
+
+		private CompoundContainer GetSection(ListContainer sectionsList, byte y) {
+			foreach(var o in sectionsList.cont) {
+				var compound = (CompoundContainer)o;
+				if(!compound.Contains("Y") || (byte)compound.Get("Y") > 15 || !compound.Contains("Palette")) continue;
+				if((byte)compound.Get("Y") == y) return compound;
+			}
+			return null;
+		}
+	
+		private int GetPredominantBiomeIn4x4Area(int x, int z) {
+			Dictionary<byte,byte> occurences = new Dictionary<byte, byte>();
+			for(int x1 = 0; x1 < 4; x1++) {
+				for(int z1 = 0; z1 < 4; z1++) {
+					var b = biomes[x*4+x1,z*4+z1];
+					if(!occurences.ContainsKey(b)) {
+						occurences.Add(b, 0);
+					}
+					occurences[b]++;
+				}
+			}
+			int predominantBiome = 0;
+			int predominantCells = 0;
+			foreach(var k in occurences.Keys) {
+				if(occurences[k] > predominantCells) {
+					predominantCells = occurences[k];
+					predominantBiome = k;
+				}
+			}
+			return predominantBiome;
 		}
 	}
 }

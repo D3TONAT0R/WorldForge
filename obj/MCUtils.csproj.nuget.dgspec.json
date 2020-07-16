@@ -39,6 +39,10 @@
             "DotNetZip": {
               "target": "Package",
               "version": "[1.13.8, )"
+            },
+            "System.Drawing.Common": {
+              "target": "Package",
+              "version": "[4.7.0, )"
             }
           },
           "imports": [

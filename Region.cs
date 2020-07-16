@@ -32,14 +32,14 @@ namespace MCUtils {
 			else return true;
 		}
 
-		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone)</summary>
+		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
 		public bool IsDefaultBlock(int x, int y, int z) {
 			var b = GetBlock(x, y, z);
 			if(b == null) return false;
 			return b == defaultBlock;
 		}
 
-		///<summary>Gets the block at the given location</summary>
+		///<summary>Gets the block type at the given location.</summary>
 		public string GetBlock(int x, int y, int z) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
@@ -52,17 +52,33 @@ namespace MCUtils {
 			}
 		}
 
-		///<summary>Sets the block at the given location</summary>
+		///<summary>Gets the full block state at the given location.</summary>
+		public BlockState GetBlockState(int x, int y, int z) {
+			int chunkX = (int)Math.Floor(x / 16.0);
+			int chunkZ = (int)Math.Floor(z / 16.0);
+			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return null;
+			if(chunks[chunkX, chunkZ] != null) {
+				return chunks[chunkX, chunkZ].GetBlockAt(x % 16, y, z % 16);
+			} else {
+				return null;
+			}
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, string block) {
+			return SetBlock(x,y,z,new BlockState(block));
+		}
+
+		///<summary>Sets the block state at the given location.</summary>
+		public bool SetBlock(int x, int y, int z, BlockState block) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return false;
-			if(chunks[chunkX, chunkZ] != null) {
-				chunks[chunkX, chunkZ].SetBlockAt(x % 16, y, z % 16, new BlockState(block));
-				return true;
-			} else {
-				return false;
+			if(chunks[chunkX, chunkZ] == null) {
+				chunks[chunkX, chunkZ] = new ChunkData("minecraft:stone");
 			}
+			chunks[chunkX, chunkZ].SetBlockAt(x % 16, y, z % 16, block);
+			return true;
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
@@ -72,8 +88,7 @@ namespace MCUtils {
 			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
 		}
 
-
-		///<summary>Sets the biome at the given location</summary>
+		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, byte biome) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
@@ -85,7 +100,7 @@ namespace MCUtils {
 			}
 		}
 
-		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks</summary>
+		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
 		public ushort[,] GetHeightmap() {
 			ushort[,] hm = new ushort[512,512];
 			for(int x = 0; x < 32; x++) {
@@ -99,7 +114,7 @@ namespace MCUtils {
 			return hm;
 		}
 
-		///<summary>Generates a full .mca file stream for use in Minecraft</summary>
+		///<summary>Generates a full .mca file stream for use in Minecraft.</summary>
 		public void WriteRegionToStream(FileStream stream, int regionX, int regionZ) {
 			DateTime time = System.DateTime.Now;
 			int[] locations = new int[1024];
@@ -115,7 +130,7 @@ namespace MCUtils {
 					List<byte> bytes = new List<byte>();
 					chunkData.WriteToBytes(bytes);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
-					stream.Write(Converter.ToBigEndianByteArray(BitConverter.GetBytes(compressed.Length)));
+					stream.Write(Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length)));
 					stream.WriteByte(2);
 					stream.Write(compressed);
 					var paddingMod = stream.Length % 4096;
@@ -130,7 +145,7 @@ namespace MCUtils {
 			}
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++) {
-				byte[] offsetBytes = Converter.ToBigEndianByteArray(BitConverter.GetBytes(locations[i]));
+				byte[] offsetBytes = Converter.ReverseEndianness(BitConverter.GetBytes(locations[i]));
 				stream.WriteByte(offsetBytes[1]);
 				stream.WriteByte(offsetBytes[2]);
 				stream.WriteByte(offsetBytes[3]);
