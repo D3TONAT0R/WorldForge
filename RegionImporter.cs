@@ -27,7 +27,7 @@ namespace MCUtils {
 			Region r = new Region();
 			for(int i = 0; i < 1024; i++) {
 				if(locations[i] > 0 && sizes[i] > 0) {
-					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]));
+					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
 					int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 					int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
 					r.chunks[localChunkX,localChunkZ] = new ChunkData(nbt);
@@ -58,7 +58,7 @@ namespace MCUtils {
 			Region r = new Region();
 			for(int i = 0; i < 1024; i++) {
 				if(locations[i] > 0 && sizes[i] > 0) {
-					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]));
+					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
 					int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 					int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
 					var chunkHM = nbt.GetHeightmapFromChunkNBT();

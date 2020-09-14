@@ -12,6 +12,15 @@ namespace MCUtils {
 			WriteLine("--------------");
 			WriteLine("MinecraftUtils");
 			WriteLine("--------------");
+			string fname = null;
+			if(args.Length > 0) {
+				if(File.Exists(args[0])) {
+					var v = new NBTViewer(args[0]);
+					v.Run();
+				}
+			} else {
+				Console.WriteLine("File '" + fname + "' does not exist!");
+			}
 			string input = "";
 			while(input != "exit") {
 				WriteLine("Chose an operation to perform:");
@@ -20,6 +29,10 @@ namespace MCUtils {
 				if(input.StartsWith("mergeregions")) {
 					var m = new RegionMerger();
 					m.Run();
+				}
+				if(input.StartsWith("view ")) {
+					var v = new NBTViewer(input.Substring(5));
+					v.Run();
 				}
 			}
 		}

@@ -163,7 +163,7 @@ namespace MCUtils {
 		}
 
 		///<summary>Creates an NBT structure from the given bytes.</summary>
-		public NBTContent(byte[] nbt) : this() {
+		public NBTContent(byte[] nbt, bool isChunkFile) : this() {
 			int i = 0;
 			while(i < nbt.Length) {
 				RegisterTag(nbt, contents, ref i);
@@ -185,7 +185,9 @@ namespace MCUtils {
 				contents.cont.Remove("Level");
 			}
 			//Program.writeLine("NBT Loaded!");
-			var chunk = new ChunkData(this);
+			if(isChunkFile) {
+				var chunk = new ChunkData(this);
+			}
 		}
 
 		///<summary>Generates a byte array from the content of this NBT structure.</summary>
