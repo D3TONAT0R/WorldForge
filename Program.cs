@@ -8,6 +8,7 @@ namespace MCUtils {
 		static string progressString;
 
 		static void Main(string[] args) {
+			Console.ResetColor();
 			Console.Clear();
 			WriteLine("--------------");
 			WriteLine("MinecraftUtils");
@@ -31,7 +32,7 @@ namespace MCUtils {
 					m.Run();
 				}
 				if(input.StartsWith("view ")) {
-					var v = new NBTViewer(input.Substring(5));
+					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
 					v.Run();
 				}
 			}

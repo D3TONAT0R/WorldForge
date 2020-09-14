@@ -21,6 +21,14 @@ namespace MCUtils {
 			}
 
 			public abstract void Add(string key, object value);
+
+			public abstract string[] GetContentKeys(string prefix);
+
+			public abstract object Get(string key);
+
+			public override string ToString() {
+				return containerType.ToString();
+			}
 		}
 
 		///<summary>A container for the TAG_Compound tag.</summary>
@@ -48,10 +56,11 @@ namespace MCUtils {
 				}
 			}
 
-			public object Get(string key) {
+			public override object Get(string key) {
 				if(cont.ContainsKey(key)) {
 					return cont[key];
 				} else {
+					Program.WriteError("Key '" + key + "' does not exist!");
 					return null;
 				}
 			}
@@ -76,6 +85,16 @@ namespace MCUtils {
 				}
 				return true;
 			}
+
+			public override string[] GetContentKeys(string prefix) {
+				string[] k = new string[cont.Count];
+				int i = 0;
+				foreach(var key in cont.Keys) {
+					k[i] = prefix + key;
+					i++;
+				}
+				return k;
+			}
 		}
 
 		///<summary>A container for the TAG_List tag.</summary>
@@ -98,6 +117,10 @@ namespace MCUtils {
 				cont = new List<object>();
 			}
 
+			public override object Get(string key) {
+				return this[int.Parse(key)];
+			}
+
 			public override void Add(string key, object value) {
 				//Program.writeLineSpecial("Adding to #" + no);
 				cont.Add(value);
@@ -106,6 +129,12 @@ namespace MCUtils {
 			public object this[int i] {
 				get { return cont[i]; }
 				set { cont[i] = value; }
+			}
+
+			public override string[] GetContentKeys(string prefix) {
+				string[] k = new string[cont.Count];
+				for(int i = 0; i < cont.Count; i++) k[i] = prefix+i.ToString();
+				return k;
 			}
 		}
 
