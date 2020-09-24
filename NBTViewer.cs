@@ -2,16 +2,38 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using static MCUtils.NBTContent;
 
 namespace MCUtils {
 	class NBTViewer : IUtilTask {
 
+		public class ChangeState {
+
+			public enum ChangeType {
+				None, Modification, Addition, Removal
+			}
+
+			public object oldValue = null;
+			public ChangeType changeType = ChangeType.None;
+
+			public ConsoleColor GetColor(bool bg) {
+				switch(changeType) {
+					case ChangeType.Modification: return bg ? ConsoleColor.DarkCyan : ConsoleColor.Cyan;
+					case ChangeType.Addition: return bg ? ConsoleColor.DarkGreen : ConsoleColor.Green;
+					case ChangeType.Removal: return bg ? ConsoleColor.DarkRed : ConsoleColor.Red;
+					default: return bg ? ConsoleColor.DarkBlue : ConsoleColor.Gray;
+				}
+			}
+		}
+
+		public static readonly ChangeState defaultState = new ChangeState();
 		const char sep = ';';
 
 		string filename;
 		NBTContent content;
+		Dictionary<string, ChangeState> changes = new Dictionary<string, ChangeState>();
 
 		string cursorParent = "";
 		int cursorChildPos = 0;
@@ -21,19 +43,20 @@ namespace MCUtils {
 		string[] currentContentKeys;
 
 		int cursorBufferLoc = 0;
-		string buffer;
+		//string buffer;
 		int overflow = -1;
+		int moreItems = 0;
 
 		public NBTViewer(string path) {
 			content = new NBTContent(GZipStream.UncompressBuffer(File.ReadAllBytes(path)), false);
 			filename = Path.GetFileName(path);
-			filename = "root";
-			var root = new CompoundContainer();
-			foreach(var k in content.contents.GetContentKeys("")) {
-				root.Add(k, content.contents.Get(k));
-			}
-			content.contents.cont.Clear();
-			content.contents.Add(filename, root);
+			//filename = "root";
+			//var root = new CompoundContainer();
+			//foreach(var k in content.contents.GetContentKeys("")) {
+			//	root.Add(k, content.contents.Get(k));
+			//}
+			//content.contents.cont.Clear();
+			//content.contents.Add(filename, root);
 		}
 
 		public void Run() {
@@ -41,14 +64,20 @@ namespace MCUtils {
 			UpdateContentKeys();
 			while(true) {
 				overflow = -1;
-				buffer = "";
-				Draw("", "", content.contents, 0, false);
-				Console.Write(buffer);
-				while(cursorBufferLoc - Console.WindowTop < 1) {
-					Console.WindowTop--;
+				//buffer = "";
+				moreItems = 0;
+				Draw("", "", content.contents, 0, false, false);
+				if(moreItems > 0) {
+					Program.WriteLine("[" + moreItems + " more]");
 				}
-				while(cursorBufferLoc - Console.WindowTop + Console.WindowHeight < 3) {
-					Console.WindowTop++;
+				//Console.Write(buffer);
+				if(cursorBufferLoc > 1) {
+					while(cursorBufferLoc - Console.WindowTop < 1) {
+						Console.WindowTop--;
+					}
+					while(cursorBufferLoc - Console.WindowTop + Console.WindowHeight < 3) {
+						Console.WindowTop++;
+					}
 				}
 				var key = Console.ReadKey().Key;
 				if(key == ConsoleKey.Escape) break;
@@ -57,7 +86,7 @@ namespace MCUtils {
 				} else if(key == ConsoleKey.UpArrow) {
 					cursorChildPos--;
 				} else if(key == ConsoleKey.RightArrow) {
-					EnterContainer(currentContentKeys[cursorChildPos]);
+					EnterContainer(currentContentKeys[cursorChildPos].Split(sep).Last());
 				} else if(key == ConsoleKey.LeftArrow) {
 					ExitContainer();
 				}
@@ -66,41 +95,63 @@ namespace MCUtils {
 			}
 		}
 
-		void Draw(string tree, string name, object obj, int indent, bool drawAll) {
-			if(overflow > 15) return;
+		void Draw(string tree, string name, object obj, int indent, bool drawAll, bool isLast) {
+			if(overflow > 20) {
+				moreItems++;
+				return;
+			}
 			if(!string.IsNullOrEmpty(tree)) tree += sep;
 			tree += name;
 			string s = "";
-			for(int i = 0; i < indent; i++) s += "| ";
-			bool enterContainer = cursorParent.StartsWith(tree/* + (string.IsNullOrEmpty(tree) ? "" : sep.ToString())*/);
+			for(int i = 0; i < indent; i++) {
+				if(i == indent - 1) {
+					if(isLast) {
+						s += "└ ";
+					} else {
+						s += "│ ";
+					}
+				} else {
+					s += "│ ";
+				}
+			}
+			var pc = SplitParentAndChild(tree);
+			bool enterContainer = ContainsPath(tree, cursorParent);
 			if(IsContainer(obj)) s += enterContainer ? "▼ " : "► ";
-			s += name + "[" + GetTag(obj) + "] = " + obj;
-			if(cursorChildPos < currentContentKeys.Length && currentContentKeys[cursorChildPos] == name) {
+			s += (string.IsNullOrEmpty(name) ? filename : name + "[" + GetTag(obj) + "] = " + obj);
+			ChangeState state;
+			if(changes.ContainsKey(tree)) {
+				state = changes[tree];
+			} else {
+				state = defaultState;
+			}
+			if(cursorChildPos < currentContentKeys.Length && currentContentKeys[cursorChildPos] == tree) {
 				overflow = 0;
-				Console.Write(buffer);
-				buffer = "";
+				//Console.Write(buffer);
+				//buffer = "";
 				cursorBufferLoc = Console.CursorTop;
-				Program.WriteSuccess(s);
+				Program.WriteLine(s, ConsoleColor.White, state.GetColor(true));
 			} else {
 				if(overflow >= 0) overflow++;
-				if(overflow > 15) {
-					buffer += "[...]";
+				if(overflow > 20) {
+					moreItems++;
 					return;
 				}
-				buffer += s + "\n";
+				Program.WriteLine(s, state.GetColor(false));
+				//buffer += s + "\n";
 			}
 			if(obj is CompoundContainer) {
 				var content = ((CompoundContainer)obj).cont;
 				if(enterContainer) {
-					foreach(var k in content.Keys) {
-						Draw(tree, k, content[k], indent + 1, drawAll);
+					var keys = content.Keys.ToArray();
+					for(int i = 0; i < keys.Length; i++) {
+						Draw(tree, keys[i], content[keys[i]], indent + 1, drawAll, i == keys.Length - 1);
 					}
 				}
 			} else if(obj is ListContainer) {
 				var content = ((ListContainer)obj).cont;
 				if(enterContainer) {
 					for(int i = 0; i < content.Count; i++) {
-						Draw(tree, i.ToString(), content[i], indent + 1, drawAll);
+						Draw(tree, i.ToString(), content[i], indent + 1, drawAll, i == content.Count - 1);
 					}
 				}
 			}
@@ -129,9 +180,14 @@ namespace MCUtils {
 		}
 
 		void ExitContainer() {
-			if(!cursorParent.Contains(sep)) return;
+			if(cursorParent.Length == 0) return;
+			//if(!cursorParent.Contains(sep)) return;
 			var split = cursorParent.Split(sep);
-			cursorParent = cursorParent.Substring(0, cursorParent.Length - split[split.Length - 1].Length - 1);
+			if(split.Length <= 1) {
+				cursorParent = "";
+			} else {
+				cursorParent = cursorParent.Substring(0, cursorParent.Length - split[split.Length - 1].Length - 1);
+			}
 			UpdateContentKeys();
 			cursorChildPos = indexTree[indexTree.Count - 1];
 			indexTree.RemoveAt(indexTree.Count - 1);
@@ -150,12 +206,35 @@ namespace MCUtils {
 						currentContainer = (Container)currentContainer.Get(s);
 					}
 				}
-				currentContentKeys = currentContainer.GetContentKeys("");
+				var prefix = cursorParent;
+				if(prefix.Length > 0) prefix += sep;
+				currentContentKeys = currentContainer.GetContentKeys(prefix);
 				return true;
-			}
-			catch {
+			} catch {
 				return false;
 			}
+		}
+
+		string[] SplitParentAndChild(string tree) {
+			string[] split = tree.Split(sep);
+			string[] ret = new string[2];
+			ret[0] = "";
+			for(int i = 0; i < split.Length - 1; i++) {
+				ret[0] += split[i];
+			}
+			ret[1] = split[split.Length - 1];
+			return ret;
+		}
+
+		bool ContainsPath(string tree, string path) {
+			if(string.IsNullOrEmpty(tree)) return true;
+			var ts = tree.Split(sep);
+			var ps = path.Split(sep);
+			if(ps.Length < ts.Length) return false;
+			for(int i = 0; i < ts.Length; i++) {
+				if(ts[i] != ps[i]) return false;
+			}
+			return true;
 		}
 	}
 }

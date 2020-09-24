@@ -63,6 +63,17 @@ namespace MCUtils {
 			WriteConsoleLine(str);
 		}
 
+		public static void WriteLine(string str, ConsoleColor color) {
+			Console.ForegroundColor = color;
+			WriteConsoleLine(str);
+		}
+
+		public static void WriteLine(string str, ConsoleColor fg, ConsoleColor bg) {
+			Console.ForegroundColor = fg;
+			Console.BackgroundColor = bg;
+			WriteConsoleLine(str);
+		}
+
 		public static void WriteSuccess(string str) {
 			Console.ForegroundColor = ConsoleColor.Green;
 			WriteConsoleLine(str);
@@ -73,7 +84,7 @@ namespace MCUtils {
 			WriteConsoleLine(str);
 		}
 
-		public static void WriteLine(string str, params Object[] args) {
+		public static void WriteLine(string str, params object[] args) {
 			Console.WriteLine(str, args);
 		}
 
