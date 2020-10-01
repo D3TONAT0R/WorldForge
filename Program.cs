@@ -25,11 +25,17 @@ namespace MCUtils {
 			string input = "";
 			while(input != "exit") {
 				WriteLine("Chose an operation to perform:");
-				WriteLine("- mergeregions       Merges region files based on an input map.");
+				WriteLine("- mergeregions       Merges region files based on an input map");
+				WriteLine("- randomblocks       Makes a region out of random blocks");
+				WriteLine("- view               Shows the contents of an NBT file or region");
 				input = GetInput();
 				if(input.StartsWith("mergeregions")) {
 					var m = new RegionMerger();
 					m.Run();
+				}
+				if(input.StartsWith("randomblocks")) {
+					var g = new RandomBlockRegionGen();
+					g.Run();
 				}
 				if(input.StartsWith("view ")) {
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
