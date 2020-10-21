@@ -9,8 +9,6 @@ using static MCUtils.NBTContent;
 namespace MCUtils {
 	public class Region {
 
-		public static readonly string defaultBlock = "minecraft:stone";
-
 		public byte[,] heightmap;
 		public ChunkData[,] chunks;
 
@@ -36,7 +34,7 @@ namespace MCUtils {
 		public bool IsDefaultBlock(int x, int y, int z) {
 			var b = GetBlock(x, y, z);
 			if(b == null) return false;
-			return b == defaultBlock;
+			return b == World.defaultBlock;
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
@@ -178,14 +176,6 @@ namespace MCUtils {
 			nbt.contents.Add("InhabitedTime", 0L);
 			nbt.contents.Add("LastUpdate", 0L);
 			return nbt;
-		}
-
-		private NBTTag GetTag(object o) {
-			if(NBTTagDictionary.ContainsKey(o.GetType())) {
-				return NBTTagDictionary[o.GetType()];
-			} else {
-				return NBTTag.UNSPECIFIED;
-			}
 		}
 	}
 }
