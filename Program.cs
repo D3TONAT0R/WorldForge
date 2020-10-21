@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace MCUtils {
@@ -43,7 +42,7 @@ namespace MCUtils {
 				}
 			}
 		}
-		
+
 		public static string GetInput() {
 			Console.CursorVisible = true;
 			string s;
@@ -112,7 +111,7 @@ namespace MCUtils {
 				Console.SetCursorPosition(0, Console.CursorTop);
 			}
 			progressString = str;
-			if(progressbar >= 0) progressString += " "+GetProgressBar(progressbar)+" "+(int)Math.Round(progressbar*100)+"%";
+			if(progressbar >= 0) progressString += " " + GetProgressBar(progressbar) + " " + (int)Math.Round(progressbar * 100) + "%";
 			if(lastLength > 0) progressString = progressString.PadRight(lastLength, ' ');
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 			Console.Write(progressString);
@@ -122,7 +121,7 @@ namespace MCUtils {
 		static string GetProgressBar(float prog) {
 			string s = "";
 			for(int i = 0; i < 20; i++) {
-				s += (prog >= (i+1)/20f) ? "█" : "░";
+				s += (prog >= (i + 1) / 20f) ? "█" : "░";
 			}
 			s += "";
 			return s;

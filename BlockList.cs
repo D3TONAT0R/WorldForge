@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MCUtils {
+﻿namespace MCUtils {
 	public static class BlockList {
 
 		public static string[] blocks = new string[] {

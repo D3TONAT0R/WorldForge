@@ -17,7 +17,7 @@ namespace MCUtils {
 		public int[,,] finalBiomeData;
 
 		public Region() {
-			chunks = new ChunkData[32,32];
+			chunks = new ChunkData[32, 32];
 		}
 
 		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
@@ -66,7 +66,7 @@ namespace MCUtils {
 
 		///<summary>Sets the block type at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, string block) {
-			return SetBlock(x,y,z,new BlockState(block));
+			return SetBlock(x, y, z, new BlockState(block));
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
@@ -102,12 +102,12 @@ namespace MCUtils {
 
 		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
 		public ushort[,] GetHeightmap() {
-			ushort[,] hm = new ushort[512,512];
+			ushort[,] hm = new ushort[512, 512];
 			for(int x = 0; x < 32; x++) {
 				for(int z = 0; z < 32; z++) {
-					var c = chunks[x,z];
+					var c = chunks[x, z];
 					if(c != null) {
-						c.WriteToHeightmap(hm,x,z);
+						c.WriteToHeightmap(hm, x, z);
 					}
 				}
 			}
@@ -136,12 +136,12 @@ namespace MCUtils {
 					var paddingMod = stream.Length % 4096;
 					//Pad the data to the next 4096 bytes
 					if(paddingMod > 0) {
-						byte[] padding = new byte[4096-paddingMod];
+						byte[] padding = new byte[4096 - paddingMod];
 						stream.Write(padding);
 					}
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}
-				Program.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z*32, 1024), (z*32f)/1024f);
+				Program.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
 			}
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++) {
@@ -153,7 +153,7 @@ namespace MCUtils {
 			}
 			DateTime time2 = System.DateTime.Now;
 			TimeSpan len = time2.Subtract(time);
-			Program.WriteLine("Generating MCA took "+Math.Round(len.TotalSeconds*100f)/100f+"s");
+			Program.WriteLine("Generating MCA took " + Math.Round(len.TotalSeconds * 100f) / 100f + "s");
 		}
 
 		private NBTContent MakeCompoundForChunk(ChunkData chunk, int chunkX, int chunkZ) {

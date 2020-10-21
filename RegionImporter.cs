@@ -1,6 +1,6 @@
-using System.IO;
-using System;
 using Ionic.Zlib;
+using System;
+using System.IO;
 
 namespace MCUtils {
 	public static class RegionImporter {
@@ -20,8 +20,8 @@ namespace MCUtils {
 			uint[] locations = new uint[1024];
 			byte[] sizes = new byte[1024];
 			for(uint i = 0; i < 1024; i++) {
-				locations[i] = ReadAsInt(locationBytes, i*4, 3);
-				sizes[i] = Read(i*4+3, 1)[0];
+				locations[i] = ReadAsInt(locationBytes, i * 4, 3);
+				sizes[i] = Read(i * 4 + 3, 1)[0];
 			}
 			ushort[,] hm = new ushort[512, 512];
 			Region r = new Region();
@@ -30,7 +30,7 @@ namespace MCUtils {
 					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
 					int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 					int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
-					r.chunks[localChunkX,localChunkZ] = new ChunkData(nbt);
+					r.chunks[localChunkX, localChunkZ] = new ChunkData(nbt);
 				}
 			}
 			stream.Close();
@@ -51,8 +51,8 @@ namespace MCUtils {
 			uint[] locations = new uint[1024];
 			byte[] sizes = new byte[1024];
 			for(uint i = 0; i < 1024; i++) {
-				locations[i] = ReadAsInt(locationBytes, i*4, 3);
-				sizes[i] = Read(i*4+3, 1)[0];
+				locations[i] = ReadAsInt(locationBytes, i * 4, 3);
+				sizes[i] = Read(i * 4 + 3, 1)[0];
 			}
 			ushort[,] hm = new ushort[512, 512];
 			Region r = new Region();
@@ -65,7 +65,7 @@ namespace MCUtils {
 					if(chunkHM != null) {
 						for(int x = 0; x < 16; x++) {
 							for(int z = 0; z < 16; z++) {
-								hm[localChunkX*16+x,511-(localChunkZ*16+z)] = chunkHM[x,z];
+								hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = chunkHM[x, z];
 							}
 						}
 					}
@@ -94,15 +94,15 @@ namespace MCUtils {
 		private static uint ReadAsInt(byte[] arr, uint start, int length) {
 			byte[] bytes = new byte[4];
 			int padding = 4 - length;
-			for(int i = 0; i < length; i++) bytes[i+ padding] = arr[start+i];
+			for(int i = 0; i < length; i++) bytes[i + padding] = arr[start + i];
 			if(BitConverter.IsLittleEndian) Array.Reverse(bytes);
 			return BitConverter.ToUInt32(bytes);
 		}
 
 		private static byte[] GetChunkData(uint loc, byte size) {
 			loc *= 4096;
-			int length = size*4096;
-			byte[] compressed = Read(loc+5, length);
+			int length = size * 4096;
+			byte[] compressed = Read(loc + 5, length);
 			return ZlibStream.UncompressBuffer(compressed);
 		}
 	}

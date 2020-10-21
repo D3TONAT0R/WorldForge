@@ -1,11 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using System.Text.Encodings.Web;
 
 namespace MCUtils {
 	public class NBTContent {
@@ -133,7 +128,7 @@ namespace MCUtils {
 
 			public override string[] GetContentKeys(string prefix) {
 				string[] k = new string[cont.Count];
-				for(int i = 0; i < cont.Count; i++) k[i] = prefix+i.ToString();
+				for(int i = 0; i < cont.Count; i++) k[i] = prefix + i.ToString();
 				return k;
 			}
 		}
@@ -222,7 +217,7 @@ namespace MCUtils {
 		///<summary>Generates a byte array from the content of this NBT structure.</summary>
 		public void WriteToBytes(List<byte> bytes) {
 			//Repackage into the original structure
-			
+
 			CompoundContainer root = new CompoundContainer();
 			CompoundContainer level = new CompoundContainer();
 			foreach(string k in contents.cont.Keys) {
@@ -243,7 +238,7 @@ namespace MCUtils {
 				} else {
 					//It's the old, simple format
 					int[] hmints = (int[])contents.Get("HeightMap");
-					ushort[,] hm = new ushort[16,16];
+					ushort[,] hm = new ushort[16, 16];
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
 							var value = hmints[z * 16 + x];
@@ -256,10 +251,10 @@ namespace MCUtils {
 				return null;
 			}
 		}
-		
+
 		///<summary>Reads the heightmap stored in the given long array.</summary>
 		public ushort[,] GetHeightmap(long[] hmlongs) {
-			ushort[,] hm = new ushort[16,16];
+			ushort[,] hm = new ushort[16, 16];
 			try {
 				string hmbits = "";
 				if(hmlongs.Length == 37) {
@@ -293,7 +288,7 @@ namespace MCUtils {
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
 							var value = hmap[z * 16 + x];
-							hm[x,z] = value;
+							hm[x, z] = value;
 						}
 					}
 				}
@@ -302,7 +297,7 @@ namespace MCUtils {
 				return null;
 			}
 		}
-	
+
 		NBTTag RegisterTag(byte[] data, Container c, ref int i) {
 			return RegisterTag(NBTTag.UNSPECIFIED, data, c, ref i);
 		}
@@ -318,7 +313,7 @@ namespace MCUtils {
 				i++;
 			} else {
 				tag = predef;
-			}       
+			}
 			//}
 			object value = null;
 			if(tag != NBTTag.TAG_End) {
@@ -337,7 +332,8 @@ namespace MCUtils {
 				/*if(name == "MOTION_BLOCKING" || name == "MOTION_BLOCKING_NO_LEAVES" || name == "OCEAN_FLOOR" || name == "WORLD_SURFACE") {
 					Get<int>(data, ref i); //Throw away the length int, it's always 36
 					value = GetHeightmap(data, c, ref i);
-				} else */if(tag == NBTTag.TAG_Byte) {
+				} else */
+				if(tag == NBTTag.TAG_Byte) {
 					value = Get<byte>(data, ref i);
 				} else if(tag == NBTTag.TAG_Short) {
 					value = Get<short>(data, ref i);
@@ -365,7 +361,7 @@ namespace MCUtils {
 				c.Add(name, value);
 				LogTree(tag, name, value);
 			} else {
-				
+
 				//ExitContainer();
 			}
 			return tag;

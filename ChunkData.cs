@@ -13,26 +13,26 @@ namespace MCUtils {
 				if(name.StartsWith("minecraft:")) {
 					block = name;
 				} else {
-					block = "minecraft:"+name;
+					block = "minecraft:" + name;
 				}
 				AddDefaultBlockProperties();
 			}
 
 			void AddDefaultBlockProperties() {
-			switch(block) {
-				case "minecraft:oak_leaves":
-				case "minecraft:spruce_leaves":
-				case "minecraft:birch_leaves":
-				case "minecraft:jungle_leaves":
-				case "minecraft:acacia_leaves":
-				case "minecraft:dark_oak_leaves":
-					properties.Add("distance", 1);
-					break;
+				switch(block) {
+					case "minecraft:oak_leaves":
+					case "minecraft:spruce_leaves":
+					case "minecraft:birch_leaves":
+					case "minecraft:jungle_leaves":
+					case "minecraft:acacia_leaves":
+					case "minecraft:dark_oak_leaves":
+						properties.Add("distance", 1);
+						break;
 				}
 			}
 		}
 
-		public ushort[][,,]blocks = new ushort[16][,,];
+		public ushort[][,,] blocks = new ushort[16][,,];
 		public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
 		public int[,,] finalBiomeArray;
@@ -47,7 +47,7 @@ namespace MCUtils {
 			}
 			for(int x = 0; x < 16; x++) {
 				for(int y = 0; y < 16; y++) {
-					biomes[x,y] = 1; //Defaults to plains biome
+					biomes[x, y] = 1; //Defaults to plains biome
 				}
 			}
 		}
@@ -69,32 +69,33 @@ namespace MCUtils {
 
 		public ushort AddBlockToPalette(int section, BlockState block) {
 			palettes[section].Add(block);
-			return (ushort)(palettes[section].Count-1);
+			return (ushort)(palettes[section].Count - 1);
 		}
 
 		///<summary>Sets the block at the given chunk coordinate</summary>
 		public void SetBlockAt(int x, int y, int z, BlockState block) {
-			int section = (int)Math.Floor(y/16f);
+			if(y < 0 || y > 255) return;
+			int section = (int)Math.Floor(y / 16f);
 			ushort index = GetPaletteIndex(block, section);
 			if(index == 9999) {
 				index = AddBlockToPalette(section, block);
 			}
-			if(blocks[section] == null) blocks[section] = new ushort[16,16,16];
-			blocks[section][x,y%16,z] = index;
+			if(blocks[section] == null) blocks[section] = new ushort[16, 16, 16];
+			blocks[section][x, y % 16, z] = index;
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(int x, int y, int z) {
-			int section = (int)Math.Floor(y/16f);
-			if(blocks[section] == null) blocks[section] = new ushort[16,16,16];
-			blocks[section][x,y%16,z] = 1; //1 is always the default block in a region generated from scratch
+			int section = (int)Math.Floor(y / 16f);
+			if(blocks[section] == null) blocks[section] = new ushort[16, 16, 16];
+			blocks[section][x, y % 16, z] = 1; //1 is always the default block in a region generated from scratch
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
 		public BlockState GetBlockAt(int x, int y, int z) {
-			int section = (int)Math.Floor(y/16f);
+			int section = (int)Math.Floor(y / 16f);
 			if(blocks[section] == null) return new BlockState("minecraft:air");
-			return palettes[section][blocks[section][x,y%16,z]];
+			return palettes[section][blocks[section][x, y % 16, z]];
 		}
 
 		///<summary>Sets the biome at the given chunk coordinate</summary>
@@ -116,7 +117,7 @@ namespace MCUtils {
 					palette.Add(bs);
 				}
 				//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
-				int indexLength = Math.Max(4, (int)Math.Log(palette.Count-1, 2.0) + 1); 
+				int indexLength = Math.Max(4, (int)Math.Log(palette.Count - 1, 2.0) + 1);
 				long[] longs = (long[])compound.Get("BlockStates");
 				string bits = "";
 				for(int i = 0; i < longs.Length; i++) {
@@ -128,14 +129,14 @@ namespace MCUtils {
 					if(isVersion_prior_1_16) {
 						bits += newBits;
 					} else {
-						bits += newBits.Substring(0, (int)Math.Floor(newBits.Length/(double)indexLength)*indexLength);
+						bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
 					}
 				}
-				blocks[secY] = new ushort[16,16,16];
+				blocks[secY] = new ushort[16, 16, 16];
 				for(int y = 0; y < 16; y++) {
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
-							blocks[secY][x,y,z] = Converter.BitsToValue(bits, y*256+z*16+x, indexLength);
+							blocks[secY][x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
 						}
 					}
 				}
@@ -144,11 +145,11 @@ namespace MCUtils {
 
 		///<summary>Converts the two-dimensional per-block biome array into a Minecraft compatible biome array (4x4x4 block volumes)</summary>
 		public void MakeBiomeArray() {
-			finalBiomeArray = new int[4,64,4];
+			finalBiomeArray = new int[4, 64, 4];
 			for(int x = 0; x < 4; x++) {
 				for(int z = 0; z < 4; z++) {
-					int biome = GetPredominantBiomeIn4x4Area(x,z);
-					for(int y = 0; y < 64; y++) finalBiomeArray[x,y,z] = biome;
+					int biome = GetPredominantBiomeIn4x4Area(x, z);
+					for(int y = 0; y < 64; y++) finalBiomeArray[x, y, z] = biome;
 				}
 			}
 		}
@@ -177,17 +178,17 @@ namespace MCUtils {
 					}
 					comp.Add("Palette", palette);
 					//Encode block indices to bits and longs, oof
-					int indexLength = Math.Max(4, (int)Math.Log(palettes[secY].Count-1, 2.0) + 1);
+					int indexLength = Math.Max(4, (int)Math.Log(palettes[secY].Count - 1, 2.0) + 1);
 					//How many block indices fit inside a long?
-					int indicesPerLong = (int)Math.Floor(64f/indexLength);
-					long[] longs = new long[(int)Math.Ceiling(4096f/indicesPerLong)];
+					int indicesPerLong = (int)Math.Floor(64f / indexLength);
+					long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
 					string[] longsBinary = new string[longs.Length];
 					Array.Fill(longsBinary, "");
 					int i = 0;
 					for(int y = 0; y < 16; y++) {
 						for(int z = 0; z < 16; z++) {
 							for(int x = 0; x < 16; x++) {
-								string bin = NumToBits(blocks[secY][x,y,z], indexLength);
+								string bin = NumToBits(blocks[secY][x, y, z], indexLength);
 								bin = Converter.ReverseString(bin);
 								if(use_1_16_Format) {
 									if(longsBinary[i].Length + indexLength > 64) {
@@ -210,7 +211,7 @@ namespace MCUtils {
 						s = Converter.ReverseString(s);
 						longs[j] = Convert.ToInt64(s, 2);
 					}
-					comp.Add("BlockStates", longs); 
+					comp.Add("BlockStates", longs);
 					sectionsList.Add("", comp);
 				}
 			}
@@ -219,7 +220,7 @@ namespace MCUtils {
 			for(int y = 0; y < 64; y++) {
 				for(int x = 0; x < 4; x++) {
 					for(int z = 0; z < 4; z++) {
-						var b = finalBiomeArray != null ? finalBiomeArray[x,y,z] : 1;
+						var b = finalBiomeArray != null ? finalBiomeArray[x, y, z] : 1;
 						biomes.Add(b);
 					}
 				}
@@ -240,7 +241,7 @@ namespace MCUtils {
 			if(chunkHM == null) return false;
 			for(int x = 0; x < 16; x++) {
 				for(int z = 0; z < 16; z++) {
-					hm[localChunkX*16+x,localChunkZ*16+z] = chunkHM[x,z];
+					hm[localChunkX * 16 + x, localChunkZ * 16 + z] = chunkHM[x, z];
 				}
 			}
 			return true;
@@ -254,11 +255,11 @@ namespace MCUtils {
 			if(highestSection <= 0) return;
 			for(int x = 0; x < 16; x++) {
 				for(int z = 0; z < 16; z++) {
-					for(ushort y = (ushort)(highestSection*16+15); y > 0; y--) {
-						int sec = (int)Math.Floor(y/16f);
+					for(ushort y = (ushort)(highestSection * 16 + 15); y > 0; y--) {
+						int sec = (int)Math.Floor(y / 16f);
 						if(blocks[sec] == null) continue;
-						if(!IsTransparentBlock(palettes[sec][blocks[sec][x,y%16,z]].block)) {
-							hm[localChunkX*16+x,511- (localChunkZ*16+z)] = y;
+						if(!IsTransparentBlock(palettes[sec][blocks[sec][x, y % 16, z]].block)) {
+							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
 							break;
 						}
 					}
@@ -268,7 +269,7 @@ namespace MCUtils {
 
 		private bool IsTransparentBlock(string b) {
 			if(b == null) return true;
-			b = b.Replace("minecraft:","");
+			b = b.Replace("minecraft:", "");
 			if(b.Contains("glass")) return true;
 			if(b.Contains("bars")) return true;
 			if(b.Contains("sapling")) return true;
@@ -314,12 +315,12 @@ namespace MCUtils {
 			}
 			return false;
 		}
-	
+
 		private bool IsSectionEmpty(int secY) {
 			var arr = blocks[secY];
 			if(arr == null) return true;
 			bool allSame = true;
-			var i = arr[0,0,0];
+			var i = arr[0, 0, 0];
 			foreach(var j in arr) {
 				allSame &= i == j;
 			}
@@ -335,7 +336,7 @@ namespace MCUtils {
 		private string NumToBits(ushort num, int length) {
 			string s = Convert.ToString(num, 2);
 			if(s.Length > length) {
-				throw new IndexOutOfRangeException("The number "+num+" does not fit in a binary string with length "+length);
+				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
 			}
 			return s.PadLeft(length, '0');
 		}
@@ -348,12 +349,12 @@ namespace MCUtils {
 			}
 			return null;
 		}
-	
+
 		private int GetPredominantBiomeIn4x4Area(int x, int z) {
-			Dictionary<byte,byte> occurences = new Dictionary<byte, byte>();
+			Dictionary<byte, byte> occurences = new Dictionary<byte, byte>();
 			for(int x1 = 0; x1 < 4; x1++) {
 				for(int z1 = 0; z1 < 4; z1++) {
-					var b = biomes[x*4+x1,z*4+z1];
+					var b = biomes[x * 4 + x1, z * 4 + z1];
 					if(!occurences.ContainsKey(b)) {
 						occurences.Add(b, 0);
 					}

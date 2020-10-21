@@ -1,7 +1,5 @@
-using System.IO;
-using System.Drawing;
 using System;
-using static MCUtils.ChunkData;
+using System.IO;
 
 namespace MCUtils {
 	public class RandomBlockRegionGen : IUtilTask {
