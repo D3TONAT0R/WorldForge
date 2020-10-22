@@ -83,6 +83,10 @@ namespace MCUtils {
 		public void SetDefaultBlock(int x, int y, int z) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
+			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
+			if(chunks[chunkX, chunkZ] == null) {
+				chunks[chunkX, chunkZ] = new ChunkData("minecraft:stone");
+			}
 			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
 		}
 
@@ -110,6 +114,12 @@ namespace MCUtils {
 				}
 			}
 			return hm;
+		}
+
+		public void MakeBiomeArray() {
+			foreach(var c in chunks) {
+				c.MakeBiomeArray();
+			}
 		}
 
 		///<summary>Generates a full .mca file stream for use in Minecraft.</summary>

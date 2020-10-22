@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using static MCUtils.ChunkData;
+using static MCUtils.NBTContent;
 
 namespace MCUtils {
 	public class World {
@@ -43,6 +45,12 @@ namespace MCUtils {
 			var b = GetBlock(x, y, z);
 			if(b == null) return false;
 			return b == defaultBlock;
+		}
+
+		///<summary>Returns true if the block at the given location is air.</summary>
+		public bool IsAir(int x, int y, int z) {
+			var b = GetBlock(x, y, z);
+			return b == null || b == "minecraft:air";
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
@@ -109,6 +117,10 @@ namespace MCUtils {
 			if(r != null) {
 				r.SetBiome(x % 512, z % 512, biome);
 			}
+		}
+
+		public void WriteRegionFiles(FileStream stream, int regionPosX, int regionPosZ) {
+			regions[new RegionLocation(0, 0)].WriteRegionToStream(stream, regionPosX + 0, regionPosZ + 0);
 		}
 	}
 }
