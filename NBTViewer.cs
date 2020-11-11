@@ -194,7 +194,7 @@ namespace MCUtils {
 
 		bool UpdateContentKeys() {
 			try {
-				if(cursorParent.StartsWith(sep)) cursorParent = cursorParent.Substring(1);
+				if(cursorParent.StartsWith(sep.ToString())) cursorParent = cursorParent.Substring(1);
 				cursorChildPos = 0;
 				if(string.IsNullOrEmpty(cursorParent)) {
 					currentContainer = content.contents;

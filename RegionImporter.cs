@@ -30,7 +30,7 @@ namespace MCUtils {
 					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
 					int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 					int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
-					r.chunks[localChunkX, localChunkZ] = new ChunkData(nbt);
+					r.chunks[localChunkX, localChunkZ] = new ChunkData(r, nbt);
 				}
 			}
 			stream.Close();
@@ -96,7 +96,7 @@ namespace MCUtils {
 			int padding = 4 - length;
 			for(int i = 0; i < length; i++) bytes[i + padding] = arr[start + i];
 			if(BitConverter.IsLittleEndian) Array.Reverse(bytes);
-			return BitConverter.ToUInt32(bytes);
+			return BitConverter.ToUInt32(bytes, 0);
 		}
 
 		private static byte[] GetChunkData(uint loc, byte size) {

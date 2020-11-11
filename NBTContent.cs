@@ -210,7 +210,7 @@ namespace MCUtils {
 			}
 			//Program.writeLine("NBT Loaded!");
 			if(isChunkFile) {
-				var chunk = new ChunkData(this);
+				var chunk = new ChunkData(null, this);
 			}
 		}
 
@@ -319,7 +319,7 @@ namespace MCUtils {
 			if(tag != NBTTag.TAG_End) {
 				string name = "";
 				if(predef == NBTTag.UNSPECIFIED) {
-					short nameLength = BitConverter.ToInt16(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1] }));
+					short nameLength = BitConverter.ToInt16(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1] }), 0);
 					if(nameLength > 64) {
 						Console.WriteLine("NL=" + nameLength + "! Something is going wrong");
 					}
@@ -395,19 +395,19 @@ namespace MCUtils {
 				ret = data[i];
 				i++;
 			} else if(typeof(T) == typeof(short)) {
-				ret = BitConverter.ToInt16(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1] }));
+				ret = BitConverter.ToInt16(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1] }), 0);
 				i += 2;
 			} else if(typeof(T) == typeof(int)) {
-				ret = BitConverter.ToInt32(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
+				ret = BitConverter.ToInt32(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }), 0);
 				i += 4;
 			} else if(typeof(T) == typeof(long)) {
-				ret = BitConverter.ToInt64(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
+				ret = BitConverter.ToInt64(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }), 0);
 				i += 8;
 			} else if(typeof(T) == typeof(float)) {
-				ret = BitConverter.ToSingle(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }));
+				ret = BitConverter.ToSingle(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3] }), 0);
 				i += 4;
 			} else if(typeof(T) == typeof(double)) {
-				ret = BitConverter.ToDouble(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }));
+				ret = BitConverter.ToDouble(Converter.ReverseEndianness(new byte[] { data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], data[i + 5], data[i + 6], data[i + 7] }), 0);
 				i += 8;
 			} else if(typeof(T) == typeof(byte[])) {
 				int len = Get<int>(data, ref i);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using static MCUtils.ChunkData;
 using static MCUtils.NBTContent;
@@ -23,11 +24,22 @@ namespace MCUtils {
 		public Dictionary<RegionLocation, Region> regions;
 		public bool allowNewRegions = false;
 
-		public World(int worldSizeX, int worldSizeZ) {
+		public NBTContent levelDat;
+
+		public World(int worldSizeX, int worldSizeZ) : this(worldSizeZ, worldSizeZ, null) {
+
+		}
+
+		public World(int worldSizeX, int worldSizeZ, string levelDatPath) {
+			if(!string.IsNullOrEmpty(levelDatPath)) {
+				levelDat = new NBTContent(File.ReadAllBytes(levelDatPath), false);
+			}
 			regions = new Dictionary<RegionLocation, Region>();
 			for(int x = 0; x * 512 < worldSizeX; x++) {
 				for(int z = 0; z * 512 < worldSizeZ; z++) {
-					regions.Add(new RegionLocation(x, z), new Region());
+					var reg = new Region();
+					reg.containingWorld = this;
+					regions.Add(new RegionLocation(x, z), reg);
 				}
 			}
 		}

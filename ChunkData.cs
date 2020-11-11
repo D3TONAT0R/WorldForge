@@ -32,6 +32,8 @@ namespace MCUtils {
 			}
 		}
 
+		public Region containingRegion;
+		public bool hasNumericIDs;
 		public ushort[][,,] blocks = new ushort[16][,,];
 		public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
@@ -39,7 +41,8 @@ namespace MCUtils {
 
 		public NBTContent sourceNBT;
 
-		public ChunkData(string defaultBlock) {
+		public ChunkData(Region region, string defaultBlock) {
+			containingRegion = region;
 			for(int i = 0; i < 16; i++) {
 				palettes[i] = new List<BlockState>();
 				palettes[i].Add(new BlockState("air"));
@@ -52,11 +55,15 @@ namespace MCUtils {
 			}
 		}
 
-		public ChunkData(NBTContent chunk) {
+		public ChunkData(Region region, NBTContent chunk) {
+			containingRegion = region;
 			for(int i = 0; i < 16; i++) {
 				palettes[i] = new List<BlockState>();
 			}
 			ReadFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
+			if(chunk.dataVersion < 1400) {
+				hasNumericIDs = true;
+			}
 			sourceNBT = chunk;
 		}
 
@@ -75,6 +82,10 @@ namespace MCUtils {
 		///<summary>Sets the block at the given chunk coordinate</summary>
 		public void SetBlockAt(int x, int y, int z, BlockState block) {
 			if(y < 0 || y > 255) return;
+			if(hasNumericIDs) {
+				Console.WriteLine("Changing blocks in a numeric ID chunk is currently not supported.");
+				return;
+			}
 			int section = (int)Math.Floor(y / 16f);
 			ushort index = GetPaletteIndex(block, section);
 			if(index == 9999) {
@@ -86,6 +97,10 @@ namespace MCUtils {
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(int x, int y, int z) {
+			if(hasNumericIDs) {
+				Console.WriteLine("Changing blocks in a numeric ID chunk is currently not supported.");
+				return;
+			}
 			int section = (int)Math.Floor(y / 16f);
 			if(blocks[section] == null) blocks[section] = new ushort[16, 16, 16];
 			blocks[section][x, y % 16, z] = 1; //1 is always the default block in a region generated from scratch
@@ -183,7 +198,9 @@ namespace MCUtils {
 					int indicesPerLong = (int)Math.Floor(64f / indexLength);
 					long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
 					string[] longsBinary = new string[longs.Length];
-					Array.Fill(longsBinary, "");
+					for(int j = 0; j < longsBinary.Length; j++) {
+						longsBinary[j] = "";
+					}
 					int i = 0;
 					for(int y = 0; y < 16; y++) {
 						for(int z = 0; z < 16; z++) {

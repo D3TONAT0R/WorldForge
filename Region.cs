@@ -14,6 +14,8 @@ namespace MCUtils {
 
 		public int[,,] finalBiomeData;
 
+		public World containingWorld;
+
 		public Region() {
 			chunks = new ChunkData[32, 32];
 		}
@@ -73,7 +75,7 @@ namespace MCUtils {
 			int chunkZ = (int)Math.Floor(z / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return false;
 			if(chunks[chunkX, chunkZ] == null) {
-				chunks[chunkX, chunkZ] = new ChunkData("minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, "minecraft:stone");
 			}
 			chunks[chunkX, chunkZ].SetBlockAt(x % 16, y, z % 16, block);
 			return true;
@@ -85,7 +87,7 @@ namespace MCUtils {
 			int chunkZ = (int)Math.Floor(z / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if(chunks[chunkX, chunkZ] == null) {
-				chunks[chunkX, chunkZ] = new ChunkData("minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, "minecraft:stone");
 			}
 			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
 		}
@@ -138,14 +140,15 @@ namespace MCUtils {
 					List<byte> bytes = new List<byte>();
 					chunkData.WriteToBytes(bytes);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
-					stream.Write(Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length)));
+					var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
+					stream.Write(cLength, 0, cLength.Length);
 					stream.WriteByte(2);
-					stream.Write(compressed);
+					stream.Write(compressed, 0, compressed.Length);
 					var paddingMod = stream.Length % 4096;
 					//Pad the data to the next 4096 bytes
 					if(paddingMod > 0) {
 						byte[] padding = new byte[4096 - paddingMod];
-						stream.Write(padding);
+						stream.Write(padding, 0, padding.Length);
 					}
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}
