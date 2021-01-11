@@ -1,9 +1,25 @@
 using Ionic.Zlib;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace MCUtils {
 	public static class RegionImporter {
+
+		public static readonly List<string> terrainSurfaceBlocks = new List<string>(new string[] {
+			"minecraft:stone",
+			"minecraft:grass_block",
+			"minecraft:dirt",
+			"minecraft:sand",
+			"minecraft:gravel",
+			"minecraft:coarse_dirt",
+			"minecraft:sandstone",
+			"minecraft:granite",
+			"minecraft:andesite",
+			"minecraft:diorite",
+			"minecraft:grass_path",
+			"minecraft:clay"
+		});
 
 		static MemoryStream stream;
 
@@ -38,8 +54,8 @@ namespace MCUtils {
 			return r;
 		}
 
-		///<summary>Reads the height data from a region, without loading all chunks.</summary>
-		public static ushort[,] GetHeightmap(string filepath) {
+		///<summary>Reads the height data from a region.</summary>
+		public static ushort[,] GetHeightmap(string filepath, bool terrainOnly) {
 			string fname = Path.GetFileName(filepath);
 			int regionX = int.Parse(fname.Split('.')[1]);
 			int regionZ = int.Parse(fname.Split('.')[2]);
@@ -55,18 +71,31 @@ namespace MCUtils {
 				sizes[i] = Read(i * 4 + 3, 1)[0];
 			}
 			ushort[,] hm = new ushort[512, 512];
-			Region r = new Region();
 			for(int i = 0; i < 1024; i++) {
 				if(locations[i] > 0 && sizes[i] > 0) {
 					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
 					int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 					int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
 					var chunkHM = nbt.GetHeightmapFromChunkNBT();
-					if(chunkHM != null) {
-						for(int x = 0; x < 16; x++) {
-							for(int z = 0; z < 16; z++) {
-								hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = chunkHM[x, z];
+					ChunkData chunk = null;
+					if(terrainOnly) chunk = new ChunkData(null, nbt);
+					for(int x = 0; x < 16; x++) {
+						for(int z = 0; z < 16; z++) {
+							ushort y = 256;
+							if(chunkHM != null) {
+								y = chunkHM[x, z];
+								if(terrainOnly) {
+									while(!terrainSurfaceBlocks.Contains(chunk.GetBlockAt(x, y, z).block)) {
+										y--;
+									}
+								}
+							} else {
+								var block = chunk.GetBlockAt(x, y, z).block;
+								while(block == "minecraft:air" || block == "minecraft:water" || block == "minecraft:cave_air") {
+									y--;
+								}
 							}
+							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
 						}
 					}
 				}
