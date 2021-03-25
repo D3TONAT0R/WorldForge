@@ -55,7 +55,7 @@ namespace MCUtils {
 				if(cont.ContainsKey(key)) {
 					return cont[key];
 				} else {
-					Program.WriteError("Key '" + key + "' does not exist!");
+					MCUtilsConsole.WriteError("Key '" + key + "' does not exist!");
 					return null;
 				}
 			}
@@ -233,8 +233,12 @@ namespace MCUtils {
 			try {
 				if(contents.Contains("Heightmaps")) {
 					//It's the "new" format
-					long[] hmlongs = (long[])contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
-					return GetHeightmap(hmlongs);
+					if(contents.GetAsCompound("Heightmaps").Contains("OCEAN_FLOOR")) {
+						long[] hmlongs = (long[])contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
+						return GetHeightmap(hmlongs);
+					} else {
+						return null;
+					}
 				} else {
 					//It's the old, simple format
 					int[] hmints = (int[])contents.Get("HeightMap");
@@ -254,6 +258,7 @@ namespace MCUtils {
 
 		///<summary>Reads the heightmap stored in the given long array.</summary>
 		public ushort[,] GetHeightmap(long[] hmlongs) {
+			if(hmlongs == null) return null;
 			ushort[,] hm = new ushort[16, 16];
 			try {
 				string hmbits = "";

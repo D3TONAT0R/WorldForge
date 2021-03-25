@@ -9,41 +9,41 @@ namespace MCUtils {
 		public Region mergedRegion;
 
 		public void Run() {
-			Program.WriteLine("Enter path to region file 1:");
+			MCUtilsConsole.WriteLine("Enter path to region file 1:");
 			string r1 = GetFilePath(false);
 			if(r1 == null) return;
-			Program.WriteLine("Enter path to region file 2:");
+			MCUtilsConsole.WriteLine("Enter path to region file 2:");
 			string r2 = GetFilePath(false);
 			if(r2 == null) return;
-			Program.WriteLine("Enter path to map image:");
+			MCUtilsConsole.WriteLine("Enter path to map image:");
 			string map = GetFilePath(false);
 			if(map == null) return;
-			Program.WriteLine("Enter path to output file:");
+			MCUtilsConsole.WriteLine("Enter path to output file:");
 			string savepath = GetFilePath(true);
-			Program.WriteLine("Starting merge...");
+			MCUtilsConsole.WriteLine("Starting merge...");
 			Region region1;
 			Region region2;
 			try {
 				region1 = RegionImporter.OpenRegionFile(r1);
 				region2 = RegionImporter.OpenRegionFile(r2);
 			} catch(Exception e) {
-				Program.WriteError("Failed to open region file(s):");
-				Program.WriteError(e.ToString());
+				MCUtilsConsole.WriteError("Failed to open region file(s):");
+				MCUtilsConsole.WriteError(e.ToString());
 				return;
 			}
 			Bitmap mask = new Bitmap(map);
 			bool perBlockMask = mask.Width == 512 && mask.Height == 512;
 			bool perChunkMask = mask.Width == 32 && mask.Height == 32;
 			if(!perBlockMask && !perChunkMask) {
-				Program.WriteError("The mask image was not the correct size. It must be either 512x512 or 32x32!");
+				MCUtilsConsole.WriteError("The mask image was not the correct size. It must be either 512x512 or 32x32!");
 				return;
 			}
 			MergeRegions(region1, region2, mask);
-			Program.WriteLine("Writing file...");
+			MCUtilsConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
 			mergedRegion.WriteRegionToStream(stream, 0, 0);
 			stream.Close();
-			Program.WriteLine("Done");
+			MCUtilsConsole.WriteLine("Done");
 		}
 
 		private void MergeRegions(Region r1, Region r2, Bitmap mask) {
@@ -140,19 +140,19 @@ namespace MCUtils {
 		private string GetFilePath(bool isSaveLocation) {
 			bool exit = false;
 			while(!exit) {
-				string file = Program.GetInput();
+				string file = MCUtilsConsole.GetInput();
 				if(file.StartsWith("exit")) break;
 				if(!isSaveLocation) {
 					if(File.Exists(file)) {
 						return file;
 					} else {
-						Program.WriteWarning("Path is invalid. Try again.");
+						MCUtilsConsole.WriteWarning("Path is invalid. Try again.");
 					}
 				} else {
 					if(Directory.Exists(Path.GetDirectoryName(file))) {
 						return file;
 					} else {
-						Program.WriteWarning("Directory does not exist. Try again.");
+						MCUtilsConsole.WriteWarning("Directory does not exist. Try again.");
 					}
 				}
 			}

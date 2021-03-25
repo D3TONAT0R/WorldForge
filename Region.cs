@@ -152,7 +152,7 @@ namespace MCUtils {
 					}
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}
-				Program.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
+				MCUtilsConsole.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
 			}
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++) {
@@ -164,7 +164,7 @@ namespace MCUtils {
 			}
 			DateTime time2 = System.DateTime.Now;
 			TimeSpan len = time2.Subtract(time);
-			Program.WriteLine("Generating MCA took " + Math.Round(len.TotalSeconds * 100f) / 100f + "s");
+			MCUtilsConsole.WriteLine("Generating MCA took " + Math.Round(len.TotalSeconds * 100f) / 100f + "s");
 		}
 
 		private NBTContent MakeCompoundForChunk(ChunkData chunk, int chunkX, int chunkZ) {

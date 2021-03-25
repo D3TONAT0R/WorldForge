@@ -2,11 +2,11 @@
 using System.IO;
 
 namespace MCUtils {
-	class Program {
+	public class MCUtilsConsole {
 
 		static string progressString;
 
-		static void Main(string[] args) {
+		public static void Main(string[] args) {
 			Console.ResetColor();
 			Console.Clear();
 			WriteLine("--------------");

@@ -26,17 +26,17 @@ namespace MCUtils {
 
 		public NBTContent levelDat;
 
-		public World(int worldSizeX, int worldSizeZ) : this(worldSizeZ, worldSizeZ, null) {
+		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ) : this(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ, null) {
 
 		}
 
-		public World(int worldSizeX, int worldSizeZ, string levelDatPath) {
+		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath) {
 			if(!string.IsNullOrEmpty(levelDatPath)) {
 				levelDat = new NBTContent(File.ReadAllBytes(levelDatPath), false);
 			}
 			regions = new Dictionary<RegionLocation, Region>();
-			for(int x = 0; x * 512 < worldSizeX; x++) {
-				for(int z = 0; z * 512 < worldSizeZ; z++) {
+			for(int x = regionLowerX; x <= regionUpperX; x++) {
+				for(int z = regionLowerZ; z <= regionUpperZ; z++) {
 					var reg = new Region();
 					reg.containingWorld = this;
 					regions.Add(new RegionLocation(x, z), reg);
@@ -120,6 +120,8 @@ namespace MCUtils {
 			var r = GetRegionAt(x, z, allowNewRegions);
 			if(r != null) {
 				r.SetDefaultBlock(x % 512, y, z % 512);
+			} else {
+				Console.WriteLine("!");
 			}
 		}
 
@@ -132,7 +134,7 @@ namespace MCUtils {
 		}
 
 		public void WriteRegionFiles(FileStream stream, int regionPosX, int regionPosZ) {
-			regions[new RegionLocation(0, 0)].WriteRegionToStream(stream, regionPosX + 0, regionPosZ + 0);
+			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream, regionPosX + 0, regionPosZ + 0);
 		}
 	}
 }

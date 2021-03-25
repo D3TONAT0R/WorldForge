@@ -71,6 +71,8 @@ namespace MCUtils {
 				sizes[i] = Read(i * 4 + 3, 1)[0];
 			}
 			ushort[,] hm = new ushort[512, 512];
+			var l = new List<uint>(locations);
+			l.Sort();
 			for(int i = 0; i < 1024; i++) {
 				if(locations[i] > 0 && sizes[i] > 0) {
 					var nbt = new NBTContent(GetChunkData(locations[i], sizes[i]), true);
@@ -81,17 +83,17 @@ namespace MCUtils {
 					if(terrainOnly) chunk = new ChunkData(null, nbt);
 					for(int x = 0; x < 16; x++) {
 						for(int z = 0; z < 16; z++) {
-							ushort y = 256;
+							ushort y = 255;
 							if(chunkHM != null) {
 								y = chunkHM[x, z];
 								if(terrainOnly) {
-									while(!terrainSurfaceBlocks.Contains(chunk.GetBlockAt(x, y, z).block)) {
+									while(!terrainSurfaceBlocks.Contains(chunk.GetBlockAt(x, y, z).block) && y > 0) {
 										y--;
 									}
 								}
 							} else {
 								var block = chunk.GetBlockAt(x, y, z).block;
-								while(block == "minecraft:air" || block == "minecraft:water" || block == "minecraft:cave_air") {
+								while(y > 0 && (block == "minecraft:air" || block == "minecraft:water" || block == "minecraft:cave_air")) {
 									y--;
 								}
 							}

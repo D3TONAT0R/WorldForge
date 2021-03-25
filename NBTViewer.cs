@@ -67,7 +67,7 @@ namespace MCUtils {
 				moreItems = 0;
 				Draw("", "", content.contents, 0, false, false);
 				if(moreItems > 0) {
-					Program.WriteLine("[" + moreItems + " more]");
+					MCUtilsConsole.WriteLine("[" + moreItems + " more]");
 				}
 				//Console.Write(buffer);
 				if(cursorBufferLoc > 1) {
@@ -128,14 +128,14 @@ namespace MCUtils {
 				//Console.Write(buffer);
 				//buffer = "";
 				cursorBufferLoc = Console.CursorTop;
-				Program.WriteLine(s, ConsoleColor.White, state.GetColor(true));
+				MCUtilsConsole.WriteLine(s, ConsoleColor.White, state.GetColor(true));
 			} else {
 				if(overflow >= 0) overflow++;
 				if(overflow > 20) {
 					moreItems++;
 					return;
 				}
-				Program.WriteLine(s, state.GetColor(false));
+				MCUtilsConsole.WriteLine(s, state.GetColor(false));
 				//buffer += s + "\n";
 			}
 			if(obj is CompoundContainer) {

@@ -7,16 +7,16 @@ namespace MCUtils {
 		Region region;
 
 		public void Run() {
-			Program.WriteLine("Enter path to output file:");
+			MCUtilsConsole.WriteLine("Enter path to output file:");
 			string savepath = GetFilePath(true);
-			Program.WriteLine("Starting...");
+			MCUtilsConsole.WriteLine("Starting...");
 			region = new Region();
 			FillWithRandomBlocks();
-			Program.WriteLine("Writing file...");
+			MCUtilsConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
 			region.WriteRegionToStream(stream, 0, 0);
 			stream.Close();
-			Program.WriteLine("Done");
+			MCUtilsConsole.WriteLine("Done");
 		}
 
 		private void FillWithRandomBlocks() {
@@ -32,19 +32,19 @@ namespace MCUtils {
 		private string GetFilePath(bool isSaveLocation) {
 			bool exit = false;
 			while(!exit) {
-				string file = Program.GetInput();
+				string file = MCUtilsConsole.GetInput();
 				if(file.StartsWith("exit")) break;
 				if(!isSaveLocation) {
 					if(File.Exists(file)) {
 						return file;
 					} else {
-						Program.WriteWarning("Path is invalid. Try again.");
+						MCUtilsConsole.WriteWarning("Path is invalid. Try again.");
 					}
 				} else {
 					if(Directory.Exists(Path.GetDirectoryName(file))) {
 						return file;
 					} else {
-						Program.WriteWarning("Directory does not exist. Try again.");
+						MCUtilsConsole.WriteWarning("Directory does not exist. Try again.");
 					}
 				}
 			}
