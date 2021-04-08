@@ -37,7 +37,7 @@ namespace MCUtils {
 			regions = new Dictionary<RegionLocation, Region>();
 			for(int x = regionLowerX; x <= regionUpperX; x++) {
 				for(int z = regionLowerZ; z <= regionUpperZ; z++) {
-					var reg = new Region();
+					var reg = new Region(x, z);
 					reg.containingWorld = this;
 					regions.Add(new RegionLocation(x, z), reg);
 				}
@@ -87,7 +87,7 @@ namespace MCUtils {
 			var rloc = new RegionLocation(x.RegionCoord(), z.RegionCoord());
 			if(!IsWithinBoundaries(x, 0, z)) {
 				if(allowNew) {
-					var r = new Region();
+					var r = new Region(rloc);
 					regions.Add(rloc, r);
 					return r;
 				} else {
@@ -134,7 +134,7 @@ namespace MCUtils {
 		}
 
 		public void WriteRegionFiles(FileStream stream, int regionPosX, int regionPosZ) {
-			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream, regionPosX + 0, regionPosZ + 0);
+			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream);
 		}
 	}
 }

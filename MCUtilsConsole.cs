@@ -27,6 +27,7 @@ namespace MCUtils {
 				WriteLine("- mergeregions       Merges region files based on an input map");
 				WriteLine("- randomblocks       Makes a region out of random blocks");
 				WriteLine("- view               Shows the contents of an NBT file or region");
+				WriteLine("- readchunk          Loads chunk data at a specific byte offset in a region file");
 				input = GetInput();
 				if(input.StartsWith("mergeregions")) {
 					var m = new RegionMerger();
@@ -38,6 +39,12 @@ namespace MCUtils {
 				}
 				if(input.StartsWith("view ")) {
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
+					v.Run();
+				}
+				if(input.StartsWith("readchunk ")) {
+					WriteLine("enter offset: ");
+					uint offset = uint.Parse(Console.ReadLine());
+					var v = new NBTViewer(RegionImporter.LoadChunkDataFromOffset(input.Substring(10).Replace("\"", ""), offset));
 					v.Run();
 				}
 			}

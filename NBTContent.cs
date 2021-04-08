@@ -72,6 +72,12 @@ namespace MCUtils {
 				return (ListContainer)Get(key);
 			}
 
+			public static bool AreEqual(CompoundContainer a, CompoundContainer b) {
+				if(a == null && b == null) return true;
+				if((a == null) != (b == null)) return false;
+				return a.HasSameContent(b);
+			}
+
 			public bool HasSameContent(CompoundContainer other) {
 				if(other.cont.Keys.Count != cont.Keys.Count) return false;
 				foreach(string k in cont.Keys) {
@@ -224,7 +230,7 @@ namespace MCUtils {
 				level.Add(k, contents.Get(k));
 			}
 			root.Add("Level", level);
-			root.Add("DataVersion", 2504);
+			root.Add("DataVersion", 2566);
 			Write(bytes, "", root);
 		}
 

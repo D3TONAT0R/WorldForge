@@ -6,29 +6,54 @@ namespace MCUtils {
 	public class ChunkData {
 
 		public class BlockState {
-			public string block;
+
+			public readonly string ID;
+			public readonly string customNamespace = null;
+			public readonly string shortID;
 			public CompoundContainer properties = new CompoundContainer();
 
 			public BlockState(string name) {
-				if(name.StartsWith("minecraft:")) {
-					block = name;
-				} else {
-					block = "minecraft:" + name;
+				if(!name.Contains(":")) {
+					name = "minecraft:" + name;
 				}
+				ID = name;
+				var split = ID.Split(':');
+				customNamespace = split[0] == "minecraft" ? null : split[0];
+				name = split[1];
+				shortID = name;
 				AddDefaultBlockProperties();
 			}
 
 			void AddDefaultBlockProperties() {
-				switch(block) {
-					case "minecraft:oak_leaves":
-					case "minecraft:spruce_leaves":
-					case "minecraft:birch_leaves":
-					case "minecraft:jungle_leaves":
-					case "minecraft:acacia_leaves":
-					case "minecraft:dark_oak_leaves":
+				switch(shortID) {
+					case "oak_leaves":
+					case "spruce_leaves":
+					case "birch_leaves":
+					case "jungle_leaves":
+					case "acacia_leaves":
+					case "dark_oak_leaves":
 						properties.Add("distance", 1);
 						break;
 				}
+			}
+
+			public bool CompareMultiple(params string[] ids) {
+				bool b = false;
+				for(int i = 0; i < ids.Length; i++) {
+					b |= Compare(ids[i]);
+				}
+				return b;
+			}
+
+			public bool Compare(string block) {
+				return block == ID;
+			}
+
+			public bool Compare(BlockState state, bool compareProperties) {
+				if(compareProperties) {
+					if(!CompoundContainer.AreEqual(properties, state.properties)) return false;
+				}
+				return state.ID == ID;
 			}
 		}
 
@@ -45,7 +70,7 @@ namespace MCUtils {
 			containingRegion = region;
 			for(int i = 0; i < 16; i++) {
 				palettes[i] = new List<BlockState>();
-				palettes[i].Add(new BlockState("air"));
+				palettes[i].Add(new BlockState("minecraft:air"));
 				palettes[i].Add(new BlockState(defaultBlock));
 			}
 			for(int x = 0; x < 16; x++) {
@@ -69,7 +94,7 @@ namespace MCUtils {
 
 		public ushort GetPaletteIndex(BlockState state, int palette) {
 			for(short i = 0; i < palettes[palette].Count; i++) {
-				if(palettes[palette][i].block == state.block && palettes[palette][i].properties.HasSameContent(state.properties)) return (ushort)i;
+				if(palettes[palette][i].ID == state.ID && palettes[palette][i].properties.HasSameContent(state.properties)) return (ushort)i;
 			}
 			return 9999;
 		}
@@ -181,7 +206,7 @@ namespace MCUtils {
 					ListContainer palette = new ListContainer(NBTTag.TAG_Compound);
 					foreach(var bs in palettes[secY]) {
 						CompoundContainer paletteBlock = new CompoundContainer();
-						paletteBlock.Add("Name", bs.block);
+						paletteBlock.Add("Name", bs.ID);
 						if(bs.properties != null) {
 							CompoundContainer properties = new CompoundContainer();
 							foreach(var prop in bs.properties.cont.Keys) {
@@ -275,7 +300,7 @@ namespace MCUtils {
 					for(ushort y = (ushort)(highestSection * 16 + 15); y > 0; y--) {
 						int sec = (int)Math.Floor(y / 16f);
 						if(blocks[sec] == null) continue;
-						if(!IsTransparentBlock(palettes[sec][blocks[sec][x, y % 16, z]].block)) {
+						if(!IsTransparentBlock(palettes[sec][blocks[sec][x, y % 16, z]].ID)) {
 							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
 							break;
 						}
@@ -341,7 +366,7 @@ namespace MCUtils {
 			foreach(var j in arr) {
 				allSame &= i == j;
 			}
-			if(allSame && palettes[secY][i].block == "minecraft:air") return true;
+			if(allSame && palettes[secY][i].ID == "minecraft:air") return true;
 			return false;
 		}
 

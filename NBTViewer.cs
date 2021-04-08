@@ -47,8 +47,20 @@ namespace MCUtils {
 		int moreItems = 0;
 
 		public NBTViewer(string path) {
-			content = new NBTContent(GZipStream.UncompressBuffer(File.ReadAllBytes(path)), false);
 			filename = Path.GetFileName(path);
+			if(path.EndsWith(".mca")) {
+				content = new NBTContent();
+				Region r = RegionImporter.OpenRegionFile(path);
+				for(int z = 0; z < 32; z++) {
+					for(int x = 0; x < 32; x++) {
+						if(r.chunks[x, z] != null) {
+							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceNBT.contents);
+						}
+					}
+				}
+			} else {
+				content = new NBTContent(GZipStream.UncompressBuffer(File.ReadAllBytes(path)), false);
+			}
 			//filename = "root";
 			//var root = new CompoundContainer();
 			//foreach(var k in content.contents.GetContentKeys("")) {
@@ -56,6 +68,10 @@ namespace MCUtils {
 			//}
 			//content.contents.cont.Clear();
 			//content.contents.Add(filename, root);
+		}
+
+		public NBTViewer(NBTContent data) {
+			content = data;
 		}
 
 		public void Run() {

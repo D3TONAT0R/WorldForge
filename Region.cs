@@ -9,15 +9,26 @@ using static MCUtils.NBTContent;
 namespace MCUtils {
 	public class Region {
 
+		public int regionPosX;
+		public int regionPosZ;
+
 		public byte[,] heightmap;
 		public ChunkData[,] chunks;
+
+		public List<ChunkData> orphanChunks;
 
 		public int[,,] finalBiomeData;
 
 		public World containingWorld;
 
-		public Region() {
+		public Region(int x, int z) {
+			regionPosX = x;
+			regionPosZ = z;
 			chunks = new ChunkData[32, 32];
+		}
+
+		public Region(World.RegionLocation rloc) : this(rloc.x, rloc.z) {
+
 		}
 
 		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
@@ -46,7 +57,7 @@ namespace MCUtils {
 			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return null;
 			if(chunks[chunkX, chunkZ] != null) {
 				var b = chunks[chunkX, chunkZ].GetBlockAt(x % 16, y, z % 16);
-				return b != null ? b.block : "minecraft:air";
+				return b != null ? b.ID : "minecraft:air";
 			} else {
 				return null;
 			}
@@ -125,7 +136,7 @@ namespace MCUtils {
 		}
 
 		///<summary>Generates a full .mca file stream for use in Minecraft.</summary>
-		public void WriteRegionToStream(FileStream stream, int regionX, int regionZ) {
+		public void WriteRegionToStream(FileStream stream) {
 			DateTime time = System.DateTime.Now;
 			int[] locations = new int[1024];
 			byte[] sizes = new byte[1024];
@@ -136,7 +147,7 @@ namespace MCUtils {
 				for(int x = 0; x < 32; x++) {
 					int i = z * 32 + x;
 					locations[i] = (int)(stream.Position / 4096);
-					var chunkData = MakeCompoundForChunk(chunks[x, z], 32 * regionX + x, 32 * regionZ + z);
+					var chunkData = MakeCompoundForChunk(chunks[x, z], 32 * regionPosX + x, 32 * regionPosZ + z);
 					List<byte> bytes = new List<byte>();
 					chunkData.WriteToBytes(bytes);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
@@ -169,7 +180,7 @@ namespace MCUtils {
 
 		private NBTContent MakeCompoundForChunk(ChunkData chunk, int chunkX, int chunkZ) {
 			var nbt = new NBTContent();
-			nbt.dataVersion = 2504; //1.16 version ID
+			nbt.dataVersion = 2566; //1.16 version ID
 			nbt.contents.Add("xPos", chunkX);
 			nbt.contents.Add("zPos", chunkZ);
 			nbt.contents.Add("Status", "light");
