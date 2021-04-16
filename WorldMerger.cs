@@ -37,10 +37,10 @@ namespace MCUtils {
 
 		public void Run() {
 			MCUtilsConsole.WriteLine("Enter path to world 1's region files:");
-			world1Path = GetFilePath(false);
+			world1Path = GetFilePath(true);
 			if(world1Path == null) return;
 			MCUtilsConsole.WriteLine("Enter path to world 2's region files:");
-			world2Path = GetFilePath(false);
+			world2Path = GetFilePath(true);
 			if(world2Path == null) return;
 
 			MCUtilsConsole.WriteLine("Enter the lower coordinate for the merge (inclusive):");
@@ -117,12 +117,12 @@ namespace MCUtils {
 			return new RegionLocation(int.Parse(split[0]), int.Parse(split[1]));
 		}
 
-		private string GetFilePath(bool isSaveLocation) {
+		private string GetFilePath(bool isDirectory) {
 			bool exit = false;
 			while(!exit) {
 				string file = MCUtilsConsole.GetInput().Replace("\"", "");
 				if(file.StartsWith("exit")) break;
-				if(!isSaveLocation) {
+				if(!isDirectory) {
 					if(File.Exists(file)) {
 						return file;
 					} else {

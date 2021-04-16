@@ -5,7 +5,118 @@ using static MCUtils.NBTContent;
 namespace MCUtils {
 	public class ChunkData {
 
+		public class ChunkSection {
+			public ushort[,,] blocks = new ushort[16,16,16];
+			public List<BlockState> palette;
+
+			public ChunkSection(string defaultBlock) {
+				palette = new List<BlockState>();
+				if(defaultBlock != null) {
+					palette.Add(new BlockState("minecraft:air")); //Index 0
+					palette.Add(new BlockState(defaultBlock)); //Index 1
+				}
+			}
+
+			public void SetBlockAt(int x, int y, int z, BlockState block) {
+				ushort? index = GetPaletteIndex(block);
+				if(index == null) {
+					index = AddBlockToPalette(block);
+				}
+				blocks[x, y, z] = (ushort)index;
+			}
+
+			public void SetBlockAt(int x, int y, int z, ushort paletteIndex) {
+				blocks[x, y, z] = paletteIndex;
+			}
+
+			public BlockState GetBlockAt(int x, int y, int z) {
+				return palette[blocks[x, y, z]];
+			}
+
+			public ushort? GetPaletteIndex(BlockState state) {
+				for(short i = 0; i < palette.Count; i++) {
+					if(palette[i].ID == state.ID && palette[i].properties.HasSameContent(state.properties)) return (ushort)i;
+				}
+				return null;
+			}
+
+			public ushort AddBlockToPalette(BlockState block) {
+				palette.Add(block);
+				return (ushort)(palette.Count - 1);
+			}
+
+			private bool IsEmpty() {
+				if(blocks == null) return true;
+				bool allSame = true;
+				var i = blocks[0, 0, 0];
+				if(!palette[i].Compare(BlockState.air, false)) return false;
+				foreach(var j in blocks) {
+					allSame &= i == j;
+				}
+				return allSame;
+			}
+
+			public CompoundContainer CreateCompound(sbyte secY, bool use_1_16_Format) {
+				var comp = new CompoundContainer();
+				comp.Add("Y", (byte)secY);
+				ListContainer paletteContainer = new ListContainer(NBTTag.TAG_Compound);
+				foreach(var block in palette) {
+					CompoundContainer paletteBlock = new CompoundContainer();
+					paletteBlock.Add("Name", block.ID);
+					if(block.properties != null) {
+						CompoundContainer properties = new CompoundContainer();
+						foreach(var prop in block.properties.cont.Keys) {
+							properties.Add(prop, block.properties.Get(prop).ToString());
+						}
+						paletteBlock.Add("Properties", properties);
+					}
+					paletteContainer.Add("", paletteBlock);
+				}
+				comp.Add("Palette", paletteContainer);
+				//Encode block indices to bits and longs, oof
+				int indexLength = Math.Max(4, (int)Math.Log(palette.Count - 1, 2.0) + 1);
+				//How many block indices fit inside a long?
+				int indicesPerLong = (int)Math.Floor(64f / indexLength);
+				long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
+				string[] longsBinary = new string[longs.Length];
+				for(int j = 0; j < longsBinary.Length; j++) {
+					longsBinary[j] = "";
+				}
+				int i = 0;
+				for(int y = 0; y < 16; y++) {
+					for(int z = 0; z < 16; z++) {
+						for(int x = 0; x < 16; x++) {
+							string bin = NumToBits(blocks[x, y, z], indexLength);
+							bin = Converter.ReverseString(bin);
+							if(use_1_16_Format) {
+								if(longsBinary[i].Length + indexLength > 64) {
+									//The full value doesn't fit, start on the next long
+									i++;
+									longsBinary[i] += bin;
+								} else {
+									for(int j = 0; j < indexLength; j++) {
+										if(longsBinary[i].Length >= 64) i++;
+										longsBinary[i] += bin[j];
+									}
+								}
+							}
+						}
+					}
+				}
+				for(int j = 0; j < longs.Length; j++) {
+					string s = longsBinary[j];
+					s = s.PadRight(64, '0');
+					s = Converter.ReverseString(s);
+					longs[j] = Convert.ToInt64(s, 2);
+				}
+				comp.Add("BlockStates", longs);
+				return comp;
+			}
+		}
+
 		public class BlockState {
+
+			public static readonly BlockState air = new BlockState("minecraft:air");
 
 			public readonly string ID;
 			public readonly string customNamespace = null;
@@ -57,10 +168,13 @@ namespace MCUtils {
 			}
 		}
 
+		public string defaultBlock = "minecraft:stone";
+		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
 		public bool hasNumericIDs;
-		public ushort[][,,] blocks = new ushort[16][,,];
-		public List<BlockState>[] palettes = new List<BlockState>[16];
+		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
+		//public ushort[][,,] blocks = new ushort[16][,,];
+		//public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
 		public int[,,] finalBiomeArray;
 
@@ -68,11 +182,7 @@ namespace MCUtils {
 
 		public ChunkData(Region region, string defaultBlock) {
 			containingRegion = region;
-			for(int i = 0; i < 16; i++) {
-				palettes[i] = new List<BlockState>();
-				palettes[i].Add(new BlockState("minecraft:air"));
-				palettes[i].Add(new BlockState(defaultBlock));
-			}
+			this.defaultBlock = defaultBlock;
 			for(int x = 0; x < 16; x++) {
 				for(int y = 0; y < 16; y++) {
 					biomes[x, y] = 1; //Defaults to plains biome
@@ -82,9 +192,9 @@ namespace MCUtils {
 
 		public ChunkData(Region region, NBTContent chunk) {
 			containingRegion = region;
-			for(int i = 0; i < 16; i++) {
-				palettes[i] = new List<BlockState>();
-			}
+			//for(int i = 0; i < 16; i++) {
+			//	palettes[i] = new List<BlockState>();
+			//}
 			ReadFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
 			if(chunk.dataVersion < 1400) {
 				hasNumericIDs = true;
@@ -92,32 +202,26 @@ namespace MCUtils {
 			sourceNBT = chunk;
 		}
 
-		public ushort GetPaletteIndex(BlockState state, int palette) {
-			for(short i = 0; i < palettes[palette].Count; i++) {
-				if(palettes[palette][i].ID == state.ID && palettes[palette][i].properties.HasSameContent(state.properties)) return (ushort)i;
-			}
-			return 9999;
-		}
-
-		public ushort AddBlockToPalette(int section, BlockState block) {
-			palettes[section].Add(block);
-			return (ushort)(palettes[section].Count - 1);
-		}
-
 		///<summary>Sets the block at the given chunk coordinate</summary>
 		public void SetBlockAt(int x, int y, int z, BlockState block) {
-			if(y < 0 || y > 255) return;
+			if(!unlimitedHeight && (y < 0 || y > 255)) return;
 			if(hasNumericIDs) {
 				Console.WriteLine("Changing blocks in a numeric ID chunk is currently not supported.");
 				return;
 			}
-			int section = (int)Math.Floor(y / 16f);
-			ushort index = GetPaletteIndex(block, section);
-			if(index == 9999) {
-				index = AddBlockToPalette(section, block);
+			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, block);
+		}
+
+		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew) {
+			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
+			if(!sections.ContainsKey(sectionY)) {
+				if(allowNew) {
+					sections.Add(sectionY, new ChunkSection(defaultBlock));
+				} else {
+					return null;
+				}
 			}
-			if(blocks[section] == null) blocks[section] = new ushort[16, 16, 16];
-			blocks[section][x, y % 16, z] = index;
+			return sections[sectionY];
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
@@ -127,15 +231,14 @@ namespace MCUtils {
 				return;
 			}
 			int section = (int)Math.Floor(y / 16f);
-			if(blocks[section] == null) blocks[section] = new ushort[16, 16, 16];
-			blocks[section][x, y % 16, z] = 1; //1 is always the default block in a region generated from scratch
+			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, 1); //1 is always the default block in a region generated from scratch
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
 		public BlockState GetBlockAt(int x, int y, int z) {
-			int section = (int)Math.Floor(y / 16f);
-			if(blocks[section] == null) return new BlockState("minecraft:air");
-			return palettes[section][blocks[section][x, y % 16, z]];
+			var sec = GetChunkSectionForYCoord(y, false);
+			if(sec == null) return BlockState.air;
+			return sec.GetBlockAt(x,y%16,z);
 		}
 
 		///<summary>Sets the biome at the given chunk coordinate</summary>
@@ -146,18 +249,24 @@ namespace MCUtils {
 		///<summary>Reads all blocks in the given chunk</summary>
 		public void ReadFromNBT(ListContainer sectionsList, bool isVersion_prior_1_16) {
 			foreach(var o in sectionsList.cont) {
+				var section = new ChunkSection(null);
+
 				var compound = (CompoundContainer)o;
-				if(!compound.Contains("Y") || (byte)compound.Get("Y") > 7 || !compound.Contains("Palette")) continue;
-				byte secY = (byte)compound.Get("Y");
-				var palette = palettes[secY];
+				if(!compound.Contains("Y") || !compound.Contains("Palette")) continue;
+				sbyte secY;
+				unchecked {
+					secY = Convert.ToSByte(compound.Get("Y"));
+				}
+				section.palette.Clear();
 				foreach(var cont in compound.GetAsList("Palette").cont) {
 					CompoundContainer block = (CompoundContainer)cont;
 					BlockState bs = new BlockState((string)block.Get("Name"));
 					if(block.Contains("Properties")) bs.properties = block.GetAsCompound("Properties");
-					palette.Add(bs);
+					section.palette.Add(bs);
 				}
+				
 				//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
-				int indexLength = Math.Max(4, (int)Math.Log(palette.Count - 1, 2.0) + 1);
+				int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
 				long[] longs = (long[])compound.Get("BlockStates");
 				string bits = "";
 				for(int i = 0; i < longs.Length; i++) {
@@ -172,14 +281,15 @@ namespace MCUtils {
 						bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
 					}
 				}
-				blocks[secY] = new ushort[16, 16, 16];
+				//TODO: needs testing
 				for(int y = 0; y < 16; y++) {
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
-							blocks[secY][x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
+							section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
 						}
 					}
 				}
+				sections.Add(secY, section);
 			}
 		}
 
@@ -197,65 +307,14 @@ namespace MCUtils {
 		///<summary>Generates the full NBT data of a chunk</summary>
 		public void WriteToNBT(CompoundContainer level, bool use_1_16_Format) {
 			ListContainer sectionsList = level.GetAsList("Sections");
-			for(byte secY = 0; secY < 16; secY++) {
-				if(IsSectionEmpty(secY)) continue;
-				var comp = GetSection(sectionsList, secY);
+			foreach(sbyte secY in sections.Keys) {
+				var section = sections[secY];
+				//if(IsSectionEmpty(secY)) continue;
+				var comp = GetSectionCompound(sectionsList, secY);
 				if(comp == null) {
-					comp = new CompoundContainer();
-					comp.Add("Y", secY);
-					ListContainer palette = new ListContainer(NBTTag.TAG_Compound);
-					foreach(var bs in palettes[secY]) {
-						CompoundContainer paletteBlock = new CompoundContainer();
-						paletteBlock.Add("Name", bs.ID);
-						if(bs.properties != null) {
-							CompoundContainer properties = new CompoundContainer();
-							foreach(var prop in bs.properties.cont.Keys) {
-								properties.Add(prop, bs.properties.Get(prop).ToString());
-							}
-							paletteBlock.Add("Properties", properties);
-						}
-						palette.Add("", paletteBlock);
-					}
-					comp.Add("Palette", palette);
-					//Encode block indices to bits and longs, oof
-					int indexLength = Math.Max(4, (int)Math.Log(palettes[secY].Count - 1, 2.0) + 1);
-					//How many block indices fit inside a long?
-					int indicesPerLong = (int)Math.Floor(64f / indexLength);
-					long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
-					string[] longsBinary = new string[longs.Length];
-					for(int j = 0; j < longsBinary.Length; j++) {
-						longsBinary[j] = "";
-					}
-					int i = 0;
-					for(int y = 0; y < 16; y++) {
-						for(int z = 0; z < 16; z++) {
-							for(int x = 0; x < 16; x++) {
-								string bin = NumToBits(blocks[secY][x, y, z], indexLength);
-								bin = Converter.ReverseString(bin);
-								if(use_1_16_Format) {
-									if(longsBinary[i].Length + indexLength > 64) {
-										//The full value doesn't fit, start on the next long
-										i++;
-										longsBinary[i] += bin;
-									} else {
-										for(int j = 0; j < indexLength; j++) {
-											if(longsBinary[i].Length >= 64) i++;
-											longsBinary[i] += bin[j];
-										}
-									}
-								}
-							}
-						}
-					}
-					for(int j = 0; j < longs.Length; j++) {
-						string s = longsBinary[j];
-						s = s.PadRight(64, '0');
-						s = Converter.ReverseString(s);
-						longs[j] = Convert.ToInt64(s, 2);
-					}
-					comp.Add("BlockStates", longs);
-					sectionsList.Add("", comp);
+					comp = section.CreateCompound(secY, use_1_16_Format);
 				}
+				sectionsList.Add(null, comp);
 			}
 			//Make the biomes
 			List<int> biomes = new List<int>();
@@ -271,13 +330,13 @@ namespace MCUtils {
 		}
 
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
-		public void WriteToHeightmap(ushort[,] hm, int x, int z) {
+		public void WriteToHeightmap(short[,] hm, int x, int z) {
 			if(!WriteHeightmapFromNBT(hm, x, z)) {
 				WriteHeightmapFromBlocks(hm, x, z);
 			}
 		}
 
-		private bool WriteHeightmapFromNBT(ushort[,] hm, int localChunkX, int localChunkZ) {
+		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ) {
 			if(sourceNBT == null) return false;
 			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT();
 			if(chunkHM == null) return false;
@@ -289,18 +348,17 @@ namespace MCUtils {
 			return true;
 		}
 
-		private void WriteHeightmapFromBlocks(ushort[,] hm, int localChunkX, int localChunkZ) {
-			int highestSection = 15;
-			while(highestSection > 0 && blocks[highestSection] == null) {
+		private void WriteHeightmapFromBlocks(short[,] hm, int localChunkX, int localChunkZ) {
+			sbyte highestSection = 127;
+			while(highestSection > -127 && !sections.ContainsKey(highestSection)) {
 				highestSection--;
 			}
-			if(highestSection <= 0) return;
+			if(highestSection == -127) return;
+			var sec = sections[highestSection];
 			for(int x = 0; x < 16; x++) {
 				for(int z = 0; z < 16; z++) {
-					for(ushort y = (ushort)(highestSection * 16 + 15); y > 0; y--) {
-						int sec = (int)Math.Floor(y / 16f);
-						if(blocks[sec] == null) continue;
-						if(!IsTransparentBlock(palettes[sec][blocks[sec][x, y % 16, z]].ID)) {
+					for(short y = (short)(highestSection * 16 + 15); y > 0; y--) {
+						if(!IsTransparentBlock(sec.GetBlockAt(x, y % 16, z).ID)) {
 							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
 							break;
 						}
@@ -358,24 +416,12 @@ namespace MCUtils {
 			return false;
 		}
 
-		private bool IsSectionEmpty(int secY) {
-			var arr = blocks[secY];
-			if(arr == null) return true;
-			bool allSame = true;
-			var i = arr[0, 0, 0];
-			foreach(var j in arr) {
-				allSame &= i == j;
-			}
-			if(allSame && palettes[secY][i].ID == "minecraft:air") return true;
-			return false;
-		}
-
 		private long BitsToLong(string bits) {
 			bits = bits.PadLeft(64, '0');
 			return Convert.ToInt64(bits, 2);
 		}
 
-		private string NumToBits(ushort num, int length) {
+		private static string NumToBits(ushort num, int length) {
 			string s = Convert.ToString(num, 2);
 			if(s.Length > length) {
 				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
@@ -383,10 +429,11 @@ namespace MCUtils {
 			return s.PadLeft(length, '0');
 		}
 
-		private CompoundContainer GetSection(ListContainer sectionsList, byte y) {
+		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)
+		private CompoundContainer GetSectionCompound(ListContainer sectionsList, sbyte y) {
 			foreach(var o in sectionsList.cont) {
 				var compound = (CompoundContainer)o;
-				if(!compound.Contains("Y") || (byte)compound.Get("Y") > 15 || !compound.Contains("Palette")) continue;
+				if(!compound.Contains("Y") || !compound.Contains("Palette")) continue;
 				if((byte)compound.Get("Y") == y) return compound;
 			}
 			return null;

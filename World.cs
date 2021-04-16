@@ -121,7 +121,7 @@ namespace MCUtils {
 			if(r != null) {
 				r.SetDefaultBlock(x % 512, y, z % 512);
 			} else {
-				Console.WriteLine("!");
+				throw new ArgumentOutOfRangeException($"The location was outside of the world: {x},{y},{z}");
 			}
 		}
 

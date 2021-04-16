@@ -116,8 +116,8 @@ namespace MCUtils {
 		}
 
 		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
-		public ushort[,] GetHeightmap() {
-			ushort[,] hm = new ushort[512, 512];
+		public short[,] GetHeightmap() {
+			short[,] hm = new short[512, 512];
 			for(int x = 0; x < 32; x++) {
 				for(int z = 0; z < 32; z++) {
 					var c = chunks[x, z];
@@ -156,7 +156,7 @@ namespace MCUtils {
 					stream.WriteByte(2);
 					stream.Write(compressed, 0, compressed.Length);
 					var paddingMod = stream.Length % 4096;
-					//Pad the data to the next 4096 bytes
+					//Pad the data to the next 4096 byte mark
 					if(paddingMod > 0) {
 						byte[] padding = new byte[4096 - paddingMod];
 						stream.Write(padding, 0, padding.Length);

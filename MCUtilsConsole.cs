@@ -25,12 +25,17 @@ namespace MCUtils {
 			while(input != "exit") {
 				WriteLine("Chose an operation to perform:");
 				WriteLine("- mergeregions       Merges region files based on an input map");
+				WriteLine("- mergeworlds        Merges worlds based on an input map");
 				WriteLine("- randomblocks       Makes a region out of random blocks");
 				WriteLine("- view               Shows the contents of an NBT file or region");
 				WriteLine("- readchunk          Loads chunk data at a specific byte offset in a region file");
 				input = GetInput();
 				if(input.StartsWith("mergeregions")) {
 					var m = new RegionMerger();
+					m.Run();
+				}
+				if(input.StartsWith("mergeworlds")) {
+					var m = new WorldMerger();
 					m.Run();
 				}
 				if(input.StartsWith("randomblocks")) {
@@ -60,15 +65,20 @@ namespace MCUtils {
 			return s;
 		}
 
+		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+		static extern IntPtr GetConsoleWindow();
+
 		static void WriteConsoleLine(string str) {
-			Console.CursorVisible = false;
-			if(progressString != null) {
-				WriteProgress("", -1);
-				progressString = null;
-				Console.SetCursorPosition(0, Console.CursorTop);
+			if(GetConsoleWindow() != IntPtr.Zero) {
+				Console.CursorVisible = false;
+				if(progressString != null) {
+					WriteProgress("", -1);
+					progressString = null;
+					Console.SetCursorPosition(0, Console.CursorTop);
+				}
+				Console.WriteLine(str);
+				Console.ResetColor();
 			}
-			Console.WriteLine(str);
-			Console.ResetColor();
 		}
 
 		public static void WriteLine(string str) {
@@ -111,18 +121,20 @@ namespace MCUtils {
 		}
 
 		public static void WriteProgress(string str, float progressbar) {
-			Console.CursorVisible = false;
-			int lastLength = 0;
-			if(progressString != null) {
-				lastLength = progressString.Length;
-				Console.SetCursorPosition(0, Console.CursorTop);
+			if(GetConsoleWindow() != IntPtr.Zero) {
+				Console.CursorVisible = false;
+				int lastLength = 0;
+				if(progressString != null) {
+					lastLength = progressString.Length;
+					Console.SetCursorPosition(0, Console.CursorTop);
+				}
+				progressString = str;
+				if(progressbar >= 0) progressString += " " + GetProgressBar(progressbar) + " " + (int)Math.Round(progressbar * 100) + "%";
+				if(lastLength > 0) progressString = progressString.PadRight(lastLength, ' ');
+				Console.ForegroundColor = ConsoleColor.DarkGray;
+				Console.Write(progressString);
+				Console.ResetColor();
 			}
-			progressString = str;
-			if(progressbar >= 0) progressString += " " + GetProgressBar(progressbar) + " " + (int)Math.Round(progressbar * 100) + "%";
-			if(lastLength > 0) progressString = progressString.PadRight(lastLength, ' ');
-			Console.ForegroundColor = ConsoleColor.DarkGray;
-			Console.Write(progressString);
-			Console.ResetColor();
 		}
 
 		static string GetProgressBar(float prog) {

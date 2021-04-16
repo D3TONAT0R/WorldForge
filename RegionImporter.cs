@@ -8,6 +8,7 @@ namespace MCUtils {
 	public static class RegionImporter {
 
 		public static readonly string[] terrainSurfaceBlocks = new string[] {
+			"minecraft:bedrock",
 			"minecraft:stone",
 			"minecraft:grass_block",
 			"minecraft:dirt",
@@ -59,13 +60,30 @@ namespace MCUtils {
 				uint expectedSize = (locations[lastLocationIndex] + sizes[lastLocationIndex]) * 4096;
 				Console.WriteLine($"Expected size {expectedSize}, got {stream.Length}, difference {stream.Length - expectedSize}");
 				Region r = new Region(regionX, regionZ);
+				int misplacedChunks = 0;
 				for(int i = 0; i < 1024; i++) {
 					if(locations[i] > 0 && sizes[i] > 0) {
 						var nbt = new NBTContent(UncompressChunkData(GetChunkData(locations[i] * 4096, out _)), true);
-						int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
-						int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
+						//int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
+						//int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
+						int localChunkX = i % 32;
+						int localChunkZ = i / 32;
+						int chunkDataX = (int)nbt.contents.Get("xPos");
+						int chunkDataZ = (int)nbt.contents.Get("zPos");
+						if(localChunkX + regionX * 32 != chunkDataX || localChunkZ + regionZ * 32 != chunkDataZ) {
+							misplacedChunks++;
+							if(misplacedChunks <= 10) {
+								MCUtilsConsole.WriteWarning($"Chunk location mismatch! Expected[{localChunkX + regionX * 32},{localChunkZ + regionZ * 32}], got [{chunkDataX},{chunkDataZ}]");
+							}
+							if(misplacedChunks == 11) {
+								MCUtilsConsole.WriteWarning("...");
+							}
+						}
 						r.chunks[localChunkX, localChunkZ] = new ChunkData(r, nbt);
 					}
+				}
+				if(misplacedChunks > 5) {
+					MCUtilsConsole.WriteWarning($"There are {misplacedChunks} misplaced chunks in total");
 				}
 				if(stream.Length > expectedSize) {
 					Console.WriteLine("Attempting to load orphan chunks ...");
@@ -99,7 +117,7 @@ namespace MCUtils {
 			}
 		}
 
-		///<summary>Reads the height data from a region.</summary>
+		///<summary>Reads the height data from a region (With [0,0] being the top-left corner)/>.</summary>
 		public static ushort[,] GetHeightmap(string filepath, bool terrainOnly) {
 			terrainBlocksOnly = terrainOnly;
 			string fname = Path.GetFileName(filepath);
@@ -134,8 +152,10 @@ namespace MCUtils {
 		private static void GetChunkHeightmap(int i) {
 			if(compressedChunkData[i] != null) {
 				var nbt = new NBTContent(UncompressChunkData(compressedChunkData[i]), true);
-				int localChunkX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
-				int localChunkZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;
+				int localChunkX = i % 32;
+				int localChunkZ = i / 32;
+				//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
+				//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;
 				var chunkHM = nbt.GetHeightmapFromChunkNBT();
 				ChunkData chunk = new ChunkData(null, nbt);
 				for(int x = 0; x < 16; x++) {

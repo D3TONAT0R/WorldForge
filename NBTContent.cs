@@ -123,7 +123,6 @@ namespace MCUtils {
 			}
 
 			public override void Add(string key, object value) {
-				//Program.writeLineSpecial("Adding to #" + no);
 				cont.Add(value);
 			}
 
@@ -235,10 +234,11 @@ namespace MCUtils {
 		}
 
 		///<summary>Finds and reads the heightmap data stored in a chunk NBT structure.</summary>
-		public ushort[,] GetHeightmapFromChunkNBT() {
+		public short[,] GetHeightmapFromChunkNBT() {
 			try {
 				if(contents.Contains("Heightmaps")) {
 					//It's the "new" format
+					//TODO: dealt with 1.17's new heightmaps
 					if(contents.GetAsCompound("Heightmaps").Contains("OCEAN_FLOOR")) {
 						long[] hmlongs = (long[])contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
 						return GetHeightmap(hmlongs);
@@ -248,11 +248,11 @@ namespace MCUtils {
 				} else {
 					//It's the old, simple format
 					int[] hmints = (int[])contents.Get("HeightMap");
-					ushort[,] hm = new ushort[16, 16];
+					short[,] hm = new short[16, 16];
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
 							var value = hmints[z * 16 + x];
-							hm[x, z] = (ushort)value;
+							hm[x, z] = (short)value;
 						}
 					}
 					return hm;
@@ -263,9 +263,9 @@ namespace MCUtils {
 		}
 
 		///<summary>Reads the heightmap stored in the given long array.</summary>
-		public ushort[,] GetHeightmap(long[] hmlongs) {
+		public short[,] GetHeightmap(long[] hmlongs) {
 			if(hmlongs == null) return null;
-			ushort[,] hm = new ushort[16, 16];
+			short[,] hm = new short[16, 16];
 			try {
 				string hmbits = "";
 				if(hmlongs.Length == 37) {
@@ -287,14 +287,14 @@ namespace MCUtils {
 						}
 					}
 				}
-				ushort[] hmap = new ushort[256];
+				short[] hmap = new short[256];
 				for(int i = 0; i < 256; i++) {
-					hmap[i] = Converter.Read9BitValue(hmbits, i);
+					hmap[i] = (short)Converter.Read9BitValue(hmbits, i);
 				}
 
-				for(int i = 0; i < 256; i++) {
-					hmap[i] = Converter.Read9BitValue(hmbits, i);
-				}
+				/*for(int i = 0; i < 256; i++) {
+					hmap[i] = (short)Converter.Read9BitValue(hmbits, i);
+				}*/
 				if(hmbits != null) {
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
