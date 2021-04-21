@@ -1,31 +1,18 @@
 using Ionic.Zlib;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using static MCUtils.ChunkData;
+using static MCUtils.Blocks;
 
 namespace MCUtils {
 	public static class RegionImporter {
 
-		public static readonly string[] terrainSurfaceBlocks = new string[] {
-			"minecraft:bedrock",
-			"minecraft:stone",
-			"minecraft:grass_block",
-			"minecraft:dirt",
-			"minecraft:sand",
-			"minecraft:gravel",
-			"minecraft:coarse_dirt",
-			"minecraft:sandstone",
-			"minecraft:granite",
-			"minecraft:andesite",
-			"minecraft:diorite",
-			"minecraft:grass_path",
-			"minecraft:clay"
-		};
-
 		static MemoryStream stream;
 
-		static bool terrainBlocksOnly;
+		static HeightmapType mapType;
 		static World.RegionLocation regionPos;
 		static uint[] locations;
 		static byte[] sizes;
@@ -117,9 +104,9 @@ namespace MCUtils {
 			}
 		}
 
-		///<summary>Reads the height data from a region (With [0,0] being the top-left corner)/>.</summary>
-		public static ushort[,] GetHeightmap(string filepath, bool terrainOnly) {
-			terrainBlocksOnly = terrainOnly;
+		///<summary>Reads the height data from a region (With [0,0] being the top-left corner).</summary>
+		public static ushort[,] GetHeightmap(string filepath, HeightmapType heightmapType) {
+			mapType = heightmapType;
 			string fname = Path.GetFileName(filepath);
 			int regionX = int.Parse(fname.Split('.')[1]);
 			int regionZ = int.Parse(fname.Split('.')[2]);
@@ -149,6 +136,29 @@ namespace MCUtils {
 			}
 		}
 
+		public static Bitmap GetSurfaceMap(string filepath, HeightmapType surfaceType) {
+			Region r = OpenRegionFile(filepath);
+			var hm = r.GetHeightmapFromNBT(surfaceType);
+			for(int z = 0; z < 512; z++) {
+				for(int x = 0; x < 512; x++) {
+					short y = hm[x, z];
+					while(!IsBlockForMap(r.GetBlockState(x, y, z), surfaceType) && y > 0) {
+						y--;
+					}
+					hm[x, z] = y;
+				}
+			}
+			Bitmap bmp = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+			for(int z = 0; z < 512; z++) {
+				for(int x = 0; x < 512; x++) {
+					string block = r.GetBlock(x, hm[x, z], z);
+					if(block == "minecraft:air") block = r.GetBlock(x, hm[x, z] - 1, z);
+					bmp.SetPixel(x, z, GetMapColor(block));
+				}
+			}
+			return bmp;
+		}
+
 		private static void GetChunkHeightmap(int i) {
 			if(compressedChunkData[i] != null) {
 				var nbt = new NBTContent(UncompressChunkData(compressedChunkData[i]), true);
@@ -156,22 +166,17 @@ namespace MCUtils {
 				int localChunkZ = i / 32;
 				//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
 				//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;
-				var chunkHM = nbt.GetHeightmapFromChunkNBT();
+				var chunkHM = nbt.GetHeightmapFromChunkNBT(mapType);
 				ChunkData chunk = new ChunkData(null, nbt);
 				for(int x = 0; x < 16; x++) {
 					for(int z = 0; z < 16; z++) {
 						byte y = (chunkHM != null) ? (byte)Math.Max(chunkHM[x, z] - 1, 0) : (byte)255;
 						if(y > 1) {
-							while(y > 0 && chunk.GetBlockAt(x, y, z).CompareMultiple("minercraft:air", "minecraft:water", "minecraft:cave_air")) {
+							while(y > 0 && !IsBlockForMap(chunk.GetBlockAt(x, y, z), mapType)) {
 								y--;
 							}
-							if(terrainBlocksOnly) {
-								while(!chunk.GetBlockAt(x, y, z).CompareMultiple(terrainSurfaceBlocks) && y > 0) {
-									y--;
-								}
-							}
 						}
-						heightmap[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
+						heightmap[localChunkX * 16 + x, localChunkZ * 16 + z] = y;
 					}
 				}
 			}

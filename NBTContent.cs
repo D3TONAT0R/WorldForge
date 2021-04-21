@@ -15,7 +15,7 @@ namespace MCUtils {
 				get;
 			}
 
-			public abstract void Add(string key, object value);
+			public abstract T Add<T>(string key, T value);
 
 			public abstract string[] GetContentKeys(string prefix);
 
@@ -39,16 +39,27 @@ namespace MCUtils {
 				cont = new Dictionary<string, object>();
 			}
 
-			public override void Add(string key, object value) {
-				/*if(key == null || key == "") {
-					Program.WriteError("WTF?");
-					key = "WTF-" + new Random().Next(1000, 9999);
-				}*/
+			public override T Add<T>(string key, T value) {
 				if(!cont.ContainsKey(key)) {
 					cont.Add(key, value);
 				} else {
 					cont[key] = value;
 				}
+				return value;
+			}
+
+			public void AddRange(params (string key, object obj)[] values) {
+				foreach(var value in values) {
+					Add(value.key, value.obj);
+				}
+			}
+
+			public CompoundContainer AddCompound(string key) {
+				return Add(key, new CompoundContainer());
+			}
+
+			public ListContainer AddList(string key, NBTTag tag) {
+				return Add(key, new ListContainer(tag));
 			}
 
 			public override object Get(string key) {
@@ -122,8 +133,19 @@ namespace MCUtils {
 				return this[int.Parse(key)];
 			}
 
-			public override void Add(string key, object value) {
+			public override T Add<T>(string key, T value) {
 				cont.Add(value);
+				return value;
+			}
+
+			public T Add<T>(T value) {
+				return Add(null, value);
+			}
+
+			public void AddRange(params object[] values) {
+				foreach(var value in values) {
+					Add(null, value);
+				}
 			}
 
 			public object this[int i] {
@@ -220,32 +242,43 @@ namespace MCUtils {
 		}
 
 		///<summary>Generates a byte array from the content of this NBT structure.</summary>
-		public void WriteToBytes(List<byte> bytes) {
-			//Repackage into the original structure
+		public void WriteToBytes(List<byte> bytes, bool addStandardLevelCompound) {
+			if(addStandardLevelCompound) {
+				//Repackage into the original structure
 
-			CompoundContainer root = new CompoundContainer();
-			CompoundContainer level = new CompoundContainer();
-			foreach(string k in contents.cont.Keys) {
-				level.Add(k, contents.Get(k));
+				CompoundContainer root = new CompoundContainer();
+				CompoundContainer level = new CompoundContainer();
+				foreach(string k in contents.cont.Keys) {
+					level.Add(k, contents.Get(k));
+				}
+				root.Add("Level", level);
+				root.Add("DataVersion", 2566);
+				Write(bytes, "", root);
+			} else {
+				Write(bytes, "", contents);
 			}
-			root.Add("Level", level);
-			root.Add("DataVersion", 2566);
-			Write(bytes, "", root);
 		}
 
 		///<summary>Finds and reads the heightmap data stored in a chunk NBT structure.</summary>
-		public short[,] GetHeightmapFromChunkNBT() {
+		public short[,] GetHeightmapFromChunkNBT(HeightmapType type) {
 			try {
 				if(contents.Contains("Heightmaps")) {
 					//It's the "new" format
-					//TODO: dealt with 1.17's new heightmaps
-					if(contents.GetAsCompound("Heightmaps").Contains("OCEAN_FLOOR")) {
-						long[] hmlongs = (long[])contents.GetAsCompound("Heightmaps").Get("OCEAN_FLOOR");
-						return GetHeightmap(hmlongs);
+					//TODO: deal with 1.17's new heightmaps
+					CompoundContainer hmcomp = contents.GetAsCompound("Heightmaps");
+					if(type == HeightmapType.SolidBlocksNoLiquid && hmcomp.Contains("OCEAN_FLOOR")) {
+						//The highest non-air block, solid block
+						return GetHeightmap((long[])hmcomp.Get("OCEAN_FLOOR"));
+					} else if(type == HeightmapType.SolidBlocks && hmcomp.Contains("MOTION_BLOCKING")) {
+						//The highest block that blocks motion or contains a fluid
+						return GetHeightmap((long[])hmcomp.Get("MOTION_BLOCKING"));
+					} else if(hmcomp.Contains("WORLD_SURFACE")) {
+						//The highest non-air block
+						return GetHeightmap((long[])hmcomp.Get("WORLD_SURFACE"));
 					} else {
 						return null;
 					}
-				} else {
+				} else if(contents.Contains("HeightMap")) {
 					//It's the old, simple format
 					int[] hmints = (int[])contents.Get("HeightMap");
 					short[,] hm = new short[16, 16];
@@ -256,6 +289,9 @@ namespace MCUtils {
 						}
 					}
 					return hm;
+				} else {
+					//No heightmap data was found
+					return null;
 				}
 			} catch {
 				return null;

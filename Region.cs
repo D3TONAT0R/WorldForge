@@ -52,12 +52,9 @@ namespace MCUtils {
 
 		///<summary>Gets the block type at the given location.</summary>
 		public string GetBlock(int x, int y, int z) {
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
-			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return null;
-			if(chunks[chunkX, chunkZ] != null) {
-				var b = chunks[chunkX, chunkZ].GetBlockAt(x % 16, y, z % 16);
-				return b != null ? b.ID : "minecraft:air";
+			var chunk = GetChunk(x, z, false);
+			if(chunk != null) {
+				return chunk.GetBlockAt(x % 16, y, z % 16)?.ID ?? "minecraft:air";
 			} else {
 				return null;
 			}
@@ -65,14 +62,7 @@ namespace MCUtils {
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(int x, int y, int z) {
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
-			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return null;
-			if(chunks[chunkX, chunkZ] != null) {
-				return chunks[chunkX, chunkZ].GetBlockAt(x % 16, y, z % 16);
-			} else {
-				return null;
-			}
+			return GetChunk(x,z,false)?.GetBlockAt(x % 16, y, z % 16);
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
@@ -82,14 +72,21 @@ namespace MCUtils {
 
 		///<summary>Sets the block state at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, BlockState block) {
+			GetChunk(x, z, true)?.SetBlockAt(x % 16, y, z % 16, block);
+			return true;
+		}
+
+		/// <summary>
+		/// Gets the chunk containing the block's position
+		/// </summary>
+		public ChunkData GetChunk(int x, int z, bool allowNew) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
-			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return false;
-			if(chunks[chunkX, chunkZ] == null) {
+			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
+			if(chunks[chunkX, chunkZ] == null && allowNew) {
 				chunks[chunkX, chunkZ] = new ChunkData(this, "minecraft:stone");
 			}
-			chunks[chunkX, chunkZ].SetBlockAt(x % 16, y, z % 16, block);
-			return true;
+			return chunks[chunkX, chunkZ];
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
@@ -116,13 +113,13 @@ namespace MCUtils {
 		}
 
 		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
-		public short[,] GetHeightmap() {
+		public short[,] GetHeightmapFromNBT(HeightmapType type) {
 			short[,] hm = new short[512, 512];
 			for(int x = 0; x < 32; x++) {
 				for(int z = 0; z < 32; z++) {
 					var c = chunks[x, z];
 					if(c != null) {
-						c.WriteToHeightmap(hm, x, z);
+						c.WriteToHeightmap(hm, x, z, type);
 					}
 				}
 			}
@@ -149,7 +146,7 @@ namespace MCUtils {
 					locations[i] = (int)(stream.Position / 4096);
 					var chunkData = MakeCompoundForChunk(chunks[x, z], 32 * regionPosX + x, 32 * regionPosZ + z);
 					List<byte> bytes = new List<byte>();
-					chunkData.WriteToBytes(bytes);
+					chunkData.WriteToBytes(bytes, true);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
 					var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
 					stream.Write(cLength, 0, cLength.Length);

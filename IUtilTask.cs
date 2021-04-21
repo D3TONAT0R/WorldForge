@@ -1,3 +1,5 @@
-public interface IUtilTask {
-	void Run();
+namespace MCUtils {
+	public interface IUtilTask {
+		void Run();
+	} 
 }

@@ -173,6 +173,8 @@ namespace MCUtils {
 		public Region containingRegion;
 		public bool hasNumericIDs;
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
+		public sbyte highestSection { get; private set; }
+		public sbyte lowestSection { get; private set; }
 		//public ushort[][,,] blocks = new ushort[16][,,];
 		//public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
@@ -217,6 +219,7 @@ namespace MCUtils {
 			if(!sections.ContainsKey(sectionY)) {
 				if(allowNew) {
 					sections.Add(sectionY, new ChunkSection(defaultBlock));
+					RecalculateSectionRange();
 				} else {
 					return null;
 				}
@@ -290,6 +293,7 @@ namespace MCUtils {
 					}
 				}
 				sections.Add(secY, section);
+				RecalculateSectionRange();
 			}
 		}
 
@@ -302,6 +306,19 @@ namespace MCUtils {
 					for(int y = 0; y < 64; y++) finalBiomeArray[x, y, z] = biome;
 				}
 			}
+		}
+
+		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type) {
+			short y = (short)(highestSection*16+15);
+			while(y > lowestSection*16) {
+				if(Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ), type)) return y;
+				y--;
+			}
+			return short.MinValue;
+		}
+
+		public short GetHighestBlock(int chunkX, int chunkZ) {
+			return GetHighestBlock(chunkX, chunkZ, HeightmapType.AllBlocks);
 		}
 
 		///<summary>Generates the full NBT data of a chunk</summary>
@@ -330,15 +347,30 @@ namespace MCUtils {
 		}
 
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
-		public void WriteToHeightmap(short[,] hm, int x, int z) {
-			if(!WriteHeightmapFromNBT(hm, x, z)) {
-				WriteHeightmapFromBlocks(hm, x, z);
+		public void WriteToHeightmap(short[,] hm, int x, int z, HeightmapType type) {
+			if(!WriteHeightmapFromNBT(hm, x, z, type)) {
+				WriteHeightmapFromBlocks(hm, x, z, type);
 			}
 		}
 
-		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ) {
+		private void RecalculateSectionRange() {
+			sbyte? lowest = null;
+			sbyte? highest = null;
+			for(sbyte s = -100; s < 127; s++) {
+				if(lowest == null && sections.ContainsKey(s)) {
+					lowest = s;
+				}
+				if(sections.ContainsKey(s)) {
+					highest = s;
+				}
+			}
+			lowestSection = lowest ?? 0;
+			highestSection = highest ?? 0;
+		}
+
+		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type) {
 			if(sourceNBT == null) return false;
-			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT();
+			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT(type);
 			if(chunkHM == null) return false;
 			for(int x = 0; x < 16; x++) {
 				for(int z = 0; z < 16; z++) {
@@ -348,7 +380,7 @@ namespace MCUtils {
 			return true;
 		}
 
-		private void WriteHeightmapFromBlocks(short[,] hm, int localChunkX, int localChunkZ) {
+		private void WriteHeightmapFromBlocks(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type) {
 			sbyte highestSection = 127;
 			while(highestSection > -127 && !sections.ContainsKey(highestSection)) {
 				highestSection--;
@@ -357,63 +389,21 @@ namespace MCUtils {
 			var sec = sections[highestSection];
 			for(int x = 0; x < 16; x++) {
 				for(int z = 0; z < 16; z++) {
-					for(short y = (short)(highestSection * 16 + 15); y > 0; y--) {
-						if(!IsTransparentBlock(sec.GetBlockAt(x, y % 16, z).ID)) {
+					short yTop;
+					if(hm[x,z] != 0) {
+						//The heightmap is already present, proceed from provided y value
+						yTop = hm[x, z];
+					} else {
+						yTop = (short)(highestSection * 16 + 15);
+					}
+					for(short y = yTop; y > 0; y--) {
+						if(Blocks.IsBlockForMap(sec.GetBlockAt(x, y % 16, z), type)) {
 							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
 							break;
 						}
 					}
 				}
 			}
-		}
-
-		private bool IsTransparentBlock(string b) {
-			if(b == null) return true;
-			b = b.Replace("minecraft:", "");
-			if(b.Contains("glass")) return true;
-			if(b.Contains("bars")) return true;
-			if(b.Contains("sapling")) return true;
-			if(b.Contains("rail")) return true;
-			if(b.Contains("tulip")) return true;
-			if(b.Contains("mushroom")) return true;
-			if(b.Contains("pressure_plate")) return true;
-			if(b.Contains("button")) return true;
-			if(b.Contains("torch")) return true;
-			if(b.Contains("fence")) return true;
-			if(b.Contains("door")) return true;
-			if(b.Contains("carpet")) return true;
-			switch(b) {
-				case "air":
-				case "cave:air":
-				case "cobweb":
-				case "grass":
-				case "fern":
-				case "dead_bush":
-				case "seagrass":
-				case "sea_pickle":
-				case "dandelion":
-				case "poppy":
-				case "blue_orchid":
-				case "allium":
-				case "azure_bluet":
-				case "end_rod":
-				case "ladder":
-				case "lever":
-				case "snow_layer":
-				case "lily_pad":
-				case "tripwire_hook":
-				case "barrier":
-				case "tall_grass":
-				case "large_fern":
-				case "sunflower":
-				case "lilac":
-				case "rose_bush":
-				case "peony":
-				case "structure_void":
-				case "turtle_egg":
-				case "redstone": return true;
-			}
-			return false;
 		}
 
 		private long BitsToLong(string bits) {
