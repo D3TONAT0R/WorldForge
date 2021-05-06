@@ -107,9 +107,14 @@ namespace MCUtils {
 		///<summary>Reads the height data from a region (With [0,0] being the top-left corner).</summary>
 		public static ushort[,] GetHeightmap(string filepath, HeightmapType heightmapType) {
 			mapType = heightmapType;
-			string fname = Path.GetFileName(filepath);
-			int regionX = int.Parse(fname.Split('.')[1]);
-			int regionZ = int.Parse(fname.Split('.')[2]);
+			int regionX = 0;
+			int regionZ = 0;
+			string fname = Path.GetFileNameWithoutExtension(filepath);
+			var split = fname.Split('.');
+			if(split.Length > 2) {
+				regionX = int.Parse(fname.Split('.')[1]);
+				regionZ = int.Parse(fname.Split('.')[2]);
+			}
 			regionPos = new World.RegionLocation(regionX, regionZ);
 			using(stream = new MemoryStream()) {
 				using(FileStream fs = File.Open(filepath, FileMode.Open)) {

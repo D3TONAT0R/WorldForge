@@ -152,11 +152,11 @@ namespace MCUtils {
 					stream.Write(cLength, 0, cLength.Length);
 					stream.WriteByte(2);
 					stream.Write(compressed, 0, compressed.Length);
-					var paddingMod = stream.Length % 4096;
+					var padding = stream.Length % 4096;
 					//Pad the data to the next 4096 byte mark
-					if(paddingMod > 0) {
-						byte[] padding = new byte[4096 - paddingMod];
-						stream.Write(padding, 0, padding.Length);
+					if(padding > 0) {
+						byte[] paddingBytes = new byte[4096 - padding];
+						stream.Write(paddingBytes, 0, paddingBytes.Length);
 					}
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}

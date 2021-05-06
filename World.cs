@@ -41,8 +41,9 @@ namespace MCUtils {
 			regions = new Dictionary<RegionLocation, Region>();
 			for(int x = regionLowerX; x <= regionUpperX; x++) {
 				for(int z = regionLowerZ; z <= regionUpperZ; z++) {
-					var reg = new Region(x, z);
-					reg.containingWorld = this;
+					var reg = new Region(x, z) {
+						containingWorld = this
+					};
 					regions.Add(new RegionLocation(x, z), reg);
 				}
 			}
@@ -125,7 +126,7 @@ namespace MCUtils {
 			if(r != null) {
 				r.SetDefaultBlock(x % 512, y, z % 512);
 			} else {
-				throw new ArgumentOutOfRangeException($"The location was outside of the world: {x},{y},{z}");
+				throw new ArgumentException($"The location was outside of the world: {x},{y},{z}");
 			}
 		}
 
@@ -220,7 +221,7 @@ namespace MCUtils {
 			versionComp.Add<byte>("Snapshot", 0);
 
 			var worldGenComp = data.AddCompound("WorldGenSettings");
-			worldGenComp.AddCompound("dimensions"); //TODO: Is all default data required for it to work?
+			worldGenComp.AddCompound("dimensions");
 			worldGenComp.Add<byte>("bonus_chest", 0);
 			worldGenComp.Add<byte>("generate_features", 1);
 			worldGenComp.Add<long>("seed", new Random().Next(int.MaxValue));

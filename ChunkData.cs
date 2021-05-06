@@ -173,8 +173,8 @@ namespace MCUtils {
 		public Region containingRegion;
 		public bool hasNumericIDs;
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
-		public sbyte highestSection { get; private set; }
-		public sbyte lowestSection { get; private set; }
+		public sbyte HighestSection { get; private set; }
+		public sbyte LowestSection { get; private set; }
 		//public ushort[][,,] blocks = new ushort[16][,,];
 		//public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
@@ -309,8 +309,8 @@ namespace MCUtils {
 		}
 
 		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type) {
-			short y = (short)(highestSection*16+15);
-			while(y > lowestSection*16) {
+			short y = (short)(HighestSection*16+15);
+			while(y > LowestSection*16) {
 				if(Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ), type)) return y;
 				y--;
 			}
@@ -364,8 +364,8 @@ namespace MCUtils {
 					highest = s;
 				}
 			}
-			lowestSection = lowest ?? 0;
-			highestSection = highest ?? 0;
+			LowestSection = lowest ?? 0;
+			HighestSection = highest ?? 0;
 		}
 
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type) {
