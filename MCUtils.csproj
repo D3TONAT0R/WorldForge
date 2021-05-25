@@ -7,8 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\colormap.tif" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.13.8" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\colormap.tif" />
   </ItemGroup>
 
   <ItemGroup>

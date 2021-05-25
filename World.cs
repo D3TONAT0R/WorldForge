@@ -8,14 +8,18 @@ using System.Text;
 using static MCUtils.ChunkData;
 using static MCUtils.NBTContent;
 
-namespace MCUtils {
-	public class World {
+namespace MCUtils
+{
+	public class World
+	{
 
-		public struct RegionLocation {
+		public struct RegionLocation
+		{
 			public int x;
 			public int z;
 
-			public RegionLocation(int regionX, int regionZ) {
+			public RegionLocation(int regionX, int regionZ)
+			{
 				x = regionX;
 				z = regionZ;
 			}
@@ -30,18 +34,24 @@ namespace MCUtils {
 
 		public NBTContent levelDat;
 
-		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ) : this(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ, null) {
+		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ) : this(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ, null)
+		{
 
 		}
 
-		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath) {
-			if(!string.IsNullOrEmpty(levelDatPath)) {
+		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath)
+		{
+			if (!string.IsNullOrEmpty(levelDatPath))
+			{
 				levelDat = new NBTContent(File.ReadAllBytes(levelDatPath), false);
 			}
 			regions = new Dictionary<RegionLocation, Region>();
-			for(int x = regionLowerX; x <= regionUpperX; x++) {
-				for(int z = regionLowerZ; z <= regionUpperZ; z++) {
-					var reg = new Region(x, z) {
+			for (int x = regionLowerX; x <= regionUpperX; x++)
+			{
+				for (int z = regionLowerZ; z <= regionUpperZ; z++)
+				{
+					var reg = new Region(x, z)
+					{
 						containingWorld = this
 					};
 					regions.Add(new RegionLocation(x, z), reg);
@@ -50,90 +60,119 @@ namespace MCUtils {
 		}
 
 		/// <summary>Is the location within the world's generated regions?</summary>
-		public bool IsWithinBoundaries(int x, int y, int z) {
-			if(y < 0 || y > 255) return false;
+		public bool IsWithinBoundaries(int x, int y, int z)
+		{
+			if (y < 0 || y > 255) return false;
 			x = (int)Math.Floor(x / 512f);
 			z = (int)Math.Floor(z / 512f);
 			return regions.ContainsKey(new RegionLocation(x, z));
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
-		public bool IsDefaultBlock(int x, int y, int z) {
+		public bool IsDefaultBlock(int x, int y, int z)
+		{
 			var b = GetBlock(x, y, z);
-			if(b == null) return false;
+			if (b == null) return false;
 			return b == defaultBlock;
 		}
 
 		///<summary>Returns true if the block at the given location is air.</summary>
-		public bool IsAir(int x, int y, int z) {
+		public bool IsAir(int x, int y, int z)
+		{
 			var b = GetBlock(x, y, z);
 			return b == null || b == "minecraft:air";
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public string GetBlock(int x, int y, int z) {
-			if(IsWithinBoundaries(x, y, z)) {
+		public string GetBlock(int x, int y, int z)
+		{
+			if (IsWithinBoundaries(x, y, z))
+			{
 				return regions[new RegionLocation(x.RegionCoord(), z.RegionCoord())].GetBlock(x % 512, y, z % 512);
-			} else {
+			}
+			else
+			{
 				return null;
 			}
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(int x, int y, int z) {
-			if(IsWithinBoundaries(x, y, z)) {
+		public BlockState GetBlockState(int x, int y, int z)
+		{
+			if (IsWithinBoundaries(x, y, z))
+			{
 				return regions[new RegionLocation(x.RegionCoord(), z.RegionCoord())].GetBlockState(x % 512, y, z % 512);
-			} else {
+			}
+			else
+			{
 				return null;
 			}
 		}
 
-		private Region GetRegionAt(int x, int z, bool allowNew) {
+		private Region GetRegionAt(int x, int z, bool allowNew)
+		{
 			var rloc = new RegionLocation(x.RegionCoord(), z.RegionCoord());
-			if(!IsWithinBoundaries(x, 0, z)) {
-				if(allowNew) {
+			if (!IsWithinBoundaries(x, 0, z))
+			{
+				if (allowNew)
+				{
 					var r = new Region(rloc);
 					regions.Add(rloc, r);
 					return r;
-				} else {
+				}
+				else
+				{
 					return null;
 				}
-			} else {
+			}
+			else
+			{
 				return regions[rloc];
 			}
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, string block) {
+		public bool SetBlock(int x, int y, int z, string block)
+		{
 			return SetBlock(x, y, z, new BlockState(block));
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, BlockState block) {
-			if(y < 0 || y > 255) return false;
+		public bool SetBlock(int x, int y, int z, BlockState block)
+		{
+			if (y < 0 || y > 255) return false;
 			var r = GetRegionAt(x, z, allowNewRegions);
-			if(r != null) {
+			if (r != null)
+			{
 				return r.SetBlock(x % 512, y, z % 512, block);
-			} else {
+			}
+			else
+			{
 				return false;
 			}
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int x, int y, int z) {
-			if(y < 0 || y > 255) return;
+		public void SetDefaultBlock(int x, int y, int z)
+		{
+			if (y < 0 || y > 255) return;
 			var r = GetRegionAt(x, z, allowNewRegions);
-			if(r != null) {
+			if (r != null)
+			{
 				r.SetDefaultBlock(x % 512, y, z % 512);
-			} else {
+			}
+			else
+			{
 				throw new ArgumentException($"The location was outside of the world: {x},{y},{z}");
 			}
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int z, byte biome) {
+		public void SetBiome(int x, int z, byte biome)
+		{
 			var r = GetRegionAt(x, z, false);
-			if(r != null) {
+			if (r != null)
+			{
 				r.SetBiome(x % 512, z % 512, biome);
 			}
 		}
@@ -141,10 +180,13 @@ namespace MCUtils {
 		/// <summary>
 		/// Generates a Heightmap from the specified area (With Z starting from top)
 		/// </summary>
-		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type) {
+		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type)
+		{
 			short[,] hm = new short[xMax - xMin + 1, zMax - zMin + 1];
-			for(int z = zMin; z <= zMax; z++) {
-				for(int x = xMin; x <= xMax; x++) {
+			for (int z = zMin; z <= zMax; z++)
+			{
+				for (int x = xMin; x <= xMax; x++)
+				{
 					hm[x, z] = GetRegionAt(x, z, false)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
 				}
 			}
@@ -154,28 +196,65 @@ namespace MCUtils {
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public Bitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType) {
-			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType));
+		public Bitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
+		{
+			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType), shading);
 		}
 
-		public Bitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap) {
+		public Bitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap, bool shading)
+		{
 			int xMax = xMin + heightmap.GetLength(0);
 			int zMax = zMin + heightmap.GetLength(1);
 			Bitmap bmp = new Bitmap(heightmap.GetLength(0), heightmap.GetLength(1), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-			for(int z = zMin; z < zMax; z++) {
-				for(int x = xMin; x < xMax; x++) {
-					string block = GetBlock(x, heightmap[x - xMin, z - zMin], z);
-					bmp.SetPixel(x, z, Blocks.GetMapColor(block));
+			for (int z = zMin; z < zMax; z++)
+			{
+				for (int x = xMin; x < xMax; x++)
+				{
+					int y = heightmap[x - xMin, z - zMin];
+					string block = GetBlock(x, y, z);
+					int shade = 0;
+					if (shading && z - 1 >= zMin)
+					{
+						if (block == "minecraft:water")
+						{
+							//Water dithering
+							var depth = GetWaterDepth(x, y, z);
+							if (depth < 8) shade = 1;
+							else if (depth < 16) shade = 0;
+							else shade = -1;
+							if (depth % 8 >= 4 && shade > -1)
+							{
+								if (x % 2 == z % 2) shade--;
+							}
+						}
+						else
+						{
+							var above = heightmap[x - xMin, z - 1 - zMin];
+							if (above > y) shade = -1;
+							else if (above < y) shade = 1;
+						}
+					}
+					bmp.SetPixel(x, z, Blocks.GetMapColor(block, shade));
 				}
 			}
 			return bmp;
 		}
 
-		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ) {
+		/// <summary>
+		/// Gets the depth of the water at the given location, in blocks
+		/// </summary>
+		public int GetWaterDepth(int x, int y, int z)
+		{
+			return GetRegionAt(x, z, false)?.GetWaterDepth(x % 512, y, z % 512) ?? 0;
+		}
+
+		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ)
+		{
 			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream);
 		}
 
-		public void WriteWorldSave(string path) {
+		public void WriteWorldSave(string path)
+		{
 			Directory.CreateDirectory(path);
 
 			int y = GetRegionAt(0, 0, false).GetChunk(0, 0, false).GetHighestBlock(1, 1);
@@ -190,15 +269,18 @@ namespace MCUtils {
 
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
-			foreach(var region in regions) {
+			foreach (var region in regions)
+			{
 				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
-				using(var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create)) {
+				using (var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create))
+				{
 					region.Value.WriteRegionToStream(stream);
 				}
 			}
 		}
 
-		private NBTContent CreateLevelDAT(int playerPosX, int playerPosY, int playerPosZ, bool creativeModeWithCheats) {
+		private NBTContent CreateLevelDAT(int playerPosX, int playerPosY, int playerPosZ, bool creativeModeWithCheats)
+		{
 			NBTContent levelDAT = new NBTContent();
 			var data = levelDAT.contents.AddCompound("Data");
 
@@ -268,7 +350,8 @@ namespace MCUtils {
 			return levelDAT;
 		}
 
-		private CompoundContainer CreatePlayerCompound(int posX, int posY, int posZ, bool creativeModeWithCheats) {
+		private CompoundContainer CreatePlayerCompound(int posX, int posY, int posZ, bool creativeModeWithCheats)
+		{
 			var player = new CompoundContainer();
 
 			var abilities = player.AddCompound("abilities");

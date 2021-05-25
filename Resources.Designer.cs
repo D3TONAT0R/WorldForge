@@ -63,9 +63,9 @@ namespace MCUtils {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] Colormap {
+        internal static byte[] colormap {
             get {
-                object obj = ResourceManager.GetObject("Colormap", resourceCulture);
+                object obj = ResourceManager.GetObject("colormap", resourceCulture);
                 return ((byte[])(obj));
             }
         }

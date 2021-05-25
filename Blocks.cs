@@ -8,7 +8,7 @@ using static MCUtils.ChunkData;
 namespace MCUtils {
 	public static class Blocks {
 
-		public static readonly string[] terrainSurfaceBlocks = new string[] {
+		public static readonly string[] commonTerrainBlocks = new string[] {
 			"minecraft:bedrock",
 			"minecraft:stone",
 			"minecraft:grass_block",
@@ -24,6 +24,23 @@ namespace MCUtils {
 			"minecraft:clay"
 		};
 
+		public static readonly string[] terrainSurfaceBlocks = new string[]
+		{
+			"minecraft:grass_block",
+			"minecraft:dirt",
+			"minecraft:sand",
+			"minecraft:coarse_dirt",
+			"minecraft:sandstone",
+			"minecraft:gravel"
+		};
+
+		public static readonly string[] plantSustainingBlocks = new string[]
+		{
+			"minecraft:grass_block",
+			"minecraft:dirt",
+			"minecraft:podzol"
+		};
+
 		public static readonly string waterBlock = "minecraft:water";
 		public static readonly string lavaBlock = "minecraft:lava";
 
@@ -31,6 +48,7 @@ namespace MCUtils {
 			{"minecraft:grass_block", 0 },
 			{"minecraft:dirt", 1 },
 			{"minecraft:coarse_dirt", 1 },
+			{"minecraft:podzol", 1 },
 			{"minecraft:water", 2 },
 			{"minecraft:ice", 2 },
 			{"minecraft:oak_leaves",3 },
@@ -62,7 +80,7 @@ namespace MCUtils {
 			{"minecraft:magma_block",9 }
 		};
 
-		static Color[] colormap;
+		static Color[,] colormap;
 
 		public static bool IsBlockForMap(BlockState b, HeightmapType type) {
 			if(b == null || IsAir(b)) return false;
@@ -73,35 +91,36 @@ namespace MCUtils {
 			} else if(type == HeightmapType.SolidBlocksNoLiquid) {
 				return !IsTransparentBlock(b) && !IsLiquid(b);
 			} else if(type == HeightmapType.TerrainBlocks) {
-				return b.CompareMultiple(terrainSurfaceBlocks) || b.CompareMultiple(waterBlock, lavaBlock);
+				return b.CompareMultiple(commonTerrainBlocks) || b.CompareMultiple(waterBlock, lavaBlock);
 			} else if(type == HeightmapType.TerrainBlocksNoLiquid) {
-				return b.CompareMultiple(terrainSurfaceBlocks);
+				return b.CompareMultiple(commonTerrainBlocks);
 			} else {
 				return false;
 			}
 		}
 
-		public static Color GetMapColor(string block) {
+		public static Color GetMapColor(string block, int shade) {
 			if(colormap == null) {
 				colormap = LoadColorMap();
 			}
 			if(block != null) {
-				int index;
-				if(!colorMapIndices.TryGetValue(block, out index)) {
+				if (!block.Contains(":")) block = "minecraft:" + block;
+				if(!colorMapIndices.TryGetValue(block, out int index)) {
 					index = 15;
 				}
-				return colormap[index];
+				shade = 1 - shade;
+				return colormap[index, shade];
 			} else {
 				return Color.FromArgb(0, 0, 0, 0);
 			}
 		}
 
-		static Color[] LoadColorMap() {
-			Bitmap bmp = new Bitmap(Image.FromStream(new MemoryStream(Resources.Colormap)));
-			Color[] colormap = new Color[bmp.Width * bmp.Height];
-			for(int z = 0; z < bmp.Height; z++) {
-				for(int y = 0; y < bmp.Width; y++) {
-					colormap[z * bmp.Width + y] = bmp.GetPixel(y, z);
+		static Color[,] LoadColorMap() {
+			Bitmap bmp = new Bitmap(Image.FromStream(new MemoryStream(Resources.colormap)));
+			Color[,] colormap = new Color[bmp.Width, 3];
+			for(int x = 0; x < bmp.Width; x++) {
+				for(int y = 0; y < 3; y++) {
+					colormap[x, y] = bmp.GetPixel(x, y);
 				}
 			}
 			return colormap;
@@ -113,6 +132,11 @@ namespace MCUtils {
 
 		public static bool IsLiquid(BlockState b) {
 			return b.CompareMultiple(waterBlock, lavaBlock);
+		}
+
+		public static bool IsPlantSustaining(BlockState b)
+		{
+			return b.CompareMultiple(plantSustainingBlocks);
 		}
 
 		public static bool IsTransparentBlock(BlockState bs) {
@@ -160,7 +184,8 @@ namespace MCUtils {
 				case "peony":
 				case "structure_void":
 				case "turtle_egg":
-				case "redstone": return true;
+				case "redstone":
+				case "sweet_berry_bush": return true;
 			}
 			return false;
 		}

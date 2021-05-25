@@ -141,7 +141,7 @@ namespace MCUtils {
 			}
 		}
 
-		public static Bitmap GetSurfaceMap(string filepath, HeightmapType surfaceType) {
+		public static Bitmap GetSurfaceMap(string filepath, HeightmapType surfaceType, bool mcMapShading) {
 			Region r = OpenRegionFile(filepath);
 			var hm = r.GetHeightmapFromNBT(surfaceType);
 			for(int z = 0; z < 512; z++) {
@@ -156,9 +156,36 @@ namespace MCUtils {
 			Bitmap bmp = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 			for(int z = 0; z < 512; z++) {
 				for(int x = 0; x < 512; x++) {
-					string block = r.GetBlock(x, hm[x, z], z);
-					if(block == "minecraft:air") block = r.GetBlock(x, hm[x, z] - 1, z);
-					bmp.SetPixel(x, z, GetMapColor(block));
+					int y = hm[x, z];
+					string block = r.GetBlock(x, y, z);
+					if (block == "minecraft:air" && y > 0)
+					{
+						throw new ArgumentException("the mapped block was air");
+					}
+					int shade = 0;
+					
+					if(mcMapShading && z > 0)
+					{
+						if (block == "minecraft:water")
+						{
+							//Water dithering
+							var depth = r.GetWaterDepth(x, y, z);
+							if (depth < 8) shade = 1;
+							else if (depth < 16) shade = 0;
+							else shade = -1;
+							if(depth%8 >= 4 && shade > -1)
+							{
+								if (x % 2 == z % 2) shade--;
+							}
+						}
+						else
+						{
+							int above = hm[x, z - 1];
+							if (above > y) shade = -1;
+							else if (above < y) shade = 1;
+						}
+					}
+					bmp.SetPixel(x, z, GetMapColor(block, shade));
 				}
 			}
 			return bmp;
@@ -172,17 +199,28 @@ namespace MCUtils {
 				//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
 				//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;
 				var chunkHM = nbt.GetHeightmapFromChunkNBT(mapType);
-				ChunkData chunk = new ChunkData(null, nbt);
-				for(int x = 0; x < 16; x++) {
-					for(int z = 0; z < 16; z++) {
-						byte y = (chunkHM != null) ? (byte)Math.Max(chunkHM[x, z] - 1, 0) : (byte)255;
-						if(y > 1) {
-							while(y > 0 && !IsBlockForMap(chunk.GetBlockAt(x, y, z), mapType)) {
-								y--;
+				try
+				{
+					ChunkData chunk = new ChunkData(null, nbt);
+					for (int x = 0; x < 16; x++)
+					{
+						for (int z = 0; z < 16; z++)
+						{
+							byte y = (chunkHM != null) ? (byte)Math.Max(chunkHM[x, z] - 1, 0) : (byte)255;
+							if (y > 1)
+							{
+								while (y > 0 && !IsBlockForMap(chunk.GetBlockAt(x, y, z), mapType))
+								{
+									y--;
+								}
 							}
+							heightmap[localChunkX * 16 + x, localChunkZ * 16 + z] = y;
 						}
-						heightmap[localChunkX * 16 + x, localChunkZ * 16 + z] = y;
 					}
+				}
+				catch
+				{
+
 				}
 			}
 		}

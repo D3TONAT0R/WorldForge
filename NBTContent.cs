@@ -236,9 +236,9 @@ namespace MCUtils {
 				contents.cont.Remove("Level");
 			}
 			//Program.writeLine("NBT Loaded!");
-			if(isChunkFile) {
+			/*if(isChunkFile) {
 				var chunk = new ChunkData(null, this);
-			}
+			}*/
 		}
 
 		///<summary>Generates a byte array from the content of this NBT structure.</summary>
@@ -280,12 +280,12 @@ namespace MCUtils {
 					}
 				} else if(contents.Contains("HeightMap")) {
 					//It's the old, simple format
-					int[] hmints = (int[])contents.Get("HeightMap");
+					byte[] hmbytes = (byte[])contents.Get("HeightMap");
 					short[,] hm = new short[16, 16];
 					for(int z = 0; z < 16; z++) {
 						for(int x = 0; x < 16; x++) {
-							var value = hmints[z * 16 + x];
-							hm[x, z] = (short)value;
+							var value = hmbytes[z * 16 + x];
+							hm[x, z] = value;
 						}
 					}
 					return hm;

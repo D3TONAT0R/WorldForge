@@ -126,6 +126,22 @@ namespace MCUtils {
 			return hm;
 		}
 
+		/// <summary>
+		/// Gets the depth of the water at the given location, in blocks
+		/// </summary>
+		public int GetWaterDepth(int x, int y, int z)
+		{
+			int depth = 0;
+			var block = GetBlock(x, y, z);
+			while(block == "minecraft:water")
+			{
+				depth++;
+				y--;
+				block = GetBlock(x, y, z);
+			}
+			return depth;
+		}
+
 		public void MakeBiomeArray() {
 			foreach(var c in chunks) {
 				c.MakeBiomeArray();
