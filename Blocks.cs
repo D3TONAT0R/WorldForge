@@ -80,7 +80,32 @@ namespace MCUtils {
 			{"minecraft:magma_block",9 }
 		};
 
+		public static readonly string[] commonColors = new string[]
+		{
+			"white",
+			"light_gray",
+			"gray",
+			"black",
+			"red",
+			"pink",
+			"orange",
+			"yellow",
+			"brown",
+			"lime",
+			"green",
+			"cyan",
+			"light_blue",
+			"blue",
+			"magenta",
+			"purple"
+		};
+
 		static Color[,] colormap;
+
+		public static string GetRandomColor(Random r)
+		{
+			return commonColors[r.Next(commonColors.Length)];
+		}
 
 		public static bool IsBlockForMap(BlockState b, HeightmapType type) {
 			if(b == null || IsAir(b)) return false;
