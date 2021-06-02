@@ -71,6 +71,11 @@ namespace MCUtils {
 				}
 			}
 
+			public T Get<T>(string key)
+			{
+				return (T)Convert.ChangeType(Get(key), typeof(T));
+			}
+
 			public bool Contains(string key) {
 				return cont.ContainsKey(key);
 			}
@@ -112,9 +117,7 @@ namespace MCUtils {
 		///<summary>A container for the TAG_List tag.</summary>
 		public class ListContainer : Container {
 
-			public override NBTTag containerType {
-				get { return NBTTag.TAG_List; }
-			}
+			public override NBTTag containerType => NBTTag.TAG_List;
 
 			public NBTTag contentsType;
 			public int Length {
@@ -131,6 +134,11 @@ namespace MCUtils {
 
 			public override object Get(string key) {
 				return this[int.Parse(key)];
+			}
+
+			public T Get<T>(int index)
+			{
+				return (T)Convert.ChangeType(this[index], typeof(T));
 			}
 
 			public override T Add<T>(string key, T value) {

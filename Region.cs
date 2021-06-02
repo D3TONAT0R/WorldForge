@@ -65,6 +65,12 @@ namespace MCUtils {
 			return GetChunk(x,z,false)?.GetBlockAt(x % 16, y, z % 16);
 		}
 
+		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
+		public TileEntity GetTileEntity(int x, int y, int z)
+		{
+			return GetChunk(x, z, true)?.GetTileEntity(x % 16, y, z % 16);
+		}
+
 		///<summary>Sets the block type at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, string block) {
 			return SetBlock(x, y, z, new BlockState(block));
@@ -74,6 +80,14 @@ namespace MCUtils {
 		public bool SetBlock(int x, int y, int z, BlockState block) {
 			GetChunk(x, z, true)?.SetBlockAt(x % 16, y, z % 16, block);
 			return true;
+		}
+
+		///<summary>Sets the tile entity at the given location.</summary>
+		public bool SetTileEntity(int x, int y, int z, TileEntity te)
+		{
+			var chunk = GetChunk(x, z, true);
+			chunk?.SetTileEntity(x % 16, y, z % 16, te);
+			return chunk != null;
 		}
 
 		/// <summary>

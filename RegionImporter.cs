@@ -19,6 +19,8 @@ namespace MCUtils {
 		static ushort[,] heightmap;
 		static byte[][] compressedChunkData;
 
+		static bool allowOrphanChunkLoad = false;
+
 		///<summary>Creates an instance of <c>Region</c> by reading an existing region file.</summary>
 		public static Region OpenRegionFile(string filepath) {
 			string fname = Path.GetFileName(filepath);
@@ -72,20 +74,28 @@ namespace MCUtils {
 				if(misplacedChunks > 5) {
 					MCUtilsConsole.WriteWarning($"There are {misplacedChunks} misplaced chunks in total");
 				}
-				if(stream.Length > expectedSize) {
-					Console.WriteLine("Attempting to load orphan chunks ...");
-					uint pos = expectedSize;
-					try {
-						r.orphanChunks = new List<ChunkData>();
-						while(pos < stream.Length - 1) {
-							var nbt = new NBTContent(UncompressChunkData(GetChunkData(expectedSize, out uint length)), true);
-							uint lengthKiB = (uint)Math.Ceiling(length / 4096f);
-							r.orphanChunks.Add(new ChunkData(r, nbt));
-							Console.WriteLine($"Orphan chunk found!");
-							pos += lengthKiB * 4096;
+				if (allowOrphanChunkLoad)
+				{
+					if (stream.Length > expectedSize)
+					{
+						Console.WriteLine("Attempting to load orphan chunks ...");
+						uint pos = expectedSize;
+						try
+						{
+							r.orphanChunks = new List<ChunkData>();
+							while (pos < stream.Length - 1)
+							{
+								var nbt = new NBTContent(UncompressChunkData(GetChunkData(expectedSize, out uint length)), true);
+								uint lengthKiB = (uint)Math.Ceiling(length / 4096f);
+								r.orphanChunks.Add(new ChunkData(r, nbt));
+								Console.WriteLine($"Orphan chunk found!");
+								pos += lengthKiB * 4096;
+							}
 						}
-					} catch {
-						Console.WriteLine("Failed to load remaining orphan chunk data.");
+						catch
+						{
+							Console.WriteLine("Failed to load remaining orphan chunk data.");
+						}
 					}
 				}
 				return r;

@@ -102,7 +102,8 @@ namespace MCUtils {
 				MCUtilsConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
 				var region1 = RegionImporter.OpenRegionFile(Path.Combine(world1Path, r.filename));
 				var region2 = RegionImporter.OpenRegionFile(Path.Combine(world2Path, r.filename));
-				var mergedRegion = RegionMerger.MergeRegions(region1, region2, section);
+				var merger = new RegionMerger(region1, region2, section);
+				var mergedRegion = merger.Merge();
 
 				MCUtilsConsole.WriteLine("Writing file...");
 				FileStream stream = new FileStream(Path.Combine(outputPath, r.filename), FileMode.Create);

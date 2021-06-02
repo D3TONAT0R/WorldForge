@@ -114,7 +114,7 @@ namespace MCUtils {
 			} else if(type == HeightmapType.SolidBlocks) {
 				return !IsTransparentBlock(b);
 			} else if(type == HeightmapType.SolidBlocksNoLiquid) {
-				return !IsTransparentBlock(b) && !IsLiquid(b);
+				return !IsTransparentBlock(b) && !IsLiquid(b) && !b.Compare("minecraft:ice");
 			} else if(type == HeightmapType.TerrainBlocks) {
 				return b.CompareMultiple(commonTerrainBlocks) || b.CompareMultiple(waterBlock, lavaBlock);
 			} else if(type == HeightmapType.TerrainBlocksNoLiquid) {
@@ -123,7 +123,7 @@ namespace MCUtils {
 				return false;
 			}
 		}
-
+		
 		public static Color GetMapColor(string block, int shade) {
 			if(colormap == null) {
 				colormap = LoadColorMap();
@@ -152,22 +152,27 @@ namespace MCUtils {
 		}
 
 		public static bool IsAir(BlockState b) {
+			if (b == null) return false;
 			return b.CompareMultiple("minecraft:air", "minecraft:cave_air");
 		}
 
 		public static bool IsLiquid(BlockState b) {
+			if (b == null) return false;
 			return b.CompareMultiple(waterBlock, lavaBlock);
 		}
 
 		public static bool IsPlantSustaining(BlockState b)
 		{
+			if (b == null) return false;
 			return b.CompareMultiple(plantSustainingBlocks);
 		}
 
 		public static bool IsTransparentBlock(BlockState bs) {
 			string b = bs.ID;
 			if(b == null) return true;
-			b = b.Replace("minecraft:", "");
+			if(!b.Contains("minecraft:")) {
+				return false;
+			}
 			if(b.Contains("glass")) return true;
 			if(b.Contains("bars")) return true;
 			if(b.Contains("sapling")) return true;
@@ -181,36 +186,36 @@ namespace MCUtils {
 			if(b.Contains("door")) return true;
 			if(b.Contains("carpet")) return true;
 			switch(b) {
-				case "air":
-				case "cave:air":
-				case "cobweb":
-				case "grass":
-				case "fern":
-				case "dead_bush":
-				case "seagrass":
-				case "sea_pickle":
-				case "dandelion":
-				case "poppy":
-				case "blue_orchid":
-				case "allium":
-				case "azure_bluet":
-				case "end_rod":
-				case "ladder":
-				case "lever":
-				case "snow_layer":
-				case "lily_pad":
-				case "tripwire_hook":
-				case "barrier":
-				case "tall_grass":
-				case "large_fern":
-				case "sunflower":
-				case "lilac":
-				case "rose_bush":
-				case "peony":
-				case "structure_void":
-				case "turtle_egg":
-				case "redstone":
-				case "sweet_berry_bush": return true;
+				case "minecraft:air":
+				case "minecraft:cave_air":
+				case "minecraft:cobweb":
+				case "minecraft:grass":
+				case "minecraft:fern":
+				case "minecraft:dead_bush":
+				case "minecraft:seagrass":
+				case "minecraft:sea_pickle":
+				case "minecraft:dandelion":
+				case "minecraft:poppy":
+				case "minecraft:blue_orchid":
+				case "minecraft:allium":
+				case "minecraft:azure_bluet":
+				case "minecraft:end_rod":
+				case "minecraft:ladder":
+				case "minecraft:lever":
+				case "minecraft:snow":
+				case "minecraft:lily_pad":
+				case "minecraft:tripwire_hook":
+				case "minecraft:barrier":
+				case "minecraft:tall_grass":
+				case "minecraft:large_fern":
+				case "minecraft:sunflower":
+				case "minecraft:lilac":
+				case "minecraft:rose_bush":
+				case "minecraft:peony":
+				case "minecraft:structure_void":
+				case "minecraft:turtle_egg":
+				case "minecraft:redstone":
+				case "minecraft:sweet_berry_bush": return true;
 			}
 			return false;
 		}

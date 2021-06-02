@@ -187,7 +187,7 @@ namespace MCUtils
 			{
 				for (int x = xMin; x <= xMax; x++)
 				{
-					hm[x, z] = GetRegionAt(x, z, false)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
+					hm[x-xMin, z-zMin] = GetRegionAt(x, z, false)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
 				}
 			}
 			return hm;
@@ -234,7 +234,7 @@ namespace MCUtils
 							else if (above < y) shade = 1;
 						}
 					}
-					bmp.SetPixel(x, z, Blocks.GetMapColor(block, shade));
+					bmp.SetPixel(x-xMin, z-zMin, Blocks.GetMapColor(block, shade));
 				}
 			}
 			return bmp;
@@ -253,12 +253,12 @@ namespace MCUtils
 			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream);
 		}
 
-		public void WriteWorldSave(string path)
+		public void WriteWorldSave(string path, int playerPosX, int playerPosZ)
 		{
 			Directory.CreateDirectory(path);
 
-			int y = GetRegionAt(0, 0, false).GetChunk(0, 0, false).GetHighestBlock(1, 1);
-			levelDat = CreateLevelDAT(1, y, 1, true);
+			int y = GetRegionAt(playerPosX, playerPosZ, false).GetChunk(playerPosX % 512, playerPosZ % 512, false).GetHighestBlock(playerPosX % 16, playerPosZ % 16);
+			levelDat = CreateLevelDAT(playerPosX, y, playerPosZ, true);
 
 			List<byte> levelDATBytes = new List<byte>();
 			levelDat.WriteToBytes(levelDATBytes, false);

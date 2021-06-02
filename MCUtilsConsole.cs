@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCUtils.ConsoleTools;
+using System;
 using System.IO;
 
 namespace MCUtils {
@@ -31,7 +32,7 @@ namespace MCUtils {
 				WriteLine("- readchunk          Loads chunk data at a specific byte offset in a region file");
 				input = GetInput();
 				if(input.StartsWith("mergeregions")) {
-					var m = new RegionMerger();
+					var m = new RegionMergerConsoleTool();
 					m.Run();
 				}
 				if(input.StartsWith("mergeworlds")) {
