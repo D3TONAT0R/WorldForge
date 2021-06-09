@@ -170,21 +170,18 @@ namespace MCUtils {
 		public static bool IsTransparentBlock(BlockState bs) {
 			string b = bs.ID;
 			if(b == null) return true;
-			if(!b.Contains("minecraft:")) {
-				return false;
-			}
-			if(b.Contains("glass")) return true;
-			if(b.Contains("bars")) return true;
-			if(b.Contains("sapling")) return true;
-			if(b.Contains("rail")) return true;
-			if(b.Contains("tulip")) return true;
-			if(b.Contains("mushroom")) return true;
-			if(b.Contains("pressure_plate")) return true;
-			if(b.Contains("button")) return true;
-			if(b.Contains("torch")) return true;
-			if(b.Contains("fence")) return true;
-			if(b.Contains("door")) return true;
-			if(b.Contains("carpet")) return true;
+			if(b.Contains("minecraft:glass")) return true;
+			if(b.Contains("minecraft:bars")) return true;
+			if(b.Contains("minecraft:sapling")) return true;
+			if(b.Contains("minecraft:rail")) return true;
+			if(b.Contains("minecraft:tulip")) return true;
+			if(b.Contains("minecraft:mushroom")) return true;
+			if(b.Contains("minecraft:pressure_plate")) return true;
+			if(b.Contains("minecraft:button")) return true;
+			if(b.Contains("minecraft:torch")) return true;
+			if(b.Contains("minecraft:fence")) return true;
+			if(b.Contains("minecraft:door")) return true;
+			if(b.Contains("minecraft:carpet")) return true;
 			switch(b) {
 				case "minecraft:air":
 				case "minecraft:cave_air":

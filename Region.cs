@@ -3,6 +3,7 @@ using Ionic.Zlib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using static MCUtils.ChunkData;
 using static MCUtils.NBTContent;
 
@@ -163,15 +164,16 @@ namespace MCUtils {
 		}
 
 		///<summary>Generates a full .mca file stream for use in Minecraft.</summary>
-		public void WriteRegionToStream(FileStream stream) {
+		public void WriteRegionToStream(FileStream stream, bool writeProgressBar = false) {
 			DateTime time = System.DateTime.Now;
 			int[] locations = new int[1024];
 			byte[] sizes = new byte[1024];
-			for(int i = 0; i < 8192; i++) {
+			for (int i = 0; i < 8192; i++) {
 				stream.WriteByte(0);
 			}
 			for(int z = 0; z < 32; z++) {
-				for(int x = 0; x < 32; x++) {
+				for (int x = 0; x < 32; x++)
+				{
 					int i = z * 32 + x;
 					locations[i] = (int)(stream.Position / 4096);
 					var chunkData = MakeCompoundForChunk(chunks[x, z], 32 * regionPosX + x, 32 * regionPosZ + z);
@@ -184,13 +186,14 @@ namespace MCUtils {
 					stream.Write(compressed, 0, compressed.Length);
 					var padding = stream.Length % 4096;
 					//Pad the data to the next 4096 byte mark
-					if(padding > 0) {
+					if (padding > 0)
+					{
 						byte[] paddingBytes = new byte[4096 - padding];
 						stream.Write(paddingBytes, 0, paddingBytes.Length);
 					}
 					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				}
-				MCUtilsConsole.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
+				if(writeProgressBar) MCUtilsConsole.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
 			}
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++) {
@@ -213,16 +216,16 @@ namespace MCUtils {
 			nbt.contents.Add("Status", "light");
 			ListContainer sections = new ListContainer(NBTTag.TAG_Compound);
 			nbt.contents.Add("Sections", sections);
+			nbt.contents.Add("TileEntities", new ListContainer(NBTTag.TAG_Compound));
+			nbt.contents.Add("Entities", new ListContainer(NBTTag.TAG_Compound));
 			chunk.WriteToNBT(nbt.contents, true);
 			//Add the rest of the tags and leave them empty
 			nbt.contents.Add("Heightmaps", new CompoundContainer());
 			nbt.contents.Add("Structures", new CompoundContainer());
-			nbt.contents.Add("Entities", new ListContainer(NBTTag.TAG_End));
 			nbt.contents.Add("LiquidTicks", new ListContainer(NBTTag.TAG_End));
 			ListContainer postprocessing = new ListContainer(NBTTag.TAG_List);
 			for(int i = 0; i < 16; i++) postprocessing.Add("", new ListContainer(NBTTag.TAG_End));
 			nbt.contents.Add("PostProcessing", postprocessing);
-			nbt.contents.Add("TileEntities", new ListContainer(NBTTag.TAG_End));
 			nbt.contents.Add("TileTicks", new ListContainer(NBTTag.TAG_End));
 			nbt.contents.Add("InhabitedTime", 0L);
 			nbt.contents.Add("LastUpdate", 0L);

@@ -6,206 +6,6 @@ namespace MCUtils
 {
 	public class ChunkData
 	{
-
-		public class ChunkSection
-		{
-			public ushort[,,] blocks = new ushort[16, 16, 16];
-			public List<BlockState> palette;
-
-			public ChunkSection(string defaultBlock)
-			{
-				palette = new List<BlockState>();
-				if (defaultBlock != null)
-				{
-					palette.Add(new BlockState("minecraft:air")); //Index 0
-					palette.Add(new BlockState(defaultBlock)); //Index 1
-				}
-			}
-
-			public void SetBlockAt(int x, int y, int z, BlockState block)
-			{
-				ushort? index = GetPaletteIndex(block);
-				if (index == null)
-				{
-					index = AddBlockToPalette(block);
-				}
-				blocks[x, y, z] = (ushort)index;
-			}
-
-			public void SetBlockAt(int x, int y, int z, ushort paletteIndex)
-			{
-				blocks[x, y, z] = paletteIndex;
-			}
-
-			public BlockState GetBlockAt(int x, int y, int z)
-			{
-				return palette[blocks[x, y, z]];
-			}
-
-			public ushort? GetPaletteIndex(BlockState state)
-			{
-				for (short i = 0; i < palette.Count; i++)
-				{
-					if (palette[i].ID == state.ID && palette[i].properties.HasSameContent(state.properties)) return (ushort)i;
-				}
-				return null;
-			}
-
-			public ushort AddBlockToPalette(BlockState block)
-			{
-				palette.Add(block);
-				return (ushort)(palette.Count - 1);
-			}
-
-			private bool IsEmpty()
-			{
-				if (blocks == null) return true;
-				bool allSame = true;
-				var i = blocks[0, 0, 0];
-				if (!palette[i].Compare(BlockState.air, false)) return false;
-				foreach (var j in blocks)
-				{
-					allSame &= i == j;
-				}
-				return allSame;
-			}
-
-			public CompoundContainer CreateCompound(sbyte secY, bool use_1_16_Format)
-			{
-				var comp = new CompoundContainer();
-				comp.Add("Y", (byte)secY);
-				ListContainer paletteContainer = new ListContainer(NBTTag.TAG_Compound);
-				foreach (var block in palette)
-				{
-					CompoundContainer paletteBlock = new CompoundContainer();
-					paletteBlock.Add("Name", block.ID);
-					if (block.properties != null)
-					{
-						CompoundContainer properties = new CompoundContainer();
-						foreach (var prop in block.properties.cont.Keys)
-						{
-							properties.Add(prop, block.properties.Get(prop).ToString());
-						}
-						paletteBlock.Add("Properties", properties);
-					}
-					paletteContainer.Add("", paletteBlock);
-				}
-				comp.Add("Palette", paletteContainer);
-				//Encode block indices to bits and longs, oof
-				int indexLength = Math.Max(4, (int)Math.Log(palette.Count - 1, 2.0) + 1);
-				//How many block indices fit inside a long?
-				int indicesPerLong = (int)Math.Floor(64f / indexLength);
-				long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
-				string[] longsBinary = new string[longs.Length];
-				for (int j = 0; j < longsBinary.Length; j++)
-				{
-					longsBinary[j] = "";
-				}
-				int i = 0;
-				for (int y = 0; y < 16; y++)
-				{
-					for (int z = 0; z < 16; z++)
-					{
-						for (int x = 0; x < 16; x++)
-						{
-							string bin = NumToBits(blocks[x, y, z], indexLength);
-							bin = Converter.ReverseString(bin);
-							if (use_1_16_Format)
-							{
-								if (longsBinary[i].Length + indexLength > 64)
-								{
-									//The full value doesn't fit, start on the next long
-									i++;
-									longsBinary[i] += bin;
-								}
-								else
-								{
-									for (int j = 0; j < indexLength; j++)
-									{
-										if (longsBinary[i].Length >= 64) i++;
-										longsBinary[i] += bin[j];
-									}
-								}
-							}
-						}
-					}
-				}
-				for (int j = 0; j < longs.Length; j++)
-				{
-					string s = longsBinary[j];
-					s = s.PadRight(64, '0');
-					s = Converter.ReverseString(s);
-					longs[j] = Convert.ToInt64(s, 2);
-				}
-				comp.Add("BlockStates", longs);
-				return comp;
-			}
-		}
-
-		public class BlockState
-		{
-
-			public static readonly BlockState air = new BlockState("minecraft:air");
-
-			public readonly string ID;
-			public readonly string customNamespace = null;
-			public readonly string shortID;
-			public CompoundContainer properties = new CompoundContainer();
-
-			public BlockState(string name)
-			{
-				if (!name.Contains(":"))
-				{
-					name = "minecraft:" + name;
-				}
-				ID = name;
-				var split = ID.Split(':');
-				customNamespace = split[0] == "minecraft" ? null : split[0];
-				name = split[1];
-				shortID = name;
-				AddDefaultBlockProperties();
-			}
-
-			void AddDefaultBlockProperties()
-			{
-				switch (shortID)
-				{
-					case "oak_leaves":
-					case "spruce_leaves":
-					case "birch_leaves":
-					case "jungle_leaves":
-					case "acacia_leaves":
-					case "dark_oak_leaves":
-						properties.Add("distance", 1);
-						break;
-				}
-			}
-
-			public bool CompareMultiple(params string[] ids)
-			{
-				bool b = false;
-				for (int i = 0; i < ids.Length; i++)
-				{
-					b |= Compare(ids[i]);
-				}
-				return b;
-			}
-
-			public bool Compare(string block)
-			{
-				return block == ID;
-			}
-
-			public bool Compare(BlockState state, bool compareProperties)
-			{
-				if (compareProperties)
-				{
-					if (!CompoundContainer.AreEqual(properties, state.properties)) return false;
-				}
-				return state.ID == ID;
-			}
-		}
-
 		public string defaultBlock = "minecraft:stone";
 		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
@@ -222,6 +22,8 @@ namespace MCUtils
 		public Dictionary<(int x, int y, int z), TileEntity> tileEntities = new Dictionary<(int, int, int), TileEntity>();
 
 		public NBTContent sourceNBT;
+
+		private readonly object lockObj = new object();
 
 		public ChunkData(Region region, string defaultBlock)
 		{
@@ -327,7 +129,10 @@ namespace MCUtils
 		///<summary>Sets the biome at the given chunk coordinate</summary>
 		public void SetBiomeAt(int x, int z, byte biomeID)
 		{
-			biomes[x, z] = biomeID;
+			lock (lockObj)
+			{
+				biomes[x, z] = biomeID;
+			}
 		}
 
 		///<summary>Reads all blocks in the given chunk</summary>
@@ -449,6 +254,18 @@ namespace MCUtils
 				}
 			}
 			level.Add("Biomes", biomes.ToArray());
+			//Add TileEntities
+			var teList = level.GetAsList("TileEntities");
+			foreach(var te in tileEntities)
+			{
+				teList.Add(te.Value.NBTCompound);
+			}
+			//Add Entities
+			var entitiyList = level.GetAsList("Entities");
+			foreach (var e in entities)
+			{
+				entitiyList.Add(e.NBTCompound);
+			}
 		}
 
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
@@ -539,16 +356,6 @@ namespace MCUtils
 		{
 			bits = bits.PadLeft(64, '0');
 			return Convert.ToInt64(bits, 2);
-		}
-
-		private static string NumToBits(ushort num, int length)
-		{
-			string s = Convert.ToString(num, 2);
-			if (s.Length > length)
-			{
-				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
-			}
-			return s.PadLeft(length, '0');
 		}
 
 		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)

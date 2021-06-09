@@ -8,26 +8,35 @@ using static MCUtils.ChunkData;
 using static MCUtils.Blocks;
 
 namespace MCUtils {
-	public static class RegionImporter {
+	public class RegionImporter {
 
-		static MemoryStream stream;
+		MemoryStream stream;
+		
+		HeightmapType mapType;
+		World.RegionLocation regionPos;
+		uint[] locations;
+		byte[] sizes;
+		ushort[,] heightmap;
+		byte[][] compressedChunkData;
 
-		static HeightmapType mapType;
-		static World.RegionLocation regionPos;
-		static uint[] locations;
-		static byte[] sizes;
-		static ushort[,] heightmap;
-		static byte[][] compressedChunkData;
+		public bool allowOrphanChunkLoad = false;
 
-		static bool allowOrphanChunkLoad = false;
+		private Region region;
 
-		///<summary>Creates an instance of <c>Region</c> by reading an existing region file.</summary>
-		public static Region OpenRegionFile(string filepath) {
+		private RegionImporter()
+		{
+
+		}
+
+		private RegionImporter(string filepath)
+		{
 			string fname = Path.GetFileName(filepath);
 			int regionX = int.Parse(fname.Split('.')[1]);
 			int regionZ = int.Parse(fname.Split('.')[2]);
-			using(stream = new MemoryStream()) {
-				using(FileStream fs = File.Open(filepath, FileMode.Open)) {
+			using (stream = new MemoryStream())
+			{
+				using (FileStream fs = File.Open(filepath, FileMode.Open))
+				{
 					fs.CopyTo(stream);
 				}
 				byte[] locationBytes = Read(0, 4096);
@@ -36,22 +45,26 @@ namespace MCUtils {
 				sizes = new byte[1024];
 				uint lastLocationIndex = 0;
 				uint lastLocationValue = 0;
-				for(uint i = 0; i < 1024; i++) {
+				for (uint i = 0; i < 1024; i++)
+				{
 					uint loc = ReadAsInt(locationBytes, i * 4, 3);
 					locations[i] = loc;
 					byte size = Read(i * 4 + 3, 1)[0];
 					sizes[i] = size;
-					if(size > 0 && loc > lastLocationValue) {
+					if (size > 0 && loc > lastLocationValue)
+					{
 						lastLocationValue = loc;
 						lastLocationIndex = i;
 					}
 				}
 				uint expectedSize = (locations[lastLocationIndex] + sizes[lastLocationIndex]) * 4096;
 				Console.WriteLine($"Expected size {expectedSize}, got {stream.Length}, difference {stream.Length - expectedSize}");
-				Region r = new Region(regionX, regionZ);
+				region = new Region(regionX, regionZ);
 				int misplacedChunks = 0;
-				for(int i = 0; i < 1024; i++) {
-					if(locations[i] > 0 && sizes[i] > 0) {
+				for (int i = 0; i < 1024; i++)
+				{
+					if (locations[i] > 0 && sizes[i] > 0)
+					{
 						var nbt = new NBTContent(UncompressChunkData(GetChunkData(locations[i] * 4096, out _)), true);
 						//int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
 						//int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
@@ -59,19 +72,23 @@ namespace MCUtils {
 						int localChunkZ = i / 32;
 						int chunkDataX = (int)nbt.contents.Get("xPos");
 						int chunkDataZ = (int)nbt.contents.Get("zPos");
-						if(localChunkX + regionX * 32 != chunkDataX || localChunkZ + regionZ * 32 != chunkDataZ) {
+						if (localChunkX + regionX * 32 != chunkDataX || localChunkZ + regionZ * 32 != chunkDataZ)
+						{
 							misplacedChunks++;
-							if(misplacedChunks <= 10) {
+							if (misplacedChunks <= 10)
+							{
 								MCUtilsConsole.WriteWarning($"Chunk location mismatch! Expected[{localChunkX + regionX * 32},{localChunkZ + regionZ * 32}], got [{chunkDataX},{chunkDataZ}]");
 							}
-							if(misplacedChunks == 11) {
+							if (misplacedChunks == 11)
+							{
 								MCUtilsConsole.WriteWarning("...");
 							}
 						}
-						r.chunks[localChunkX, localChunkZ] = new ChunkData(r, nbt);
+						region.chunks[localChunkX, localChunkZ] = new ChunkData(region, nbt);
 					}
 				}
-				if(misplacedChunks > 5) {
+				if (misplacedChunks > 5)
+				{
 					MCUtilsConsole.WriteWarning($"There are {misplacedChunks} misplaced chunks in total");
 				}
 				if (allowOrphanChunkLoad)
@@ -82,12 +99,12 @@ namespace MCUtils {
 						uint pos = expectedSize;
 						try
 						{
-							r.orphanChunks = new List<ChunkData>();
+							region.orphanChunks = new List<ChunkData>();
 							while (pos < stream.Length - 1)
 							{
 								var nbt = new NBTContent(UncompressChunkData(GetChunkData(expectedSize, out uint length)), true);
 								uint lengthKiB = (uint)Math.Ceiling(length / 4096f);
-								r.orphanChunks.Add(new ChunkData(r, nbt));
+								region.orphanChunks.Add(new ChunkData(region, nbt));
 								Console.WriteLine($"Orphan chunk found!");
 								pos += lengthKiB * 4096;
 							}
@@ -98,25 +115,31 @@ namespace MCUtils {
 						}
 					}
 				}
-				return r;
 			}
+		}
+
+		///<summary>Creates an instance of <c>Region</c> by reading an existing region file.</summary>
+		public static Region OpenRegionFile(string filepath) {
+			return new RegionImporter(filepath).region;
 		}
 
 		///<summary>Loads chunk data from a specified byte offset in a region file (for debugging purposes)</summary>
 		public static NBTContent LoadChunkDataFromOffset(string filepath, uint byteOffset) {
-			using(stream = new MemoryStream()) {
+			var ri = new RegionImporter();
+			using(ri.stream = new MemoryStream()) {
 				using(FileStream fs = File.Open(filepath, FileMode.Open)) {
 
-					fs.CopyTo(stream);
+					fs.CopyTo(ri.stream);
 				}
-				stream.Position = byteOffset;
-				return new NBTContent(UncompressChunkData(GetChunkData(byteOffset, out _)), true);
+				ri.stream.Position = byteOffset;
+				return new NBTContent(UncompressChunkData(ri.GetChunkData(byteOffset, out _)), true);
 			}
 		}
 
 		///<summary>Reads the height data from a region (With [0,0] being the top-left corner).</summary>
 		public static ushort[,] GetHeightmap(string filepath, HeightmapType heightmapType) {
-			mapType = heightmapType;
+			var ri = new RegionImporter();
+			ri.mapType = heightmapType;
 			int regionX = 0;
 			int regionZ = 0;
 			string fname = Path.GetFileNameWithoutExtension(filepath);
@@ -125,29 +148,29 @@ namespace MCUtils {
 				regionX = int.Parse(fname.Split('.')[1]);
 				regionZ = int.Parse(fname.Split('.')[2]);
 			}
-			regionPos = new World.RegionLocation(regionX, regionZ);
-			using(stream = new MemoryStream()) {
+			ri.regionPos = new World.RegionLocation(regionX, regionZ);
+			using(ri.stream = new MemoryStream()) {
 				using(FileStream fs = File.Open(filepath, FileMode.Open)) {
-					stream = new MemoryStream();
-					fs.CopyTo(stream);
+					ri.stream = new MemoryStream();
+					fs.CopyTo(ri.stream);
 				}
-				byte[] locationBytes = Read(0, 4096);
-				byte[] timestampBytes = Read(4096, 4096);
-				locations = new uint[1024];
-				sizes = new byte[1024];
+				byte[] locationBytes = ri.Read(0, 4096);
+				byte[] timestampBytes = ri.Read(4096, 4096);
+				ri.locations = new uint[1024];
+				ri.sizes = new byte[1024];
 				for(uint i = 0; i < 1024; i++) {
-					locations[i] = ReadAsInt(locationBytes, i * 4, 3);
-					sizes[i] = Read(i * 4 + 3, 1)[0];
+					ri.locations[i] = ReadAsInt(locationBytes, i * 4, 3);
+					ri.sizes[i] = ri.Read(i * 4 + 3, 1)[0];
 				}
-				compressedChunkData = new byte[1024][];
+				ri.compressedChunkData = new byte[1024][];
 				for(int i = 0; i < 1024; i++) {
-					if(locations[i] > 0 && sizes[i] > 0) {
-						compressedChunkData[i] = GetChunkData(locations[i] * 4096, out _);
+					if(ri.locations[i] > 0 && ri.sizes[i] > 0) {
+						ri.compressedChunkData[i] = ri.GetChunkData(ri.locations[i] * 4096, out _);
 					}
 				}
-				heightmap = new ushort[512, 512];
-				Parallel.For(0, 1024, GetChunkHeightmap);
-				return heightmap;
+				ri.heightmap = new ushort[512, 512];
+				Parallel.For(0, 1024, ri.GetChunkHeightmap);
+				return ri.heightmap;
 			}
 		}
 
@@ -201,7 +224,7 @@ namespace MCUtils {
 			return bmp;
 		}
 
-		private static void GetChunkHeightmap(int i) {
+		private void GetChunkHeightmap(int i) {
 			if(compressedChunkData[i] != null) {
 				var nbt = new NBTContent(UncompressChunkData(compressedChunkData[i]), true);
 				int localChunkX = i % 32;
@@ -235,7 +258,7 @@ namespace MCUtils {
 			}
 		}
 
-		private static byte[] Read(uint start, uint length) {
+		private byte[] Read(uint start, uint length) {
 			byte[] buffer = new byte[length];
 			stream.Position = start;
 			for(int i = 0; i < length; i++) {
@@ -258,7 +281,7 @@ namespace MCUtils {
 			return BitConverter.ToUInt32(bytes, 0);
 		}
 
-		private static byte[] GetChunkData(uint pos, out uint length) {
+		private byte[] GetChunkData(uint pos, out uint length) {
 			byte[] bytes = new byte[4];
 			stream.Position = pos;
 			for(int i = 0; i < 4; i++) {

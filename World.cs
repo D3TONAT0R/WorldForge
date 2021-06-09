@@ -1,10 +1,12 @@
 ﻿using Ionic.Zlib;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using static MCUtils.ChunkData;
 using static MCUtils.NBTContent;
 
@@ -30,7 +32,6 @@ namespace MCUtils
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
 
 		public Dictionary<RegionLocation, Region> regions;
-		public bool allowNewRegions = false;
 
 		public NBTContent levelDat;
 
@@ -59,13 +60,32 @@ namespace MCUtils
 			}
 		}
 
+		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed</summary>
+		public void InitializeArea(int x1, int z1, int x2, int z2)
+		{
+			for (int x = x1.RegionCoord(); x <= x2.RegionCoord(); x++)
+			{
+				for (int z = z1.RegionCoord(); z <= z2.RegionCoord(); z++)
+				{
+					AddRegion(x, z);
+				}
+			}
+		}
+
+		[Obsolete("Use TryGetRegion instead for better performance and direct access to the region", false)]
 		/// <summary>Is the location within the world's generated regions?</summary>
 		public bool IsWithinBoundaries(int x, int y, int z)
 		{
-			if (y < 0 || y > 255) return false;
 			x = (int)Math.Floor(x / 512f);
 			z = (int)Math.Floor(z / 512f);
 			return regions.ContainsKey(new RegionLocation(x, z));
+		}
+
+		/// <summary>Gets the region at the given block coordinates, if present</summary>
+		public Region TryGetRegion(int x, int z)
+		{
+			regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out var region);
+			return region;
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
@@ -86,48 +106,57 @@ namespace MCUtils
 		///<summary>Gets the block type at the given location.</summary>
 		public string GetBlock(int x, int y, int z)
 		{
-			if (IsWithinBoundaries(x, y, z))
-			{
-				return regions[new RegionLocation(x.RegionCoord(), z.RegionCoord())].GetBlock(x % 512, y, z % 512);
-			}
-			else
-			{
-				return null;
-			}
+			return TryGetRegion(x, z)?.GetBlock(x % 512, y, z % 512);
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(int x, int y, int z)
 		{
-			if (IsWithinBoundaries(x, y, z))
-			{
-				return regions[new RegionLocation(x.RegionCoord(), z.RegionCoord())].GetBlockState(x % 512, y, z % 512);
-			}
-			else
-			{
-				return null;
-			}
+			return TryGetRegion(x, z)?.GetBlockState(x % 512, y, z % 512);
 		}
 
-		private Region GetRegionAt(int x, int z, bool allowNew)
+		//private readonly object lockObj = new object();
+
+		private Region GetRegionAt(int x, int z)
 		{
-			var rloc = new RegionLocation(x.RegionCoord(), z.RegionCoord());
-			if (!IsWithinBoundaries(x, 0, z))
+			return TryGetRegion(x, z);
+			/*lock (lockObj)
 			{
-				if (allowNew)
+				var region = TryGetRegion(x, z);
+				if (region == null)
 				{
-					var r = new Region(rloc);
-					regions.Add(rloc, r);
-					return r;
+					if (allowNew)
+					{
+						var rloc = new RegionLocation(x.RegionCoord(), z.RegionCoord());
+						var r = new Region(rloc);
+						regions.Add(rloc, r);
+						return r;
+					}
+					else
+					{
+						return null;
+					}
 				}
 				else
 				{
-					return null;
+					return region;
 				}
+			}*/
+		}
+
+		public bool AddRegion(int rx, int rz)
+		{
+			if (regions.ContainsKey(new RegionLocation(rx, rz)))
+			{
+				var rloc = new RegionLocation(rx, rz);
+				var r = new Region(rloc);
+				r.containingWorld = this;
+				regions.Add(rloc, r);
+				return true;
 			}
 			else
 			{
-				return regions[rloc];
+				return false;
 			}
 		}
 
@@ -141,7 +170,7 @@ namespace MCUtils
 		public bool SetBlock(int x, int y, int z, BlockState block)
 		{
 			if (y < 0 || y > 255) return false;
-			var r = GetRegionAt(x, z, allowNewRegions);
+			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
 				return r.SetBlock(x % 512, y, z % 512, block);
@@ -156,7 +185,7 @@ namespace MCUtils
 		public void SetDefaultBlock(int x, int y, int z)
 		{
 			if (y < 0 || y > 255) return;
-			var r = GetRegionAt(x, z, allowNewRegions);
+			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
 				r.SetDefaultBlock(x % 512, y, z % 512);
@@ -170,7 +199,7 @@ namespace MCUtils
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, byte biome)
 		{
-			var r = GetRegionAt(x, z, false);
+			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
 				r.SetBiome(x % 512, z % 512, biome);
@@ -187,7 +216,7 @@ namespace MCUtils
 			{
 				for (int x = xMin; x <= xMax; x++)
 				{
-					hm[x-xMin, z-zMin] = GetRegionAt(x, z, false)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
+					hm[x - xMin, z - zMin] = GetRegionAt(x, z)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
 				}
 			}
 			return hm;
@@ -234,7 +263,7 @@ namespace MCUtils
 							else if (above < y) shade = 1;
 						}
 					}
-					bmp.SetPixel(x-xMin, z-zMin, Blocks.GetMapColor(block, shade));
+					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
 			}
 			return bmp;
@@ -245,7 +274,7 @@ namespace MCUtils
 		/// </summary>
 		public int GetWaterDepth(int x, int y, int z)
 		{
-			return GetRegionAt(x, z, false)?.GetWaterDepth(x % 512, y, z % 512) ?? 0;
+			return GetRegionAt(x, z)?.GetWaterDepth(x % 512, y, z % 512) ?? 0;
 		}
 
 		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ)
@@ -257,7 +286,7 @@ namespace MCUtils
 		{
 			Directory.CreateDirectory(path);
 
-			int y = GetRegionAt(playerPosX, playerPosZ, false).GetChunk(playerPosX % 512, playerPosZ % 512, false).GetHighestBlock(playerPosX % 16, playerPosZ % 16);
+			int y = GetRegionAt(playerPosX, playerPosZ).GetChunk(playerPosX % 512, playerPosZ % 512, false).GetHighestBlock(playerPosX % 16, playerPosZ % 16);
 			levelDat = CreateLevelDAT(playerPosX, y, playerPosZ, true);
 
 			List<byte> levelDATBytes = new List<byte>();
@@ -269,14 +298,15 @@ namespace MCUtils
 
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
-			foreach (var region in regions)
+			Parallel.ForEach(regions, (KeyValuePair<RegionLocation, Region> region) =>
 			{
 				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
 				using (var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create))
 				{
 					region.Value.WriteRegionToStream(stream);
 				}
-			}
+
+			});
 		}
 
 		private NBTContent CreateLevelDAT(int playerPosX, int playerPosY, int playerPosZ, bool creativeModeWithCheats)
