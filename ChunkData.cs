@@ -13,10 +13,7 @@ namespace MCUtils
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
-		//public ushort[][,,] blocks = new ushort[16][,,];
-		//public List<BlockState>[] palettes = new List<BlockState>[16];
 		public byte[,] biomes = new byte[16, 16];
-		public int[,,] finalBiomeArray;
 
 		public List<Entity> entities = new List<Entity>();
 		public Dictionary<(int x, int y, int z), TileEntity> tileEntities = new Dictionary<(int, int, int), TileEntity>();
@@ -41,10 +38,9 @@ namespace MCUtils
 		public ChunkData(Region region, NBTContent chunk)
 		{
 			containingRegion = region;
-			//for(int i = 0; i < 16; i++) {
-			//	palettes[i] = new List<BlockState>();
-			//}
-			ReadFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
+			ReadBlocksFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
+			ReadEntitiesAndTileEntitiesFromNBT(chunk.contents);
+			ReadBiomesFromNBT(chunk);
 			if (chunk.dataVersion < 1400)
 			{
 				hasNumericIDs = true;
@@ -135,8 +131,8 @@ namespace MCUtils
 			}
 		}
 
-		///<summary>Reads all blocks in the given chunk</summary>
-		public void ReadFromNBT(ListContainer sectionsList, bool isVersion_prior_1_16)
+		///<summary>Reads all blocks from the given chunk NBT</summary>
+		public void ReadBlocksFromNBT(ListContainer sectionsList, bool isVersion_prior_1_16)
 		{
 			foreach (var o in sectionsList.cont)
 			{
@@ -195,10 +191,68 @@ namespace MCUtils
 			}
 		}
 
-		///<summary>Converts the two-dimensional per-block biome array into a Minecraft compatible biome array (4x4x4 block volumes)</summary>
-		public void MakeBiomeArray()
+		///<summary>Reads all Entities and TileEntities from the given chunk NBT</summary>
+		public void ReadEntitiesAndTileEntitiesFromNBT(CompoundContainer chunkLevelCompound)
 		{
-			finalBiomeArray = new int[4, 64, 4];
+			var entList = chunkLevelCompound.GetAsList("Entities");
+			if (entList != null && entList.contentsType == NBTTag.TAG_Compound)
+			{
+				for (int i = 0; i < entList.Length; i++)
+				{
+					entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
+				}
+			}
+			var tileEntList = chunkLevelCompound.GetAsList("TileEntities");
+			if (tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
+			{
+				for (int i = 0; i < tileEntList.Length; i++)
+				{
+					var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
+					tileEntities.Add((te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
+				}
+			}
+		}
+
+		private void ReadBiomesFromNBT(NBTContent nbt)
+		{
+			if (nbt.contents.Contains("Biomes"))
+			{
+				var biomeArray = nbt.contents.Get<int[]>("Biomes");
+				//Read topmost section, to avoid future cave biomes underground
+				int offset = biomeArray.Length - 16;
+				for (int x = 0; x < 4; x++)
+				{
+					for (int z = 0; z < 4; z++)
+					{
+						var value = (byte)biomeArray[offset + x * 4 + z];
+						for (int x1 = 0; x1 < 4; x1++)
+						{
+							for (int z1 = 0; z1 < 4; z1++)
+							{
+								biomes[x * 4 + x1, z * 4 + z1] = value;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				//Default to plains biome
+				for (int x = 0; x < 16; x++)
+				{
+					for (int z = 0; z < 16; z++)
+					{
+						biomes[x, z] = 1;
+					}
+				}
+			}
+		}
+
+
+		///<summary>Converts the two-dimensional per-block biome array into a Minecraft compatible biome array (4x4x4 block volumes)</summary>
+		private int[,,] MakeBiomeArray()
+		{
+			var finalBiomeArray = new int[4, 64, 4];
 			for (int x = 0; x < 4; x++)
 			{
 				for (int z = 0; z < 4; z++)
@@ -207,6 +261,7 @@ namespace MCUtils
 					for (int y = 0; y < 64; y++) finalBiomeArray[x, y, z] = biome;
 				}
 			}
+			return finalBiomeArray;
 		}
 
 		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type)
@@ -241,6 +296,7 @@ namespace MCUtils
 				sectionsList.Add(null, comp);
 			}
 			//Make the biomes
+			var finalBiomeArray = MakeBiomeArray();
 			List<int> biomes = new List<int>();
 			for (int y = 0; y < 64; y++)
 			{
@@ -256,7 +312,7 @@ namespace MCUtils
 			level.Add("Biomes", biomes.ToArray());
 			//Add TileEntities
 			var teList = level.GetAsList("TileEntities");
-			foreach(var te in tileEntities)
+			foreach (var te in tileEntities)
 			{
 				teList.Add(te.Value.NBTCompound);
 			}
@@ -339,7 +395,7 @@ namespace MCUtils
 						var block = sec.GetBlockAt(x, y % 16, z);
 						if (Blocks.IsBlockForMap(block, type))
 						{
-							if(block.Compare("minecraft:snow"))
+							if (block.Compare("minecraft:snow"))
 							{
 								//Go down to grass level in case of a snow layer
 								y--;

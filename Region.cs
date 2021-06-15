@@ -157,12 +157,6 @@ namespace MCUtils {
 			return depth;
 		}
 
-		public void MakeBiomeArray() {
-			foreach(var c in chunks) {
-				c.MakeBiomeArray();
-			}
-		}
-
 		///<summary>Generates a full .mca file stream for use in Minecraft.</summary>
 		public void WriteRegionToStream(FileStream stream, bool writeProgressBar = false) {
 			DateTime time = System.DateTime.Now;

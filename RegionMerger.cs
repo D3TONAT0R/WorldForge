@@ -52,7 +52,11 @@ namespace MCUtils
 		{
 		}
 
-		private static byte[,] ConvertToMergeMask(Bitmap mask)
+		public RegionMerger(Region r1, Region r2, bool[,] mask) : this(r1, r2, ConvertToMergeMask(mask))
+		{
+		}
+
+		public static byte[,] ConvertToMergeMask(Bitmap mask)
 		{
 			if (!(mask.Width == 512 && mask.Height == 512) && !(mask.Width == 32 && mask.Height == 32))
 			{
@@ -64,6 +68,23 @@ namespace MCUtils
 				for (int z = 0; z < mask.Height; z++)
 				{
 					map[x, z] = (byte)((mask.GetPixel(x, z).GetBrightness() > 0.5f) ? 2 : 1);
+				}
+			}
+			return map;
+		}
+
+		public static byte[,] ConvertToMergeMask(bool[,] mask)
+		{
+			if (!(mask.GetLength(0) == 512 && mask.GetLength(1) == 512) && !(mask.GetLength(0) == 32 && mask.GetLength(1) == 32))
+			{
+				throw new ArgumentException("Bitmap masks must be either 512x512 or 32x32");
+			}
+			byte[,] map = new byte[mask.GetLength(0), mask.GetLength(1)];
+			for (int x = 0; x < mask.GetLength(0); x++)
+			{
+				for (int z = 0; z < mask.GetLength(1); z++)
+				{
+					map[x, z] = (byte)(mask[x,z] ? 2 : 1);
 				}
 			}
 			return map;
@@ -114,7 +135,7 @@ namespace MCUtils
 
 		public Region Merge()
 		{
-			var merged = new Region(region1.regionPosX, region2.regionPosZ);
+			var merged = new Region(region1.regionPosX, region1.regionPosZ);
 			//Merge full chunks first, then move on to single blocks
 			if (chunkMask != null)
 			{

@@ -81,11 +81,11 @@ namespace MCUtils {
 			}
 
 			public CompoundContainer GetAsCompound(string key) {
-				return (CompoundContainer)Get(key);
+				return Get(key) as CompoundContainer;
 			}
-
+	
 			public ListContainer GetAsList(string key) {
-				return (ListContainer)Get(key);
+				return Get(key) as ListContainer;
 			}
 
 			public static bool AreEqual(CompoundContainer a, CompoundContainer b) {
