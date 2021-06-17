@@ -115,6 +115,18 @@ namespace MCUtils
 			return TryGetRegion(x, z)?.GetBlockState(x % 512, y, z % 512);
 		}
 
+		///<summary>Gets the biome at the given location.</summary>
+		public BiomeID? GetBiome(int x, int z)
+		{
+			return TryGetRegion(x, z)?.GetBiome(x % 512,z % 512);
+		}
+
+		///<summary>Sets the biome at the given location.</summary>
+		public void SetBiome(int x, int z, BiomeID biome)
+		{
+			TryGetRegion(x, z)?.SetBiome(x % 512, z % 512, biome);
+		}
+
 		//private readonly object lockObj = new object();
 
 		private Region GetRegionAt(int x, int z)
@@ -196,16 +208,6 @@ namespace MCUtils
 			}
 		}
 
-		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int z, byte biome)
-		{
-			var r = GetRegionAt(x, z);
-			if (r != null)
-			{
-				r.SetBiome(x % 512, z % 512, biome);
-			}
-		}
-
 		/// <summary>
 		/// Generates a Heightmap from the specified area (With Z starting from top)
 		/// </summary>
@@ -240,6 +242,7 @@ namespace MCUtils
 				for (int x = xMin; x < xMax; x++)
 				{
 					int y = heightmap[x - xMin, z - zMin];
+					if (y < 0) continue;
 					string block = GetBlock(x, y, z);
 					int shade = 0;
 					if (shading && z - 1 >= zMin)
@@ -263,6 +266,7 @@ namespace MCUtils
 							else if (above < y) shade = 1;
 						}
 					}
+					if (GetBlock(x, y + 1, z) == "minecraft:snow") block = "minecraft:snow";
 					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
 			}

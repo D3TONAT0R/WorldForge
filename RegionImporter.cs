@@ -57,7 +57,7 @@ namespace MCUtils {
 					}
 				}
 				uint expectedSize = (locations[lastLocationIndex] + sizes[lastLocationIndex]) * 4096;
-				Console.WriteLine($"Expected size {expectedSize}, got {stream.Length}, difference {stream.Length - expectedSize}");
+				//Console.WriteLine($"Expected size {expectedSize}, got {stream.Length}, difference {stream.Length - expectedSize}");
 				region = new Region(regionX, regionZ);
 				int misplacedChunks = 0;
 				for (int i = 0; i < 1024; i++)
@@ -265,7 +265,7 @@ namespace MCUtils {
 				if(result >= 0) {
 					buffer[i] = (byte)result;
 				} else {
-					buffer[i] = 0;
+					//buffer[i] = 0;
 					throw new EndOfStreamException();
 				}
 			}
@@ -287,7 +287,17 @@ namespace MCUtils {
 				bytes[i] = (byte)stream.ReadByte();
 			}
 			length = ReadAsInt(bytes, 0, 4);
-			return Read(pos + 5, length);
+			/*
+				Chunk data begins with a (big-endian) four-byte length field that indicates the exact length of the remaining chunk
+				data in bytes. The following byte indicates the compression scheme (1 = GZip (unused), 2 = Zlib (default)) used for chunk data, and the remaining
+				(length-1) bytes are the compressed chunk data.
+			*/
+			byte compressionScheme = (byte)stream.ReadByte();
+			if(compressionScheme != 2)
+			{
+				throw new DataMisalignedException($"compression scheme byte was {compressionScheme} instead of 2");
+			}
+			return Read(pos + 5, length - 1);
 		}
 
 		private static byte[] UncompressChunkData(byte[] compressed) {

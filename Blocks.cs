@@ -50,7 +50,6 @@ namespace MCUtils {
 			{"minecraft:coarse_dirt", 1 },
 			{"minecraft:podzol", 1 },
 			{"minecraft:water", 2 },
-			{"minecraft:ice", 2 },
 			{"minecraft:oak_leaves",3 },
 			{"minecraft:birch_leaves", 3 },
 			{"minecraft:spruce_leaves", 3 },
@@ -77,7 +76,11 @@ namespace MCUtils {
 			{"minecraft:bedrock",8 },
 			{"minecraft:obsidian", 8 },
 			{"minecraft:lava",9 },
-			{"minecraft:magma_block",9 }
+			{"minecraft:magma_block",9 },
+			{"minecraft:ice",10 },
+			{"minecraft:packed_ice",10 },
+			{"minecraft:blue_ice",10 },
+			{"minecraft:frosted_ice",10 }
 		};
 
 		public static readonly string[] commonColors = new string[]

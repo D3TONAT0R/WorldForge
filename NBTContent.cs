@@ -353,11 +353,7 @@ namespace MCUtils {
 			}
 		}
 
-		NBTTag RegisterTag(byte[] data, Container c, ref int i) {
-			return RegisterTag(NBTTag.UNSPECIFIED, data, c, ref i);
-		}
-
-		NBTTag RegisterTag(NBTTag predef, byte[] data, Container c, ref int i) {
+		NBTTag RegisterTag(byte[] data, Container c, ref int i, NBTTag predef = NBTTag.UNSPECIFIED) {
 			NBTTag tag;
 			/*if(compound.GetType() == typeof(ListContainer)) {
 				tag = ((ListContainer)compound).containerType;
@@ -380,6 +376,7 @@ namespace MCUtils {
 					}
 					i += 2;
 					for(int j = 0; j < nameLength; j++) {
+						//TODO: Reading List with TAG_End throws IndexOutOfRangeException
 						name += (char)data[i + j];
 					}
 					i += nameLength;
@@ -426,7 +423,7 @@ namespace MCUtils {
 			ListContainer arr = new ListContainer(tag);
 			//compound = EnterContainer(compound, arr);
 			for(int j = 0; j < length; j++) {
-				RegisterTag(tag, data, arr, ref i);
+				RegisterTag(data, arr, ref i, tag);
 			}
 			//compound = ExitContainer();
 			return arr;

@@ -13,7 +13,7 @@ namespace MCUtils
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
-		public byte[,] biomes = new byte[16, 16];
+		public BiomeID[,] biomes = new BiomeID[16, 16];
 
 		public List<Entity> entities = new List<Entity>();
 		public Dictionary<(int x, int y, int z), TileEntity> tileEntities = new Dictionary<(int, int, int), TileEntity>();
@@ -30,7 +30,7 @@ namespace MCUtils
 			{
 				for (int y = 0; y < 16; y++)
 				{
-					biomes[x, y] = 1; //Defaults to plains biome
+					biomes[x, y] = BiomeID.plains; //Defaults to plains biome
 				}
 			}
 		}
@@ -122,12 +122,18 @@ namespace MCUtils
 			}
 		}
 
+		///<summary>Gets the biome at the given chunk coordinate</summary>
+		public BiomeID GetBiomeAt(int x, int z)
+		{
+			return (BiomeID)biomes[x, z];
+		}
+
 		///<summary>Sets the biome at the given chunk coordinate</summary>
-		public void SetBiomeAt(int x, int z, byte biomeID)
+		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
 			lock (lockObj)
 			{
-				biomes[x, z] = biomeID;
+				biomes[x, z] = biome;
 			}
 		}
 
@@ -194,21 +200,27 @@ namespace MCUtils
 		///<summary>Reads all Entities and TileEntities from the given chunk NBT</summary>
 		public void ReadEntitiesAndTileEntitiesFromNBT(CompoundContainer chunkLevelCompound)
 		{
-			var entList = chunkLevelCompound.GetAsList("Entities");
-			if (entList != null && entList.contentsType == NBTTag.TAG_Compound)
+			if (chunkLevelCompound.Contains("Entities"))
 			{
-				for (int i = 0; i < entList.Length; i++)
+				var entList = chunkLevelCompound.GetAsList("Entities");
+				if (entList != null && entList.contentsType == NBTTag.TAG_Compound)
 				{
-					entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
+					for (int i = 0; i < entList.Length; i++)
+					{
+						entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
+					}
 				}
 			}
-			var tileEntList = chunkLevelCompound.GetAsList("TileEntities");
-			if (tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
+			if (chunkLevelCompound.Contains("TileEntities"))
 			{
-				for (int i = 0; i < tileEntList.Length; i++)
+				var tileEntList = chunkLevelCompound.GetAsList("TileEntities");
+				if (tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
 				{
-					var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
-					tileEntities.Add((te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
+					for (int i = 0; i < tileEntList.Length; i++)
+					{
+						var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
+						tileEntities.Add((te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
+					}
 				}
 			}
 		}
@@ -224,12 +236,12 @@ namespace MCUtils
 				{
 					for (int z = 0; z < 4; z++)
 					{
-						var value = (byte)biomeArray[offset + x * 4 + z];
+						var value = (byte)biomeArray[offset + z * 4 + x];
 						for (int x1 = 0; x1 < 4; x1++)
 						{
 							for (int z1 = 0; z1 < 4; z1++)
 							{
-								biomes[x * 4 + x1, z * 4 + z1] = value;
+								biomes[x * 4 + x1, z * 4 + z1] = (BiomeID)value;
 							}
 						}
 					}
@@ -242,7 +254,7 @@ namespace MCUtils
 				{
 					for (int z = 0; z < 16; z++)
 					{
-						biomes[x, z] = 1;
+						biomes[x, z] = BiomeID.plains;
 					}
 				}
 			}
@@ -257,8 +269,8 @@ namespace MCUtils
 			{
 				for (int z = 0; z < 4; z++)
 				{
-					int biome = GetPredominantBiomeIn4x4Area(x, z);
-					for (int y = 0; y < 64; y++) finalBiomeArray[x, y, z] = biome;
+					var biome = GetPredominantBiomeIn4x4Area(x, z);
+					for (int y = 0; y < 64; y++) finalBiomeArray[x, y, z] = (int)biome;
 				}
 			}
 			return finalBiomeArray;
@@ -300,9 +312,9 @@ namespace MCUtils
 			List<int> biomes = new List<int>();
 			for (int y = 0; y < 64; y++)
 			{
-				for (int x = 0; x < 4; x++)
+				for (int z = 0; z < 4; z++)
 				{
-					for (int z = 0; z < 4; z++)
+					for (int x = 0; x < 4; x++)
 					{
 						var b = finalBiomeArray != null ? finalBiomeArray[x, y, z] : 1;
 						biomes.Add(b);
@@ -426,9 +438,9 @@ namespace MCUtils
 			return null;
 		}
 
-		private int GetPredominantBiomeIn4x4Area(int x, int z)
+		private BiomeID GetPredominantBiomeIn4x4Area(int x, int z)
 		{
-			Dictionary<byte, byte> occurences = new Dictionary<byte, byte>();
+			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
 			for (int x1 = 0; x1 < 4; x1++)
 			{
 				for (int z1 = 0; z1 < 4; z1++)
@@ -441,7 +453,7 @@ namespace MCUtils
 					occurences[b]++;
 				}
 			}
-			int predominantBiome = 0;
+			BiomeID predominantBiome = 0;
 			int predominantCells = 0;
 			foreach (var k in occurences.Keys)
 			{

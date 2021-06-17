@@ -115,15 +115,33 @@ namespace MCUtils {
 			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
 		}
 
+		///<summary>Gets the biome at the given location.</summary>
+		public BiomeID? GetBiome(int x, int z)
+		{
+			int chunkX = (int)Math.Floor(x / 16.0);
+			int chunkZ = (int)Math.Floor(z / 16.0);
+			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
+			if (chunks[chunkX, chunkZ] != null)
+			{
+				//for (int y = 0; y < 256; y++)
+				//{
+					return chunks[chunkX, chunkZ].GetBiomeAt(x % 16, z % 16);
+				//}
+			} else
+			{
+				return null;
+			}
+		}
+
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int z, byte biome) {
+		public void SetBiome(int x, int z, BiomeID biome) {
 			int chunkX = (int)Math.Floor(x / 16.0);
 			int chunkZ = (int)Math.Floor(z / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if(chunks[chunkX, chunkZ] != null) {
-				for(int y = 0; y < 256; y++) {
+				//for(int y = 0; y < 256; y++) {
 					chunks[chunkX, chunkZ].SetBiomeAt(x % 16, z % 16, biome);
-				}
+				//}
 			}
 		}
 
@@ -216,13 +234,15 @@ namespace MCUtils {
 			//Add the rest of the tags and leave them empty
 			nbt.contents.Add("Heightmaps", new CompoundContainer());
 			nbt.contents.Add("Structures", new CompoundContainer());
-			nbt.contents.Add("LiquidTicks", new ListContainer(NBTTag.TAG_End));
+			/*
+			nbt.contents.Add("LiquidTicks", new ListContainer(NBTTag.TAG_Compound));
 			ListContainer postprocessing = new ListContainer(NBTTag.TAG_List);
-			for(int i = 0; i < 16; i++) postprocessing.Add("", new ListContainer(NBTTag.TAG_End));
+			for(int i = 0; i < 16; i++) postprocessing.Add("", new ListContainer(NBTTag.TAG_List));
 			nbt.contents.Add("PostProcessing", postprocessing);
-			nbt.contents.Add("TileTicks", new ListContainer(NBTTag.TAG_End));
+			nbt.contents.Add("TileTicks", new ListContainer(NBTTag.TAG_Compound));
 			nbt.contents.Add("InhabitedTime", 0L);
 			nbt.contents.Add("LastUpdate", 0L);
+			*/
 			return nbt;
 		}
 	}
