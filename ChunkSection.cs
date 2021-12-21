@@ -17,8 +17,8 @@ namespace MCUtils
 			palette = new List<BlockState>();
 			if (defaultBlock != null)
 			{
-				palette.Add(new BlockState("minecraft:air")); //Index 0
-				palette.Add(new BlockState(defaultBlock)); //Index 1
+				palette.Add(new BlockState(BlockList.Find("minecraft:air"))); //Index 0
+				palette.Add(new BlockState(BlockList.Find(defaultBlock))); //Index 1
 			}
 		}
 
@@ -52,7 +52,7 @@ namespace MCUtils
 		{
 			for (short i = 0; i < palette.Count; i++)
 			{
-				if (palette[i].ID == state.ID && palette[i].properties.HasSameContent(state.properties)) return (ushort)i;
+				if (palette[i].Compare(state, true)) return (ushort)i;
 			}
 			return null;
 		}
@@ -84,7 +84,7 @@ namespace MCUtils
 			foreach (var block in palette)
 			{
 				CompoundContainer paletteBlock = new CompoundContainer();
-				paletteBlock.Add("Name", block.ID);
+				paletteBlock.Add("Name", block.block.ID);
 				if (block.properties != null)
 				{
 					CompoundContainer properties = new CompoundContainer();

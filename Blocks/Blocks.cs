@@ -110,7 +110,7 @@ namespace MCUtils {
 			return commonColors[r.Next(commonColors.Length)];
 		}
 
-		public static bool IsBlockForMap(BlockState b, HeightmapType type) {
+		public static bool IsBlockForMap(ProtoBlock b, HeightmapType type) {
 			if(b == null || IsAir(b)) return false;
 			if(type == HeightmapType.AllBlocks) {
 				return true;
@@ -127,13 +127,12 @@ namespace MCUtils {
 			}
 		}
 		
-		public static Color GetMapColor(string block, int shade) {
+		public static Color GetMapColor(ProtoBlock block, int shade) {
 			if(colormap == null) {
 				colormap = LoadColorMap();
 			}
 			if(block != null) {
-				if (!block.Contains(":")) block = "minecraft:" + block;
-				if(!colorMapIndices.TryGetValue(block, out int index)) {
+				if(!colorMapIndices.TryGetValue(block.ID, out int index)) {
 					index = 15;
 				}
 				shade = 1 - shade;
@@ -154,38 +153,38 @@ namespace MCUtils {
 			return colormap;
 		}
 
-		public static bool IsAir(BlockState b) {
+		public static bool IsAir(ProtoBlock b) {
 			if (b == null) return false;
 			return b.CompareMultiple("minecraft:air", "minecraft:cave_air");
 		}
 
-		public static bool IsLiquid(BlockState b) {
+		public static bool IsLiquid(ProtoBlock b) {
 			if (b == null) return false;
 			return b.CompareMultiple(waterBlock, lavaBlock);
 		}
 
-		public static bool IsPlantSustaining(BlockState b)
+		public static bool IsPlantSustaining(ProtoBlock b)
 		{
 			if (b == null) return false;
 			return b.CompareMultiple(plantSustainingBlocks);
 		}
 
-		public static bool IsTransparentBlock(BlockState bs) {
-			string b = bs.ID;
-			if(b == null) return true;
-			if(b.Contains("minecraft:glass")) return true;
-			if(b.Contains("minecraft:bars")) return true;
-			if(b.Contains("minecraft:sapling")) return true;
-			if(b.Contains("minecraft:rail")) return true;
-			if(b.Contains("minecraft:tulip")) return true;
-			if(b.Contains("minecraft:mushroom")) return true;
-			if(b.Contains("minecraft:pressure_plate")) return true;
-			if(b.Contains("minecraft:button")) return true;
-			if(b.Contains("minecraft:torch")) return true;
-			if(b.Contains("minecraft:fence")) return true;
-			if(b.Contains("minecraft:door")) return true;
-			if(b.Contains("minecraft:carpet")) return true;
-			switch(b) {
+		public static bool IsTransparentBlock(ProtoBlock b) {
+			string id = b.ID;
+			if(id == null) return true;
+			if(id.Contains("minecraft:glass")) return true;
+			if(id.Contains("minecraft:bars")) return true;
+			if(id.Contains("minecraft:sapling")) return true;
+			if(id.Contains("minecraft:rail")) return true;
+			if(id.Contains("minecraft:tulip")) return true;
+			if(id.Contains("minecraft:mushroom")) return true;
+			if(id.Contains("minecraft:pressure_plate")) return true;
+			if(id.Contains("minecraft:button")) return true;
+			if(id.Contains("minecraft:torch")) return true;
+			if(id.Contains("minecraft:fence")) return true;
+			if(id.Contains("minecraft:door")) return true;
+			if(id.Contains("minecraft:carpet")) return true;
+			switch(id) {
 				case "minecraft:air":
 				case "minecraft:cave_air":
 				case "minecraft:cobweb":

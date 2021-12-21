@@ -1,4 +1,5 @@
 
+using MCUtils.IO;
 using System;
 using System.IO;
 
@@ -18,7 +19,7 @@ namespace MCUtils {
 			FillWithRandomBlocks();
 			MCUtilsConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
-			region.WriteRegionToStream(stream);
+			RegionSerializer.WriteRegionToStream(region, stream, Version.DefaultVersion);
 			stream.Close();
 			MCUtilsConsole.WriteLine("Done");
 		}

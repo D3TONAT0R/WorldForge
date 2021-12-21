@@ -1,4 +1,6 @@
-﻿namespace MCUtils {
+﻿using System.Collections.Generic;
+
+namespace MCUtils {
 	public static class BlockList {
 
 		public static string[] blocks = new string[] {
@@ -586,5 +588,77 @@
 			"crimson_door",
 			"warped_door"
 		};
+
+		public static Dictionary<string, ProtoBlock> allBlocks;
+
+		public static Dictionary<ProtoBlock, NumericID> numerics;
+		public static Dictionary<ProtoBlock, string> preFlatteningIDs;
+
+		static BlockList()
+		{
+			allBlocks = new Dictionary<string, ProtoBlock>();
+			numerics = new Dictionary<ProtoBlock, NumericID>();
+			preFlatteningIDs = new Dictionary<ProtoBlock, string>();
+			var lines = Resources.blocks.Replace("\r", "").Split('\n');
+			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
+			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
+			for (int i = 1; i < lines.Length; i++)
+			{
+				var split = lines[i].Split(';');
+				if(split[0].Length > 0)
+				{
+					string id = split[0];
+					if(allBlocks.ContainsKey("minecraft:"+id))
+					{
+						//TODO: how to handle multiple equal ids (such as different facing logs) ?
+						continue;
+					}
+					string props = split[1]; //TODO: introduce default properties?
+					NumericID? numeric = NumericID.TryParse(split[2]);
+					string preFlattening = split[3];
+					Version version = split[4].Length > 1 ? Version.Parse(split[4]) : Version.FirstVersion;
+					var newBlock = ProtoBlock.RegisterNewVanillaBlock(id, version);
+					if (split[5].Length > 1) {
+						fallbacks.Add((newBlock, split[5]));
+					}
+					if (numeric.HasValue) numerics.Add(newBlock, numeric.Value);
+					if (preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:"+preFlattening);
+				}
+			}
+			//Find & set substitute blocks
+			foreach(var f in fallbacks)
+			{
+				f.Item1.substitute = Find(f.Item2);
+			}
+		}
+
+		public static ProtoBlock Find(string blockTypeName)
+		{
+			if (!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
+			if (blockTypeName.StartsWith("minecraft:"))
+			{
+				if(allBlocks.TryGetValue(blockTypeName, out var b))
+				{
+					return b;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			else
+			{
+				//Modded block, add it to the list if we haven't done so already.
+				if (allBlocks.TryGetValue(blockTypeName, out var pb))
+				{
+					return pb;
+				}
+				else
+				{
+					var split = blockTypeName.Split(':');
+					return ProtoBlock.RegisterNewModBlock(split[0], split[1]);
+				}
+			}
+		}
 	}
 }

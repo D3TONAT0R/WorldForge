@@ -9,7 +9,6 @@ namespace MCUtils
 		public string defaultBlock = "minecraft:stone";
 		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
-		public bool hasNumericIDs;
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
@@ -41,10 +40,6 @@ namespace MCUtils
 			ReadBlocksFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
 			ReadEntitiesAndTileEntitiesFromNBT(chunk.contents);
 			ReadBiomesFromNBT(chunk);
-			if (chunk.dataVersion < 1400)
-			{
-				hasNumericIDs = true;
-			}
 			sourceNBT = chunk;
 		}
 
@@ -52,11 +47,6 @@ namespace MCUtils
 		public void SetBlockAt(int x, int y, int z, BlockState block)
 		{
 			if (!unlimitedHeight && (y < 0 || y > 255)) return;
-			if (hasNumericIDs)
-			{
-				Console.WriteLine("Changing blocks in a numeric ID chunk is currently not supported.");
-				return;
-			}
 			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, block);
 		}
 
@@ -81,12 +71,6 @@ namespace MCUtils
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(int x, int y, int z)
 		{
-			if (hasNumericIDs)
-			{
-				Console.WriteLine("Changing blocks in a numeric ID chunk is currently not supported.");
-				return;
-			}
-			int section = (int)Math.Floor(y / 16f);
 			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, 1); //1 is always the default block in a region generated from scratch
 		}
 
@@ -155,7 +139,8 @@ namespace MCUtils
 				foreach (var cont in compound.GetAsList("Palette").cont)
 				{
 					CompoundContainer block = (CompoundContainer)cont;
-					BlockState bs = new BlockState((string)block.Get("Name"));
+					var proto = BlockList.Find((string)block.Get("Name"));
+					var bs = new BlockState(proto);
 					if (block.Contains("Properties")) bs.properties = block.GetAsCompound("Properties");
 					section.palette.Add(bs);
 				}
@@ -281,7 +266,7 @@ namespace MCUtils
 			short y = (short)(HighestSection * 16 + 15);
 			while (y > LowestSection * 16)
 			{
-				if (Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ), type)) return y;
+				if (Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ).block, type)) return y;
 				y--;
 			}
 			return short.MinValue;
@@ -293,7 +278,7 @@ namespace MCUtils
 		}
 
 		///<summary>Generates the full NBT data of a chunk</summary>
-		public void WriteToNBT(CompoundContainer level, bool use_1_16_Format)
+		public void WriteToNBT(CompoundContainer level, Version version)
 		{
 			ListContainer sectionsList = level.GetAsList("Sections");
 			foreach (sbyte secY in sections.Keys)
@@ -303,7 +288,8 @@ namespace MCUtils
 				var comp = GetSectionCompound(sectionsList, secY);
 				if (comp == null)
 				{
-					comp = section.CreateCompound(secY, use_1_16_Format);
+					bool use_1_16_format = version >= Version.Release_1(16);
+					comp = section.CreateCompound(secY, use_1_16_format);
 				}
 				sectionsList.Add(null, comp);
 			}
@@ -405,9 +391,9 @@ namespace MCUtils
 					for (short y = yTop; y > 0; y--)
 					{
 						var block = sec.GetBlockAt(x, y % 16, z);
-						if (Blocks.IsBlockForMap(block, type))
+						if (Blocks.IsBlockForMap(block.block, type))
 						{
-							if (block.Compare("minecraft:snow"))
+							if (block.block.Compare("minecraft:snow"))
 							{
 								//Go down to grass level in case of a snow layer
 								y--;

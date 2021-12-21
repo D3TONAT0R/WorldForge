@@ -1,3 +1,4 @@
+using MCUtils.IO;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -107,7 +108,7 @@ namespace MCUtils {
 
 				MCUtilsConsole.WriteLine("Writing file...");
 				FileStream stream = new FileStream(Path.Combine(outputPath, r.filename), FileMode.Create);
-				mergedRegion.WriteRegionToStream(stream);
+				RegionSerializer.WriteRegionToStream(mergedRegion, stream, Version.DefaultVersion);
 				stream.Close();
 			}
 		}

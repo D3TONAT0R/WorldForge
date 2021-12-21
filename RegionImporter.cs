@@ -179,7 +179,7 @@ namespace MCUtils {
 			for(int z = 0; z < 512; z++) {
 				for(int x = 0; x < 512; x++) {
 					short y = hm[x, z];
-					while(!IsBlockForMap(r.GetBlockState(x, y, z), surfaceType) && y > 0) {
+					while(!IsBlockForMap(r.GetBlock(x, y, z), surfaceType) && y > 0) {
 						y--;
 					}
 					hm[x, z] = y;
@@ -189,8 +189,8 @@ namespace MCUtils {
 			for(int z = 0; z < 512; z++) {
 				for(int x = 0; x < 512; x++) {
 					int y = hm[x, z];
-					string block = r.GetBlock(x, y, z);
-					if (block == "minecraft:air" && y > 0)
+					var block = r.GetBlock(x, y, z);
+					if (block.IsAir && y > 0)
 					{
 						throw new ArgumentException("the mapped block was air");
 					}
@@ -198,7 +198,7 @@ namespace MCUtils {
 					
 					if(mcMapShading && z > 0)
 					{
-						if (block == "minecraft:water")
+						if (block.IsWater)
 						{
 							//Water dithering
 							var depth = r.GetWaterDepth(x, y, z);
@@ -241,7 +241,7 @@ namespace MCUtils {
 							byte y = (chunkHM != null) ? (byte)Math.Max(chunkHM[x, z] - 1, 0) : (byte)255;
 							if (y > 1)
 							{
-								while (y > 0 && !IsBlockForMap(chunk.GetBlockAt(x, y, z), mapType))
+								while (y > 0 && !IsBlockForMap(chunk.GetBlockAt(x, y, z).block, mapType))
 								{
 									y--;
 								}

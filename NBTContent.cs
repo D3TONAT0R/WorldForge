@@ -204,14 +204,9 @@ namespace MCUtils {
 		public CompoundContainer contents;
 
 		///<summary>
-		///The version number this nbt compound was created with.
-		///1022 = Release 1.12,
-		///1444 = Release 1.13,
-		///1901 = Release 1.14,
-		///2200 = Release 1.15,
-		///2504 = Release 1.16
+		///The version number this nbt compound was created with (only valid for versions release 1.9 and up)
 		///</summary>
-		public int dataVersion;
+		public int? dataVersion;
 
 		List<Container> parentTree;
 

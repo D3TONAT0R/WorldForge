@@ -1,4 +1,5 @@
 ﻿using Ionic.Zlib;
+using MCUtils.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +28,9 @@ namespace MCUtils
 			}
 		}
 
-		public static readonly string defaultBlock = "minecraft:stone";
+		public static readonly ProtoBlock defaultBlock = BlockList.Find("minecraft:stone");
+
+		public Version gameVersion;
 
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
 
@@ -35,13 +38,9 @@ namespace MCUtils
 
 		public NBTContent levelDat;
 
-		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ) : this(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ, null)
+		public World(Version version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
 		{
-
-		}
-
-		public World(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath)
-		{
+			gameVersion = version;
 			if (!string.IsNullOrEmpty(levelDatPath))
 			{
 				levelDat = new NBTContent(File.ReadAllBytes(levelDatPath), false);
@@ -100,11 +99,11 @@ namespace MCUtils
 		public bool IsAir(int x, int y, int z)
 		{
 			var b = GetBlock(x, y, z);
-			return b == null || b == "minecraft:air";
+			return b == null || b.IsAir;
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public string GetBlock(int x, int y, int z)
+		public ProtoBlock GetBlock(int x, int y, int z)
 		{
 			return TryGetRegion(x, z)?.GetBlock(x % 512, y, z % 512);
 		}
@@ -175,7 +174,7 @@ namespace MCUtils
 		///<summary>Sets the block type at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, string block)
 		{
-			return SetBlock(x, y, z, new BlockState(block));
+			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)));
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
@@ -243,11 +242,11 @@ namespace MCUtils
 				{
 					int y = heightmap[x - xMin, z - zMin];
 					if (y < 0) continue;
-					string block = GetBlock(x, y, z);
+					var block = GetBlock(x, y, z);
 					int shade = 0;
 					if (shading && z - 1 >= zMin)
 					{
-						if (block == "minecraft:water")
+						if (block.IsWater)
 						{
 							//Water dithering
 							var depth = GetWaterDepth(x, y, z);
@@ -266,7 +265,8 @@ namespace MCUtils
 							else if (above < y) shade = 1;
 						}
 					}
-					if (GetBlock(x, y + 1, z) == "minecraft:snow") block = "minecraft:snow";
+					var aboveBlock = GetBlock(x, y + 1, z);
+					if (aboveBlock != null && aboveBlock.ID == "minecraft:snow") block = aboveBlock;
 					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
 			}
@@ -283,7 +283,7 @@ namespace MCUtils
 
 		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ)
 		{
-			regions[new RegionLocation(regionPosX, regionPosZ)].WriteRegionToStream(stream);
+			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
 		}
 
 		public void WriteWorldSave(string path, int playerPosX, int playerPosZ)
@@ -307,9 +307,8 @@ namespace MCUtils
 				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
 				using (var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create))
 				{
-					region.Value.WriteRegionToStream(stream);
+					RegionSerializer.WriteRegionToStream(region.Value, stream, gameVersion);
 				}
-
 			});
 		}
 

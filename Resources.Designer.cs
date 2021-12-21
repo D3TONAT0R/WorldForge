@@ -61,6 +61,31 @@ namespace MCUtils {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
+        ///air,,0,air,,
+        ///stone,,1,stone,,
+        ///granite,,1:1,stone,1.8,stone
+        ///polished_granite,,1:2,stone,1.8,stone
+        ///diorite,,1:3,stone,1.8,stone
+        ///polished_diorite,,1:4,stone,1.8,stone
+        ///andesite,,1:5,stone,1.8,stone
+        ///polished_andesite,,1:6,stone,1.8,stone
+        ///grass_block,,2,grass,,
+        ///dirt,,3,dirt,,
+        ///coarse_dirt,,3:1,dirt,1.8,dirt
+        ///podzol,,3:2,dirt,1.7,dirt
+        ///cobblestone,,4,cobblestone,,
+        ///oak_planks,,5,planks,,
+        ///spruce_planks,,5:1,planks,1.2.4,oak_planks
+        ///birc [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string blocks {
+            get {
+                return ResourceManager.GetString("blocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] colormap {

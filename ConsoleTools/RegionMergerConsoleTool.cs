@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCUtils.IO;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -42,7 +43,7 @@ namespace MCUtils.ConsoleTools
 			var mergedRegion = merger.Merge();
 			MCUtilsConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
-			mergedRegion.WriteRegionToStream(stream);
+			RegionSerializer.WriteRegionToStream(mergedRegion, stream, Version.DefaultVersion);
 			stream.Close();
 			MCUtilsConsole.WriteLine("Done");
 		}
