@@ -99,12 +99,14 @@ namespace MCUtils
 
 		public static bool operator ==(ProtoBlock l, ProtoBlock r)
 		{
-			return l.ID == r.ID;
+			if (l is null && r is null) return true;
+			else if (l is null || r is null) return false;
+			else return l.ID == r.ID;
 		}
 
 		public static bool operator !=(ProtoBlock l, ProtoBlock r)
 		{
-			return l.ID != r.ID;
+			return !(l == r);
 		}
 
 		public override int GetHashCode()

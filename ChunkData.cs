@@ -1,3 +1,4 @@
+using MCUtils.IO;
 using System;
 using System.Collections.Generic;
 using static MCUtils.NBTContent;
@@ -9,7 +10,7 @@ namespace MCUtils
 		public string defaultBlock = "minecraft:stone";
 		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
-		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
+		public Dictionary<sbyte, ChunkSection> sections;
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
 		public BiomeID[,] biomes = new BiomeID[16, 16];
@@ -37,10 +38,11 @@ namespace MCUtils
 		public ChunkData(Region region, NBTContent chunk)
 		{
 			containingRegion = region;
-			ReadBlocksFromNBT(chunk.contents.GetAsList("Sections"), chunk.dataVersion < 2504);
+			sourceNBT = chunk;
+			ChunkSerializer.ReadBlocksFromNBT(this, chunk.dataVersion);
+			RecalculateSectionRange();
 			ReadEntitiesAndTileEntitiesFromNBT(chunk.contents);
 			ReadBiomesFromNBT(chunk);
-			sourceNBT = chunk;
 		}
 
 		///<summary>Sets the block at the given chunk coordinate</summary>
@@ -118,67 +120,6 @@ namespace MCUtils
 			lock (lockObj)
 			{
 				biomes[x, z] = biome;
-			}
-		}
-
-		///<summary>Reads all blocks from the given chunk NBT</summary>
-		public void ReadBlocksFromNBT(ListContainer sectionsList, bool isVersion_prior_1_16)
-		{
-			foreach (var o in sectionsList.cont)
-			{
-				var section = new ChunkSection(null);
-
-				var compound = (CompoundContainer)o;
-				if (!compound.Contains("Y") || !compound.Contains("Palette")) continue;
-				sbyte secY;
-				unchecked
-				{
-					secY = Convert.ToSByte(compound.Get("Y"));
-				}
-				section.palette.Clear();
-				foreach (var cont in compound.GetAsList("Palette").cont)
-				{
-					CompoundContainer block = (CompoundContainer)cont;
-					var proto = BlockList.Find((string)block.Get("Name"));
-					var bs = new BlockState(proto);
-					if (block.Contains("Properties")) bs.properties = block.GetAsCompound("Properties");
-					section.palette.Add(bs);
-				}
-
-				//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
-				int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
-				long[] longs = (long[])compound.Get("BlockStates");
-				string bits = "";
-				for (int i = 0; i < longs.Length; i++)
-				{
-					string newBits = "";
-					byte[] bytes = BitConverter.GetBytes(longs[i]);
-					for (int j = 0; j < 8; j++)
-					{
-						newBits += Converter.ByteToBinary(bytes[j], true);
-					}
-					if (isVersion_prior_1_16)
-					{
-						bits += newBits;
-					}
-					else
-					{
-						bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
-					}
-				}
-				//TODO: needs testing
-				for (int y = 0; y < 16; y++)
-				{
-					for (int z = 0; z < 16; z++)
-					{
-						for (int x = 0; x < 16; x++)
-						{
-							section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
-						}
-					}
-				}
-				sections.Add(secY, section);
-				RecalculateSectionRange();
 			}
 		}
 

@@ -21,6 +21,7 @@ namespace MCUtils
 
 		void AddDefaultBlockProperties()
 		{
+			if (block == null) return;
 			switch (block.shortID)
 			{
 				case "oak_leaves":

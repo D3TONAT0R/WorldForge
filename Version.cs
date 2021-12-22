@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MCUtils
@@ -23,6 +23,54 @@ namespace MCUtils
 		public static readonly Version FirstVersion = new Version(Stage.Indev, 0, 0, 0);
 
 		public static readonly Version DefaultVersion = Release_1(16);
+
+		public static readonly Dictionary<Version, int> dataVersionAssociations = new Dictionary<Version, int>()
+		{
+			{Release_1(9,0), 169},
+			{Release_1(9,1), 175},
+			{Release_1(9,2), 176},
+			{Release_1(9,3), 183},
+			{Release_1(9,4), 184},
+
+			{Release_1(10,0), 510},
+			{Release_1(10,1), 511},
+			{Release_1(10,2), 512},
+
+			{Release_1(11,0), 819},
+			{Release_1(11,1), 921},
+			{Release_1(11,2), 922},
+
+			{Release_1(12,0), 1139},
+			{Release_1(12,1), 1240},
+			{Release_1(12,2), 1343},
+
+			{Release_1(13,0), 1519},
+			{Release_1(13,1), 1628},
+			{Release_1(13,2), 1631},
+
+			{Release_1(14,0), 1952},
+			{Release_1(14,1), 1957},
+			{Release_1(14,2), 1963},
+			{Release_1(14,3), 1968},
+			{Release_1(14,4), 1976},
+
+			{Release_1(15,0), 2225},
+			{Release_1(15,1), 2227},
+			{Release_1(15,2), 2230},
+
+			{Release_1(16,0), 2566},
+			{Release_1(16,1), 2567},
+			{Release_1(16,2), 2578},
+			{Release_1(16,3), 2580},
+			{Release_1(16,4), 2584},
+			{Release_1(16,5), 2586},
+
+			{Release_1(17,0), 2724},
+			{Release_1(17,1), 2730},
+
+			{Release_1(18,0), 2860},
+			{Release_1(18,1), 2865 }
+		};
 
 		public Version(Stage stage, byte major, byte minor, byte patch)
 		{
@@ -55,7 +103,7 @@ namespace MCUtils
 				if (s[0] == 'a') stage = Stage.Alpha;
 				else if (s[0] == 'b') stage = Stage.Beta;
 				else if (s[0] == 'r') stage = Stage.Release;
-				else throw new FormatException("Unrecognized stage character: " + s[0]);
+				else throw new System.FormatException("Unrecognized stage character: " + s[0]);
 				s = s.Substring(1);
 			}
 			else
@@ -67,6 +115,27 @@ namespace MCUtils
 			byte minor = byte.Parse(split[1]);
 			byte patch = split.Length >= 3 ? byte.Parse(split[2]) : (byte)0;
 			return new Version(stage, major, minor, patch);
+		}
+
+		/// <summary>
+		/// Returns the game version from the given data version number (if applicable).
+		/// </summary>
+		public static Version? FromDataVersion(int? dataVersion)
+		{
+			if (dataVersion == null) return null;
+			if(dataVersion >= 100)
+			{
+				var list = dataVersionAssociations.ToList();
+				list.OrderBy(kv => kv.Value);
+				foreach(var kv in list)
+				{
+					if(dataVersion >= kv.Value)
+					{
+						return kv.Key;
+					}
+				}
+			}
+			return null;
 		}
 
 		public override string ToString()
@@ -101,117 +170,7 @@ namespace MCUtils
 		public int? GetDataVersion()
 		{
 			int? dv = null;
-			if(stage == Stage.Release)
-			{
-				if(major == 1)
-				{
-					if (minor == 9)
-					{
-						switch (patch)
-						{
-							default:
-							case 0: dv = 169; break;
-							case 1: dv = 175; break;
-							case 2: dv = 176; break;
-							case 3: dv = 183; break;
-							case 4: dv = 184; break;
-						}
-					}
-					if(minor == 10)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 510; break;
-							case 1: dv = 511; break;
-							case 2: dv = 512; break;
-						}
-					}
-					if(minor == 11)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 819; break;
-							case 1: dv = 921; break;
-							case 2: dv = 922; break;
-						}
-					}
-					if(minor == 12)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 1139; break;
-							case 1: dv = 1240; break;
-							case 2: dv = 1343; break;
-						}
-					}
-					if(minor == 13)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 1519; break;
-							case 1: dv = 1628; break;
-							case 2: dv = 1631; break;
-						}
-					}
-					if(minor == 14)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 1952; break;
-							case 1: dv = 1957; break;
-							case 2: dv = 1963; break;
-							case 3: dv = 1968; break;
-							case 4: dv = 1976; break;
-						}
-					}
-					if(minor == 15)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 2225; break;
-							case 1: dv = 2227; break;
-							case 2: dv = 2230; break;
-						}
-					}
-					if(minor == 16)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 2566; break;
-							case 1: dv = 2567; break;
-							case 2: dv = 2578; break;
-							case 3: dv = 2580; break;
-							case 4: dv = 2584; break;
-							case 5: dv = 2586; break;
-						}
-					}
-					if(minor == 17)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 2724; break;
-							case 1: dv = 2730; break;
-						}
-					}
-					if(minor == 18)
-					{
-						switch(patch)
-						{
-							default:
-							case 0: dv = 2860; break;
-							case 1: dv = 2865; break;
-						}
-					}
-				}
-			}
+			if(stage == Stage.Release && dataVersionAssociations.TryGetValue(this, out int i)) dv = i;
 			return dv;
 		}
 

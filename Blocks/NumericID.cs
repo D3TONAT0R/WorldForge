@@ -24,5 +24,7 @@ namespace MCUtils
 			if(split.Length > 1) byte.TryParse(split[1], out meta);
 			return new NumericID(id, meta);
 		}
+
+		public ushort Hash => (ushort)((id << 8) + meta);
 	}
 }

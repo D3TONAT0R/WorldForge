@@ -592,12 +592,14 @@ namespace MCUtils {
 		public static Dictionary<string, ProtoBlock> allBlocks;
 
 		public static Dictionary<ProtoBlock, NumericID> numerics;
+		public static Dictionary<ushort, ProtoBlock> protoByNumerics;
 		public static Dictionary<ProtoBlock, string> preFlatteningIDs;
 
 		static BlockList()
 		{
 			allBlocks = new Dictionary<string, ProtoBlock>();
 			numerics = new Dictionary<ProtoBlock, NumericID>();
+			protoByNumerics = new Dictionary<ushort, ProtoBlock>();
 			preFlatteningIDs = new Dictionary<ProtoBlock, string>();
 			var lines = Resources.blocks.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
@@ -621,7 +623,15 @@ namespace MCUtils {
 					if (split[5].Length > 1) {
 						fallbacks.Add((newBlock, split[5]));
 					}
-					if (numeric.HasValue) numerics.Add(newBlock, numeric.Value);
+					if (numeric.HasValue)
+					{
+						numerics.Add(newBlock, numeric.Value);
+						var hash = numeric.Value.Hash;
+						if(!protoByNumerics.ContainsKey(hash))
+						{
+							protoByNumerics.Add(hash, newBlock);
+						}
+					}
 					if (preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:"+preFlattening);
 				}
 			}
@@ -658,6 +668,18 @@ namespace MCUtils {
 					var split = blockTypeName.Split(':');
 					return ProtoBlock.RegisterNewModBlock(split[0], split[1]);
 				}
+			}
+		}
+
+		public static ProtoBlock FindByNumeric(NumericID numeric)
+		{
+			if(protoByNumerics.TryGetValue(numeric.Hash, out var block))
+			{
+				return block;
+			}
+			else
+			{
+				return null;
 			}
 		}
 	}
