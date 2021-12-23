@@ -135,7 +135,7 @@ namespace MCUtils
 
 		public Region Merge()
 		{
-			var merged = new Region(region1.regionPosX, region1.regionPosZ);
+			var merged = new Region(region1.regionPos.x, region1.regionPos.z);
 			//Merge full chunks first, then move on to single blocks
 			if (chunkMask != null)
 			{

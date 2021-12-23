@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using static MCUtils.NBTContent;
 
@@ -43,6 +44,24 @@ namespace MCUtils
 				if (!CompoundContainer.AreEqual(properties, other.properties)) return false;
 			}
 			return block == other.block;
+		}
+
+		public override string ToString()
+		{
+			StringBuilder sb = new StringBuilder(block?.ID);
+			if(properties.cont.Count > 0)
+			{
+				sb.Append("[");
+				bool first = true;
+				foreach(var prop in properties.cont)
+				{
+					if (!first) sb.Append(",");
+					first = false;
+					sb.Append($"{prop.Key}={prop.Value}");
+				}
+				sb.Append("]");
+			}
+			return sb.ToString();
 		}
 	}
 }

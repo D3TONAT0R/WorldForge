@@ -25,7 +25,7 @@ namespace MCUtils.IO
 				{
 					int i = z * 32 + x;
 					locations[i] = (int)(stream.Position / 4096);
-					var chunkData = ChunkSerializer.CreateCompoundForChunk(region.chunks[x, z], 32 * region.regionPosX + x, 32 * region.regionPosZ + z, version);
+					var chunkData = ChunkSerializer.CreateCompoundForChunk(region.chunks[x, z], version);
 					List<byte> bytes = new List<byte>();
 					chunkData.WriteToBytes(bytes, true);
 					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());

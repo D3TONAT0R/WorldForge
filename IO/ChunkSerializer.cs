@@ -7,12 +7,12 @@ namespace MCUtils.IO
 {
 	public static class ChunkSerializer
 	{
-		public static NBTContent CreateCompoundForChunk(ChunkData chunk, int chunkX, int chunkZ, Version version)
+		public static NBTContent CreateCompoundForChunk(ChunkData chunk, Version version)
 		{
 			var nbt = new NBTContent();
 			nbt.dataVersion = version.GetDataVersion();
-			nbt.contents.Add("xPos", chunkX);
-			nbt.contents.Add("zPos", chunkZ);
+			nbt.contents.Add("xPos", chunk.coords.x);
+			nbt.contents.Add("zPos", chunk.coords.z);
 			nbt.contents.Add("Status", "light");
 			ListContainer sections = new ListContainer(NBTTag.TAG_Compound);
 			nbt.contents.Add("Sections", sections);
@@ -39,7 +39,6 @@ namespace MCUtils.IO
 		{
 			Version? version = Version.FromDataVersion(dataVersion);
 			var nbtCompound = chunk.sourceNBT.contents;
-			chunk.sections = new Dictionary<sbyte, ChunkSection>();
 			if (nbtCompound.Contains("Sections"))
 			{
 				LoadBlocksAnvilFormat(chunk, nbtCompound, version);

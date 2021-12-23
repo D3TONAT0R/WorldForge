@@ -129,7 +129,7 @@ namespace MCUtils
 				list.OrderBy(kv => kv.Value);
 				foreach(var kv in list)
 				{
-					if(dataVersion >= kv.Value)
+					if(dataVersion <= kv.Value)
 					{
 						return kv.Key;
 					}

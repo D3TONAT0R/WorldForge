@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static MCUtils.Blocks;
 
@@ -64,26 +65,29 @@ namespace MCUtils {
 				{
 					if (locations[i] > 0 && sizes[i] > 0)
 					{
-						var nbt = new NBTContent(UncompressChunkData(GetChunkData(locations[i] * 4096, out _)), true);
-						//int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
-						//int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
-						int localChunkX = i % 32;
-						int localChunkZ = i / 32;
-						int chunkDataX = (int)nbt.contents.Get("xPos");
-						int chunkDataZ = (int)nbt.contents.Get("zPos");
-						if (localChunkX + regionX * 32 != chunkDataX || localChunkZ + regionZ * 32 != chunkDataZ)
+						using (var ms = CreateZLibDecompressionStream(GetChunkData(locations[i] * 4096, out _)))
 						{
-							misplacedChunks++;
-							if (misplacedChunks <= 10)
+							var nbt = new NBTContent(UncompressChunkData(ms, (int)ms.Length), true);
+							//int localChunkX = (int)nbt.contents.Get("xPos") - regionX * 32;
+							//int localChunkZ = (int)nbt.contents.Get("zPos") - regionZ * 32;
+							int localChunkX = i % 32;
+							int localChunkZ = i / 32;
+							int chunkDataX = (int)nbt.contents.Get("xPos");
+							int chunkDataZ = (int)nbt.contents.Get("zPos");
+							if (localChunkX + regionX * 32 != chunkDataX || localChunkZ + regionZ * 32 != chunkDataZ)
 							{
-								MCUtilsConsole.WriteWarning($"Chunk location mismatch! Expected[{localChunkX + regionX * 32},{localChunkZ + regionZ * 32}], got [{chunkDataX},{chunkDataZ}]");
+								misplacedChunks++;
+								if (misplacedChunks <= 10)
+								{
+									MCUtilsConsole.WriteWarning($"Chunk location mismatch! Expected[{localChunkX + regionX * 32},{localChunkZ + regionZ * 32}], got [{chunkDataX},{chunkDataZ}]");
+								}
+								if (misplacedChunks == 11)
+								{
+									MCUtilsConsole.WriteWarning("...");
+								}
 							}
-							if (misplacedChunks == 11)
-							{
-								MCUtilsConsole.WriteWarning("...");
-							}
+							region.chunks[localChunkX, localChunkZ] = new ChunkData(region, nbt);
 						}
-						region.chunks[localChunkX, localChunkZ] = new ChunkData(region, nbt);
 					}
 				}
 				if (misplacedChunks > 5)
@@ -101,7 +105,7 @@ namespace MCUtils {
 							region.orphanChunks = new List<ChunkData>();
 							while (pos < stream.Length - 1)
 							{
-								var nbt = new NBTContent(UncompressChunkData(GetChunkData(expectedSize, out uint length)), true);
+								var nbt = new NBTContent(CreateZLibDecompressionStream(GetChunkData(expectedSize, out uint length)), true);
 								uint lengthKiB = (uint)Math.Ceiling(length / 4096f);
 								region.orphanChunks.Add(new ChunkData(region, nbt));
 								Console.WriteLine($"Orphan chunk found!");
@@ -131,7 +135,7 @@ namespace MCUtils {
 					fs.CopyTo(ri.stream);
 				}
 				ri.stream.Position = byteOffset;
-				return new NBTContent(UncompressChunkData(ri.GetChunkData(byteOffset, out _)), true);
+				return new NBTContent(CreateZLibDecompressionStream(ri.GetChunkData(byteOffset, out _)), true);
 			}
 		}
 
@@ -144,8 +148,9 @@ namespace MCUtils {
 			string fname = Path.GetFileNameWithoutExtension(filepath);
 			var split = fname.Split('.');
 			if(split.Length > 2) {
-				regionX = int.Parse(fname.Split('.')[1]);
-				regionZ = int.Parse(fname.Split('.')[2]);
+				regionX = int.Parse(split[1]);
+				split[2] = split[2].Split('_', '-', '(', ',')[0];
+				regionZ = int.Parse(split[2]);
 			}
 			ri.regionPos = new World.RegionLocation(regionX, regionZ);
 			using(ri.stream = new MemoryStream()) {
@@ -168,7 +173,12 @@ namespace MCUtils {
 					}
 				}
 				ri.heightmap = new ushort[512, 512];
-				Parallel.For(0, 1024, ri.GetChunkHeightmap);
+				//Parallel.For(0, 1024, ri.GetChunkHeightmap);
+				//HACK: temporarily disabled for debugging purposes
+				for (int i = 0; i < 1024; i++)
+				{
+					ri.GetChunkHeightmap(i);
+				}
 				return ri.heightmap;
 			}
 		}
@@ -192,7 +202,7 @@ namespace MCUtils {
 					var block = r.GetBlock(x, y, z);
 					if (block.IsAir && y > 0)
 					{
-						throw new ArgumentException("the mapped block was air");
+						throw new ArgumentException("the mapped block was air.");
 					}
 					int shade = 0;
 					
@@ -225,7 +235,7 @@ namespace MCUtils {
 
 		private void GetChunkHeightmap(int i) {
 			if(compressedChunkData[i] != null) {
-				var nbt = new NBTContent(UncompressChunkData(compressedChunkData[i]), true);
+				var nbt = new NBTContent(CreateZLibDecompressionStream(compressedChunkData[i]), true);
 				int localChunkX = i % 32;
 				int localChunkZ = i / 32;
 				//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
@@ -300,8 +310,22 @@ namespace MCUtils {
 			return Read(pos + 5, length - 1);
 		}
 
-		private static byte[] UncompressChunkData(byte[] compressed) {
-			return ZlibStream.UncompressBuffer(compressed);
+		private static Stream UncompressChunkData(Stream stream, int length) {
+			var buffer = new byte[length];
+			stream.Read(buffer, 0, length);
+			return new MemoryStream(ZlibStream.UncompressBuffer(buffer));
+		}
+
+		//TODO: move somewhere else
+		public static Stream CreateZLibDecompressionStream(byte[] bytes)
+		{
+			return new MemoryStream(ZlibStream.UncompressBuffer(bytes));
+		}
+
+		//TODO: move somewhere else
+		public static Stream CreateGZipDecompressionStream(byte[] bytes)
+		{
+			return new MemoryStream(GZipStream.UncompressBuffer(bytes));
 		}
 	}
 }

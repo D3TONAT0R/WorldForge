@@ -121,5 +121,10 @@ namespace MCUtils
 				return hash;
 			}
 		}
+
+		public override string ToString()
+		{
+			return ID;
+		}
 	}
 }

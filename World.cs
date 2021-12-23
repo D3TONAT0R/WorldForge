@@ -43,7 +43,10 @@ namespace MCUtils
 			gameVersion = version;
 			if (!string.IsNullOrEmpty(levelDatPath))
 			{
-				levelDat = new NBTContent(File.ReadAllBytes(levelDatPath), false);
+				using (var stream = File.OpenRead(levelDatPath))
+				{
+					levelDat = new NBTContent(stream, false);
+				}
 			}
 			regions = new Dictionary<RegionLocation, Region>();
 			for (int x = regionLowerX; x <= regionUpperX; x++)

@@ -1,5 +1,6 @@
 
 using Ionic.Zlib;
+using MCUtils.Coordinates;
 using MCUtils.IO;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ using static MCUtils.NBTContent;
 namespace MCUtils {
 	public class Region {
 
-		public int regionPosX;
-		public int regionPosZ;
+		public readonly RegionCoord regionPos;
 
 		public byte[,] heightmap;
 		public ChunkData[,] chunks;
@@ -24,8 +24,7 @@ namespace MCUtils {
 		public World containingWorld;
 
 		public Region(int x, int z) {
-			regionPosX = x;
-			regionPosZ = z;
+			regionPos = new RegionCoord(x, z);
 			chunks = new ChunkData[32, 32];
 		}
 
@@ -95,25 +94,25 @@ namespace MCUtils {
 		/// <summary>
 		/// Gets the chunk containing the block's position
 		/// </summary>
-		public ChunkData GetChunk(int x, int z, bool allowNew) {
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
+		public ChunkData GetChunk(int localX, int localZ, bool allowNew) {
+			int chunkX = (int)Math.Floor(localX / 16.0);
+			int chunkZ = (int)Math.Floor(localZ / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
 			if(chunks[chunkX, chunkZ] == null && allowNew) {
-				chunks[chunkX, chunkZ] = new ChunkData(this, "minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
 			return chunks[chunkX, chunkZ];
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int x, int y, int z) {
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
+		public void SetDefaultBlock(int localX, int y, int localZ) {
+			int chunkX = (int)Math.Floor(localX / 16.0);
+			int chunkZ = (int)Math.Floor(localZ / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if(chunks[chunkX, chunkZ] == null) {
-				chunks[chunkX, chunkZ] = new ChunkData(this, "minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
-			chunks[chunkX, chunkZ].SetDefaultBlockAt(x % 16, y, z % 16);
+			chunks[chunkX, chunkZ].SetDefaultBlockAt(localX % 16, y, localZ % 16);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>

@@ -1,3 +1,4 @@
+using MCUtils.Coordinates;
 using MCUtils.IO;
 using System;
 using System.Collections.Generic;
@@ -7,10 +8,12 @@ namespace MCUtils
 {
 	public class ChunkData
 	{
+		public ChunkCoord coords;
+
 		public string defaultBlock = "minecraft:stone";
 		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
-		public Dictionary<sbyte, ChunkSection> sections;
+		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
 		public BiomeID[,] biomes = new BiomeID[16, 16];
@@ -22,9 +25,10 @@ namespace MCUtils
 
 		private readonly object lockObj = new object();
 
-		public ChunkData(Region region, string defaultBlock)
+		public ChunkData(Region region, ChunkCoord pos, string defaultBlock)
 		{
 			containingRegion = region;
+			coords = pos;
 			this.defaultBlock = defaultBlock;
 			for (int x = 0; x < 16; x++)
 			{
