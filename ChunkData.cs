@@ -84,7 +84,7 @@ namespace MCUtils
 		public BlockState GetBlockAt(int x, int y, int z)
 		{
 			var sec = GetChunkSectionForYCoord(y, false);
-			if (sec == null) return BlockState.air;
+			if (sec == null) return BlockState.Air;
 			return sec.GetBlockAt(x, y % 16, z);
 		}
 

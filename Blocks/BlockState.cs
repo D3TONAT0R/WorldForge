@@ -9,13 +9,28 @@ namespace MCUtils
 	public class BlockState
 	{
 
-		public static readonly BlockState air = new BlockState(ProtoBlock.RegisterNewVanillaBlock("air", Version.FirstVersion));
+		public static BlockState Air
+		{
+			get
+			{
+				if (air == null)
+				{
+					air = new BlockState(BlockList.Find("air"));
+				}
+				return air;
+			}
+		}
+		private static BlockState air;
 
 		public ProtoBlock block;
 		public CompoundContainer properties = new CompoundContainer();
 
 		public BlockState(ProtoBlock blockType)
 		{
+			if(blockType == null)
+			{
+				throw new NullReferenceException("Attempted to create a BlockState with a null ProtoBlock.");
+			}
 			block = blockType;
 			AddDefaultBlockProperties();
 		}

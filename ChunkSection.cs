@@ -59,6 +59,7 @@ namespace MCUtils
 
 		private ushort AddBlockToPalette(BlockState block)
 		{
+			if (block == null) throw new NullReferenceException("Attempted to add a null BlockState to the palette.");
 			palette.Add(block);
 			return (ushort)(palette.Count - 1);
 		}
@@ -68,7 +69,7 @@ namespace MCUtils
 			if (blocks == null) return true;
 			bool allSame = true;
 			var i = blocks[0, 0, 0];
-			if (!palette[i].Compare(BlockState.air, false)) return false;
+			if (!palette[i].Compare(BlockState.Air, false)) return false;
 			foreach (var j in blocks)
 			{
 				allSame &= i == j;

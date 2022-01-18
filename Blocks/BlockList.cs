@@ -638,11 +638,12 @@ namespace MCUtils {
 			//Find & set substitute blocks
 			foreach(var f in fallbacks)
 			{
-				f.Item1.substitute = Find(f.Item2);
+				//HACK: exception supressed, property parsing not yet implemented.
+				f.Item1.substitute = Find(f.Item2, false);
 			}
 		}
 
-		public static ProtoBlock Find(string blockTypeName)
+		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = true)
 		{
 			if (!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
 			if (blockTypeName.StartsWith("minecraft:"))
@@ -653,6 +654,7 @@ namespace MCUtils {
 				}
 				else
 				{
+					if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
 					return null;
 				}
 			}
