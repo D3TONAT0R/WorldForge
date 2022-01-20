@@ -24,5 +24,15 @@ namespace MCUtils.Coordinates
 			this.y = y;
 			this.z = z;
 		}
+
+		public static BlockCoord operator +(BlockCoord l, BlockCoord r)
+		{
+			return new BlockCoord(l.x + r.x, l.y + r.y, l.z + r.z);
+		}
+
+		public static BlockCoord operator -(BlockCoord l, BlockCoord r)
+		{
+			return new BlockCoord(l.x - r.x, l.y - r.y, l.z - r.z);
+		}
 	}
 }

@@ -19,7 +19,9 @@ namespace MCUtils
 		public BiomeID[,] biomes = new BiomeID[16, 16];
 
 		public List<Entity> entities = new List<Entity>();
-		public Dictionary<(int x, int y, int z), TileEntity> tileEntities = new Dictionary<(int, int, int), TileEntity>();
+		public Dictionary<BlockCoord, TileEntity> tileEntities = new Dictionary<BlockCoord, TileEntity>();
+
+		public List<BlockCoord> blockTicks = new List<BlockCoord>();
 
 		public NBTContent sourceNBT;
 
@@ -93,18 +95,19 @@ namespace MCUtils
 		{
 			if (tileEntities == null)
 			{
-				tileEntities = new Dictionary<(int x, int y, int z), TileEntity>();
+				tileEntities = new Dictionary<BlockCoord, TileEntity>();
 			}
-			tileEntities.Add((x, y, z), te);
+			tileEntities.Add(new BlockCoord(x, y, z), te);
 		}
 
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
 		public TileEntity GetTileEntity(int x, int y, int z)
 		{
 			if (tileEntities == null) return null;
-			if (tileEntities.ContainsKey((x, y, z)))
+			var c = new BlockCoord(x, y, z);
+			if (tileEntities.ContainsKey(c))
 			{
-				return tileEntities[(x, y, z)];
+				return tileEntities[c];
 			}
 			else
 			{
@@ -124,6 +127,30 @@ namespace MCUtils
 			lock (lockObj)
 			{
 				biomes[x, z] = biome;
+			}
+		}
+
+		/// <summary>
+		/// Marks the given chunk coordinate to be ticked when this chunk is loaded.
+		/// </summary>
+		public void MarkForTickUpdate(int x, int y, int z)
+		{
+			var coord = new BlockCoord(x, y, z);
+			if (!blockTicks.Contains(coord))
+			{
+				blockTicks.Add(coord);
+			}
+		}
+
+		/// <summary>
+		/// Unmarks a previously marked chunk coordinate to be ticked when this chunk is loaded.
+		/// </summary>
+		public void UnmarkForTickUpdate(int x, int y, int z)
+		{
+			var coord = new BlockCoord(x, y, z);
+			if (blockTicks.Contains(coord))
+			{
+				blockTicks.Remove(coord);
 			}
 		}
 
@@ -149,7 +176,7 @@ namespace MCUtils
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
 						var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
-						tileEntities.Add((te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
+						tileEntities.Add(new BlockCoord(te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
 					}
 				}
 			}
@@ -253,18 +280,71 @@ namespace MCUtils
 				}
 			}
 			level.Add("Biomes", biomes.ToArray());
+
 			//Add TileEntities
 			var teList = level.GetAsList("TileEntities");
 			foreach (var te in tileEntities)
 			{
 				teList.Add(te.Value.NBTCompound);
 			}
+
 			//Add Entities
 			var entitiyList = level.GetAsList("Entities");
 			foreach (var e in entities)
 			{
 				entitiyList.Add(e.NBTCompound);
 			}
+
+			//Add "post processing" positions (i.e. block positions that need an update)
+			var ppList = level.GetAsList("PostProcessing");
+			foreach(var t in blockTicks)
+			{
+				//TODO: section index and coordinate packing is being guessed, trying to find out how to do it.
+				int listIndex = t.y / 16;
+				var x = t.x % 16;
+				var y = t.y % 16;
+				var z = t.z % 16;
+				var list = ppList.Get<ListContainer>(listIndex);
+				short packed = (short)((z << 8) + (y << 4) + x);
+				list.Add(packed);
+			}
+
+			//Add liquid / tile ticks
+			/*
+			var tileTickList = level.GetAsList("TileTicks");
+			var liquidTickList = level.GetAsList("LiquidTicks");
+			foreach (var t in blockTicks)
+			{
+				var block = GetBlockAt(t.x, t.y, t.z).block;
+				bool isLiquid = block.IsLiquid;
+				var comp = new CompoundContainer();
+				string i;
+				if(isLiquid)
+				{
+					//i = block.IsWater ? "minecraft:flowing_water" : "minecraft:flowing_lava";
+					//flowing_water and flowing_lava only applies to non-source blocks.
+					i = block.ID;
+				}
+				else
+				{
+					i = block.ID;
+				}
+				var worldCoord = coords.BlockCoord + t;
+				comp.Add("i", i);
+				comp.Add("t", 20);
+				comp.Add("p", 0);
+				comp.Add("x", worldCoord.x);
+				comp.Add("y", worldCoord.y);
+				comp.Add("z", worldCoord.z);
+				if(isLiquid)
+				{
+					liquidTickList.Add(comp);
+				}
+				else
+				{
+					tileTickList.Add(comp);
+				}
+			}*/
 		}
 
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>

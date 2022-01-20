@@ -16,6 +16,8 @@ namespace MCUtils
 
 		public bool IsAir => ID == "minecraft:air";
 		public bool IsWater => ID == "minecraft:water";
+		public bool IsLava => ID == "minecraft:lava";
+		public bool IsLiquid => IsWater || IsLava;
 
 		/// <summary>
 		/// Registers a new vanilla block type.

@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId></PackageId>
+    <StartupObject>MCUtils.MCUtilsConsole</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

@@ -98,7 +98,7 @@ namespace MCUtils {
 			int chunkX = (int)Math.Floor(localX / 16.0);
 			int chunkZ = (int)Math.Floor(localZ / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
-			if(chunks[chunkX, chunkZ] == null && allowNew) {
+			if(allowNew && chunks[chunkX, chunkZ] == null) {
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
 			return chunks[chunkX, chunkZ];
@@ -118,14 +118,12 @@ namespace MCUtils {
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID? GetBiome(int x, int z)
 		{
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
-			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
-			if (chunks[chunkX, chunkZ] != null)
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
 			{
 				//for (int y = 0; y < 256; y++)
 				//{
-					return chunks[chunkX, chunkZ].GetBiomeAt(x % 16, z % 16);
+				return chunk.GetBiomeAt(x % 16, z % 16);
 				//}
 			} else
 			{
@@ -134,14 +132,39 @@ namespace MCUtils {
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int z, BiomeID biome) {
-			int chunkX = (int)Math.Floor(x / 16.0);
-			int chunkZ = (int)Math.Floor(z / 16.0);
-			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
-			if(chunks[chunkX, chunkZ] != null) {
-				//for(int y = 0; y < 256; y++) {
-					chunks[chunkX, chunkZ].SetBiomeAt(x % 16, z % 16, biome);
+		public void SetBiome(int x, int z, BiomeID biome)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				//for(int y = 0; y < 256; y++)
+				//{
+				chunk.SetBiomeAt(x % 16, z % 16, biome);
 				//}
+			}
+		}
+
+		/// <summary>
+		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
+		/// </summary>
+		public void MarkForTickUpdate(int x, int y, int z)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				chunk.MarkForTickUpdate(x % 16, y, z % 16);
+			}
+		}
+
+		/// <summary>
+		/// Unmarks a previously marked coordinate to be ticked when thie respective chunk is loaded.
+		/// </summary>
+		public void UnmarkForTickUpdate(int x, int y, int z)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				chunk.UnmarkForTickUpdate(x % 16, y, z % 16);
 			}
 		}
 

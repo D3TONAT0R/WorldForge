@@ -129,6 +129,23 @@ namespace MCUtils
 			TryGetRegion(x, z)?.SetBiome(x % 512, z % 512, biome);
 		}
 
+
+		/// <summary>
+		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
+		/// </summary>
+		public void MarkForTickUpdate(int x, int y, int z)
+		{
+			TryGetRegion(x, z)?.MarkForTickUpdate(x % 512, y, z % 512);
+		}
+
+		/// <summary>
+		/// Unmarks a previously marked coordinate to be ticked when the respective chunk is loaded.
+		/// </summary>
+		public void UnmarkForTickUpdate(int x, int y, int z)
+		{
+			TryGetRegion(x, z)?.UnmarkForTickUpdate(x % 512, y, z % 512);
+		}
+
 		//private readonly object lockObj = new object();
 
 		private Region GetRegionAt(int x, int z)
@@ -294,14 +311,13 @@ namespace MCUtils
 			Directory.CreateDirectory(path);
 
 			int y = GetRegionAt(playerPosX, playerPosZ).GetChunk(playerPosX % 512, playerPosZ % 512, false).GetHighestBlock(playerPosX % 16, playerPosZ % 16);
-			levelDat = CreateLevelDAT(playerPosX, y, playerPosZ, true);
+			levelDat = CreateLevelDAT(playerPosX, y+1, playerPosZ, true);
 
 			List<byte> levelDATBytes = new List<byte>();
 			levelDat.WriteToBytes(levelDATBytes, false);
 			var compressedLevelDAT = GZipStream.CompressBuffer(levelDATBytes.ToArray());
 
 			File.WriteAllBytes(Path.Combine(path, "level.dat"), compressedLevelDAT);
-			MCUtilsConsole.WriteLineSpecial("DAT written");
 
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 

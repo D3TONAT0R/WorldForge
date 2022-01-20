@@ -24,23 +24,32 @@ namespace MCUtils.IO
 				for (int x = 0; x < 32; x++)
 				{
 					int i = z * 32 + x;
-					locations[i] = (int)(stream.Position / 4096);
-					var chunkData = ChunkSerializer.CreateCompoundForChunk(region.chunks[x, z], version);
-					List<byte> bytes = new List<byte>();
-					chunkData.WriteToBytes(bytes, true);
-					byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
-					var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
-					stream.Write(cLength, 0, cLength.Length);
-					stream.WriteByte(2);
-					stream.Write(compressed, 0, compressed.Length);
-					var padding = stream.Length % 4096;
-					//Pad the data to the next 4096 byte mark
-					if (padding > 0)
+					var chunk = region.chunks[x, z];
+					if (chunk != null)
 					{
-						byte[] paddingBytes = new byte[4096 - padding];
-						stream.Write(paddingBytes, 0, paddingBytes.Length);
+						locations[i] = (int)(stream.Position / 4096);
+						var chunkData = ChunkSerializer.CreateCompoundForChunk(chunk, version);
+						List<byte> bytes = new List<byte>();
+						chunkData.WriteToBytes(bytes, true);
+						byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
+						var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
+						stream.Write(cLength, 0, cLength.Length);
+						stream.WriteByte(2);
+						stream.Write(compressed, 0, compressed.Length);
+						var padding = stream.Length % 4096;
+						//Pad the data to the next 4096 byte mark
+						if (padding > 0)
+						{
+							byte[] paddingBytes = new byte[4096 - padding];
+							stream.Write(paddingBytes, 0, paddingBytes.Length);
+						}
+						sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 					}
-					sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
+					else
+					{
+						locations[i] = 0;
+						sizes[i] = 0;
+					}
 				}
 				if (writeProgressBar) MCUtilsConsole.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
 			}
