@@ -105,6 +105,13 @@ namespace MCUtils
 			return b == null || b.IsAir;
 		}
 
+		///<summary>Returns true if the block at the given location is air and does actually exist (a chunk is present at the location).</summary>
+		public bool IsAirNotNull(int x, int y, int z)
+		{
+			var b = GetBlock(x, y, z);
+			return b != null && b.IsAir;
+		}
+
 		///<summary>Gets the block type at the given location.</summary>
 		public ProtoBlock GetBlock(int x, int y, int z)
 		{
@@ -301,6 +308,14 @@ namespace MCUtils
 			return GetRegionAt(x, z)?.GetWaterDepth(x % 512, y, z % 512) ?? 0;
 		}
 
+		/// <summary>
+		/// Gets the highest block at the given location.
+		/// </summary>
+		public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
+		{
+			return GetRegionAt(x, z)?.GetHighestBlock(x % 512, z % 512, heightmapType) ?? short.MinValue;
+		}
+
 		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ)
 		{
 			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
@@ -321,7 +336,8 @@ namespace MCUtils
 
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
-			Parallel.ForEach(regions, (KeyValuePair<RegionLocation, Region> region) =>
+			var options = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+			Parallel.ForEach(regions, options, (KeyValuePair<RegionLocation, Region> region) =>
 			{
 				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
 				using (var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create))

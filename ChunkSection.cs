@@ -91,7 +91,9 @@ namespace MCUtils
 					CompoundContainer properties = new CompoundContainer();
 					foreach (var prop in block.properties.cont.Keys)
 					{
-						properties.Add(prop, block.properties.Get(prop).ToString());
+						var value = block.properties.Get(prop);
+						if (value is bool b) value = b.ToString().ToLower();
+						properties.Add(prop, value.ToString());
 					}
 					paletteBlock.Add("Properties", properties);
 				}

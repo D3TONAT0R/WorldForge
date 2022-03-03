@@ -233,7 +233,7 @@ namespace MCUtils
 			return finalBiomeArray;
 		}
 
-		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type)
+		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type = HeightmapType.AllBlocks)
 		{
 			short y = (short)(HighestSection * 16 + 15);
 			while (y > LowestSection * 16)
@@ -242,11 +242,6 @@ namespace MCUtils
 				y--;
 			}
 			return short.MinValue;
-		}
-
-		public short GetHighestBlock(int chunkX, int chunkZ)
-		{
-			return GetHighestBlock(chunkX, chunkZ, HeightmapType.AllBlocks);
 		}
 
 		///<summary>Generates the full NBT data of a chunk</summary>

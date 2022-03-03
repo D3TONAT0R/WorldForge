@@ -168,6 +168,22 @@ namespace MCUtils {
 			}
 		}
 
+		/// <summary>
+		/// Gets the highest block at the given location.
+		/// </summary>
+		public short GetHighestBlock(int x, int z, HeightmapType heightmapType = HeightmapType.AllBlocks)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				return chunk.GetHighestBlock(x % 16, z % 16, heightmapType);
+			}
+			else
+			{
+				return short.MinValue;
+			}
+		}
+
 		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
 		public short[,] GetHeightmapFromNBT(HeightmapType type) {
 			short[,] hm = new short[512, 512];
