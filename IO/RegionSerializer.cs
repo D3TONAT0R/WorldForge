@@ -44,6 +44,7 @@ namespace MCUtils.IO
 							stream.Write(paddingBytes, 0, paddingBytes.Length);
 						}
 						sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
+						if (sizes[i] == 0) throw new InvalidOperationException("0 byte sized chunk detected.");
 					}
 					else
 					{

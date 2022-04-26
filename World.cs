@@ -45,7 +45,7 @@ namespace MCUtils
 			{
 				using (var stream = File.OpenRead(levelDatPath))
 				{
-					levelDat = new NBTContent(stream, false);
+					levelDat = new NBTContent(stream);
 				}
 			}
 			regions = new Dictionary<RegionLocation, Region>();

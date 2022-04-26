@@ -50,7 +50,7 @@ namespace MCUtils {
 			filename = Path.GetFileName(path);
 			if(path.EndsWith(".mca")) {
 				content = new NBTContent();
-				Region r = RegionImporter.OpenRegionFile(path);
+				Region r = RegionLoader.LoadRegion(path);
 				for(int z = 0; z < 32; z++) {
 					for(int x = 0; x < 32; x++) {
 						if(r.chunks[x, z] != null) {
@@ -59,7 +59,7 @@ namespace MCUtils {
 					}
 				}
 			} else {
-				content = new NBTContent(RegionImporter.CreateZLibDecompressionStream(File.ReadAllBytes(path)), false);
+				content = new NBTContent(RegionLoader.CreateZLibDecompressionStream(File.ReadAllBytes(path)));
 			}
 			//filename = "root";
 			//var root = new CompoundContainer();

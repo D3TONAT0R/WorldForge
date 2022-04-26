@@ -48,9 +48,9 @@ namespace MCUtils {
 					v.Run();
 				}
 				if(input.StartsWith("readchunk ")) {
-					WriteLine("enter offset: ");
-					uint offset = uint.Parse(Console.ReadLine());
-					var v = new NBTViewer(RegionImporter.LoadChunkDataFromOffset(input.Substring(10).Replace("\"", ""), offset));
+					WriteLine("enter index: ");
+					int index = int.Parse(Console.ReadLine());
+					var v = new NBTViewer(RegionLoader.LoadChunkDataAtIndex(input.Substring(10).Replace("\"", ""), index));
 					v.Run();
 				}
 			}

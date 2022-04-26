@@ -28,8 +28,8 @@ namespace MCUtils.ConsoleTools
 			Region region2;
 			try
 			{
-				region1 = RegionImporter.OpenRegionFile(r1);
-				region2 = RegionImporter.OpenRegionFile(r2);
+				region1 = RegionLoader.LoadRegion(r1);
+				region2 = RegionLoader.LoadRegion(r2);
 			}
 			catch (Exception e)
 			{

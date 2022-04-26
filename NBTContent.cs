@@ -260,7 +260,7 @@ namespace MCUtils
 		}
 
 		///<summary>Creates an NBT structure from the given bytes.</summary>
-		public NBTContent(Stream uncompressedStream, bool isChunkFile) : this()
+		public NBTContent(Stream uncompressedStream) : this()
 		{
 			while (uncompressedStream.Position < uncompressedStream.Length)
 			{

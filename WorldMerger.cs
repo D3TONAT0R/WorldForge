@@ -101,8 +101,8 @@ namespace MCUtils {
 				Bitmap section = worldMergeMap.Clone(new Rectangle(localX*scale, localZ*scale, scale, scale), worldMergeMap.PixelFormat);
 
 				MCUtilsConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
-				var region1 = RegionImporter.OpenRegionFile(Path.Combine(world1Path, r.filename));
-				var region2 = RegionImporter.OpenRegionFile(Path.Combine(world2Path, r.filename));
+				var region1 = RegionLoader.LoadRegion(Path.Combine(world1Path, r.filename));
+				var region2 = RegionLoader.LoadRegion(Path.Combine(world2Path, r.filename));
 				var merger = new RegionMerger(region1, region2, section);
 				var mergedRegion = merger.Merge();
 
