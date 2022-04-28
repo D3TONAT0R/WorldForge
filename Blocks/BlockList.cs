@@ -619,20 +619,24 @@ namespace MCUtils {
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
 					Version version = split[4].Length > 1 ? Version.Parse(split[4]) : Version.FirstVersion;
-					var newBlock = ProtoBlock.RegisterNewVanillaBlock(id, version);
-					if (split[5].Length > 1) {
-						fallbacks.Add((newBlock, split[5]));
-					}
-					if (numeric.HasValue)
+					var newBlocks = ProtoBlock.RegisterNewVanillaBlock(id, version);
+					foreach (var newBlock in newBlocks)
 					{
-						numerics.Add(newBlock, numeric.Value);
-						var hash = numeric.Value.Hash;
-						if(!protoByNumerics.ContainsKey(hash))
+						if (split[5].Length > 1)
 						{
-							protoByNumerics.Add(hash, newBlock);
+							fallbacks.Add((newBlock, split[5]));
 						}
+						if (numeric.HasValue)
+						{
+							numerics.Add(newBlock, numeric.Value);
+							var hash = numeric.Value.Hash;
+							if (!protoByNumerics.ContainsKey(hash))
+							{
+								protoByNumerics.Add(hash, newBlock);
+							}
+						}
+						if (preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:" + preFlattening);
 					}
-					if (preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:"+preFlattening);
 				}
 			}
 			//Find & set substitute blocks
@@ -668,7 +672,7 @@ namespace MCUtils {
 				else
 				{
 					var split = blockTypeName.Split(':');
-					return ProtoBlock.RegisterNewModBlock(split[0], split[1]);
+					return ProtoBlock.RegisterNewModBlock(split[0], split[1])[0];
 				}
 			}
 		}

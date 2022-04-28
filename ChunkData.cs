@@ -236,7 +236,7 @@ namespace MCUtils
 		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type = HeightmapType.AllBlocks)
 		{
 			short y = (short)(HighestSection * 16 + 15);
-			while (y > LowestSection * 16)
+			while (y >= LowestSection * 16)
 			{
 				if (Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ).block, type)) return y;
 				y--;
@@ -387,17 +387,20 @@ namespace MCUtils
 
 		private void WriteHeightmapFromBlocks(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
-			sbyte highestSection = 127;
+			/*sbyte highestSection = 127;
 			while (highestSection > -127 && !sections.ContainsKey(highestSection))
 			{
 				highestSection--;
 			}
 			if (highestSection == -127) return;
 			var sec = sections[highestSection];
+			*/
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
+					hm[localChunkX * 16 + x, localChunkZ * 16 + z] = GetHighestBlock(x, z, type);
+					/*
 					short yTop;
 					if (hm[x, z] != 0)
 					{
@@ -422,6 +425,7 @@ namespace MCUtils
 							break;
 						}
 					}
+					*/
 				}
 			}
 		}

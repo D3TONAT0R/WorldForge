@@ -22,21 +22,42 @@ namespace MCUtils
 		/// <summary>
 		/// Registers a new vanilla block type.
 		/// </summary>
-		public static ProtoBlock RegisterNewVanillaBlock(string shortID, Version versionAdded, ProtoBlock substitute = null)
+		public static ProtoBlock[] RegisterNewVanillaBlock(string shortID, Version versionAdded, ProtoBlock substitute = null)
 		{
-			var b = new ProtoBlock(null, shortID, versionAdded, substitute);
-			BlockList.allBlocks.Add(b.ID, b);
-			return b;
+			return RegisterNewBlock(null, shortID, versionAdded, substitute);
 		}
 
 		/// <summary>
 		/// Registers a new modded block type (does not check for game versions).
 		/// </summary>
-		public static ProtoBlock RegisterNewModBlock(string modNamespace, string shortID)
+		public static ProtoBlock[] RegisterNewModBlock(string modNamespace, string shortID)
 		{
-			var b = new ProtoBlock(modNamespace, shortID, Version.FirstVersion, null);
-			BlockList.allBlocks.Add(b.ID, b);
-			return b;
+			return RegisterNewBlock(modNamespace, shortID, null, null);
+		}
+
+		static ProtoBlock[] RegisterNewBlock(string modNamespace, string shortID, Version? versionAdded, ProtoBlock substitute)
+		{
+			if(!versionAdded.HasValue) versionAdded = Version.FirstVersion;
+			if(shortID.Contains("*"))
+			{
+				//Multicolored blocks
+				ProtoBlock[] blocks = new ProtoBlock[Blocks.commonColors.Length];
+				for (int i = 0; i < Blocks.commonColors.Length; i++)
+				{
+					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
+					//TODO: how to substitute color block with another color block?
+					var b = new ProtoBlock(modNamespace, colorBlockID, versionAdded.Value, substitute);
+					BlockList.allBlocks.Add(b.ID, b);
+					blocks[i] = b;
+				}
+				return blocks;
+			}
+			else
+			{
+				var b = new ProtoBlock(modNamespace, shortID, versionAdded.Value, substitute);
+				BlockList.allBlocks.Add(b.ID, b);
+				return new ProtoBlock[] { b };
+			}
 		}
 
 		private ProtoBlock(string ns, string id, Version v, ProtoBlock sub)

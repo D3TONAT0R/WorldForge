@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Region = MCUtils.Region;
 
 namespace MCUtils
@@ -31,8 +32,16 @@ namespace MCUtils
 			public RegionData(Stream stream, string filepath)
 			{
 				string fname = Path.GetFileName(filepath);
-				regionX = int.Parse(fname.Split('.')[1]);
-				regionZ = int.Parse(fname.Split('.')[2]);
+				if(Regex.IsMatch(fname, @".*\.-?[0-9]+\.-?[0-9]+\.mc.*"))
+				{
+					var split = fname.Split('.');
+					regionX = int.Parse(split[split.Length-3]);
+					regionZ = int.Parse(split[split.Length-2]);
+				}
+				else
+				{
+					Console.WriteLine("Unable to interpret region location from file name: " + fname);
+				}
 
 				for (uint i = 0; i < 1024; i++)
 				{
