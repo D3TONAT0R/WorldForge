@@ -329,6 +329,7 @@ observer;;218;observer;1.11;smooth_stone
 *_concrete;;251:*;concrete;1.12;*_terracotta
 *_concrete_powder;;252:*;concrete_powder;1.12;*_wool
 structure_block;;255;structure_block;1.9;bedrock
+cave_air;;;;1.13;
 pumpkin;;;;1.13;carved_pumpkin
 spruce_button;;;;1.13;oak_button
 birch_button;;;;1.13;oak_button
@@ -357,7 +358,7 @@ stripped_acacia_wood;;;;1.13;acacia_wood
 stripped_dark_oak_log;;;;1.13;dark_oak_log
 stripped_dark_oak_wood;;;;1.13;dark_oak_wood
 bubble_column;;;;1.13;water
-kelp;;;;1.13;water
+kelp_plant;;;;1.13;water
 seagrass;;;;1.13;water
 tall_seagrass;;;;1.13;water
 dried_kelp_block;;;;1.13;sponge
@@ -607,3 +608,16 @@ chains;;;;1.16;iron_bars
 ;;;;1.17;
 ;;;;1.17;
 ;;;;1.17;
+deepslate;;;;1.18;stone
+copper_ore;;;;1.18;stone
+raw_iron_block;;;;1.18;iron_block
+raw_gold_block;;;;1.18;gold_block
+raw_copper_block;;;;1.18;iron_block
+deepslate_coal_ore;;;;1.18;coal_ore
+deepslate_iron_ore;;;;1.18;iron_ore
+deepslate_gold_ore;;;;1.18;gold_ore
+deepslate_diamond_ore;;;;1.18;diamond_ore
+deepslate_lapis_ore;;;;1.18;lapis_ore
+deepslate_redstone_ore;;;;1.18;redstone_ore
+deepslate_emerald_ore;;;;1.18;emerald_ore
+deepslate_copper_ore;;;;1.18;stone

@@ -10,7 +10,7 @@ namespace MCUtils.Coordinates
 		public int y;
 		public int z;
 
-		public RegionCoord Region => new RegionCoord((int)Math.Floor(x / 512f), (int)Math.Floor(z / 512f));
+		public RegionLocation Region => new RegionLocation((int)Math.Floor(x / 512f), (int)Math.Floor(z / 512f));
 
 		public ChunkCoord Chunk => new ChunkCoord((int)Math.Floor(x / 16f), (int)Math.Floor(z / 16f));
 

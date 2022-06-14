@@ -1,4 +1,5 @@
 ﻿using Ionic.Zlib;
+using MCUtils.Coordinates;
 using MCUtils.IO;
 using System;
 using System.Collections.Concurrent;
@@ -7,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static MCUtils.ChunkData;
 using static MCUtils.NBTContent;
@@ -15,18 +17,6 @@ namespace MCUtils
 {
 	public class World
 	{
-
-		public struct RegionLocation
-		{
-			public int x;
-			public int z;
-
-			public RegionLocation(int regionX, int regionZ)
-			{
-				x = regionX;
-				z = regionZ;
-			}
-		}
 
 		public static readonly ProtoBlock defaultBlock = BlockList.Find("minecraft:stone");
 
@@ -60,6 +50,70 @@ namespace MCUtils
 					regions.Add(new RegionLocation(x, z), reg);
 				}
 			}
+		}
+
+		private World()
+		{
+
+		}
+
+		//TODO: Danger, loads entire world at once
+		public static World Load(string worldSaveDir)
+		{
+			var world = new World();
+			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
+			{
+				world.levelDat = new NBTContent(stream);
+			}
+			world.gameVersion = Version.FromDataVersion(world.levelDat.dataVersion) ?? Version.FirstVersion;
+			world.worldName = world.levelDat.contents.Get<string>("LevelName");
+			world.regions = new Dictionary<RegionLocation, Region>();
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mca"))
+			{
+				var filename = Path.GetFileName(f);
+				if (Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)")) {
+					try
+					{
+						var region = RegionLoader.LoadRegion(f);
+						world.regions.Add(region.regionPos, region);
+					}
+					catch(Exception e)
+					{
+						Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
+					}
+				}
+				else
+				{
+					Console.WriteLine($"Invalid file '{filename}' in region folder.");
+				}
+			}
+			return world;
+		}
+
+		public static void GetWorldInfo(string worldSaveDir, out string worldName, out Version gameVersion, out RegionLocation[] regions)
+		{
+			NBTContent levelDat;
+			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
+			{
+				levelDat = new NBTContent(stream);
+			}
+			var dataComp = levelDat.contents.GetAsCompound("Data");
+			
+			gameVersion = Version.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? Version.FirstVersion;
+			worldName = dataComp.Get<string>("LevelName");
+			var regionList = new List<RegionLocation>();
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mca"))
+			{
+				try
+				{
+					regionList.Add(RegionLocation.FromRegionFileName(f));
+				}
+				catch
+				{
+
+				}
+			}
+			regions = regionList.ToArray();
 		}
 
 		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed</summary>

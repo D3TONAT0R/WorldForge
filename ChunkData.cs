@@ -41,10 +41,11 @@ namespace MCUtils
 			}
 		}
 
-		public ChunkData(Region region, NBTContent chunk)
+		public ChunkData(Region region, NBTContent chunk, ChunkCoord chunkCoord)
 		{
 			containingRegion = region;
 			sourceNBT = chunk;
+			coords = chunkCoord;
 			ChunkSerializer.ReadBlocksFromNBT(this, chunk.dataVersion);
 			RecalculateSectionRange();
 			ReadEntitiesAndTileEntitiesFromNBT(chunk.contents);

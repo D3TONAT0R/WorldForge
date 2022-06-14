@@ -1,5 +1,6 @@
 ﻿using Ionic.Zlib;
 using MCUtils;
+using MCUtils.Coordinates;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -57,12 +58,19 @@ namespace MCUtils
 					if (locations[i] > 0)
 					{
 						stream.Seek(locations[i] * 4096, SeekOrigin.Begin);
-						compressedChunks[i] = new CompressedChunkData()
+						try
 						{
-							length = ReadInt(stream),
-							compressionType = ReadNext(stream),
-							compressedChunk = ReadNext(stream, sizes[i] * 4096 - 5)
-						};
+							compressedChunks[i] = new CompressedChunkData()
+							{
+								length = ReadInt(stream),
+								compressionType = ReadNext(stream),
+								compressedChunk = ReadNext(stream, sizes[i] * 4096 - 5)
+							};
+						}
+						catch
+						{
+
+						}
 						expectedEOF = (locations[i] + sizes[i]) * 4096;
 					}
 				}
@@ -85,7 +93,7 @@ namespace MCUtils
 					var cd = rd.compressedChunks[i];
 					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
 					{
-						region.chunks[i % 32, i / 32] = new ChunkData(region, new NBTContent(chunkStream));
+						region.chunks[i % 32, i / 32] = new ChunkData(region, new NBTContent(chunkStream), region.regionPos.GetChunkCoord(i % 32, i / 32));
 					}
 				}
 			}
@@ -240,7 +248,8 @@ namespace MCUtils
 			//var chunkHM = nbt.GetHeightmapFromChunkNBT(mapType);
 			try
 			{
-				ChunkData chunk = new ChunkData(null, nbt);
+				//TODO: not global chunk coords
+				ChunkData chunk = new ChunkData(null, nbt, new ChunkCoord(localChunkX, localChunkZ));
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
 				/*for (int x = 0; x < 16; x++)
 				{

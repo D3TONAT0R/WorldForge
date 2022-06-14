@@ -12,7 +12,7 @@ using static MCUtils.NBTContent;
 namespace MCUtils {
 	public class Region {
 
-		public readonly RegionCoord regionPos;
+		public readonly RegionLocation regionPos;
 
 		public byte[,] heightmap;
 		public ChunkData[,] chunks;
@@ -24,11 +24,11 @@ namespace MCUtils {
 		public World containingWorld;
 
 		public Region(int x, int z) {
-			regionPos = new RegionCoord(x, z);
+			regionPos = new RegionLocation(x, z);
 			chunks = new ChunkData[32, 32];
 		}
 
-		public Region(World.RegionLocation rloc) : this(rloc.x, rloc.z) {
+		public Region(RegionLocation rloc) : this(rloc.x, rloc.z) {
 
 		}
 

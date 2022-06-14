@@ -59,7 +59,7 @@ sponge,,19,sponge,,
 wet_sponge,,19:1,sponge,1.8,sponge
 glass,,20,glass,,
 lapis_ore,,21,lapis_ore,b1.2,stone
-lapis_block,,22,lapis_block,b1.2,stone
+lapis_block,,22,lapis_block,b.1.2,stone
 dispenser,,23,dispenser,b1.2,stone
 sandstone,,24,sandstone,b1.2,stone
 chiseled_sandstone,,24:1,sandstone,1.2.4,sandstone
@@ -328,6 +328,7 @@ observer,,218,observer,1.11,smooth_stone
 *_concrete,,251:*,concrete,1.12,*_terracotta
 *_concrete_powder,,252:*,concrete_powder,1.12,*_wool
 structure_block,,255,structure_block,1.9,bedrock
+cave_air,,,,1.13,
 pumpkin,,,,1.13,carved_pumpkin
 spruce_button,,,,1.13,oak_button
 birch_button,,,,1.13,oak_button
@@ -605,4 +606,16 @@ chains,,,,1.16,iron_bars
 ,,,,1.17,
 ,,,,1.17,
 ,,,,1.17,
-,,,,1.17,
+deepslate,,,,1.18,
+copper_ore,,,,1.18,
+raw_iron_block,,,,1.18,
+raw_gold_block,,,,1.18,
+raw_copper_block,,,,1.18,
+deepslate_coal_ore,,,,1.18,
+deepslate_iron_ore,,,,1.18,
+deepslate_gold_ore,,,,1.18,
+deepslate_diamond_ore,,,,1.18,
+deepslate_lapis_ore,,,,1.18,
+deepslate_redstone_ore,,,,1.18,
+deepslate_emerald_ore,,,,1.18,
+deepslate_copper_ore,,,,1.18,

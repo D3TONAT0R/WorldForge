@@ -13,17 +13,26 @@ namespace MCUtils
 		{
 			get
 			{
-				if (air == null)
-				{
-					air = new BlockState(BlockList.Find("air"));
-				}
+				if (air == null) air = new BlockState(BlockList.Find("air"));
 				return air;
 			}
 		}
 		private static BlockState air;
 
+		public static BlockState Unknown
+		{
+			get
+			{
+				if (unknown == null) unknown = new BlockState();
+				return unknown;
+			}
+		}
+		private static BlockState unknown;
+
 		public ProtoBlock block;
 		public CompoundContainer properties = new CompoundContainer();
+
+		private BlockState() { }
 
 		public BlockState(ProtoBlock blockType)
 		{

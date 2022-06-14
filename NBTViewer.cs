@@ -59,7 +59,7 @@ namespace MCUtils {
 					}
 				}
 			} else {
-				content = new NBTContent(RegionLoader.CreateZLibDecompressionStream(File.ReadAllBytes(path)));
+				content = new NBTContent(RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(path)));
 			}
 			//filename = "root";
 			//var root = new CompoundContainer();
