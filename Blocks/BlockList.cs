@@ -604,7 +604,7 @@ namespace MCUtils {
 			var lines = Resources.blocks.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
 			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
-			for (int i = 1; i < lines.Length; i++)
+			for (int i = 2; i < lines.Length; i++)
 			{
 				var split = lines[i].Split(';');
 				if(split[0].Length > 0)
@@ -643,8 +643,22 @@ namespace MCUtils {
 			foreach(var f in fallbacks)
 			{
 				//HACK: exception supressed, property parsing not yet implemented.
-				f.Item1.substitute = Find(f.Item2, false);
+				string subst = f.Item2;
+				if(subst.Contains("*"))
+				{
+					subst.Replace("*", GetColorFromBlockID(f.Item1.shortID));
+				}
+				f.Item1.substitute = Find(subst, false);
 			}
+		}
+
+		public static string GetColorFromBlockID(string blockID)
+		{
+			foreach(var col in Blocks.commonColors)
+			{
+				if (blockID.StartsWith(col + "_")) return col;
+			}
+			return null;
 		}
 
 		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = true)
@@ -658,7 +672,9 @@ namespace MCUtils {
 				}
 				else
 				{
-					if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
+					//HACK: remove this
+					if(throwErrorIfNotFound) System.Diagnostics.Trace.WriteLine("missing block " + blockTypeName);
+					//if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
 					return null;
 				}
 			}

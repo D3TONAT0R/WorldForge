@@ -84,7 +84,7 @@ namespace MCUtils.IO
 					{
 						CompoundContainer block = (CompoundContainer)cont;
 						//HACK: bypass error throw
-						var proto = BlockList.Find((string)block.Get("Name"), false);
+						var proto = BlockList.Find((string)block.Get("Name"), true);
 						if (proto != null)
 						{
 							var bs = new BlockState(proto);
@@ -154,7 +154,7 @@ namespace MCUtils.IO
 					{
 						CompoundContainer block = (CompoundContainer)cont;
 						//HACK: bypass error throw
-						var proto = BlockList.Find((string)block.Get("Name"), false);
+						var proto = BlockList.Find((string)block.Get("Name"), true);
 						if (proto != null)
 						{
 							var bs = new BlockState(proto);
