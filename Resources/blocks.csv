@@ -78,6 +78,7 @@ fern;;31:2;tallgrass;b1.6;
 dead_bush;;32;deadbush;b1.6;
 piston;;33;piston;b1.7;
 piston_head;;34;piston_head;b1.7;
+moving_piston;;36;piston_extension;b1.8;
 *_wool;;35:*;wool;;
 dandelion;;37;yellow_flower;;
 poppy;;38;red_flower;;
@@ -308,6 +309,8 @@ potted_red_tulip;;;flower_pot;1.7.2;potted_poppy
 potted_orange_tulip;;;flower_pot;1.7.2;potted_poppy
 potted_white_tulip;;;flower_pot;1.7.2;potted_poppy
 potted_pink_tulip;;;flower_pot;1.7.2;potted_poppy
+potted_acacia_sapling;;;flower_pot;1.7.2;potted_jungle_sapling
+potted_dark_oak_sapling;;;flower_pot;1.7.2;potted_oak_sapling
 *_banner;;176:*;standing_banner;1.8;
 *_wall_banner;;177:*;wall_banner;1.8;
 daylight_detector;inverted=true;178;daylight_detector_inverted;1.8;daylight_detector
@@ -342,15 +345,17 @@ purpur_slab;double=true;204;purpur_double_slab;1.9;stone_brick_slab[double=true]
 purpur_slab;;205;purpur_slab;1.9;stone_brick_slab
 end_stone_bricks;;206;end_bricks;1.9;stone_bricks
 beetroots;;207;beetroots;1.9;potatoes
-grass_path;;208;grass_path;1.9;grass_block
+dirt_path;"(""grass_path"" prior to 1.17!)";208;grass_path;1.9;grass_block
 end_gateway;;209;end_gateway;1.9;
 repeating_command_block;;210;repeating_command_block;1.9;command_block
 chain_command_block;;211;chain_command_block;1.9;command_block
 frosted_ice;;212;frosted_ice;1.9;ice
 dragon_head;;;dragon_head;1.9;
 dragon_wall_head;;;dragon_wall_head;1.9;
+structure_block;;255;;;
 magma_block;;213;magma;1.10;netherrack
 nether_wart_block;;214;nether_wart_block;1.10;red_sandstone
+red_nether_bricks;;215;red_nether_brick;1.10;nether_bricks
 bone_block;;216;bone_block;1.10;quartz_pillar
 structure_void;;217;structure_void;1.10;
 observer;;218;observer;1.11;smooth_stone
@@ -374,6 +379,7 @@ blue_bed;;;;1.12;red_bed
 magenta_bed;;;;1.12;red_bed
 purple_bed;;;;1.12;red_bed
 cave_air;;;;1.13;
+void_air;;;;1.13;
 pumpkin;;;;1.13;carved_pumpkin
 spruce_button;;;;1.13;oak_button
 birch_button;;;;1.13;oak_button
@@ -393,6 +399,7 @@ dark_oak_trapdoor;;;;1.13;oak_trapdoor
 stripped_oak_log;;;;1.13;oak_log
 stripped_oak_wood;;;;1.13;oak_wood
 stripped_spruce_log;;;;1.13;spruce_log
+stripped_spruce_wood;;;;1.13;spruce_wood
 stripped_birch_log;;;;1.13;birch_log
 stripped_birch_wood;;;;1.13;birch_wood
 stripped_jungle_log;;;;1.13;jungle_log
@@ -402,6 +409,7 @@ stripped_acacia_wood;;;;1.13;acacia_wood
 stripped_dark_oak_log;;;;1.13;dark_oak_log
 stripped_dark_oak_wood;;;;1.13;dark_oak_wood
 bubble_column;;;;1.13;water
+kelp;;;;1.13;water
 kelp_plant;;;;1.13;water
 seagrass;;;;1.13;water
 tall_seagrass;;;;1.13;water
@@ -409,15 +417,16 @@ dried_kelp_block;;;;1.13;sponge
 prismarine_stairs;;;;1.13;cobblestone_stairs
 prismarine_slab;;;;1.13;cobblestone_slab
 turtle_egg;;;;1.13;
-tube_coral_block;;;;1.13;blue_wool
-brain_coral_block;;;;1.13;pink_wool
-bubble_coral_block;;;;1.13;magenta_wool
-fire_coral_block;;;;1.13;red_wool
-horn_coral_block;;;;1.13;yellow_wool
+tube_coral_block;;;;1.13;blue_terracotta
+brain_coral_block;;;;1.13;pink_terracotta
+bubble_coral_block;;;;1.13;magenta_terracotta
+fire_coral_block;;;;1.13;red_terracotta
+horn_coral_block;;;;1.13;yellow_terracotta
 dead_tube_coral_block;;;;1.13;cobblestone
 dead_brain_coral_block;;;;1.13;cobblestone
 dead_bubble_coral_block;;;;1.13;cobblestone
 dead_fire_coral_block;;;;1.13;cobblestone
+dead_horn_coral_block;;;;1.13;cobblestone
 tube_coral;;;;1.13;
 brain_coral;;;;1.13;
 bubble_coral;;;;1.13;
@@ -450,10 +459,16 @@ dead_fire_coral_wall_fan;;;;1.13;
 dead_horn_coral_wall_fan;;;;1.13;
 sea_pickle;;;;1.13;
 blue_ice;;;;1.13;packed_ice
-conduit;;;;1.13;
-dark_prismarine_slab;;;stone_slab2;1.13;nether_brick_slab
-dark_prismarine_stairs;;;dark_prismarine_stairs;1.13;nether_brick_stairs
-shulker_box;;;shulker_box;1.13;chest
+conduit;;;;1.13;water
+prismarine_slab;;;;1.13;cobblestone_slab
+prismarine_stairs;;;;1.13;cobblestone_stairs
+prismarine_brick_slab;;;;1.13;stone_brick_slab
+prismarine_brick_stairs;;;;1.13;stone_brick_stairs
+dark_prismarine_slab;;;;1.13;nether_brick_slab
+dark_prismarine_stairs;;;;1.13;nether_brick_stairs
+dark_prismarine_slab;;;;1.13;nether_brick_slab
+dark_prismarine_stairs;;;;1.13;nether_brick_stairs
+shulker_box;;;shulker_box;1.13;purple_shulker_box
 bamboo;;;;1.14;jungle_fence
 bamboo_sapling;;;;1.14;jungle_sapling
 cornflower;;;;1.14;alium
@@ -493,6 +508,7 @@ granite_stairs;;;;1.14;cobblestone_stairs
 polished_granite_stairs;;;;1.14;stone_brick_stairs
 mossy_stone_brick_stairs;;;;1.14;stone_brick_stairs
 mossy_cobblestone_stairs;;;;1.14;cobblestone_stairs
+smooth_red_sandstone;;;;1.14;red_sandstone
 smooth_sandstone_stairs;;;;1.14;sandstone_stairs
 smooth_red_sandstone_stairs;;;;1.14;red_sandstone_stairs
 smooth_quartz_stairs;;;;1.14;quartz_stairs
@@ -534,7 +550,7 @@ potted_wither_rose;;;;1.14;potted_poppy
 potted_bamboo;;;;1.14;potted_cactus
 jigsaw;;;;1.14;bedrock
 bee_nest;;;;1.15;
-bee_hive;;;;1.15;oak_planks
+beehive;;;;1.15;oak_planks
 honey_block;;;;1.15;slime_block
 honeycomb_block;;;;1.15;orange_terracotta
 ancient_debris;;;;1.16;netherrack
@@ -573,6 +589,8 @@ warped_nylium;;;;1.16;netherrack
 crimson_roots;;;;1.16;
 warped_roots;;;;1.16;
 nether_sprouts;;;;1.16;
+weeping_vines_plant;;;;1.16;
+twisting_vines_plant;;;;1.16;
 shroomlight;;;;1.16;glowstone
 soul_fire;;;;1.16;fire
 soul_lantern;???;;;1.16;lantern
@@ -632,6 +650,7 @@ copper_block;;;;1.17;iron_block
 exposed_copper;;;;1.17;iron_block
 weathered_copper;;;;1.17;iron_block
 oxidized_copper;;;;1.17;iron_block
+cut_copper;;;;1.17;iron_block
 exposed_cut_copper;;;;1.17;iron_block
 weathered_cut_copper;;;;1.17;iron_block
 oxidized_cut_copper;;;;1.17;iron_block
@@ -698,8 +717,8 @@ lightning_rod;;;;1.17;chain
 moss_block;;;;1.17;grass_block
 moss_carpet;;;;1.17;
 pointed_dripstone;;;;1.17;
-potted_azalea;;;;1.17;potted_oak_sapling
-potted_flowering_azalea;;;;1.17;potted_oak_sapling
+potted_azalea_bush;;;;1.17;potted_oak_sapling
+potted_flowering_azalea_bush;;;;1.17;potted_oak_sapling
 powder_snow;;;;1.17;snow_block
 powder_snow_cauldron;;;;1.17;cauldron
 rooted_dirt;;;;1.17;coarse_dirt
