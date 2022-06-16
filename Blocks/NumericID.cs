@@ -17,12 +17,19 @@ namespace MCUtils
 
 		public static NumericID? TryParse(string s)
 		{
-			if (string.IsNullOrWhiteSpace(s)) return null;
-			var split = s.Split(':');
-			byte id = byte.Parse(split[0]);
-			byte meta = 0;
-			if(split.Length > 1) byte.TryParse(split[1], out meta);
-			return new NumericID(id, meta);
+			try
+			{
+				if (string.IsNullOrWhiteSpace(s)) return null;
+				var split = s.Split(':');
+				byte id = byte.Parse(split[0]);
+				byte meta = 0;
+				if (split.Length > 1) byte.TryParse(split[1], out meta);
+				return new NumericID(id, meta);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		public ushort Hash => (ushort)((id << 8) + meta);

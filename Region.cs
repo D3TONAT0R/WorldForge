@@ -213,5 +213,14 @@ namespace MCUtils {
 			}
 			return depth;
 		}
+
+		public void WriteToFile(string destinationDirectory, Version gameVersion, string name = null)
+		{
+			if (name == null) name = regionPos.ToFileName();
+			using (var stream = new FileStream(Path.Combine(destinationDirectory, name), FileMode.Create))
+			{
+				RegionSerializer.WriteRegionToStream(this, stream, gameVersion);
+			}
+		}
 	}
 }

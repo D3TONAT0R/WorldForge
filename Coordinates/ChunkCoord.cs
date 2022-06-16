@@ -16,5 +16,10 @@ namespace MCUtils.Coordinates
 			this.x = x;
 			this.z = z;
 		}
+
+		public override string ToString()
+		{
+			return $"{x},{z}";
+		}
 	}
 }

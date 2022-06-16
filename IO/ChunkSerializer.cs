@@ -97,35 +97,42 @@ namespace MCUtils.IO
 						}
 					}
 
-					//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
-					int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
-					long[] longs = (long[])compound.Get("BlockStates");
-					string bits = "";
-					for (int i = 0; i < longs.Length; i++)
+					if (section.palette.Count == 1 && !compound.Contains("BlockStates"))
 					{
-						string newBits = "";
-						byte[] bytes = BitConverter.GetBytes(longs[i]);
-						for (int j = 0; j < 8; j++)
-						{
-							newBits += Converter.ByteToBinary(bytes[j], true);
-						}
-						if (version == null || version.Value < Version.Release_1(16, 0))
-						{
-							bits += newBits;
-						}
-						else
-						{
-							bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
-						}
+						//Do nothing, as all blocks already have an index of 0
 					}
-					//TODO: needs testing
-					for (int y = 0; y < 16; y++)
+					else
 					{
-						for (int z = 0; z < 16; z++)
+						//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
+						int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
+						long[] longs = (long[])compound.Get("BlockStates");
+						string bits = "";
+						for (int i = 0; i < longs.Length; i++)
 						{
-							for (int x = 0; x < 16; x++)
+							string newBits = "";
+							byte[] bytes = BitConverter.GetBytes(longs[i]);
+							for (int j = 0; j < 8; j++)
 							{
-								section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
+								newBits += Converter.ByteToBinary(bytes[j], true);
+							}
+							if (version == null || version.Value < Version.Release_1(16, 0))
+							{
+								bits += newBits;
+							}
+							else
+							{
+								bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
+							}
+						}
+						//TODO: needs testing
+						for (int y = 0; y < 16; y++)
+						{
+							for (int z = 0; z < 16; z++)
+							{
+								for (int x = 0; x < 16; x++)
+								{
+									section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
+								}
 							}
 						}
 					}
@@ -167,35 +174,42 @@ namespace MCUtils.IO
 						}
 					}
 
-					//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
-					int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
-					long[] longs = blockStates.Get<long[]>("data");
-					string bits = "";
-					for (int i = 0; i < longs.Length; i++)
+					if (section.palette.Count == 1 && !blockStates.Contains("data"))
 					{
-						string newBits = "";
-						byte[] bytes = BitConverter.GetBytes(longs[i]);
-						for (int j = 0; j < 8; j++)
-						{
-							newBits += Converter.ByteToBinary(bytes[j], true);
-						}
-						if (version == null || version.Value < Version.Release_1(16, 0))
-						{
-							bits += newBits;
-						}
-						else
-						{
-							bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
-						}
+						//Do nothing, as all blocks already have an index of 0
 					}
-					//TODO: needs testing
-					for (int y = 0; y < 16; y++)
+					else
 					{
-						for (int z = 0; z < 16; z++)
+						//1.15 uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
+						int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
+						long[] longs = blockStates.Get<long[]>("data");
+						string bits = "";
+						for (int i = 0; i < longs.Length; i++)
 						{
-							for (int x = 0; x < 16; x++)
+							string newBits = "";
+							byte[] bytes = BitConverter.GetBytes(longs[i]);
+							for (int j = 0; j < 8; j++)
 							{
-								section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
+								newBits += Converter.ByteToBinary(bytes[j], true);
+							}
+							if (version == null || version.Value < Version.Release_1(16, 0))
+							{
+								bits += newBits;
+							}
+							else
+							{
+								bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexLength) * indexLength);
+							}
+						}
+						//TODO: needs testing
+						for (int y = 0; y < 16; y++)
+						{
+							for (int z = 0; z < 16; z++)
+							{
+								for (int x = 0; x < 16; x++)
+								{
+									section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexLength);
+								}
 							}
 						}
 					}

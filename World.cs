@@ -394,10 +394,7 @@ namespace MCUtils
 			Parallel.ForEach(regions, options, (KeyValuePair<RegionLocation, Region> region) =>
 			{
 				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
-				using (var stream = new FileStream(Path.Combine(path, "region", name), FileMode.Create))
-				{
-					RegionSerializer.WriteRegionToStream(region.Value, stream, gameVersion);
-				}
+				region.Value.WriteToFile(Path.Combine(path, "region"), gameVersion, name);
 			});
 		}
 
