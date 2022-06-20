@@ -673,8 +673,8 @@ namespace MCUtils {
 				else
 				{
 					//HACK: remove this
-					if(throwErrorIfNotFound) System.Diagnostics.Trace.WriteLine("missing block " + blockTypeName);
-					//if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
+					//if(throwErrorIfNotFound) System.Diagnostics.Trace.WriteLine("missing block " + blockTypeName);
+					if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
 					return null;
 				}
 			}

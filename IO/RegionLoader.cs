@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Region = MCUtils.Region;
 
 namespace MCUtils
@@ -67,9 +68,14 @@ namespace MCUtils
 								compressedChunk = ReadNext(stream, sizes[i] * 4096 - 5)
 							};
 						}
-						catch
+						catch(Exception e)
 						{
+							//A partially generated region may contain a chunk whose stream position is out of range.
+							//Can it be safely ignored? NBTExplorer doesn't read that chunk eiter and it often
+							//seems to be located in non-generated areas of the region.
 
+							//Console.WriteLine($"Fail at chunk [{i % 32},{i / 32}]: {e.Message}");
+							//throw new FileLoadException($"Failed to load chunk at [{i % 32},{i / 32}].");
 						}
 						expectedEOF = (locations[i] + sizes[i]) * 4096;
 					}
@@ -85,8 +91,7 @@ namespace MCUtils
 				rd = new RegionData(stream, filepath);
 			}
 			Region region = new Region(rd.regionX, rd.regionZ);
-			//TODO: make parallel after testing
-			for (int i = 0; i < 1024; i++)
+			Parallel.For(0, 1024, i =>
 			{
 				if(rd.compressedChunks[i] != null)
 				{
@@ -96,7 +101,7 @@ namespace MCUtils
 						region.chunks[i % 32, i / 32] = new ChunkData(region, new NBTContent(chunkStream), region.regionPos.GetChunkCoord(i % 32, i / 32));
 					}
 				}
-			}
+			});
 			return region;
 		}
 
@@ -109,8 +114,8 @@ namespace MCUtils
 			{
 				rd = new RegionData(stream, filepath);
 			}
-			//TODO: make parallel after testing
-			for(int i = 0; i < 1024; i++)
+
+			Parallel.For(0, 1024, i =>
 			{
 				if (rd.compressedChunks[i] != null)
 				{
@@ -120,7 +125,7 @@ namespace MCUtils
 						WriteChunkToHeightmap(heightmap, new NBTContent(chunkStream), i % 32, i / 32, heightmapType);
 					}
 				}
-			}
+			});
 			return heightmap;
 		}
 
