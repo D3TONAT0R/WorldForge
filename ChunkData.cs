@@ -46,10 +46,12 @@ namespace MCUtils
 			containingRegion = region;
 			sourceNBT = chunk;
 			coords = chunkCoord;
+			/*
 			ChunkSerializer.ReadBlocksFromNBT(this, chunk.dataVersion);
 			RecalculateSectionRange();
 			ReadEntitiesAndTileEntitiesFromNBT(chunk.contents);
 			ReadBiomesFromNBT(chunk);
+			*/
 		}
 
 		///<summary>Sets the block at the given chunk coordinate</summary>
@@ -119,7 +121,7 @@ namespace MCUtils
 		///<summary>Gets the biome at the given chunk coordinate</summary>
 		public BiomeID GetBiomeAt(int x, int z)
 		{
-			return (BiomeID)biomes[x, z];
+			return biomes[x, z];
 		}
 
 		///<summary>Sets the biome at the given chunk coordinate</summary>
@@ -154,70 +156,6 @@ namespace MCUtils
 				blockTicks.Remove(coord);
 			}
 		}
-
-		///<summary>Reads all Entities and TileEntities from the given chunk NBT</summary>
-		public void ReadEntitiesAndTileEntitiesFromNBT(CompoundContainer chunkLevelCompound)
-		{
-			if (chunkLevelCompound.Contains("Entities"))
-			{
-				var entList = chunkLevelCompound.GetAsList("Entities");
-				if (entList != null && entList.contentsType == NBTTag.TAG_Compound)
-				{
-					for (int i = 0; i < entList.Length; i++)
-					{
-						entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
-					}
-				}
-			}
-			if (chunkLevelCompound.Contains("TileEntities"))
-			{
-				var tileEntList = chunkLevelCompound.GetAsList("TileEntities");
-				if (tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
-				{
-					for (int i = 0; i < tileEntList.Length; i++)
-					{
-						var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
-						tileEntities.Add(new BlockCoord(te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
-					}
-				}
-			}
-		}
-
-		private void ReadBiomesFromNBT(NBTContent nbt)
-		{
-			if (nbt.contents.Contains("Biomes"))
-			{
-				var biomeArray = nbt.contents.Get<int[]>("Biomes");
-				//Read topmost section, to avoid future cave biomes underground
-				int offset = biomeArray.Length - 16;
-				for (int x = 0; x < 4; x++)
-				{
-					for (int z = 0; z < 4; z++)
-					{
-						var value = (byte)biomeArray[offset + z * 4 + x];
-						for (int x1 = 0; x1 < 4; x1++)
-						{
-							for (int z1 = 0; z1 < 4; z1++)
-							{
-								biomes[x * 4 + x1, z * 4 + z1] = (BiomeID)value;
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				//Default to plains biome
-				for (int x = 0; x < 16; x++)
-				{
-					for (int z = 0; z < 16; z++)
-					{
-						biomes[x, z] = BiomeID.plains;
-					}
-				}
-			}
-		}
-
 
 		///<summary>Converts the two-dimensional per-block biome array into a Minecraft compatible biome array (4x4x4 block volumes)</summary>
 		private int[,,] MakeBiomeArray()
@@ -295,7 +233,6 @@ namespace MCUtils
 			var ppList = level.GetAsList("PostProcessing");
 			foreach(var t in blockTicks)
 			{
-				//TODO: section index and coordinate packing is being guessed, trying to find out how to do it.
 				int listIndex = t.y / 16;
 				var x = t.x % 16;
 				var y = t.y % 16;
@@ -352,7 +289,7 @@ namespace MCUtils
 			}
 		}
 
-		private void RecalculateSectionRange()
+		public void RecalculateSectionRange()
 		{
 			sbyte? lowest = null;
 			sbyte? highest = null;

@@ -1,12 +1,124 @@
-﻿using System;
+﻿using MCUtils.Coordinates;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using static MCUtils.NBTContent;
 
 namespace MCUtils.IO
 {
-	public static class ChunkSerializer
+	public abstract class ChunkSerializer
 	{
+		public static ChunkSerializer CreateForVersion(Version gameVersion)
+		{
+			//TODO: create different serializers for different versions
+			if(gameVersion >= Version.Release_1(19))
+			{
+				return new ChunkSerializer_1_19(gameVersion);
+			}
+			else if(gameVersion >= Version.Release_1(16))
+			{
+				return new ChunkSerializer_1_16(gameVersion);
+			}
+			else if (gameVersion >= Version.Release_1(13))
+			{
+				return new ChunkSerializer_1_13(gameVersion);
+			}
+			else if(gameVersion >= Version.Release_1(2,1))
+			{
+				return new ChunkSerializerAnvil(gameVersion);
+			}
+			else
+			{
+				//TODO: add "old" region (and alpha) format support
+				throw new NotImplementedException();
+			}
+		}
+
+		public static ChunkSerializer CreateForDataVersion(NBTContent nbt)
+		{
+			var gv = Version.FromDataVersion(nbt.dataVersion);
+			if (!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
+			return CreateForVersion(gv.Value);
+		}
+
+		public Version TargetVersion { get; private set; }
+
+		public ChunkSerializer(Version version)
+		{
+			TargetVersion = version;
+		}
+
+		public virtual ChunkData LoadChunk(NBTContent chunkNBTData, Region parentRegion, ChunkCoord coords)
+		{
+			//TODO (pull deserialization code up into this class)
+			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
+			var chunkNBT = chunkNBTData.contents;
+			LoadBlocks(c, chunkNBT);
+			LoadTileEntities(c, chunkNBT);
+			LoadTicks(c, chunkNBT);
+			LoadBiomes(c, chunkNBT);
+			LoadEntities(c, chunkNBT, parentRegion);
+
+			c.RecalculateSectionRange();
+
+			return c;
+		}
+
+		public virtual void LoadBlocks(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		{
+
+		}
+
+		public virtual void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void LoadTicks(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void WriteChunkNBT(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		{
+
+		}
+
+		public virtual void WriteBlocks(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		{
+
+		}
+
+		public virtual void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
+		public virtual void WriteTicks(ChunkData c, CompoundContainer chunkNBT)
+		{
+
+		}
+
 		public static NBTContent CreateCompoundForChunk(ChunkData chunk, Version version)
 		{
 			var nbt = new NBTContent();
@@ -46,6 +158,7 @@ namespace MCUtils.IO
 			return nbt;
 		}
 
+		/*
 		///<summary>Reads all blocks from the given chunk NBT</summary>
 		public static void ReadBlocksFromNBT(ChunkData chunk, int? dataVersion)
 		{
@@ -63,7 +176,7 @@ namespace MCUtils.IO
 
 		static void LoadBlocksAnvilFormat(ChunkData chunk, CompoundContainer nbtCompound, Version? version)
 		{
-			//TODO: find out when format has changed, somewhere between 1.16 and 1.19
+			//Format changed between 1.17 and 1.18
 			if (version < Version.Release_1(18))
 			{
 				var sectionsList = nbtCompound.GetAsList("Sections");
@@ -83,8 +196,7 @@ namespace MCUtils.IO
 					foreach (var cont in compound.GetAsList("Palette").cont)
 					{
 						CompoundContainer block = (CompoundContainer)cont;
-						//HACK: bypass error throw
-						var proto = BlockList.Find((string)block.Get("Name"), true);
+						var proto = BlockList.Find((string)block.Get("Name"));
 						if (proto != null)
 						{
 							var bs = new BlockState(proto);
@@ -217,28 +329,6 @@ namespace MCUtils.IO
 				}
 			}
 		}
-
-		static void LoadBlocksMCRFormat(ChunkData chunk, CompoundContainer nbtCompound)
-		{
-			byte[] blocks = nbtCompound.Get<byte[]>("Blocks");
-			byte[] add; //TODO: include "Add" bits in ID (from modded worlds)
-			if(nbtCompound.Contains("Add")) add = nbtCompound.Get<byte[]>("Add");
-			byte[] meta = nbtCompound.Get<byte[]>("Data"); //TODO: also include meta in block lookup
-			for(int x = 0; x < 16; x++)
-			{
-				for (int z = 0; z < 16; z++)
-				{
-					for(int y = 0; y < 128; y++)
-					{
-						byte id = blocks[(x * 16 + z) * 128 + y];
-						var block = BlockList.FindByNumeric(new NumericID(id, 0));
-						if(block != null)
-						{
-							chunk.SetBlockAt(x, y, z, new BlockState(block));
-						}
-					}
-				}
-			}
-		}
+		*/
 	}
 }

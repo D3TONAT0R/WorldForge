@@ -14,6 +14,9 @@ namespace MCUtils {
 
 		public readonly RegionLocation regionPos;
 
+		public RegionPOI poiStorage;
+		public RegionEntities entitiyStorage;
+
 		public byte[,] heightmap;
 		public ChunkData[,] chunks;
 
