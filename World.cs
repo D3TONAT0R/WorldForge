@@ -383,7 +383,7 @@ namespace MCUtils
 			levelDat = CreateLevelDAT(playerPosX, y+1, playerPosZ, true);
 
 			List<byte> levelDATBytes = new List<byte>();
-			levelDat.WriteToBytes(levelDATBytes, false);
+			levelDat.WriteToBytes(levelDATBytes);
 			var compressedLevelDAT = GZipStream.CompressBuffer(levelDATBytes.ToArray());
 
 			File.WriteAllBytes(Path.Combine(path, "level.dat"), compressedLevelDAT);

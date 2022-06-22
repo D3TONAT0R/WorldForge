@@ -86,6 +86,10 @@ namespace MCUtils
 		warped_forest = 172,
 		basalt_deltas = 173,
 		dripstone_caves = 174,
-		lush_caves = 175
+		lush_caves = 175,
+		stony_shore,
+		deep_dark,
+		meadow,
+		old_growth_birch_forest,
 	}
 }

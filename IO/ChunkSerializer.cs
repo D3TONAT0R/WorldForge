@@ -11,9 +11,9 @@ namespace MCUtils.IO
 		public static ChunkSerializer CreateForVersion(Version gameVersion)
 		{
 			//TODO: create different serializers for different versions
-			if(gameVersion >= Version.Release_1(19))
+			if(gameVersion >= Version.Release_1(18))
 			{
-				return new ChunkSerializer_1_19(gameVersion);
+				return new ChunkSerializer_1_18(gameVersion);
 			}
 			else if(gameVersion >= Version.Release_1(16))
 			{
@@ -41,6 +41,8 @@ namespace MCUtils.IO
 			return CreateForVersion(gv.Value);
 		}
 
+		public virtual bool AddRootLevelCompound => true;
+
 		public Version TargetVersion { get; private set; }
 
 		public ChunkSerializer(Version version)
@@ -48,14 +50,15 @@ namespace MCUtils.IO
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData LoadChunk(NBTContent chunkNBTData, Region parentRegion, ChunkCoord coords)
+		public virtual ChunkData ReadChunkNBT(NBTContent chunkNBTData, Region parentRegion, ChunkCoord coords)
 		{
-			//TODO (pull deserialization code up into this class)
 			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
 			var chunkNBT = chunkNBTData.contents;
+
+			LoadCommonData(c, chunkNBT);
 			LoadBlocks(c, chunkNBT);
 			LoadTileEntities(c, chunkNBT);
-			LoadTicks(c, chunkNBT);
+			LoadTileTicks(c, chunkNBT);
 			LoadBiomes(c, chunkNBT);
 			LoadEntities(c, chunkNBT, parentRegion);
 
@@ -64,99 +67,52 @@ namespace MCUtils.IO
 			return c;
 		}
 
-		public virtual void LoadBlocks(ChunkData c, CompoundContainer chunkNBT)
+		public abstract void LoadCommonData(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void LoadBlocks(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion);
+
+		public abstract void LoadBiomes(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT);
+
+		public virtual NBTContent CreateChunkNBT(ChunkData c, Region parentRegion)
 		{
-
-		}
-
-		public virtual void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
-		{
-
-		}
-
-		public virtual void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void LoadTicks(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void WriteChunkNBT(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
-		{
-
-		}
-
-		public virtual void WriteBlocks(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
-		{
-
-		}
-
-		public virtual void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public virtual void WriteTicks(ChunkData c, CompoundContainer chunkNBT)
-		{
-
-		}
-
-		public static NBTContent CreateCompoundForChunk(ChunkData chunk, Version version)
-		{
-			var nbt = new NBTContent();
-			nbt.dataVersion = version.GetDataVersion();
-			nbt.contents.Add("xPos", chunk.coords.x);
-			nbt.contents.Add("zPos", chunk.coords.z);
-			nbt.contents.Add("Status", "light");
-			ListContainer sections = new ListContainer(NBTTag.TAG_Compound);
-			nbt.contents.Add("Sections", sections);
-			nbt.contents.Add("TileEntities", new ListContainer(NBTTag.TAG_Compound));
-			nbt.contents.Add("Entities", new ListContainer(NBTTag.TAG_Compound));
-
-			//Add the rest of the tags and leave them empty
-			nbt.contents.Add("Heightmaps", new CompoundContainer());
-			nbt.contents.Add("Structures", new CompoundContainer());
-			nbt.contents.Add("LiquidTicks", new ListContainer(NBTTag.TAG_Compound));
-			nbt.contents.Add("TileTicks", new ListContainer(NBTTag.TAG_Compound));
-
-			//Add post processing lists
-			var ppList = new ListContainer(NBTTag.TAG_List);
-			for (int i = 0; i < 16; i++)
+			var chunkRootNBT = new NBTContent();
+			CompoundContainer chunkNBT;
+			if (AddRootLevelCompound)
 			{
-				ppList.Add(new ListContainer(NBTTag.TAG_Short));
+				chunkNBT = chunkRootNBT.contents.AddCompound("Level");
 			}
-			nbt.contents.Add("PostProcessing", ppList);
+			else
+			{
+				chunkNBT = chunkRootNBT.contents;
+			}
 
-			//Write the actual data
-			chunk.WriteToNBT(nbt.contents, version);
+			WriteCommonData(c, chunkNBT);
+			WriteBlocks(c, chunkNBT);
+			WriteBiomes(c, chunkNBT);
+			WriteTileEntities(c, chunkNBT);
+			WriteTileTicks(c, chunkNBT);
+			WriteEntities(c, chunkNBT, parentRegion);
 
-			/*
-			ListContainer postprocessing = new ListContainer(NBTTag.TAG_List);
-			for(int i = 0; i < 16; i++) postprocessing.Add("", new ListContainer(NBTTag.TAG_List));
-			nbt.contents.Add("PostProcessing", postprocessing);
-			nbt.contents.Add("InhabitedTime", 0L);
-			nbt.contents.Add("LastUpdate", 0L);
-			*/
-			return nbt;
+			return chunkRootNBT;
 		}
+
+		public abstract void WriteCommonData(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void WriteBlocks(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion);
+
+		public abstract void WriteBiomes(ChunkData c, CompoundContainer chunkNBT);
+
+		public abstract void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT);
 
 		/*
 		///<summary>Reads all blocks from the given chunk NBT</summary>

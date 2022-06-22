@@ -1,6 +1,7 @@
 ﻿using Ionic.Zlib;
 using MCUtils;
 using MCUtils.Coordinates;
+using MCUtils.IO;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -85,6 +86,10 @@ namespace MCUtils
 
 		public static Region LoadRegion(string filepath, bool loadOrphanChunks = false)
 		{
+			bool isAnvilFormat;
+			if (filepath.EndsWith(".mcr")) isAnvilFormat = false;
+			else if (filepath.EndsWith(".mca")) isAnvilFormat = true;
+			else throw new InvalidOperationException("Unknown or unsupported file extension");
 			RegionData rd;
 			using (var stream = File.Open(filepath, FileMode.Open))
 			{
@@ -98,7 +103,20 @@ namespace MCUtils
 					var cd = rd.compressedChunks[i];
 					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
 					{
-						region.chunks[i % 32, i / 32] = new ChunkData(region, new NBTContent(chunkStream), region.regionPos.GetChunkCoord(i % 32, i / 32));
+						var nbt = new NBTContent(chunkStream);
+						Version gameVersion;
+						if(nbt.contents.TryGet("DataVersion", out int dv))
+						{
+							gameVersion = Version.FromDataVersion(dv).Value;
+						}
+						else
+						{
+							gameVersion = isAnvilFormat ? Version.Release_1(2) : Version.Beta_1(3);
+						}
+						var chunkSerializer = ChunkSerializer.CreateForVersion(gameVersion);
+
+						var coord = region.regionPos.GetChunkCoord(i % 32, i / 32);
+						region.chunks[i % 32, i / 32] = chunkSerializer.ReadChunkNBT(nbt, region, coord);
 					}
 				}
 			});

@@ -16,26 +16,31 @@ namespace MCUtils
 
 		public int BlockPosX
 		{
-			get;
-			private set;
+			get => NBTCompound.Get<int>("x");
+			private set => NBTCompound.Set("x", value);
 		}
 		public int BlockPosY
 		{
-			get;
-			private set;
+			get => NBTCompound.Get<int>("y");
+			private set => NBTCompound.Set("y", value);
 		}
 		public int BlockPosZ
 		{
-			get;
-			private set;
+			get => NBTCompound.Get<int>("z");
+			private set => NBTCompound.Set("z", value);
+		}
+
+		public TileEntity(int x, int y, int z)
+		{
+			NBTCompound = new CompoundContainer();
+			NBTCompound.Add("x", x);
+			NBTCompound.Add("y", y);
+			NBTCompound.Add("z", z);
 		}
 
 		public TileEntity(CompoundContainer compound)
 		{
 			NBTCompound = compound;
-			BlockPosX = compound.Get<int>("x");
-			BlockPosY = compound.Get<int>("y");
-			BlockPosZ = compound.Get<int>("z");
 		}
 	}
 }

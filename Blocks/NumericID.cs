@@ -34,6 +34,8 @@ namespace MCUtils
 
 		public ushort Hash => (ushort)((id << 8) + meta);
 
+		public ushort HashNoMeta => (ushort)(id << 8);
+
 		public override string ToString()
 		{
 			return id + ":" + meta;

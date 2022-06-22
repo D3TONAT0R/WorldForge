@@ -80,6 +80,19 @@ namespace MCUtils
 				return Add(key, new ListContainer(tag));
 			}
 
+			public T Set<T>(string key, T value)
+			{
+				if (Contains(key))
+				{
+					cont[key] = value;
+				}
+				else
+				{
+					cont.Add(key, value);
+				}
+				return value;
+			}
+
 			public override object Get(string key)
 			{
 				if (cont.ContainsKey(key))
@@ -96,6 +109,28 @@ namespace MCUtils
 			public T Get<T>(string key)
 			{
 				return (T)Convert.ChangeType(Get(key), typeof(T));
+			}
+
+			public bool TryGet<T>(string key, out T value)
+			{
+				if(Contains(key))
+				{
+					try
+					{
+						value = (T)Convert.ChangeType(Get(key), typeof(T));
+						return true;
+					}
+					catch
+					{
+						value = default;
+						return false;
+					}
+				}
+				else
+				{
+					value = default;
+					return false;
+				}
 			}
 
 			public bool Contains(string key)
@@ -178,6 +213,7 @@ namespace MCUtils
 
 			public override T Add<T>(string key, T value)
 			{
+				if (NBTTagDictionary[value.GetType()] != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
 				cont.Add(value);
 				return value;
 			}
@@ -293,26 +329,26 @@ namespace MCUtils
 		}
 
 		///<summary>Generates a byte array from the content of this NBT structure.</summary>
-		public void WriteToBytes(List<byte> bytes, bool addStandardLevelCompound)
+		public void WriteToBytes(List<byte> bytes)
 		{
-			if (addStandardLevelCompound)
-			{
-				//Repackage into the original structure
+			Write(bytes, "", contents);
+		}
 
-				CompoundContainer root = new CompoundContainer();
-				CompoundContainer level = new CompoundContainer();
-				foreach (string k in contents.cont.Keys)
-				{
-					level.Add(k, contents.Get(k));
-				}
-				root.Add("Level", level);
-				root.Add("DataVersion", 2566);
-				Write(bytes, "", root);
-			}
-			else
+		public void AddLevelRootCompound()
+		{
+			if(contents.Contains("Level"))
 			{
-				Write(bytes, "", contents);
+				throw new InvalidOperationException("Level root compound has already been added.");
 			}
+
+			CompoundContainer root = new CompoundContainer();
+			CompoundContainer level = new CompoundContainer();
+			foreach (string k in contents.cont.Keys)
+			{
+				level.Add(k, contents.Get(k));
+			}
+			root.Add("Level", level);
+			contents = root;
 		}
 
 		///<summary>Finds and reads the heightmap data stored in a chunk NBT structure.</summary>

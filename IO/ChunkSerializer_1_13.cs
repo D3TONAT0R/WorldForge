@@ -98,5 +98,78 @@ namespace MCUtils.IO
 			bitStream += newBits;
 			return bitStream;
 		}
+
+		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		{
+			int[] biomeData = new int[1024];
+			for (int y = 0; y < 64; y++)
+			{
+				for (int x = 0; x < 4; x++)
+				{
+					for (int z = 0; z < 4; z++)
+					{
+						int i = y * 16 + z * 4 + x;
+						var section = c.GetChunkSectionForYCoord(y * 4, false);
+						if (section != null)
+						{
+							biomeData[i] = (int)section.GetPredominantBiomeAt4x4(x, y % 4, z);
+						}
+						else
+						{
+							biomeData[i] = (int)BiomeID.plains;
+						}
+					}
+				}
+			}
+		}
+
+		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		{
+			if (chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
+			{
+				for (int y = 0; y < 64; y++)
+				{
+					for (int x = 0; x < 4; x++)
+					{
+						for (int z = 0; z < 4; z++)
+						{
+							int i = y * 16 + z * 4 + x;
+							var biome = (BiomeID)biomeData[i];
+							var section = c.GetChunkSectionForYCoord(y * 4, false);
+							if (section != null)
+							{
+								section.SetBiome3D4x4At(x * 4, y * 4, z * 4, biome);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		public override void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		{
+			//TODO
+		}
+
+		public override void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		{
+			//Add "post processing" positions (i.e. block positions that need an update)
+			var ppList = chunkNBT.Add("PostProcessing", new ListContainer(NBTTag.TAG_List));
+			for (int i = 0; i < 16; i++)
+			{
+				ppList.Add(new ListContainer(NBTTag.TAG_Short));
+			}
+
+			foreach (var t in c.postProcessTicks)
+			{
+				int listIndex = t.y / 16;
+				var x = t.x % 16;
+				var y = t.y % 16;
+				var z = t.z % 16;
+				var list = ppList.Get<ListContainer>(listIndex);
+				short packed = (short)((z << 8) + (y << 4) + x);
+				list.Add(packed);
+			}
+		}
 	}
 }

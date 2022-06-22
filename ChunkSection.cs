@@ -10,6 +10,11 @@ namespace MCUtils
 		public ushort[,,] blocks = new ushort[16, 16, 16];
 		public List<BlockState> palette;
 
+		//Resolution: [1:4:1] for backwards compatibility
+		public BiomeID[,,] biomes;
+
+		public bool HasBiomesDefined => biomes != null;
+
 		//private readonly object lockObj = new object();
 
 		public ChunkSection(string defaultBlock)
@@ -26,12 +31,12 @@ namespace MCUtils
 		{
 			//lock (lockObj)
 			//{
-				ushort? index = GetPaletteIndex(block);
-				if (index == null)
-				{
-					index = AddBlockToPalette(block);
-				}
-				blocks[x, y, z] = (ushort)index;
+			ushort? index = GetPaletteIndex(block);
+			if (index == null)
+			{
+				index = AddBlockToPalette(block);
+			}
+			blocks[x, y, z] = (ushort)index;
 			//}
 		}
 
@@ -39,7 +44,7 @@ namespace MCUtils
 		{
 			//lock (lockObj)
 			//{
-				blocks[x, y, z] = paletteIndex;
+			blocks[x, y, z] = paletteIndex;
 			//}
 		}
 
@@ -75,6 +80,75 @@ namespace MCUtils
 				allSame &= i == j;
 			}
 			return allSame;
+		}
+
+		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
+		{
+			//NOTE: biomes have a vertical resolution of 4 blocks
+			if (biomes == null) biomes = new BiomeID[16, 4, 16];
+			x %= 16;
+			z %= 16;
+			y %= 16;
+			biomes[x, y / 4, z] = biome;
+		}
+
+		public void SetBiome3D4x4At(int x, int y, int z, BiomeID biome)
+		{
+			for (int x1 = x / 4; x1 < x / 4 + 1; x1++)
+			{
+				for (int z1 = z / 4; z1 < z / 4 + 1; z1++)
+				{
+					SetBiomeAt(x1, y / 4, z1, biome);
+				}
+			}
+		}
+
+		public void SetBiomeColumnAt(int x, int z, BiomeID biome)
+		{
+			for (int y = 0; y < 16; y += 4)
+			{
+				SetBiomeAt(x, y, z, biome);
+			}
+		}
+
+		public BiomeID GetBiomeAt(int x, int y, int z)
+		{
+			if (biomes == null) return BiomeID.plains;
+			return biomes[x % 16, y / 4 % 4, z % 16];
+		}
+
+		public BiomeID GetBiomeAt(int x, int z)
+		{
+			return GetBiomeAt(x, 15, z);
+		}
+
+
+		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
+		{
+			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
+			for (int x1 = 0; x1 < 4; x1++)
+			{
+				for (int z1 = 0; z1 < 4; z1++)
+				{
+					var b = biomes[x4 + x1, y4, z4 + z1];
+					if (!occurences.ContainsKey(b))
+					{
+						occurences.Add(b, 0);
+					}
+					occurences[b]++;
+				}
+			}
+			BiomeID predominantBiome = 0;
+			int predominantCells = 0;
+			foreach (var k in occurences.Keys)
+			{
+				if (occurences[k] > predominantCells)
+				{
+					predominantCells = occurences[k];
+					predominantBiome = k;
+				}
+			}
+			return predominantBiome;
 		}
 
 		public CompoundContainer CreateCompound(sbyte secY, bool use_1_16_Format)

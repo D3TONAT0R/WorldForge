@@ -672,8 +672,6 @@ namespace MCUtils {
 				}
 				else
 				{
-					//HACK: remove this
-					//if(throwErrorIfNotFound) System.Diagnostics.Trace.WriteLine("missing block " + blockTypeName);
 					if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
 					return null;
 				}
@@ -693,9 +691,10 @@ namespace MCUtils {
 			}
 		}
 
+		//TODO: return proper BlockState by metadata
 		public static ProtoBlock FindByNumeric(NumericID numeric)
 		{
-			if(protoByNumerics.TryGetValue(numeric.Hash, out var block))
+			if(protoByNumerics.TryGetValue(numeric.HashNoMeta, out var block))
 			{
 				return block;
 			}

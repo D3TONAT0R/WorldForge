@@ -19,6 +19,9 @@ namespace MCUtils.IO
 			{
 				stream.WriteByte(0);
 			}
+
+			var chunkSerializer = ChunkSerializer.CreateForVersion(version);
+
 			for (int z = 0; z < 32; z++)
 			{
 				for (int x = 0; x < 32; x++)
@@ -28,9 +31,14 @@ namespace MCUtils.IO
 					if (chunk != null)
 					{
 						locations[i] = (int)(stream.Position / 4096);
-						var chunkData = ChunkSerializer.CreateCompoundForChunk(chunk, version);
+
+						var chunkData = chunkSerializer.CreateChunkNBT(chunk, region);
+
+						var dv = version.GetDataVersion();
+						if (dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
+
 						List<byte> bytes = new List<byte>();
-						chunkData.WriteToBytes(bytes, true);
+						chunkData.WriteToBytes(bytes);
 						byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
 						var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
 						stream.Write(cLength, 0, cLength.Length);
