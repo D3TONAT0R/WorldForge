@@ -84,7 +84,7 @@ namespace MCUtils
 			}
 		}
 
-		public static Region LoadRegion(string filepath, bool loadOrphanChunks = false)
+		public static Region LoadRegion(string filepath, Version? worldSaveVersion = null, bool loadOrphanChunks = false)
 		{
 			bool isAnvilFormat;
 			if (filepath.EndsWith(".mcr")) isAnvilFormat = false;
@@ -105,13 +105,35 @@ namespace MCUtils
 					{
 						var nbt = new NBTContent(chunkStream);
 						Version gameVersion;
-						if(nbt.contents.TryGet("DataVersion", out int dv))
+						if (worldSaveVersion.HasValue)
 						{
-							gameVersion = Version.FromDataVersion(dv).Value;
+							if (nbt.contents.TryGet("DataVersion", out int dv))
+							{
+								gameVersion = Version.FromDataVersion(dv).Value;
+							}
+							else
+							{
+								gameVersion = worldSaveVersion.Value;
+							}
 						}
 						else
 						{
-							gameVersion = isAnvilFormat ? Version.Release_1(2) : Version.Beta_1(3);
+							if (nbt.contents.TryGet("DataVersion", out int dv))
+							{
+								gameVersion = Version.FromDataVersion(dv).Value;
+							}
+							else
+							{
+								if (worldSaveVersion != null)
+								{
+									gameVersion = worldSaveVersion.Value;
+								}
+								else
+								{
+									gameVersion = isAnvilFormat ? Version.Release_1(2) : Version.Beta_1(3);
+
+								}
+							}
 						}
 						var chunkSerializer = ChunkSerializer.CreateForVersion(gameVersion);
 

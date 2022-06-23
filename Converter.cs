@@ -31,7 +31,7 @@ namespace MCUtils {
 
 		///<summary>Converts the given bit string at index to a UInt16 value.</summary>
 		public static ushort BitsToValue(string bitString, int index, int length) {
-			string bits = ReverseString(bitString.Substring(index * length, length));
+			string bits = ReverseString(bitString.Substring(index, length));
 			bits = bits.PadLeft(16, '0');
 			bool[] bitArr = new bool[16];
 			for(int i = 0; i < 16; i++) {

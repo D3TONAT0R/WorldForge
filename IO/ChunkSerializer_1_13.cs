@@ -10,6 +10,8 @@ namespace MCUtils.IO
 	{
 		public ChunkSerializer_1_13(Version version) : base(version) { }
 
+		public virtual bool UseFull64BitRange => true;
+
 		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
@@ -34,27 +36,19 @@ namespace MCUtils.IO
 				}
 				else
 				{
-					//1.15 and prior uses the full range of bits where 1.16 doesn't use the last bits if they can't contain a block index
+					//1.15 and prior uses the full range of bits where 1.16 and later doesn't use the last bits if they can't contain a block index
 					int indexBitCount = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
 					long[] longs = GetBlockDataArray(sectionComp);
-					string bits = "";
-					for (int i = 0; i < longs.Length; i++)
-					{
-						string newBits = "";
-						byte[] bytes = BitConverter.GetBytes(longs[i]);
-						for (int j = 0; j < 8; j++)
-						{
-							newBits += Converter.ByteToBinary(bytes[j], true);
-						}
-						bits = AppendBlockStateBitsToBitStream(bits, newBits, indexBitCount);
-					}
+
+					ushort[] indices = BitUtils.ExtractCompressedInts(longs, indexBitCount, 4096, UseFull64BitRange);
+
 					for (int y = 0; y < 16; y++)
 					{
 						for (int z = 0; z < 16; z++)
 						{
 							for (int x = 0; x < 16; x++)
 							{
-								section.blocks[x, y, z] = Converter.BitsToValue(bits, y * 256 + z * 16 + x, indexBitCount);
+								section.blocks[x, y, z] = indices[y * 256 + z * 16 + x];
 							}
 						}
 					}
@@ -91,12 +85,6 @@ namespace MCUtils.IO
 		protected virtual long[] GetBlockDataArray(CompoundContainer sectionNBT)
 		{
 			return sectionNBT.Get<long[]>("BlockStates");
-		}
-
-		protected virtual string AppendBlockStateBitsToBitStream(string bitStream, string newBits, int indexBitCount)
-		{
-			bitStream += newBits;
-			return bitStream;
 		}
 
 		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)

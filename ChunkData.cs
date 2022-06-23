@@ -169,12 +169,12 @@ namespace MCUtils
 			}
 		}
 
-		public short GetHighestBlock(int chunkX, int chunkZ, HeightmapType type = HeightmapType.AllBlocks)
+		public short GetHighestBlock(int x, int z, HeightmapType type = HeightmapType.AllBlocks)
 		{
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				if (Blocks.IsBlockForMap(GetBlockAt(chunkX, y, chunkZ).block, type)) return y;
+				if (Blocks.IsBlockForMap(GetBlockAt(x, y, z).block, type)) return y;
 				y--;
 			}
 			return short.MinValue;

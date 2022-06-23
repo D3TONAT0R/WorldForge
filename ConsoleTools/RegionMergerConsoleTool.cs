@@ -1,16 +1,14 @@
 ﻿using MCUtils.IO;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text;
 
 namespace MCUtils.ConsoleTools
 {
-	public class RegionMergerConsoleTool : IUtilTask
+	public class RegionMergerConsoleTool : IConsoleTool
 	{
 
-		public void Run()
+		public void Run(string[] args)
 		{
 			MCUtilsConsole.WriteLine("Enter path to region file 1:");
 			string r1 = GetFilePath(false);

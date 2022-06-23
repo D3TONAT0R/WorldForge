@@ -7,8 +7,8 @@ using System.IO;
 using static MCUtils.ChunkData;
 using static MCUtils.World;
 
-namespace MCUtils {
-	public class WorldMerger : IUtilTask {
+namespace MCUtils.ConsoleTools {
+	public class WorldMerger : IConsoleTool {
 
 		public class RegionRecord {
 			public RegionLocation loc;
@@ -37,7 +37,7 @@ namespace MCUtils {
 
 		public World mergedWorld;
 
-		public void Run() {
+		public void Run(string[] args) {
 			MCUtilsConsole.WriteLine("Enter path to world 1's region files:");
 			world1Path = GetFilePath(true);
 			if(world1Path == null) return;

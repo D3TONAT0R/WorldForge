@@ -18,44 +18,30 @@ namespace MCUtils.IO
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.cont)
 			{
-				var section = new ChunkSection(null);
-
 				var sectionComp = (CompoundContainer)o;
 				if (!HasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
-
-				section.palette.Clear();
-
-				ParseNumericIDBlocks(c, nbtCompound);
-
-				c.sections.Add(secY, section);
+				ParseNumericIDBlocks(c, sectionComp, secY);
 			}
 		}
 
-		protected void ParseNumericIDBlocks(ChunkData c, CompoundContainer nbtCompound)
+		protected void ParseNumericIDBlocks(ChunkData c, CompoundContainer nbtCompound, sbyte sectionY)
 		{
 			byte[] blocks = nbtCompound.Get<byte[]>("Blocks");
 			byte[] add; //TODO: include "Add" bits in ID (from modded worlds)
 			if (nbtCompound.Contains("Add")) add = nbtCompound.Get<byte[]>("Add");
-			byte[] compressedMetaNibbles = nbtCompound.Get<byte[]>("Data");
-			byte[] meta = new byte[compressedMetaNibbles.Length * 2];
-			for (int i = 0; i < compressedMetaNibbles.Length; i++)
-			{
-				BitUtils.ExtractNibbles(compressedMetaNibbles[i], out var low, out var high);
-				meta[i * 2] = low;
-				meta[i * 2 + 1] = high;
-			}
+			byte[] meta = BitUtils.ExtractNibblesFromByteArray(nbtCompound.Get<byte[]>("Data"));
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
-					for (int y = 0; y < 128; y++)
+					for (int y = 0; y < 16; y++)
 					{
-						int i = (x * 16 + z) * 128 + y;
+						int i = (x * 16 + z) + 256 * y;
 						var block = BlockList.FindByNumeric(new NumericID(blocks[i], meta[i]));
 						if (block != null)
 						{
-							c.SetBlockAt(x, y, z, new BlockState(block));
+							c.SetBlockAt(x, y + sectionY * 16, z, new BlockState(block));
 						}
 					}
 				}
@@ -135,11 +121,9 @@ namespace MCUtils.IO
 					}
 				}
 			}
-			byte[] compressedMetaNibbles = new byte[2048];
-			for (int i = 0; i < 2048; i++)
-			{
-				compressedMetaNibbles[i] = BitUtils.CompressNibbles(metaNibbles[i * 2], metaNibbles[i * 2 + 1]);
-			}
+			sectionNBT.Add("Blocks", ids);
+			sectionNBT.Add("Data", BitUtils.CompressNibbleArray(metaNibbles));
+
 			//Do not write SkyLight and BlockLight (byte[2048]), let them generate by the game
 		}
 

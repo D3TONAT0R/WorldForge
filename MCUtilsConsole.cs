@@ -17,7 +17,7 @@ namespace MCUtils {
 			if(args.Length > 0) {
 				if(File.Exists(args[0])) {
 					var v = new NBTViewer(args[0]);
-					v.Run();
+					v.Run(args);
 				}
 			} else {
 				Console.WriteLine("File '" + fname + "' does not exist!");
@@ -30,28 +30,27 @@ namespace MCUtils {
 				WriteLine("- randomblocks       Makes a region out of random blocks");
 				WriteLine("- view               Shows the contents of an NBT file or region");
 				WriteLine("- readchunk          Loads chunk data at a specific byte offset in a region file");
+				WriteLine("- analyzedist        Analyzes a world's block/ore distribution and creates a CSV report");
 				input = GetInput();
 				if(input.StartsWith("mergeregions")) {
 					var m = new RegionMergerConsoleTool();
-					m.Run();
+					m.Run(args);
 				}
 				if(input.StartsWith("mergeworlds")) {
 					var m = new WorldMerger();
-					m.Run();
+					m.Run(args);
 				}
 				if(input.StartsWith("randomblocks")) {
 					var g = new RandomBlockRegionGen();
-					g.Run();
+					g.Run(args);
 				}
 				if(input.StartsWith("view ")) {
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
-					v.Run();
+					v.Run(args);
 				}
-				if(input.StartsWith("readchunk ")) {
-					WriteLine("enter index: ");
-					int index = int.Parse(Console.ReadLine());
-					var v = new NBTViewer(RegionLoader.LoadChunkDataAtIndex(input.Substring(10).Replace("\"", ""), index));
-					v.Run();
+				if(input.StartsWith("analyzedist ")) {
+					var v = new BlockDistributionConsoleTool();
+					v.Run(args);
 				}
 			}
 		}

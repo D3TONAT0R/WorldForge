@@ -10,10 +10,6 @@ namespace MCUtils.IO
 	{
 		public ChunkSerializer_1_16(Version version) : base(version) { }
 
-		protected override string AppendBlockStateBitsToBitStream(string bitStream, string newBits, int indexBitCount)
-		{
-			bitStream += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)indexBitCount) * indexBitCount);
-			return bitStream;
-		}
+		public override bool UseFull64BitRange => false;
 	}
 }

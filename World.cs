@@ -21,6 +21,10 @@ namespace MCUtils
 		public static readonly ProtoBlock defaultBlock = BlockList.Find("minecraft:stone");
 
 		public Version gameVersion;
+		public long worldSeed = new Random().Next(-1000000000, 1000000000);
+		public int worldSpawnX = 0;
+		public int worldSpawnY = 64;
+		public int worldSpawnZ = 0;
 
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
 
@@ -58,7 +62,7 @@ namespace MCUtils
 		}
 
 		//TODO: Danger, loads entire world at once
-		public static World Load(string worldSaveDir)
+		public static World Load(string worldSaveDir, Version? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
 			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
@@ -68,16 +72,16 @@ namespace MCUtils
 			world.gameVersion = Version.FromDataVersion(world.levelDat.dataVersion) ?? Version.FirstVersion;
 			world.worldName = world.levelDat.contents.Get<string>("LevelName");
 			world.regions = new Dictionary<RegionLocation, Region>();
-			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mca"))
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
 				if (Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)")) {
 					try
 					{
-						var region = RegionLoader.LoadRegion(f);
+						var region = RegionLoader.LoadRegion(f, gameVersion);
 						world.regions.Add(region.regionPos, region);
 					}
-					catch(Exception e)
+					catch(Exception e) when (!throwOnRegionLoadFail)
 					{
 						Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
 					}
@@ -102,7 +106,7 @@ namespace MCUtils
 			gameVersion = Version.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? Version.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
 			var regionList = new List<RegionLocation>();
-			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mca"))
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				try
 				{
@@ -189,7 +193,6 @@ namespace MCUtils
 		{
 			TryGetRegion(x, z)?.SetBiome(x % 512, z % 512, biome);
 		}
-
 
 		/// <summary>
 		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
@@ -391,9 +394,10 @@ namespace MCUtils
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
 			var options = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+			string extension = gameVersion >= Version.FirstAnvilVersion ? "mca" : "mcr";
 			Parallel.ForEach(regions, options, (KeyValuePair<RegionLocation, Region> region) =>
 			{
-				string name = $"r.{region.Key.x}.{region.Key.z}.mca";
+				string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
 				region.Value.WriteToFile(Path.Combine(path, "region"), gameVersion, name);
 			});
 		}

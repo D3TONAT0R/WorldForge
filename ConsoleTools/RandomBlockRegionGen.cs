@@ -1,14 +1,13 @@
-
 using MCUtils.IO;
 using System;
 using System.IO;
 
-namespace MCUtils {
-	public class RandomBlockRegionGen : IUtilTask {
+namespace MCUtils.ConsoleTools {
+	public class RandomBlockRegionGen : IConsoleTool {
 
 		Region region;
 
-		public void Run() {
+		public void Run(string[] args) {
 			MCUtilsConsole.WriteLine("Size of block patches (1-4):");
 			size = int.Parse(MCUtilsConsole.GetInput());
 			size = Math.Max(1, Math.Min(4, size));

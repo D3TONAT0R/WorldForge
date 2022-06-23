@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using static MCUtils.NBTContent;
 
-namespace MCUtils {
-	class NBTViewer : IUtilTask {
+namespace MCUtils.ConsoleTools {
+	class NBTViewer : IConsoleTool {
 
 		public class ChangeState {
 
@@ -74,7 +74,7 @@ namespace MCUtils {
 			content = data;
 		}
 
-		public void Run() {
+		public void Run(string[] args) {
 			currentContainer = content.contents;
 			UpdateContentKeys();
 			while(true) {

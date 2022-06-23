@@ -345,7 +345,8 @@ purpur_slab;double=true;204;purpur_double_slab;1.9;stone_brick_slab[double=true]
 purpur_slab;;205;purpur_slab;1.9;stone_brick_slab
 end_stone_bricks;;206;end_bricks;1.9;stone_bricks
 beetroots;;207;beetroots;1.9;potatoes
-dirt_path;"(""grass_path"" prior to 1.17!)";208;grass_path;1.9;grass_block
+grass_path;;208;grass_path;1.9;grass_block
+dirt_path;"(""grass_path"" prior to 1.17!)";;grass_path;1.17;grass_path
 end_gateway;;209;end_gateway;1.9;
 repeating_command_block;;210;repeating_command_block;1.9;command_block
 chain_command_block;;211;chain_command_block;1.9;command_block

@@ -44,6 +44,11 @@ namespace MCUtils
 			AddDefaultBlockProperties();
 		}
 
+		public BlockState(string blockType) : this(BlockList.Find(blockType))
+		{
+
+		}
+
 		void AddDefaultBlockProperties()
 		{
 			if (block == null) return;

@@ -24,6 +24,9 @@ namespace MCUtils
 
 		public static readonly Version DefaultVersion = Release_1(16);
 
+		public static readonly Version FirstMCRVersion = Beta_1(3);
+		public static readonly Version FirstAnvilVersion = Release_1(2, 1);
+
 		public static readonly Dictionary<Version, int> dataVersionAssociations = new Dictionary<Version, int>()
 		{
 			{Release_1(9,0), 169},
@@ -146,7 +149,8 @@ namespace MCUtils
 			StringBuilder sb = new StringBuilder();
 			if (stage == Stage.Alpha) sb.Append("a");
 			else if (stage == Stage.Beta) sb.Append("b");
-			sb.Append($"{major}.{minor}.{patch}");
+			sb.Append($"{major}.{minor}");
+			if (patch != 0) sb.Append($".{ patch}");
 			return sb.ToString();
 		}
 

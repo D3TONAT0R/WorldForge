@@ -65,7 +65,8 @@ namespace MCUtils.IO
 					{
 						var biomeData = biomesComp.Get<long[]>("data");
 						var indexBitLength = BitUtils.GetMaxBitCount((uint)palette.Length - 1);
-						var dataBits = BitUtils.CreateBitArray(biomeData);
+						var indices = BitUtils.ExtractCompressedInts(biomeData, indexBitLength, 64, false);
+
 						for (int y = 0; y < 4; y++)
 						{
 							for (int z = 0; z < 4; z++)
@@ -73,17 +74,8 @@ namespace MCUtils.IO
 								for (int x = 0; x < 4; x++)
 								{
 									int i = y * 16 + z * 4 + x;
-									i *= indexBitLength;
-									var paletteIndex = BitUtils.CreateInt16FromBits(dataBits, i, (int)indexBitLength);
-									//HACK: bypassed exception throw due to incorrect parsing
-									try
-									{
-										chunkSection.SetBiome3D4x4At(x * 4, y * 4, z * 4, palette[paletteIndex]);
-									}
-									catch
-									{
-
-									}
+									var paletteIndex = indices[i];
+									chunkSection.SetBiome3D4x4At(x * 4, y * 4, z * 4, palette[paletteIndex]);
 								}
 							}
 						}
