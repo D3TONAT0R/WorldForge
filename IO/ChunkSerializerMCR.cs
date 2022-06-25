@@ -23,16 +23,21 @@ namespace MCUtils.IO
 			chunkNBT.Add("zPos", c.coords.z);
 			chunkNBT.Add("TerrainPopulated", (byte)1);
 			chunkNBT.Add("LastUpdate", 0L);
-			//TODO: is the chunk still valid with no light data?
-			//chunkNBT.Add("SkyLight", new byte[0]);
-			//chunkNBT.Add("BlockLight", new byte[0]);
+			//TODO: Light data must be generated 
+			var sl = new byte[16384];
+			for(int i = 0; i < 16384; i++)
+			{
+				sl[i] = 255;
+			}
+			chunkNBT.Add("SkyLight", sl);
+			chunkNBT.Add("BlockLight", new byte[16384]);
 		}
 
 		#region Blocks
 
 		protected int GetArrayIndex(int x, int y, int z)
 		{
-			return (x * 16 + z) + 256 * y;
+			return x * 2048 + z * 128 + y;
 		}
 
 		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)

@@ -12,6 +12,11 @@ namespace MCUtils.IO
 	{
 		public ChunkSerializerAnvil(Version version) : base(version) { }
 
+		public int GetIndex(int x, int y, int z)
+		{
+			return (z * 16 + x) + 256 * y;
+		}
+
 		#region Blocks
 		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
 		{
@@ -37,7 +42,7 @@ namespace MCUtils.IO
 				{
 					for (int y = 0; y < 16; y++)
 					{
-						int i = (x * 16 + z) + 256 * y;
+						int i = GetIndex(x,y,z);
 						var block = BlockList.FindByNumeric(new NumericID(blocks[i], meta[i]));
 						if (block != null)
 						{
@@ -75,20 +80,24 @@ namespace MCUtils.IO
 		{
 			chunkNBT.Add("xPos", c.coords.x);
 			chunkNBT.Add("zPos", c.coords.z);
-			chunkNBT.Add("Status", "light");
-			chunkNBT.Add("InhabitedTime", c.inhabitedTime);
-
-			//Leave it empty (or implement heightmap gen in the future?)
-			chunkNBT.Add("Heightmaps", new CompoundContainer());
-
-			//TODO: find out in which version these tags were added
-			chunkNBT.Add("Structures", new CompoundContainer());
+			chunkNBT.Add("TerrainPopulated", (byte)1);
+			chunkNBT.Add("LastUpdate", 0L);
+			//TODO: create proper height map
+			int[] hm = new int[256];
+			for(int z = 0; z < 16; z++)
+			{
+				for(int x = 0; x < 16; x++)
+				{
+					hm[z * 16 + x] = c.GetHighestBlock(x, z, HeightmapType.SolidBlocks);
+				}
+			}
+			chunkNBT.Add("HeightMap", hm);
 		}
 
 		public override void WriteBlocks(ChunkData c, CompoundContainer chunkNBT)
 		{
 			var sectionList = chunkNBT.Add("Sections", new ListContainer(NBTTag.TAG_Compound));
-			for (sbyte secY = c.LowestSection; secY < c.HighestSection; secY++)
+			for (sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
 			{
 				if (c.sections.TryGetValue(secY, out var section))
 				{
@@ -112,7 +121,7 @@ namespace MCUtils.IO
 				{
 					for (int x = 0; x < 16; x++)
 					{
-						int i = (x * 16 + z) + 128 * y;
+						int i = GetIndex(x, y, z);
 						if (BlockList.numerics.TryGetValue(c.GetBlockAt(x, y, z).block, out var numID))
 						{
 							ids[i] = numID.id;
@@ -124,6 +133,10 @@ namespace MCUtils.IO
 			sectionNBT.Add("Blocks", ids);
 			sectionNBT.Add("Data", BitUtils.CompressNibbleArray(metaNibbles));
 
+			sectionNBT.Add("BlockLight", new byte[2048]);
+			byte[] sl = new byte[2048];
+			for(int i = 0; i < 2048; i++) sl[i] = 255;
+			sectionNBT.Add("SkyLight", new byte[2048]);
 			//Do not write SkyLight and BlockLight (byte[2048]), let them generate by the game
 		}
 
@@ -175,7 +188,7 @@ namespace MCUtils.IO
 
 		public override void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
 		{
-
+			chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 		}
 
 		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)

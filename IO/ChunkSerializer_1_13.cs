@@ -12,6 +12,20 @@ namespace MCUtils.IO
 
 		public virtual bool UseFull64BitRange => true;
 
+		public override void WriteCommonData(ChunkData c, CompoundContainer chunkNBT)
+		{
+			base.WriteCommonData(c, chunkNBT);
+
+			//TODO: find out in which version these tags were added
+			chunkNBT.Add("Status", "light");
+			chunkNBT.Add("InhabitedTime", c.inhabitedTime);
+
+			//Leave it empty (or implement heightmap gen in the future?)
+			chunkNBT.Add("Heightmaps", new CompoundContainer());
+
+			chunkNBT.Add("Structures", new CompoundContainer());
+		}
+
 		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);

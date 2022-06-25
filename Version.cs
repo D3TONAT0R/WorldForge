@@ -150,7 +150,7 @@ namespace MCUtils
 			if (stage == Stage.Alpha) sb.Append("a");
 			else if (stage == Stage.Beta) sb.Append("b");
 			sb.Append($"{major}.{minor}");
-			if (patch != 0) sb.Append($".{ patch}");
+			if (patch != 0) sb.Append($".{patch}");
 			return sb.ToString();
 		}
 
