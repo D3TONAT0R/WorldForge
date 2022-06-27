@@ -2,7 +2,8 @@ using MCUtils.IO;
 using System;
 using System.IO;
 
-namespace MCUtils.ConsoleTools {
+namespace MCUtils.ConsoleTools
+{
 	public class RandomBlockRegionGen : IConsoleTool {
 
 		Region region;

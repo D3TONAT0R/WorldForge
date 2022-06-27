@@ -1,15 +1,13 @@
 ﻿using Ionic.Zlib;
-using MCUtils;
 using MCUtils.Coordinates;
 using MCUtils.IO;
+using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Region = MCUtils.Region;
 
 namespace MCUtils
 {
@@ -103,7 +101,7 @@ namespace MCUtils
 					var cd = rd.compressedChunks[i];
 					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
 					{
-						var nbt = new NBTContent(chunkStream);
+						var nbt = new NBTData(chunkStream);
 						Version gameVersion;
 						if (worldSaveVersion.HasValue)
 						{
@@ -162,7 +160,7 @@ namespace MCUtils
 					var cd = rd.compressedChunks[i];
 					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
 					{
-						WriteChunkToHeightmap(heightmap, new NBTContent(chunkStream), i % 32, i / 32, heightmapType);
+						WriteChunkToHeightmap(heightmap, new NBTData(chunkStream), i % 32, i / 32, heightmapType);
 					}
 				}
 			});
@@ -226,7 +224,7 @@ namespace MCUtils
 		}
 
 		///<summary>Loads chunk data from a specified index in a region file (for debugging purposes)</summary>
-		public static NBTContent LoadChunkDataAtIndex(string filepath, int index)
+		public static NBTData LoadChunkDataAtIndex(string filepath, int index)
 		{
 			RegionData rd;
 			using (var stream = File.Open(filepath, FileMode.Open))
@@ -235,7 +233,7 @@ namespace MCUtils
 			}
 			using (var chunkStream = CreateZLibDecompressionStream(rd.compressedChunks[index].compressedChunk))
 			{
-				return new NBTContent(chunkStream);
+				return new NBTData(chunkStream);
 			}
 		}
 
@@ -286,7 +284,7 @@ namespace MCUtils
 			return new MemoryStream(GZipStream.UncompressBuffer(bytes));
 		}
 
-		private static void WriteChunkToHeightmap(short[,] heightmap, NBTContent nbt, int localChunkX, int localChunkZ, HeightmapType mapType)
+		private static void WriteChunkToHeightmap(short[,] heightmap, NBTData nbt, int localChunkX, int localChunkZ, HeightmapType mapType)
 		{
 			//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
 			//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MCUtils.NBT;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
 
 namespace MCUtils
 {
@@ -152,18 +151,18 @@ namespace MCUtils
 			return predominantBiome;
 		}
 
-		public CompoundContainer CreateCompound(sbyte secY, bool use_1_16_Format)
+		public NBTCompound CreateCompound(sbyte secY, bool use_1_16_Format)
 		{
-			var comp = new CompoundContainer();
+			var comp = new NBTCompound();
 			comp.Add("Y", (byte)secY);
-			ListContainer paletteContainer = new ListContainer(NBTTag.TAG_Compound);
+			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
 			foreach (var block in palette)
 			{
-				CompoundContainer paletteBlock = new CompoundContainer();
+				NBTCompound paletteBlock = new NBTCompound();
 				paletteBlock.Add("Name", block.block.ID);
 				if (block.properties != null)
 				{
-					CompoundContainer properties = new CompoundContainer();
+					NBTCompound properties = new NBTCompound();
 					foreach (var prop in block.properties.cont.Keys)
 					{
 						var value = block.properties.Get(prop);
@@ -172,9 +171,9 @@ namespace MCUtils
 					}
 					paletteBlock.Add("Properties", properties);
 				}
-				paletteContainer.Add("", paletteBlock);
+				paletteList.Add(paletteBlock);
 			}
-			comp.Add("Palette", paletteContainer);
+			comp.Add("Palette", paletteList);
 			//Encode block indices to bits and longs, oof
 			int indexLength = Math.Max(4, (int)Math.Log(palette.Count - 1, 2.0) + 1);
 			//How many block indices fit inside a long?

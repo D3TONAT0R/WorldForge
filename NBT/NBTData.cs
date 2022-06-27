@@ -3,300 +3,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MCUtils
+namespace MCUtils.NBT
 {
-	public class NBTContent
+	public class NBTData
 	{
 
-		public abstract class Container
-		{
+		
 
-			public Container()
-			{
 
-			}
 
-			public abstract NBTTag containerType
-			{
-				get;
-			}
-
-			public abstract T Add<T>(string key, T value);
-
-			public abstract string[] GetContentKeys(string prefix);
-
-			public abstract object Get(string key);
-
-			public override string ToString()
-			{
-				return containerType.ToString();
-			}
-		}
-
-		///<summary>A container for the TAG_Compound tag.</summary>
-		public class CompoundContainer : Container
-		{
-
-			public override NBTTag containerType
-			{
-				get { return NBTTag.TAG_Compound; }
-			}
-
-			public Dictionary<string, object> cont;
-
-			public CompoundContainer() : base()
-			{
-				cont = new Dictionary<string, object>();
-			}
-
-			public override T Add<T>(string key, T value)
-			{
-				if (!cont.ContainsKey(key))
-				{
-					cont.Add(key, value);
-				}
-				else
-				{
-					cont[key] = value;
-				}
-				return value;
-			}
-
-			public void AddRange(params (string key, object obj)[] values)
-			{
-				foreach (var value in values)
-				{
-					Add(value.key, value.obj);
-				}
-			}
-
-			public CompoundContainer AddCompound(string key)
-			{
-				return Add(key, new CompoundContainer());
-			}
-
-			public ListContainer AddList(string key, NBTTag tag)
-			{
-				return Add(key, new ListContainer(tag));
-			}
-
-			public T Set<T>(string key, T value)
-			{
-				if (Contains(key))
-				{
-					cont[key] = value;
-				}
-				else
-				{
-					cont.Add(key, value);
-				}
-				return value;
-			}
-
-			public override object Get(string key)
-			{
-				if (cont.ContainsKey(key))
-				{
-					return cont[key];
-				}
-				else
-				{
-					MCUtilsConsole.WriteError("Key '" + key + "' does not exist!");
-					return null;
-				}
-			}
-
-			public T Get<T>(string key)
-			{
-				return (T)Convert.ChangeType(Get(key), typeof(T));
-			}
-
-			public bool TryGet<T>(string key, out T value)
-			{
-				if(Contains(key))
-				{
-					try
-					{
-						value = (T)Convert.ChangeType(Get(key), typeof(T));
-						return true;
-					}
-					catch
-					{
-						value = default;
-						return false;
-					}
-				}
-				else
-				{
-					value = default;
-					return false;
-				}
-			}
-
-			public bool Contains(string key)
-			{
-				return cont.ContainsKey(key);
-			}
-
-			public CompoundContainer GetAsCompound(string key)
-			{
-				return Get(key) as CompoundContainer;
-			}
-
-			public ListContainer GetAsList(string key)
-			{
-				return Get(key) as ListContainer;
-			}
-
-			public static bool AreEqual(CompoundContainer a, CompoundContainer b)
-			{
-				if (a == null && b == null) return true;
-				if ((a == null) != (b == null)) return false;
-				return a.HasSameContent(b);
-			}
-
-			public bool HasSameContent(CompoundContainer other)
-			{
-				if (other.cont.Keys.Count != cont.Keys.Count) return false;
-				foreach (string k in cont.Keys)
-				{
-					if (!other.Contains(k)) return false;
-					if (!cont[k].Equals(other.cont[k])) return false;
-				}
-				return true;
-			}
-
-			public override string[] GetContentKeys(string prefix)
-			{
-				string[] k = new string[cont.Count];
-				int i = 0;
-				foreach (var key in cont.Keys)
-				{
-					k[i] = prefix + key;
-					i++;
-				}
-				return k;
-			}
-		}
-
-		///<summary>A container for the TAG_List tag.</summary>
-		public class ListContainer : Container
-		{
-
-			public override NBTTag containerType => NBTTag.TAG_List;
-
-			public NBTTag contentsType;
-			public int Length
-			{
-				get
-				{
-					return cont.Count;
-				}
-			}
-			public List<object> cont;
-
-			public ListContainer(NBTTag baseType) : base()
-			{
-				contentsType = baseType;
-				cont = new List<object>();
-			}
-
-			public override object Get(string key)
-			{
-				return this[int.Parse(key)];
-			}
-
-			public T Get<T>(int index)
-			{
-				return (T)Convert.ChangeType(this[index], typeof(T));
-			}
-
-			public override T Add<T>(string key, T value)
-			{
-				if (NBTTagDictionary[value.GetType()] != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
-				cont.Add(value);
-				return value;
-			}
-
-			public T Add<T>(T value)
-			{
-				return Add(null, value);
-			}
-
-			public void AddRange(params object[] values)
-			{
-				foreach (var value in values)
-				{
-					Add(null, value);
-				}
-			}
-
-			public object this[int i]
-			{
-				get { return cont[i]; }
-				set { cont[i] = value; }
-			}
-
-			public override string[] GetContentKeys(string prefix)
-			{
-				string[] k = new string[cont.Count];
-				for (int i = 0; i < cont.Count; i++) k[i] = prefix + i.ToString();
-				return k;
-			}
-		}
-
-		public enum NBTTag
-		{
-			TAG_End = 0,
-			TAG_Byte = 1,
-			TAG_Short = 2,
-			TAG_Int = 3,
-			TAG_Long = 4,
-			TAG_Float = 5,
-			TAG_Double = 6,
-			TAG_Byte_Array = 7,
-			TAG_String = 8,
-			TAG_List = 9,
-			TAG_Compound = 10,
-			TAG_Int_Array = 11,
-			TAG_Long_Array = 12,
-			UNSPECIFIED = 99
-		}
-
-		public static Dictionary<Type, NBTTag> NBTTagDictionary = new Dictionary<Type, NBTTag> {
-				{ typeof(byte), NBTTag.TAG_Byte },
-				{ typeof(short), NBTTag.TAG_Short },
-				{ typeof(int), NBTTag.TAG_Int },
-				{ typeof(long), NBTTag.TAG_Long },
-				{ typeof(float), NBTTag.TAG_Float },
-				{ typeof(double), NBTTag.TAG_Double },
-				{ typeof(byte[]), NBTTag.TAG_Byte_Array },
-				{ typeof(string), NBTTag.TAG_String },
-				{ typeof(ListContainer), NBTTag.TAG_List },
-				{ typeof(CompoundContainer), NBTTag.TAG_Compound },
-				{ typeof(int[]), NBTTag.TAG_Int_Array },
-				{ typeof(long[]), NBTTag.TAG_Long_Array }
-			};
 
 		///<summary>The compound container containing all stored data</summary>
-		public CompoundContainer contents;
+		public NBTCompound contents;
 
 		///<summary>
 		///The version number this nbt compound was created with (only valid for versions release 1.9 and up)
 		///</summary>
 		public int? dataVersion;
 
-		List<Container> parentTree;
-
 		///<summary>Instantiates an empty NBT structure.</summary>
-		public NBTContent()
+		public NBTData()
 		{
-			contents = new CompoundContainer();
-			parentTree = new List<Container>();
+			contents = new NBTCompound();
 		}
 
 		///<summary>Creates an NBT structure from the given bytes.</summary>
-		public NBTContent(Stream uncompressedStream) : this()
+		public NBTData(Stream uncompressedStream) : this()
 		{
 			while (uncompressedStream.Position < uncompressedStream.Length)
 			{
@@ -341,8 +73,8 @@ namespace MCUtils
 				throw new InvalidOperationException("Level root compound has already been added.");
 			}
 
-			CompoundContainer root = new CompoundContainer();
-			CompoundContainer level = new CompoundContainer();
+			NBTCompound root = new NBTCompound();
+			NBTCompound level = new NBTCompound();
 			foreach (string k in contents.cont.Keys)
 			{
 				level.Add(k, contents.Get(k));
@@ -360,7 +92,7 @@ namespace MCUtils
 				{
 					//It's the "new" format
 					//TODO: deal with 1.17's new heightmaps
-					CompoundContainer hmcomp = contents.GetAsCompound("Heightmaps");
+					NBTCompound hmcomp = contents.GetAsCompound("Heightmaps");
 					if (type == HeightmapType.SolidBlocksNoLiquid && hmcomp.Contains("OCEAN_FLOOR"))
 					{
 						//The highest non-air block, solid block
@@ -493,7 +225,7 @@ namespace MCUtils
 			return b;
 		}
 
-		NBTTag RegisterTag(Stream stream, Container c, NBTTag predef = NBTTag.UNSPECIFIED)
+		NBTTag RegisterTag(Stream stream, AbstractNBTContainer c, NBTTag predef = NBTTag.UNSPECIFIED)
 		{
 			NBTTag tag;
 			/*if(compound.GetType() == typeof(ListContainer)) {
@@ -526,10 +258,6 @@ namespace MCUtils
 						name += (char)ReadNext(stream);
 					}
 				}
-				/*if(name == "MOTION_BLOCKING" || name == "MOTION_BLOCKING_NO_LEAVES" || name == "OCEAN_FLOOR" || name == "WORLD_SURFACE") {
-					Get<int>(data, ref i); //Throw away the length int, it's always 36
-					value = GetHeightmap(data, c, ref i);
-				} else */
 				if (tag == NBTTag.TAG_Byte)
 				{
 					value = Get<byte>(stream);
@@ -564,11 +292,11 @@ namespace MCUtils
 				}
 				else if (tag == NBTTag.TAG_List)
 				{
-					value = Get<ListContainer>(stream);
+					value = Get<NBTList>(stream);
 				}
 				else if (tag == NBTTag.TAG_Compound)
 				{
-					value = Get<CompoundContainer>(stream);
+					value = Get<NBTCompound>(stream);
 				}
 				else if (tag == NBTTag.TAG_Int_Array)
 				{
@@ -582,8 +310,19 @@ namespace MCUtils
 				{
 					throw new ArgumentException("Unrecognized nbt tag: " + tag);
 				}
-				c.Add(name, value);
-				LogTree(tag, name, value);
+
+				if(c is NBTCompound comp)
+				{
+					comp.Add(name, value);
+				}
+				else if(c is NBTList list)
+				{
+					list.Add(value);
+				}
+				else
+				{
+					throw new InvalidOperationException("Unknown container type: " + c.GetType());
+				}
 			}
 			else
 			{
@@ -593,9 +332,9 @@ namespace MCUtils
 			return tag;
 		}
 
-		ListContainer GetList(NBTTag tag, int length, Stream stream)
+		NBTList GetList(NBTTag tag, int length, Stream stream)
 		{
-			ListContainer arr = new ListContainer(tag);
+			NBTList arr = new NBTList(tag);
 			//compound = EnterContainer(compound, arr);
 			for (int j = 0; j < length; j++)
 			{
@@ -603,20 +342,6 @@ namespace MCUtils
 			}
 			//compound = ExitContainer();
 			return arr;
-		}
-
-		void LogTree(NBTTag tag, string name, object value)
-		{
-			string tree = "";
-			for (int t = 0; t < parentTree.Count; t++)
-			{
-				tree += " > ";
-			}
-			if (name == "") name = "[LIST_ENTRY]";
-			string vs = value != null ? value.ToString() : "-";
-			if (vs.Length > 64) vs = vs.Substring(0, 60) + "[...]";
-			tree += tag != NBTTag.TAG_End ? name + ": " + tag.ToString() + " = " + vs : "END";
-			//Program.writeLine(tree);
 		}
 
 		T Get<T>(Stream stream)
@@ -666,15 +391,15 @@ namespace MCUtils
 				}
 				ret = Encoding.UTF8.GetString(arr);
 			}
-			else if (typeof(T) == typeof(ListContainer))
+			else if (typeof(T) == typeof(NBTList))
 			{
 				NBTTag type = (NBTTag)Get<byte>(stream);
 				int len = Get<int>(stream);
 				ret = GetList(type, len, stream);
 			}
-			else if (typeof(T) == typeof(CompoundContainer))
+			else if (typeof(T) == typeof(NBTCompound))
 			{
-				var newCompound = new CompoundContainer();
+				var newCompound = new NBTCompound();
 				while (RegisterTag(stream, newCompound) != NBTTag.TAG_End)
 				{
 
@@ -706,7 +431,7 @@ namespace MCUtils
 
 		void Write(List<byte> bytes, string name, object o)
 		{
-			var tag = NBTTagDictionary[o.GetType()];
+			var tag = NBTMappings.GetTag(o.GetType());
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
 			byte[] lengthBytes = Converter.ReverseEndianness(BitConverter.GetBytes((short)nameBytes.Length));
@@ -757,7 +482,7 @@ namespace MCUtils
 			}
 			else if (tag == NBTTag.TAG_List)
 			{
-				ListContainer list = (ListContainer)o;
+				NBTList list = (NBTList)o;
 				bytes.Add((byte)list.contentsType);
 				WriteValue(bytes, NBTTag.TAG_Int, list.cont.Count);
 				foreach (object item in list.cont)
@@ -767,7 +492,7 @@ namespace MCUtils
 			}
 			else if (tag == NBTTag.TAG_Compound)
 			{
-				CompoundContainer compound = (CompoundContainer)o;
+				NBTCompound compound = (NBTCompound)o;
 				foreach (string k in compound.cont.Keys)
 				{
 					Write(bytes, k, compound.cont[k]);

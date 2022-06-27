@@ -1,8 +1,7 @@
 using MCUtils.Coordinates;
-using MCUtils.IO;
+using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
-using static MCUtils.NBTContent;
 
 namespace MCUtils
 {
@@ -24,7 +23,7 @@ namespace MCUtils
 
 		public long inhabitedTime = 0;
 
-		public NBTContent sourceNBT;
+		public NBTData sourceNBT;
 
 		private readonly object lockObj = new object();
 
@@ -35,7 +34,7 @@ namespace MCUtils
 			this.defaultBlock = defaultBlock;
 		}
 
-		public ChunkData(Region region, NBTContent chunk, ChunkCoord chunkCoord)
+		public ChunkData(Region region, NBTData chunk, ChunkCoord chunkCoord)
 		{
 			containingRegion = region;
 			sourceNBT = chunk;
@@ -275,11 +274,11 @@ namespace MCUtils
 		}
 
 		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)
-		private CompoundContainer GetSectionCompound(ListContainer sectionsList, sbyte y)
+		private NBTCompound GetSectionCompound(NBTList sectionsList, sbyte y)
 		{
 			foreach (var o in sectionsList.cont)
 			{
-				var compound = (CompoundContainer)o;
+				var compound = (NBTCompound)o;
 				if (!compound.Contains("Y") || !compound.Contains("Palette")) continue;
 				if ((byte)compound.Get("Y") == y) return compound;
 			}

@@ -1,15 +1,11 @@
-
-using Ionic.Zlib;
 using MCUtils.Coordinates;
 using MCUtils.IO;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using static MCUtils.ChunkData;
-using static MCUtils.NBTContent;
 
-namespace MCUtils {
+namespace MCUtils
+{
 	public class Region {
 
 		public readonly RegionLocation regionPos;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
+﻿using MCUtils.NBT;
 
 namespace MCUtils.IO
 {
@@ -16,77 +13,111 @@ namespace MCUtils.IO
 
 		private LevelDATSerializer() { }
 
-		public virtual void WriteLevelDAT(World world, NBTContent nbt, bool creativeMode)
+		public virtual void WriteLevelDAT(World world, NBTData levelDatNBT, bool creativeMode)
 		{
-			var dat = nbt.contents.AddCompound("Data");
+			var nbt = levelDatNBT.contents.AddCompound("Data");
 
 			var dv = world.gameVersion.GetDataVersion();
-			if(dv != null) dat.Add("DataVersion", dv.Value);
+			if(dv != null) nbt.Add("DataVersion", dv.Value);
 
-			dat.Add("version", world.gameVersion >= Version.FirstAnvilVersion ? 19133 : 19132);
+			nbt.Add("version", world.gameVersion >= Version.FirstAnvilVersion ? 19133 : 19132);
 
-			WriteWorldInfo(world, dat);
-			WriteSpawnPoint(dat, world.worldSpawnX, world.worldSpawnY, world.worldSpawnZ);
-			WritePlayerData(world, dat);
+			var dat = world.levelData;
+			var version = world.gameVersion;
+
+			WriteWorldInfo(dat, nbt, world.gameVersion);
+			WriteSpawnPoint(world, dat.spawnpoint, nbt);
+			WritePlayerData(world, dat.player, nbt, version);
+			WriteGameRules(nbt, dat.gameRules, version);
+			WriteWorldGenAndSeed(nbt, dat.worldGen, version);
+			WriteWorldBorder(nbt, dat.worldBorder, version);
+			WriteWanderingTraderInfo(nbt, dat.wanderingTraderInfo, version);
+			WriteDataPackInfo(nbt, dat.dataPacks, version);
 
 			//TODO: make separate DAT serializer for "newer" NBT data
 			if(world.gameVersion >= Version.Beta_1(8))
 			{
-				dat.Add("GameType", creativeMode ? 1 : 0);
+				nbt.Add("GameType", creativeMode ? 1 : 0);
 			}
 			//TODO: find out when cheat option was added
 			if(world.gameVersion >= Version.Release_1(0))
 			{
-				dat.Add("allowCommands", (byte)(creativeMode ? 1 : 0));
+				nbt.Add("allowCommands", (byte)(creativeMode ? 1 : 0));
 			}
 		}
 
-		protected virtual void WriteWorldInfo(World world, CompoundContainer dat)
+		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, Version version)
 		{
-			dat.Add("LevelName", world.worldName);
-			dat.Add("LastPlayed", 0L);
-			dat.Add("raining", (byte)0);
-			dat.Add("rainTime", 0);
-			dat.Add("thundering", (byte)0);
-			dat.Add("Time", 0L);
-			dat.Add("RandomSeed", world.worldSeed);
+			var comp = nbt.AddCompound("DataPacks");
+			NBTFieldManager.WriteToNBT(dataPacks, comp, version);
 		}
 
-		protected virtual void WriteSpawnPoint(CompoundContainer dat, int spawnX, int spawnY, int spawnZ)
+		private void WriteWanderingTraderInfo(NBTCompound nbt, LevelData.WanderingTraderInfo wanderingTraderInfo, Version version)
 		{
-			dat.Add("SpawnX", spawnX);
-			dat.Add("SpawnY", spawnY);
-			dat.Add("SpawnZ", spawnZ);
+			NBTFieldManager.WriteToNBT(wanderingTraderInfo, nbt, version);
 		}
 
-		protected void WritePlayerData(World world, CompoundContainer dat)
+		private void WriteWorldBorder(NBTCompound nbt, LevelData.WorldBorder worldBorder, Version version)
 		{
-			CompoundContainer player = new CompoundContainer();
-			dat.Add("Player", player);
-			player.Add("Inventory", new ListContainer(NBTTag.TAG_Compound));
-			var pos = player.AddList("Pos", NBTTag.TAG_Double);
-			pos.Add(world.worldSpawnX + 0.5d);
-			pos.Add(world.worldSpawnY + 1.0d);
-			pos.Add(world.worldSpawnZ + 0.5d);
-			var rot = player.AddList("Rotation", NBTTag.TAG_Double);
-			rot.Add(0d);
-			rot.Add(0d);
-			var motion = player.AddList("Motion", NBTTag.TAG_Double);
-			motion.Add(0d);
-			motion.Add(0d);
-			motion.Add(0d);
-			player.Add("Air", (short)300);
-			player.Add("AttackTime", (short)0);
-			player.Add("DeathTime", (short)0);
-			player.Add("Dimension", 0);
-			player.Add("FallDistance", 0f);
-			player.Add("Fire", (short)-20);
-			player.Add("Health", (short)20);
-			player.Add("HurtTime", (short)0);
-			player.Add("OnGround", (byte)1);
-			player.Add("Score", 0);
-			player.Add("Sleeping", (byte)0);
-			player.Add("SleepTimer", (short)0);
+			NBTFieldManager.WriteToNBT(worldBorder, nbt, version);
+		}
+
+		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, Version gameVersion)
+		{
+			//TODO: WorldGenSettings added in 1.13?
+			if(gameVersion >= Version.Release_1(13))
+			{
+				var comp = nbt.AddCompound("WorldGenSettings");
+				NBTFieldManager.WriteToNBT(worldGen, comp, gameVersion);
+			}
+			else
+			{
+				nbt.Add("RandomSeed", worldGen.WorldSeed);
+			}
+		}
+
+		private void WriteGameRules(NBTCompound nbt, LevelData.GameRules gameRules, Version gameVersion)
+		{
+			//TODO: when were game rules added?
+			if (gameVersion > Version.Release_1(0))
+			{
+				nbt.Add("GameRules", gameRules.CreateNBT());
+			}
+		}
+
+		protected virtual void WriteWorldInfo(LevelData dat, NBTCompound nbt, Version targetVersion)
+		{
+			nbt.Add("LevelName", dat.worldName);
+			var dv = targetVersion.GetDataVersion();
+			if (dv.HasValue)
+			{
+				nbt.Add("DataVersion", dv.Value);
+			}
+			nbt.Add("LastPlayed", dat.lastPlayedUnixTimestamp);
+			nbt.Add("WasModded", dat.wasModded);
+		}
+
+		protected void WritePlayerData(World world, Player player, NBTCompound dat, Version version)
+		{
+			var comp = dat.AddCompound("Player");
+			if(player.position.IsZero)
+			{
+				player.position = new Vector3(
+					world.levelData.spawnpoint.spawnX + 0.5d,
+					world.levelData.spawnpoint.spawnY + 1.0d,
+					world.levelData.spawnpoint.spawnZ + 0.5d
+				);
+			}
+			NBTFieldManager.WriteToNBT(player, comp, version);
+		}
+
+		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)
+		{
+			if(s.spawnY == 0)
+			{
+				s.SetOnSurface(s.spawnX, s.spawnZ, w);
+			}
+			NBTFieldManager.WriteToNBT(s, nbt, w.gameVersion);
 		}
 
 		/*

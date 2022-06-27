@@ -1,10 +1,6 @@
-﻿using System;
+﻿using MCUtils.Coordinates;
+using MCUtils.NBT;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MCUtils;
-using MCUtils.Coordinates;
-using static MCUtils.NBTContent;
 
 namespace MCUtils.IO
 {
@@ -12,12 +8,12 @@ namespace MCUtils.IO
 	{
 		public ChunkSerializerMCR(Version version) : base(version) { }
 
-		public override void LoadCommonData(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
 
 		}
 
-		public override void WriteCommonData(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("xPos", c.coords.x);
 			chunkNBT.Add("zPos", c.coords.z);
@@ -40,7 +36,7 @@ namespace MCUtils.IO
 			return x * 2048 + z * 128 + y;
 		}
 
-		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			if(nbtCompound.TryGet<byte[]>("Blocks", out var blocks))
 			{
@@ -63,7 +59,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void WriteBlocks(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
 		{
 			byte[] blocks = new byte[32768];
 			byte[] metaNibbles = new byte[32768];
@@ -90,7 +86,7 @@ namespace MCUtils.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
 			if (chunkNBT.Contains("TileEntities"))
@@ -100,7 +96,7 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
+						var te = new TileEntity(tileEntList.Get<NBTCompound>(i));
 						c.tileEntities.Add(new BlockCoord(te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
 					}
 				}
@@ -108,7 +104,7 @@ namespace MCUtils.IO
 		}
 
 		//TODO: which game version is this for?
-		public override void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
 			foreach(var te in c.tileEntities.Values)
@@ -117,22 +113,22 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
 		{
 			c.entities = new List<Entity>();
-			if (chunkNBT.TryGet<ListContainer>("Entities", out var entList))
+			if (chunkNBT.TryGet<NBTList>("Entities", out var entList))
 			{
 				if (entList.contentsType == NBTTag.TAG_Compound)
 				{
 					for (int i = 0; i < entList.Length; i++)
 					{
-						c.entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
+						c.entities.Add(new Entity(entList.Get<NBTCompound>(i)));
 					}
 				}
 			}
 		}
 
-		protected override void PostWrite(ChunkData c, CompoundContainer chunkNBT)
+		protected override void PostWrite(ChunkData c, NBTCompound chunkNBT)
 		{
 			var hm = new byte[256];
 			for (int z = 0; z < 16; z++)
@@ -145,28 +141,28 @@ namespace MCUtils.IO
 			chunkNBT.Add("HeightMap", hm);
 		}
 
-		public override void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
 		{
-			chunkNBT.Add("Entities", new ListContainer(NBTTag.TAG_Compound));
+			chunkNBT.Add("Entities", new NBTList(NBTTag.TAG_Compound));
 			//TODO
 		}
 
-		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
 
-		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
 
-		public override void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
 			//Do nothing, tile ticks were not implementen in old regions.
 		}
 
-		public override void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
 			//Do nothing, tile ticks were not implementen in old regions.
 		}

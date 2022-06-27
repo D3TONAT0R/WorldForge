@@ -2,7 +2,8 @@
 using System;
 using System.IO;
 
-namespace MCUtils {
+namespace MCUtils
+{
 	public class MCUtilsConsole {
 
 		static string progressString;

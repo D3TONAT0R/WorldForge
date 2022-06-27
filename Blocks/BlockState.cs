@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MCUtils.NBT;
+using System;
 using System.Text;
-using static MCUtils.NBTContent;
 
 namespace MCUtils
 {
@@ -30,7 +28,7 @@ namespace MCUtils
 		private static BlockState unknown;
 
 		public ProtoBlock block;
-		public CompoundContainer properties = new CompoundContainer();
+		public NBTCompound properties = new NBTCompound();
 
 		private BlockState() { }
 
@@ -70,7 +68,7 @@ namespace MCUtils
 		{
 			if (compareProperties)
 			{
-				if (!CompoundContainer.AreEqual(properties, other.properties)) return false;
+				if (!NBTCompound.AreEqual(properties, other.properties)) return false;
 			}
 			return block == other.block;
 		}

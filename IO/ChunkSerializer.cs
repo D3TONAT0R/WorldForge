@@ -1,8 +1,6 @@
 ﻿using MCUtils.Coordinates;
+using MCUtils.NBT;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
 
 namespace MCUtils.IO
 {
@@ -37,7 +35,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public static ChunkSerializer CreateForDataVersion(NBTContent nbt)
+		public static ChunkSerializer CreateForDataVersion(NBTData nbt)
 		{
 			var gv = Version.FromDataVersion(nbt.dataVersion);
 			if (!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
@@ -53,7 +51,7 @@ namespace MCUtils.IO
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData ReadChunkNBT(NBTContent chunkNBTData, Region parentRegion, ChunkCoord coords)
+		public virtual ChunkData ReadChunkNBT(NBTData chunkNBTData, Region parentRegion, ChunkCoord coords)
 		{
 			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
 			var chunkNBT = chunkNBTData.contents;
@@ -71,22 +69,22 @@ namespace MCUtils.IO
 			return c;
 		}
 
-		public abstract void LoadCommonData(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void LoadBlocks(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion);
+		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion);
 
-		public abstract void LoadBiomes(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT);
 
-		public virtual NBTContent CreateChunkNBT(ChunkData c, Region parentRegion)
+		public virtual NBTData CreateChunkNBT(ChunkData c, Region parentRegion)
 		{
-			var chunkRootNBT = new NBTContent();
-			CompoundContainer chunkNBT;
+			var chunkRootNBT = new NBTData();
+			NBTCompound chunkNBT;
 			if (AddRootLevelCompound)
 			{
 				chunkNBT = chunkRootNBT.contents.AddCompound("Level");
@@ -107,20 +105,20 @@ namespace MCUtils.IO
 			return chunkRootNBT;
 		}
 
-		protected virtual void PostLoad(ChunkData c, CompoundContainer chunkNBT) { }
+		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT) { }
 
-		public abstract void WriteCommonData(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void WriteCommonData(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void WriteBlocks(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void WriteBlocks(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void WriteTileEntities(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion);
+		public abstract void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion);
 
-		public abstract void WriteBiomes(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void WriteBiomes(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT);
+		public abstract void WriteTileTicks(ChunkData c, NBTCompound chunkNBT);
 
-		protected virtual void PostWrite(ChunkData c, CompoundContainer chunkNBT) { }
+		protected virtual void PostWrite(ChunkData c, NBTCompound chunkNBT) { }
 	}
 }

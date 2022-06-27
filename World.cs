@@ -1,17 +1,13 @@
 ﻿using Ionic.Zlib;
 using MCUtils.Coordinates;
 using MCUtils.IO;
+using MCUtils.NBT;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static MCUtils.ChunkData;
-using static MCUtils.NBTContent;
 
 namespace MCUtils
 {
@@ -21,16 +17,10 @@ namespace MCUtils
 		public static readonly ProtoBlock defaultBlock = BlockList.Find("minecraft:stone");
 
 		public Version gameVersion;
-		public long worldSeed = new Random().Next(-1000000000, 1000000000);
-		public int worldSpawnX = 0;
-		public int worldSpawnY = 64;
-		public int worldSpawnZ = 0;
-
-		public string worldName = "MCUtils generated world " + new Random().Next(10000);
-
+		public LevelData levelData;
 		public Dictionary<RegionLocation, Region> regions;
 
-		public NBTContent levelDat;
+		public string WorldName => levelData.worldName;
 
 		public World(Version version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
 		{
@@ -39,8 +29,12 @@ namespace MCUtils
 			{
 				using (var stream = File.OpenRead(levelDatPath))
 				{
-					levelDat = new NBTContent(stream);
+					levelData = LevelData.Load(new NBTData(stream));
 				}
+			}
+			else
+			{
+				levelData = LevelData.CreateNew();
 			}
 			regions = new Dictionary<RegionLocation, Region>();
 			for (int x = regionLowerX; x <= regionUpperX; x++)
@@ -67,10 +61,10 @@ namespace MCUtils
 			var world = new World();
 			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
 			{
-				world.levelDat = new NBTContent(stream);
+				var nbt = new NBTData(stream);
+				world.levelData = LevelData.Load(nbt);
 			}
-			world.gameVersion = Version.FromDataVersion(world.levelDat.dataVersion) ?? Version.FirstVersion;
-			world.worldName = world.levelDat.contents.Get<string>("LevelName");
+			world.gameVersion = Version.FromDataVersion(world.levelData.dataVersion) ?? Version.FirstVersion;
 			world.regions = new Dictionary<RegionLocation, Region>();
 			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
@@ -96,10 +90,10 @@ namespace MCUtils
 
 		public static void GetWorldInfo(string worldSaveDir, out string worldName, out Version gameVersion, out RegionLocation[] regions)
 		{
-			NBTContent levelDat;
+			NBTData levelDat;
 			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
 			{
-				levelDat = new NBTContent(stream);
+				levelDat = new NBTData(stream);
 			}
 			var dataComp = levelDat.contents.GetAsCompound("Data");
 			
@@ -382,10 +376,10 @@ namespace MCUtils
 		{
 			Directory.CreateDirectory(path);
 
-			levelDat = CreateLevelDAT(true);
+			var level = CreateLevelDAT(true);
 
 			List<byte> levelDATBytes = new List<byte>();
-			levelDat.WriteToBytes(levelDATBytes);
+			level.WriteToBytes(levelDATBytes);
 			var compressedLevelDAT = GZipStream.CompressBuffer(levelDATBytes.ToArray());
 
 			File.WriteAllBytes(Path.Combine(path, "level.dat"), compressedLevelDAT);
@@ -409,10 +403,10 @@ namespace MCUtils
 			}
 		}
 
-		private NBTContent CreateLevelDAT(bool creativeModeWithCheats)
+		private NBTData CreateLevelDAT(bool creativeModeWithCheats)
 		{
 			var serializer = LevelDATSerializer.CreateForVersion(gameVersion);
-			var nbt = new NBTContent();
+			var nbt = new NBTData();
 			serializer.WriteLevelDAT(this, nbt, creativeModeWithCheats);
 			return nbt;
 		}

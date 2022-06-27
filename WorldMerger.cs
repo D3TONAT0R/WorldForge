@@ -4,10 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using static MCUtils.ChunkData;
-using static MCUtils.World;
 
-namespace MCUtils.ConsoleTools {
+namespace MCUtils.ConsoleTools
+{
 	public class WorldMerger : IConsoleTool {
 
 		public class RegionRecord {

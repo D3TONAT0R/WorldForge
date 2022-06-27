@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
+﻿using MCUtils.NBT;
 
 namespace MCUtils
 {
 	public class TileEntity
 	{
 
-		public CompoundContainer NBTCompound
+		public NBTCompound NBTCompound
 		{
 			get;
 			private set;
@@ -32,13 +29,13 @@ namespace MCUtils
 
 		public TileEntity(int x, int y, int z)
 		{
-			NBTCompound = new CompoundContainer();
+			NBTCompound = new NBTCompound();
 			NBTCompound.Add("x", x);
 			NBTCompound.Add("y", y);
 			NBTCompound.Add("z", z);
 		}
 
-		public TileEntity(CompoundContainer compound)
+		public TileEntity(NBTCompound compound)
 		{
 			NBTCompound = compound;
 		}

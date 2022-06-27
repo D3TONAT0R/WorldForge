@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text;
-using static MCUtils.ChunkData;
 
-namespace MCUtils {
+namespace MCUtils
+{
 	public static class Blocks {
 
 		public static readonly string[] commonTerrainBlocks = new string[] {

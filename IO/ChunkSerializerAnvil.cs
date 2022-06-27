@@ -1,10 +1,7 @@
-﻿using System;
+﻿using MCUtils.Coordinates;
+using MCUtils.NBT;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MCUtils;
-using MCUtils.Coordinates;
-using static MCUtils.NBTContent;
 
 namespace MCUtils.IO
 {
@@ -18,19 +15,19 @@ namespace MCUtils.IO
 		}
 
 		#region Blocks
-		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.cont)
 			{
-				var sectionComp = (CompoundContainer)o;
+				var sectionComp = (NBTCompound)o;
 				if (!HasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 				ParseNumericIDBlocks(c, sectionComp, secY);
 			}
 		}
 
-		protected void ParseNumericIDBlocks(ChunkData c, CompoundContainer nbtCompound, sbyte sectionY)
+		protected void ParseNumericIDBlocks(ChunkData c, NBTCompound nbtCompound, sbyte sectionY)
 		{
 			byte[] blocks = nbtCompound.Get<byte[]>("Blocks");
 			byte[] add; //TODO: include "Add" bits in ID (from modded worlds)
@@ -53,12 +50,12 @@ namespace MCUtils.IO
 			}
 		}
 
-		protected virtual ListContainer GetSectionsList(CompoundContainer chunkNBT)
+		protected virtual NBTList GetSectionsList(NBTCompound chunkNBT)
 		{
 			return chunkNBT.GetAsList("Sections");
 		}
 
-		protected virtual sbyte ParseSectionYIndex(CompoundContainer sectionNBT)
+		protected virtual sbyte ParseSectionYIndex(NBTCompound sectionNBT)
 		{
 			unchecked
 			{
@@ -66,17 +63,17 @@ namespace MCUtils.IO
 			}
 		}
 
-		protected virtual bool HasBlocks(CompoundContainer sectionNBT)
+		protected virtual bool HasBlocks(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Contains("Blocks");
 		}
 
-		public override void LoadCommonData(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
 			
 		}
 
-		public override void WriteCommonData(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("xPos", c.coords.x);
 			chunkNBT.Add("zPos", c.coords.z);
@@ -94,14 +91,14 @@ namespace MCUtils.IO
 			chunkNBT.Add("HeightMap", hm);
 		}
 
-		public override void WriteBlocks(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
 		{
-			var sectionList = chunkNBT.Add("Sections", new ListContainer(NBTTag.TAG_Compound));
+			var sectionList = chunkNBT.Add("Sections", new NBTList(NBTTag.TAG_Compound));
 			for (sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
 			{
 				if (c.sections.TryGetValue(secY, out var section))
 				{
-					var sectionNBT = sectionList.Add(new CompoundContainer());
+					var sectionNBT = sectionList.Add(new NBTCompound());
 					unchecked
 					{
 						sectionNBT.Add("Y", (byte)secY);
@@ -111,7 +108,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public virtual void WriteSection(ChunkSection c, CompoundContainer sectionNBT, sbyte sectionY)
+		public virtual void WriteSection(ChunkSection c, NBTCompound sectionNBT, sbyte sectionY)
 		{
 			byte[] ids = new byte[4096];
 			byte[] metaNibbles = new byte[4096];
@@ -143,7 +140,7 @@ namespace MCUtils.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
 			if (chunkNBT.Contains("TileEntities"))
@@ -153,7 +150,7 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = new TileEntity(tileEntList.Get<CompoundContainer>(i));
+						var te = new TileEntity(tileEntList.Get<NBTCompound>(i));
 						c.tileEntities.Add(new BlockCoord(te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
 					}
 				}
@@ -161,7 +158,7 @@ namespace MCUtils.IO
 		}
 
 		//TODO: which game version is this for?
-		public override void WriteTileEntities(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
 			foreach(var te in c.tileEntities.Values)
@@ -170,7 +167,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
 		{
 			c.entities = new List<Entity>();
 			if (chunkNBT.Contains("Entities"))
@@ -180,18 +177,18 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < entList.Length; i++)
 					{
-						c.entities.Add(new Entity(entList.Get<CompoundContainer>(i)));
+						c.entities.Add(new Entity(entList.Get<NBTCompound>(i)));
 					}
 				}
 			}
 		}
 
-		public override void WriteEntities(ChunkData c, CompoundContainer chunkNBT, Region parentRegion)
+		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
 		{
 			chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 		}
 
-		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			if (chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
@@ -210,7 +207,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			byte[] biomeData = new byte[256];
 			for (int i = 0; i < 256; i++)
@@ -220,17 +217,17 @@ namespace MCUtils.IO
 			chunkNBT.Add("Biomes", biomeData);
 		}
 
-		public override void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
 			//TODO
 		}
 
-		public override void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
-			var tickList = chunkNBT.Add("TileTicks", new ListContainer(NBTTag.TAG_Compound));
+			var tickList = chunkNBT.Add("TileTicks", new NBTList(NBTTag.TAG_Compound));
 			foreach(var t in c.postProcessTicks)
 			{
-				CompoundContainer tick = new CompoundContainer();
+				NBTCompound tick = new NBTCompound();
 				tick.Add("i", BlockList.numerics[c.GetBlockAt(t.x, t.y, t.z).block]);
 				tick.Add("p", 0);
 				tick.Add("t", 0);

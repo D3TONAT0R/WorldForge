@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MCUtils {
+﻿namespace MCUtils
+{
 	public enum HeightmapType {
 		AllBlocks,
 		SolidBlocks,

@@ -1,11 +1,10 @@
-﻿using System;
+﻿using MCUtils.Coordinates;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MCUtils;
-using MCUtils.Coordinates;
 
 namespace MCUtils.ConsoleTools
 {

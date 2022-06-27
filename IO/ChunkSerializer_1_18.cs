@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
+﻿using MCUtils.NBT;
+using System;
 
 namespace MCUtils.IO
 {
@@ -11,33 +9,33 @@ namespace MCUtils.IO
 
 		public ChunkSerializer_1_18(Version version) : base(version) { }
 
-		protected override bool HasBlocks(NBTContent.CompoundContainer sectionNBT)
+		protected override bool HasBlocks(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Contains("block_states");
 		}
 
-		protected override ListContainer GetSectionsList(CompoundContainer chunkNBT)
+		protected override NBTList GetSectionsList(NBTCompound chunkNBT)
 		{
 			return chunkNBT.GetAsList("sections");
 		}
 
-		protected override ListContainer GetBlockPalette(NBTContent.CompoundContainer sectionNBT)
+		protected override NBTList GetBlockPalette(NBTCompound sectionNBT)
 		{
 			return sectionNBT.GetAsCompound("block_states").GetAsList("palette");
 		}
 
-		protected override long[] GetBlockDataArray(CompoundContainer sectionNBT)
+		protected override long[] GetBlockDataArray(NBTCompound sectionNBT)
 		{
 			return sectionNBT.GetAsCompound("block_states").Get<long[]>("data");
 		}
 
-		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			var sectionsList = chunkNBT.GetAsList("sections");
 			foreach(var s in sectionsList.cont)
 			{
-				var sectionNBT = (CompoundContainer)s;
-				if(sectionNBT.TryGet<CompoundContainer>("biomes", out var biomesComp))
+				var sectionNBT = (NBTCompound)s;
+				if(sectionNBT.TryGet<NBTCompound>("biomes", out var biomesComp))
 				{
 					var paletteNBT = biomesComp.GetAsList("palette");
 					BiomeID[] palette = new BiomeID[paletteNBT.Length];
@@ -104,7 +102,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			//TODO
 		}

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MCUtils;
-using static MCUtils.NBTContent;
-
-namespace MCUtils.IO
+﻿namespace MCUtils.IO
 {
 	public class ChunkSerializer_1_16 : ChunkSerializer_1_13
 	{

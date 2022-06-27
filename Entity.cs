@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static MCUtils.NBTContent;
+﻿using MCUtils.NBT;
+using System;
 
 namespace MCUtils
 {
 	public class Entity
 	{
 
-		public CompoundContainer NBTCompound
+		public NBTCompound NBTCompound
 		{
 			get;
 			private set;
@@ -30,10 +28,10 @@ namespace MCUtils
 			private set;
 		}
 
-		public Entity(CompoundContainer compound)
+		public Entity(NBTCompound compound)
 		{
 			NBTCompound = compound;
-			ListContainer pos = compound.GetAsList("Pos");
+			NBTList pos = compound.GetAsList("Pos");
 			BlockPosX = (int)Math.Floor(pos.Get<double>(0));
 			BlockPosY = (int)Math.Floor(pos.Get<double>(1));
 			BlockPosZ = (int)Math.Floor(pos.Get<double>(2));

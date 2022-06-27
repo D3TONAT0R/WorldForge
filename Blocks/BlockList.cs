@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace MCUtils {
+namespace MCUtils
+{
 	public static class BlockList {
 
 		public static string[] blocks = new string[] {

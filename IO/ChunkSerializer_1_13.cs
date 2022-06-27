@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MCUtils;
-using static MCUtils.NBTContent;
+﻿using MCUtils.NBT;
+using System;
 
 namespace MCUtils.IO
 {
@@ -12,7 +9,7 @@ namespace MCUtils.IO
 
 		public virtual bool UseFull64BitRange => true;
 
-		public override void WriteCommonData(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
 			base.WriteCommonData(c, chunkNBT);
 
@@ -21,26 +18,26 @@ namespace MCUtils.IO
 			chunkNBT.Add("InhabitedTime", c.inhabitedTime);
 
 			//Leave it empty (or implement heightmap gen in the future?)
-			chunkNBT.Add("Heightmaps", new CompoundContainer());
+			chunkNBT.Add("Heightmaps", new NBTCompound());
 
-			chunkNBT.Add("Structures", new CompoundContainer());
+			chunkNBT.Add("Structures", new NBTCompound());
 		}
 
-		public override void LoadBlocks(ChunkData c, CompoundContainer nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.cont)
 			{
 				var section = new ChunkSection(null);
 
-				var sectionComp = (CompoundContainer)o;
+				var sectionComp = (NBTCompound)o;
 				if (!HasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 
 				section.palette.Clear();
 				foreach (var cont in GetBlockPalette(sectionComp).cont)
 				{
-					var paletteItem = (CompoundContainer)cont;
+					var paletteItem = (NBTCompound)cont;
 					section.palette.Add(ParseBlockState(paletteItem));
 				}
 
@@ -71,17 +68,17 @@ namespace MCUtils.IO
 			}
 		}
 
-		protected override bool HasBlocks(CompoundContainer sectionNBT)
+		protected override bool HasBlocks(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Contains("Palette");
 		}
 
-		protected virtual ListContainer GetBlockPalette(CompoundContainer sectionNBT)
+		protected virtual NBTList GetBlockPalette(NBTCompound sectionNBT)
 		{
 			return sectionNBT.GetAsList("Palette");
 		}
 
-		protected virtual BlockState ParseBlockState(CompoundContainer paletteItemNBT)
+		protected virtual BlockState ParseBlockState(NBTCompound paletteItemNBT)
 		{
 			var proto = BlockList.Find((string)paletteItemNBT.Get("Name"));
 			if (proto != null)
@@ -96,12 +93,12 @@ namespace MCUtils.IO
 			}
 		}
 
-		protected virtual long[] GetBlockDataArray(CompoundContainer sectionNBT)
+		protected virtual long[] GetBlockDataArray(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Get<long[]>("BlockStates");
 		}
 
-		public override void WriteBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			int[] biomeData = new int[1024];
 			for (int y = 0; y < 64; y++)
@@ -125,7 +122,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadBiomes(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			if (chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
 			{
@@ -148,18 +145,18 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
 			//TODO
 		}
 
-		public override void WriteTileTicks(ChunkData c, CompoundContainer chunkNBT)
+		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
 			//Add "post processing" positions (i.e. block positions that need an update)
-			var ppList = chunkNBT.Add("PostProcessing", new ListContainer(NBTTag.TAG_List));
+			var ppList = chunkNBT.Add("PostProcessing", new NBTList(NBTTag.TAG_List));
 			for (int i = 0; i < 16; i++)
 			{
-				ppList.Add(new ListContainer(NBTTag.TAG_Short));
+				ppList.Add(new NBTList(NBTTag.TAG_Short));
 			}
 
 			foreach (var t in c.postProcessTicks)
@@ -168,7 +165,7 @@ namespace MCUtils.IO
 				var x = t.x % 16;
 				var y = t.y % 16;
 				var z = t.z % 16;
-				var list = ppList.Get<ListContainer>(listIndex);
+				var list = ppList.Get<NBTList>(listIndex);
 				short packed = (short)((z << 8) + (y << 4) + x);
 				list.Add(packed);
 			}

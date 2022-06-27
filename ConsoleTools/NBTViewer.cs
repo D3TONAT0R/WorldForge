@@ -1,11 +1,11 @@
-﻿using Ionic.Zlib;
+﻿using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static MCUtils.NBTContent;
 
-namespace MCUtils.ConsoleTools {
+namespace MCUtils.ConsoleTools
+{
 	class NBTViewer : IConsoleTool {
 
 		public class ChangeState {
@@ -31,14 +31,14 @@ namespace MCUtils.ConsoleTools {
 		const char sep = ';';
 
 		string filename;
-		NBTContent content;
+		NBTData content;
 		Dictionary<string, ChangeState> changes = new Dictionary<string, ChangeState>();
 
 		string cursorParent = "";
 		int cursorChildPos = 0;
 		List<int> indexTree = new List<int>();
 
-		Container currentContainer;
+		AbstractNBTContainer currentContainer;
 		string[] currentContentKeys;
 
 		int cursorBufferLoc = 0;
@@ -49,7 +49,7 @@ namespace MCUtils.ConsoleTools {
 		public NBTViewer(string path) {
 			filename = Path.GetFileName(path);
 			if(path.EndsWith(".mca")) {
-				content = new NBTContent();
+				content = new NBTData();
 				Region r = RegionLoader.LoadRegion(path);
 				for(int z = 0; z < 32; z++) {
 					for(int x = 0; x < 32; x++) {
@@ -59,7 +59,7 @@ namespace MCUtils.ConsoleTools {
 					}
 				}
 			} else {
-				content = new NBTContent(RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(path)));
+				content = new NBTData(RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(path)));
 			}
 			//filename = "root";
 			//var root = new CompoundContainer();
@@ -70,7 +70,7 @@ namespace MCUtils.ConsoleTools {
 			//content.contents.Add(filename, root);
 		}
 
-		public NBTViewer(NBTContent data) {
+		public NBTViewer(NBTData data) {
 			content = data;
 		}
 
@@ -154,16 +154,16 @@ namespace MCUtils.ConsoleTools {
 				MCUtilsConsole.WriteLine(s, state.GetColor(false));
 				//buffer += s + "\n";
 			}
-			if(obj is CompoundContainer) {
-				var content = ((CompoundContainer)obj).cont;
+			if(obj is NBTCompound) {
+				var content = ((NBTCompound)obj).cont;
 				if(enterContainer) {
 					var keys = content.Keys.ToArray();
 					for(int i = 0; i < keys.Length; i++) {
 						Draw(tree, keys[i], content[keys[i]], indent + 1, drawAll, i == keys.Length - 1);
 					}
 				}
-			} else if(obj is ListContainer) {
-				var content = ((ListContainer)obj).cont;
+			} else if(obj is NBTList) {
+				var content = ((NBTList)obj).cont;
 				if(enterContainer) {
 					for(int i = 0; i < content.Count; i++) {
 						Draw(tree, i.ToString(), content[i], indent + 1, drawAll, i == content.Count - 1);
@@ -173,11 +173,11 @@ namespace MCUtils.ConsoleTools {
 		}
 
 		bool IsContainer(object obj) {
-			return obj is Container;
+			return obj is AbstractNBTContainer;
 		}
 
 		NBTTag GetTag(object obj) {
-			return NBTTagDictionary[obj.GetType()];
+			return NBTMappings.GetTag(obj.GetType());
 		}
 
 		void EnterContainer(string enter) {
@@ -217,8 +217,16 @@ namespace MCUtils.ConsoleTools {
 				} else {
 					string[] split = cursorParent.Split(sep);
 					currentContainer = content.contents;
-					foreach(var s in split) {
-						currentContainer = (Container)currentContainer.Get(s);
+					foreach(var s in split)
+					{
+						if(currentContainer is NBTCompound comp)
+						{
+							currentContainer = (AbstractNBTContainer)comp.Get(s);
+						}
+						else
+						{
+							currentContainer = (AbstractNBTContainer)((NBTList)currentContainer).Get(int.Parse(s));
+						}
 					}
 				}
 				var prefix = cursorParent;

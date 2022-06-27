@@ -1,6 +1,7 @@
 using System;
 
-namespace MCUtils {
+namespace MCUtils
+{
 	public static class Converter {
 
 		///<summary>Reads a 9-bit value from a binary string, used for storing heightmaps.</summary>
