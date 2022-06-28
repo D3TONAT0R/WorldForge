@@ -23,7 +23,17 @@ namespace MCUtils.NBT
 
 	public static class NBTMappings
 	{
-		public static NBTTag GetTag(Type t) => NBTTagDictionary[t];
+		public static NBTTag GetTag(Type t)
+		{
+			if(NBTTagDictionary.TryGetValue(t, out var tag))
+			{
+				return tag;
+			}
+			else
+			{
+				throw new NotSupportedException($"Type '{t}' is not supported.");
+			}
+		}
 
 		private static Dictionary<Type, NBTTag> NBTTagDictionary = new Dictionary<Type, NBTTag> {
 			{ typeof(byte), NBTTag.TAG_Byte },

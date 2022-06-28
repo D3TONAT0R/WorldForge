@@ -15,10 +15,10 @@ namespace MCUtils.NBT
 		{
 			get
 			{
-				return cont.Count;
+				return listContent.Count;
 			}
 		}
-		public List<object> cont = new List<object>();
+		public List<object> listContent = new List<object>();
 
 		public NBTList(NBTTag baseType) : base()
 		{
@@ -43,7 +43,7 @@ namespace MCUtils.NBT
 			return (T)Convert.ChangeType(this[index], typeof(T));
 		}
 
-		public void Add(object value)
+		private void AddValue(object value)
 		{
 			if(value is bool b)
 			{
@@ -55,13 +55,13 @@ namespace MCUtils.NBT
 			}
 
 			if (NBTMappings.GetTag(value.GetType()) != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
-			cont.Add(value);
+			listContent.Add(value);
 			//return value;
 		}
 
 		public T Add<T>(T value)
 		{
-			Add(value);
+			AddValue(value);
 			return value;
 		}
 
@@ -69,36 +69,36 @@ namespace MCUtils.NBT
 		{
 			foreach (var value in values)
 			{
-				Add(value);
+				AddValue(value);
 			}
 		}
 
 		public void RemoveAt(int index)
 		{
-			cont.RemoveAt(index);
+			listContent.RemoveAt(index);
 		}
 
 		public object this[int i]
 		{
-			get { return cont[i]; }
-			set { cont[i] = value; }
+			get { return listContent[i]; }
+			set { listContent[i] = value; }
 		}
 
 		public override string[] GetContentKeys(string prefix = null)
 		{
-			string[] k = new string[cont.Count];
-			for (int i = 0; i < cont.Count; i++) k[i] = prefix + i.ToString();
+			string[] k = new string[listContent.Count];
+			for (int i = 0; i < listContent.Count; i++) k[i] = prefix + i.ToString();
 			return k;
 		}
 
 		public IEnumerator<object> GetEnumerator()
 		{
-			return cont.GetEnumerator();
+			return listContent.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return cont.GetEnumerator();
+			return listContent.GetEnumerator();
 		}
 	}
 }

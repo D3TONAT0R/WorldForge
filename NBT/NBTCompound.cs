@@ -13,7 +13,9 @@ namespace MCUtils.NBT
 			get { return NBTTag.TAG_Compound; }
 		}
 
-		public Dictionary<string, object> cont = new Dictionary<string, object>();
+		public int ItemCount => contents.Count;
+
+		public Dictionary<string, object> contents = new Dictionary<string, object>();
 
 		public NBTCompound() : base()
 		{
@@ -24,7 +26,7 @@ namespace MCUtils.NBT
 		{
 			foreach(var k in contents.Keys)
 			{
-				cont.Add(k, contents[k]);
+				this.contents.Add(k, contents[k]);
 			}
 		}
 
@@ -40,7 +42,7 @@ namespace MCUtils.NBT
 				Add(key, i.GetNBTCompatibleObject());
 				return value;
 			}
-			cont.Add(key, value);
+			contents.Add(key, value);
 			return value;
 		}
 
@@ -66,7 +68,7 @@ namespace MCUtils.NBT
 		{
 			if (Contains(key))
 			{
-				cont.Remove(key);
+				contents.Remove(key);
 			}
 			Add(key, value);
 			return value;
@@ -74,9 +76,9 @@ namespace MCUtils.NBT
 
 		public object Get(string key)
 		{
-			if (cont.ContainsKey(key))
+			if (contents.ContainsKey(key))
 			{
-				return cont[key];
+				return contents[key];
 			}
 			else
 			{
@@ -114,12 +116,12 @@ namespace MCUtils.NBT
 
 		public bool Remove(string key)
 		{
-			return cont.Remove(key);
+			return contents.Remove(key);
 		}
 
 		public bool Contains(string key)
 		{
-			return cont.ContainsKey(key);
+			return contents.ContainsKey(key);
 		}
 
 		public NBTCompound GetAsCompound(string key)
@@ -132,6 +134,33 @@ namespace MCUtils.NBT
 			return Get(key) as NBTList;
 		}
 
+		public string FindKey(object value)
+		{
+			foreach(var kv in contents)
+			{
+				if (kv.Value.Equals(value)) return kv.Key;
+			}
+			return null;
+		}
+
+		public void PackAll(string key)
+		{
+			NBTCompound group = new NBTCompound();
+			group.contents = contents;
+			contents = new Dictionary<string, object>();
+			contents.Add(key, group);
+		}
+
+		public void UnpackAll(NBTCompound parent)
+		{
+			foreach(var child in this)
+			{
+				parent.Add(child.Key, child.Value);
+			}
+			var k = parent.FindKey(this);
+			parent.Remove(k);
+		}
+
 		public static bool AreEqual(NBTCompound a, NBTCompound b)
 		{
 			if (a == null && b == null) return true;
@@ -141,20 +170,20 @@ namespace MCUtils.NBT
 
 		public bool HasSameContent(NBTCompound other)
 		{
-			if (other.cont.Keys.Count != cont.Keys.Count) return false;
-			foreach (string k in cont.Keys)
+			if (other.contents.Keys.Count != contents.Keys.Count) return false;
+			foreach (string k in contents.Keys)
 			{
 				if (!other.Contains(k)) return false;
-				if (!cont[k].Equals(other.cont[k])) return false;
+				if (!contents[k].Equals(other.contents[k])) return false;
 			}
 			return true;
 		}
 
 		public override string[] GetContentKeys(string prefix = null)
 		{
-			string[] k = new string[cont.Count];
+			string[] k = new string[contents.Count];
 			int i = 0;
-			foreach (var key in cont.Keys)
+			foreach (var key in contents.Keys)
 			{
 				k[i] = prefix + key;
 				i++;
@@ -164,12 +193,12 @@ namespace MCUtils.NBT
 
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			return cont.GetEnumerator();
+			return contents.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return cont.GetEnumerator();
+			return contents.GetEnumerator();
 		}
 	}
 }

@@ -13,12 +13,14 @@ namespace MCUtils.IO
 
 		private LevelDATSerializer() { }
 
-		public virtual void WriteLevelDAT(World world, NBTData levelDatNBT, bool creativeMode)
+		public virtual void WriteLevelDAT(World world, NBTFile levelDatNBT, bool creativeMode)
 		{
 			var nbt = levelDatNBT.contents.AddCompound("Data");
 
+			/*
 			var dv = world.gameVersion.GetDataVersion();
 			if(dv != null) nbt.Add("DataVersion", dv.Value);
+			*/
 
 			nbt.Add("version", world.gameVersion >= Version.FirstAnvilVersion ? 19133 : 19132);
 
@@ -113,7 +115,7 @@ namespace MCUtils.IO
 
 		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)
 		{
-			if(s.spawnY == 0)
+			if(s.spawnY == -1)
 			{
 				s.SetOnSurface(s.spawnX, s.spawnZ, w);
 			}

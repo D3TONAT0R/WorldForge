@@ -31,7 +31,7 @@ namespace MCUtils.ConsoleTools
 		const char sep = ';';
 
 		string filename;
-		NBTData content;
+		NBTFile content;
 		Dictionary<string, ChangeState> changes = new Dictionary<string, ChangeState>();
 
 		string cursorParent = "";
@@ -49,7 +49,7 @@ namespace MCUtils.ConsoleTools
 		public NBTViewer(string path) {
 			filename = Path.GetFileName(path);
 			if(path.EndsWith(".mca")) {
-				content = new NBTData();
+				content = new NBTFile();
 				Region r = RegionLoader.LoadRegion(path);
 				for(int z = 0; z < 32; z++) {
 					for(int x = 0; x < 32; x++) {
@@ -59,7 +59,7 @@ namespace MCUtils.ConsoleTools
 					}
 				}
 			} else {
-				content = new NBTData(RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(path)));
+				content = new NBTFile(path);
 			}
 			//filename = "root";
 			//var root = new CompoundContainer();
@@ -70,7 +70,7 @@ namespace MCUtils.ConsoleTools
 			//content.contents.Add(filename, root);
 		}
 
-		public NBTViewer(NBTData data) {
+		public NBTViewer(NBTFile data) {
 			content = data;
 		}
 
@@ -155,7 +155,7 @@ namespace MCUtils.ConsoleTools
 				//buffer += s + "\n";
 			}
 			if(obj is NBTCompound) {
-				var content = ((NBTCompound)obj).cont;
+				var content = ((NBTCompound)obj).contents;
 				if(enterContainer) {
 					var keys = content.Keys.ToArray();
 					for(int i = 0; i < keys.Length; i++) {
@@ -163,7 +163,7 @@ namespace MCUtils.ConsoleTools
 					}
 				}
 			} else if(obj is NBTList) {
-				var content = ((NBTList)obj).cont;
+				var content = ((NBTList)obj).listContent;
 				if(enterContainer) {
 					for(int i = 0; i < content.Count; i++) {
 						Draw(tree, i.ToString(), content[i], indent + 1, drawAll, i == content.Count - 1);

@@ -38,13 +38,11 @@ namespace MCUtils.NBT
 					{
 						value = sourceNBT.Get<byte>(name) > 0;
 					}
-					else if (fi.FieldType == typeof(Vector2))
+					else if (typeof(INBTCompatible).IsAssignableFrom(fi.FieldType))
 					{
-						value = new Vector2(sourceNBT.GetAsList(name));
-					}
-					else if (fi.FieldType == typeof(Vector3))
-					{
-						value = new Vector3(sourceNBT.GetAsList(name));
+						var inst = Activator.CreateInstance(fi.FieldType);
+						((INBTCompatible)inst).ParseFromNBT(sourceNBT.Get(name));
+						value = inst;
 					}
 					else
 					{
@@ -55,7 +53,7 @@ namespace MCUtils.NBT
 			}
 		}
 
-		public static void WriteToNBT(object source, NBTCompound targetNBT, Version targetVersion)
+		public static NBTCompound WriteToNBT(object source, NBTCompound targetNBT, Version targetVersion)
 		{
 			foreach(var (fi, attr) in GetFields(source))
 			{
@@ -69,6 +67,7 @@ namespace MCUtils.NBT
 					}
 				}
 			}
+			return targetNBT;
 		}
 
 		public static (FieldInfo fi, NBTAttribute attr)[] GetFields(object obj)

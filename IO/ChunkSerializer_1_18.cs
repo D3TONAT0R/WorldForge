@@ -9,6 +9,8 @@ namespace MCUtils.IO
 
 		public ChunkSerializer_1_18(Version version) : base(version) { }
 
+		public override NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents;
+
 		protected override bool HasBlocks(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Contains("block_states");
@@ -32,7 +34,7 @@ namespace MCUtils.IO
 		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			var sectionsList = chunkNBT.GetAsList("sections");
-			foreach(var s in sectionsList.cont)
+			foreach(var s in sectionsList.listContent)
 			{
 				var sectionNBT = (NBTCompound)s;
 				if(sectionNBT.TryGet<NBTCompound>("biomes", out var biomesComp))

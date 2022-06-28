@@ -5,14 +5,8 @@ using System.Text;
 
 namespace MCUtils.NBT
 {
-	public class NBTData
+	public class NBTFile
 	{
-
-		
-
-
-
-
 		///<summary>The compound container containing all stored data</summary>
 		public NBTCompound contents;
 
@@ -22,48 +16,70 @@ namespace MCUtils.NBT
 		public int? dataVersion;
 
 		///<summary>Instantiates an empty NBT structure.</summary>
-		public NBTData()
+		public NBTFile()
 		{
 			contents = new NBTCompound();
 		}
 
+		///<summary>Creates an NBT structure from the given file.</summary>
+		public NBTFile(string filePath) : this()
+		{
+			using (var stream = Compression.CreateGZipDecompressionStream(File.ReadAllBytes(filePath)))
+			{
+				LoadFromStream(stream);
+			}
+		}
+
 		///<summary>Creates an NBT structure from the given bytes.</summary>
-		public NBTData(Stream uncompressedStream) : this()
+		public NBTFile(Stream uncompressedStream) : this()
+		{
+			LoadFromStream(uncompressedStream);
+			PostLoad();
+		}
+
+		private void LoadFromStream(Stream uncompressedStream)
 		{
 			while (uncompressedStream.Position < uncompressedStream.Length)
 			{
 				RegisterTag(uncompressedStream, contents);
 			}
-			var root = contents.GetAsCompound("");
-			if (root != null)
+			PostLoad();
+		}
+		
+		private void PostLoad()
+		{
+			//Remove the unnessecary root compound
+			if(contents.ItemCount == 1 && contents.TryGet<NBTCompound>("", out var root))
 			{
-				//Remove the unnessecary root compound and unpack the level compound
-				foreach (string k in root.cont.Keys)
-				{
-					contents.Add(k, root.cont[k]);
-				}
-				contents.cont.Remove("");
+				contents = root;
 			}
 			if (contents.Contains("DataVersion")) dataVersion = (int)contents.Get("DataVersion");
-			if (contents.Contains("Level"))
-			{
-				var level = contents.GetAsCompound("Level");
-				foreach (string k in level.cont.Keys)
-				{
-					contents.Add(k, level.cont[k]);
-				}
-				contents.cont.Remove("Level");
-			}
-			//Program.writeLine("NBT Loaded!");
-			/*if(isChunkFile) {
-				var chunk = new ChunkData(null, this);
-			}*/
 		}
 
-		///<summary>Generates a byte array from the content of this NBT structure.</summary>
-		public void WriteToBytes(List<byte> bytes)
+		///<summary>Generates an uncompressed byte array from the content of this NBT structure.</summary>
+		public byte[] WriteBytesUncompressed()
 		{
+			var bytes = new List<byte>();
 			Write(bytes, "", contents);
+			return bytes.ToArray();
+		}
+
+		///<summary>Writes the content of this NBT structure to a file using Zlib compression.</summary>
+		public void SaveToFile(string filePath)
+		{
+			File.WriteAllBytes(filePath, WriteBytesGZip());
+		}
+
+		///<summary>Generates a GZip compressed byte array from the content of this NBT structure. GZip is used to compress NBT data (*.dat) files.</summary>
+		public byte[] WriteBytesGZip()
+		{
+			return Compression.CompressGZipBytes(WriteBytesUncompressed());
+		}
+
+		///<summary>Generates a Zlib compressed byte array from the content of this NBT structure. Zlib is used only within region files to store chunks.</summary>
+		public byte[] WriteBytesZlib()
+		{
+			return Compression.CompressZlibBytes(WriteBytesUncompressed());
 		}
 
 		public void AddLevelRootCompound()
@@ -75,7 +91,7 @@ namespace MCUtils.NBT
 
 			NBTCompound root = new NBTCompound();
 			NBTCompound level = new NBTCompound();
-			foreach (string k in contents.cont.Keys)
+			foreach (string k in contents.contents.Keys)
 			{
 				level.Add(k, contents.Get(k));
 			}
@@ -241,7 +257,7 @@ namespace MCUtils.NBT
 				tag = predef;
 			}
 			//}
-			object value = null;
+			object value;
 			if (tag != NBTTag.TAG_End)
 			{
 				string name = "";
@@ -431,6 +447,10 @@ namespace MCUtils.NBT
 
 		void Write(List<byte> bytes, string name, object o)
 		{
+			if(o is Enum e)
+			{
+				o = Convert.ChangeType(o, Enum.GetUnderlyingType(e.GetType()));
+			}
 			var tag = NBTMappings.GetTag(o.GetType());
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
@@ -484,8 +504,8 @@ namespace MCUtils.NBT
 			{
 				NBTList list = (NBTList)o;
 				bytes.Add((byte)list.contentsType);
-				WriteValue(bytes, NBTTag.TAG_Int, list.cont.Count);
-				foreach (object item in list.cont)
+				WriteValue(bytes, NBTTag.TAG_Int, list.listContent.Count);
+				foreach (object item in list.listContent)
 				{
 					WriteValue(bytes, list.contentsType, item);
 				}
@@ -493,9 +513,9 @@ namespace MCUtils.NBT
 			else if (tag == NBTTag.TAG_Compound)
 			{
 				NBTCompound compound = (NBTCompound)o;
-				foreach (string k in compound.cont.Keys)
+				foreach (string k in compound.contents.Keys)
 				{
-					Write(bytes, k, compound.cont[k]);
+					Write(bytes, k, compound.contents[k]);
 				}
 				bytes.Add((byte)NBTTag.TAG_End);
 			}

@@ -18,7 +18,7 @@ namespace MCUtils.IO
 		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
-			foreach (var o in sectionsList.cont)
+			foreach (var o in sectionsList.listContent)
 			{
 				var sectionComp = (NBTCompound)o;
 				if (!HasBlocks(sectionComp)) continue;

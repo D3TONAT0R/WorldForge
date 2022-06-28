@@ -6,18 +6,51 @@ namespace MCUtils
 	{
 		public enum GameMode { Survival, Creative, Adventure, Spectator }
 
+		public class Abilities : INBTCompatible
+		{
+			[NBT]
+			public bool flying = false;
+			[NBT]
+			public float flySpeed = 0.05f;
+			[NBT]
+			public bool instabuild = false;
+			[NBT]
+			public bool invulnerable = false;
+			[NBT]
+			public bool mayBuild = true;
+			[NBT]
+			public bool mayfly = false;
+			[NBT]
+			public float walkSpeed = 0.1f;
+
+			public object GetNBTCompatibleObject()
+			{
+				var nbt = new NBTCompound();
+				NBTFieldManager.WriteToNBT(this, nbt, Version.FirstVersion);
+				return nbt;
+			}
+
+			public void ParseFromNBT(object nbtData)
+			{
+				var comp = (NBTCompound)nbtData;
+				NBTFieldManager.LoadFromNBT(comp, this);
+			}
+		}
+
 		[NBT("UUID")]
-		public int[] uuid;
+		public int[] uuid = new int[4];
 
 		[NBT("Dimension")]
-		public string dimension;
+		public string dimension = "minecraft:overworld";
 		[NBT("Pos")]
-		public Vector3 position;
+		public Vector3 position = new Vector3(0,0,0);
 		[NBT("Rotation")]
-		public Vector2 rotation;
+		public Vector2 rotation = new Vector2(0,0);
 		[NBT("Motion")]
-		public Vector3 motion;
+		public Vector3 motion = new Vector3(0,0,0);
 
+		[NBT("abilities")]
+		public Abilities abilities = new Abilities();
 		[NBT("playerGameType")]
 		public GameMode playerGameType = GameMode.Survival;
 		[NBT("Invulnerable")]
@@ -38,11 +71,11 @@ namespace MCUtils
 		public bool seenCredits = false;
 
 		[NBT("Inventory")]
-		public Inventory inventory;
+		public Inventory inventory = new Inventory();
 		[NBT("SelectedItemSlot")]
-		public int selectedItemSlot;
+		public int selectedItemSlot = 0;
 		[NBT("EnderItems")]
-		public Inventory enderItems;
+		public Inventory enderItems = new Inventory();
 
 		[NBT("XpP")]
 		public float xpP = 0f;

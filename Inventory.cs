@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MCUtils
 {
-	public class Inventory
+	public class Inventory : INBTCompatible
 	{
 		public struct ItemStack
 		{
@@ -20,41 +20,21 @@ namespace MCUtils
 
 			public NBTCompound CreateNBT(byte slot)
 			{
-				var comp = new NBTCompound();
-				comp.Add("Slot", slot);
-				comp.Add("id", itemID);
-				comp.Add("Count", count);
+				var comp = new NBTCompound
+				{
+					{ "Slot", slot },
+					{ "id", itemID },
+					{ "Count", count }
+				};
 				return comp;
 			}
 		}
 
 		public Dictionary<byte, ItemStack> content = new Dictionary<byte, ItemStack>();
 
-		private Inventory() { }
-
-		public static Inventory CreateNew()
+		public Inventory()
 		{
-			return new Inventory();
-		}
-
-		public static Inventory Load(NBTList inventoryNBT)
-		{
-			var inv = new Inventory();
-			for (int i = 0; i < inventoryNBT.Length; i++)
-			{
-				try
-				{
-					var stackNBT = inventoryNBT.Get<NBTCompound>(i);
-					var slot = stackNBT.Get<byte>("Slot");
-					var stack = new ItemStack(stackNBT.Get<string>("id"), stackNBT.Get<byte>("Count"));
-					inv.content.Add(slot, stack);
-				}
-				catch (Exception e)
-				{
-					throw new ArgumentException($"Failed to parse inventory item at index {i}: {e.Message}");
-				}
-			}
-			return inv;
+		
 		}
 
 		public NBTList CreateNBT()
@@ -67,6 +47,30 @@ namespace MCUtils
 				list.Add(content[index].CreateNBT(index));
 			}
 			return list;
+		}
+
+		public object GetNBTCompatibleObject()
+		{
+			return CreateNBT();
+		}
+
+		public void ParseFromNBT(object nbtData)
+		{
+			var inventoryNBT = (NBTList)nbtData;
+			for (int i = 0; i < inventoryNBT.Length; i++)
+			{
+				try
+				{
+					var stackNBT = inventoryNBT.Get<NBTCompound>(i);
+					var slot = stackNBT.Get<byte>("Slot");
+					var stack = new ItemStack(stackNBT.Get<string>("id"), stackNBT.Get<byte>("Count"));
+					content.Add(slot, stack);
+				}
+				catch (Exception e)
+				{
+					throw new ArgumentException($"Failed to parse inventory item at index {i}: {e.Message}");
+				}
+			}
 		}
 	}
 }

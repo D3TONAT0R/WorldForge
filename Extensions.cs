@@ -15,5 +15,11 @@ namespace MCUtils
 		public static int RegionCoord(this int i) {
 			return (int)Math.Floor(i / 512f);
 		}
+
+		public static int Mod(this int i, int m)
+		{
+			int r = i % m;
+			return r < 0 ? r + m : r;
+		}
 	}
 }

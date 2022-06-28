@@ -99,9 +99,9 @@ namespace MCUtils
 				if(rd.compressedChunks[i] != null)
 				{
 					var cd = rd.compressedChunks[i];
-					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
+					using (var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
 					{
-						var nbt = new NBTData(chunkStream);
+						var nbt = new NBTFile(chunkStream);
 						Version gameVersion;
 						if (worldSaveVersion.HasValue)
 						{
@@ -158,9 +158,9 @@ namespace MCUtils
 				if (rd.compressedChunks[i] != null)
 				{
 					var cd = rd.compressedChunks[i];
-					using (var chunkStream = CreateZLibDecompressionStream(cd.compressedChunk))
+					using (var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
 					{
-						WriteChunkToHeightmap(heightmap, new NBTData(chunkStream), i % 32, i / 32, heightmapType);
+						WriteChunkToHeightmap(heightmap, new NBTFile(chunkStream), i % 32, i / 32, heightmapType);
 					}
 				}
 			});
@@ -224,16 +224,16 @@ namespace MCUtils
 		}
 
 		///<summary>Loads chunk data from a specified index in a region file (for debugging purposes)</summary>
-		public static NBTData LoadChunkDataAtIndex(string filepath, int index)
+		public static NBTFile LoadChunkDataAtIndex(string filepath, int index)
 		{
 			RegionData rd;
 			using (var stream = File.Open(filepath, FileMode.Open))
 			{
 				rd = new RegionData(stream, filepath);
 			}
-			using (var chunkStream = CreateZLibDecompressionStream(rd.compressedChunks[index].compressedChunk))
+			using (var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[index].compressedChunk))
 			{
-				return new NBTData(chunkStream);
+				return new NBTFile(chunkStream);
 			}
 		}
 
@@ -272,19 +272,7 @@ namespace MCUtils
 			return b;
 		}
 
-		//TODO: move somewhere else
-		public static Stream CreateZLibDecompressionStream(byte[] bytes)
-		{
-			return new MemoryStream(ZlibStream.UncompressBuffer(bytes));
-		}
-
-		//TODO: move somewhere else
-		public static Stream CreateGZipDecompressionStream(byte[] bytes)
-		{
-			return new MemoryStream(GZipStream.UncompressBuffer(bytes));
-		}
-
-		private static void WriteChunkToHeightmap(short[,] heightmap, NBTData nbt, int localChunkX, int localChunkZ, HeightmapType mapType)
+		private static void WriteChunkToHeightmap(short[,] heightmap, NBTFile nbt, int localChunkX, int localChunkZ, HeightmapType mapType)
 		{
 			//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
 			//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;

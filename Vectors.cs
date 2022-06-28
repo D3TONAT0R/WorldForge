@@ -27,6 +27,13 @@ namespace MCUtils
 				x,y
 			};
 		}
+
+		public void ParseFromNBT(object nbtData)
+		{
+			var list = (NBTList)nbtData;
+			x = list.Get<double>(0);
+			y = list.Get<double>(1);
+		}
 	}
 
 	public class Vector3 : INBTCompatible
@@ -55,6 +62,14 @@ namespace MCUtils
 			{
 				x,y,z
 			};
+		}
+
+		public void ParseFromNBT(object nbtData)
+		{
+			var list = (NBTList)nbtData;
+			x = list.Get<double>(0);
+			y = list.Get<double>(1);
+			z = list.Get<double>(2);
 		}
 	}
 }

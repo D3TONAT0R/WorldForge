@@ -20,7 +20,11 @@ namespace MCUtils
 		public LevelData levelData;
 		public Dictionary<RegionLocation, Region> regions;
 
-		public string WorldName => levelData.worldName;
+		public string WorldName
+		{
+			get => levelData.worldName;
+			set => levelData.worldName = value;
+		}
 
 		public World(Version version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
 		{
@@ -29,7 +33,7 @@ namespace MCUtils
 			{
 				using (var stream = File.OpenRead(levelDatPath))
 				{
-					levelData = LevelData.Load(new NBTData(stream));
+					levelData = LevelData.Load(new NBTFile(stream));
 				}
 			}
 			else
@@ -59,11 +63,8 @@ namespace MCUtils
 		public static World Load(string worldSaveDir, Version? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
-			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
-			{
-				var nbt = new NBTData(stream);
-				world.levelData = LevelData.Load(nbt);
-			}
+			var nbt = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
+			world.levelData = LevelData.Load(nbt);
 			world.gameVersion = Version.FromDataVersion(world.levelData.dataVersion) ?? Version.FirstVersion;
 			world.regions = new Dictionary<RegionLocation, Region>();
 			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
@@ -90,11 +91,7 @@ namespace MCUtils
 
 		public static void GetWorldInfo(string worldSaveDir, out string worldName, out Version gameVersion, out RegionLocation[] regions)
 		{
-			NBTData levelDat;
-			using (var stream = RegionLoader.CreateGZipDecompressionStream(File.ReadAllBytes(Path.Combine(worldSaveDir, "level.dat"))))
-			{
-				levelDat = new NBTData(stream);
-			}
+			NBTFile levelDat = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			var dataComp = levelDat.contents.GetAsCompound("Data");
 			
 			gameVersion = Version.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? Version.FirstVersion;
@@ -378,11 +375,7 @@ namespace MCUtils
 
 			var level = CreateLevelDAT(true);
 
-			List<byte> levelDATBytes = new List<byte>();
-			level.WriteToBytes(levelDATBytes);
-			var compressedLevelDAT = GZipStream.CompressBuffer(levelDATBytes.ToArray());
-
-			File.WriteAllBytes(Path.Combine(path, "level.dat"), compressedLevelDAT);
+			File.WriteAllBytes(Path.Combine(path, "level.dat"), level.WriteBytesGZip());
 
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
@@ -403,10 +396,10 @@ namespace MCUtils
 			}
 		}
 
-		private NBTData CreateLevelDAT(bool creativeModeWithCheats)
+		private NBTFile CreateLevelDAT(bool creativeModeWithCheats)
 		{
 			var serializer = LevelDATSerializer.CreateForVersion(gameVersion);
-			var nbt = new NBTData();
+			var nbt = new NBTFile();
 			serializer.WriteLevelDAT(this, nbt, creativeModeWithCheats);
 			return nbt;
 		}

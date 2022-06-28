@@ -76,11 +76,11 @@ namespace MCUtils
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder(block?.ID);
-			if(properties.cont.Count > 0)
+			if(properties.contents.Count > 0)
 			{
 				sb.Append("[");
 				bool first = true;
-				foreach(var prop in properties.cont)
+				foreach(var prop in properties.contents)
 				{
 					if (!first) sb.Append(",");
 					first = false;

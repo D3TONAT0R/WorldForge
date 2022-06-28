@@ -163,7 +163,7 @@ namespace MCUtils
 				if (block.properties != null)
 				{
 					NBTCompound properties = new NBTCompound();
-					foreach (var prop in block.properties.cont.Keys)
+					foreach (var prop in block.properties.contents.Keys)
 					{
 						var value = block.properties.Get(prop);
 						if (value is bool b) value = b.ToString().ToLower();

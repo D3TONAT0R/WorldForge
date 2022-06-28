@@ -36,9 +36,7 @@ namespace MCUtils.IO
 						var dv = version.GetDataVersion();
 						if (dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
-						List<byte> bytes = new List<byte>();
-						chunkData.WriteToBytes(bytes);
-						byte[] compressed = ZlibStream.CompressBuffer(bytes.ToArray());
+						byte[] compressed = ZlibStream.CompressBuffer(chunkData.WriteBytesZlib());
 						var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
 						stream.Write(cLength, 0, cLength.Length);
 						stream.WriteByte(2);

@@ -7,5 +7,7 @@ namespace MCUtils.NBT
 	public interface INBTCompatible
 	{
 		object GetNBTCompatibleObject();
+
+		void ParseFromNBT(object nbtData);
 	}
 }

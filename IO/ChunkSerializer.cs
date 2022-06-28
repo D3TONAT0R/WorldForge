@@ -35,7 +35,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public static ChunkSerializer CreateForDataVersion(NBTData nbt)
+		public static ChunkSerializer CreateForDataVersion(NBTFile nbt)
 		{
 			var gv = Version.FromDataVersion(nbt.dataVersion);
 			if (!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
@@ -51,10 +51,10 @@ namespace MCUtils.IO
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData ReadChunkNBT(NBTData chunkNBTData, Region parentRegion, ChunkCoord coords)
+		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords)
 		{
 			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
-			var chunkNBT = chunkNBTData.contents;
+			var chunkNBT = GetRootCompound(chunkNBTData);
 
 			LoadCommonData(c, chunkNBT);
 			LoadBlocks(c, chunkNBT);
@@ -69,6 +69,8 @@ namespace MCUtils.IO
 			return c;
 		}
 
+		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");
+
 		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT);
 
 		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT);
@@ -81,9 +83,9 @@ namespace MCUtils.IO
 
 		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT);
 
-		public virtual NBTData CreateChunkNBT(ChunkData c, Region parentRegion)
+		public virtual NBTFile CreateChunkNBT(ChunkData c, Region parentRegion)
 		{
-			var chunkRootNBT = new NBTData();
+			var chunkRootNBT = new NBTFile();
 			NBTCompound chunkNBT;
 			if (AddRootLevelCompound)
 			{

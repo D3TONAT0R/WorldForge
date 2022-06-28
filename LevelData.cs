@@ -292,7 +292,7 @@ namespace MCUtils
 			[NBT]
 			public int rainTime = 12000;
 			[NBT]
-			private bool thundering = false;
+			public bool thundering = false;
 			[NBT]
 			public int thunderTime = 120000;
 
@@ -393,7 +393,7 @@ namespace MCUtils
 		[NBT("WasModded")]
 		public bool wasModded;
 
-		public Player player;
+		public Player player = new Player(new Vector3(0,0,0));
 
 		public Spawnpoint spawnpoint = new Spawnpoint();
 		public GameTypeAndDifficulty gameTypeAndDifficulty = new GameTypeAndDifficulty();
@@ -410,7 +410,7 @@ namespace MCUtils
 			return new LevelData();
 		}
 
-		public static LevelData Load(NBTData levelDat)
+		public static LevelData Load(NBTFile levelDat)
 		{
 			var levelNBT = levelDat.contents;
 			var d = new LevelData();

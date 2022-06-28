@@ -26,7 +26,7 @@ namespace MCUtils.IO
 		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
-			foreach (var o in sectionsList.cont)
+			foreach (var o in sectionsList.listContent)
 			{
 				var section = new ChunkSection(null);
 
@@ -35,7 +35,7 @@ namespace MCUtils.IO
 				sbyte secY = ParseSectionYIndex(sectionComp);
 
 				section.palette.Clear();
-				foreach (var cont in GetBlockPalette(sectionComp).cont)
+				foreach (var cont in GetBlockPalette(sectionComp).listContent)
 				{
 					var paletteItem = (NBTCompound)cont;
 					section.palette.Add(ParseBlockState(paletteItem));

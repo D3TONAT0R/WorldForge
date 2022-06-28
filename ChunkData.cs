@@ -23,7 +23,7 @@ namespace MCUtils
 
 		public long inhabitedTime = 0;
 
-		public NBTData sourceNBT;
+		public NBTFile sourceNBT;
 
 		private readonly object lockObj = new object();
 
@@ -34,7 +34,7 @@ namespace MCUtils
 			this.defaultBlock = defaultBlock;
 		}
 
-		public ChunkData(Region region, NBTData chunk, ChunkCoord chunkCoord)
+		public ChunkData(Region region, NBTFile chunk, ChunkCoord chunkCoord)
 		{
 			containingRegion = region;
 			sourceNBT = chunk;
@@ -77,7 +77,7 @@ namespace MCUtils
 		{
 			var sec = GetChunkSectionForYCoord(y, false);
 			if (sec == null) return BlockState.Air;
-			return sec.GetBlockAt(x, y % 16, z);
+			return sec.GetBlockAt(x, y.Mod(16), z);
 		}
 
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
@@ -173,7 +173,7 @@ namespace MCUtils
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				if (Blocks.IsBlockForMap(GetBlockAt(x, y, z).block, type)) return y;
+				if (Blocks.IsBlockForMap(GetBlockAt(x % 16, y, z % 16).block, type)) return y;
 				y--;
 			}
 			return short.MinValue;
@@ -267,16 +267,10 @@ namespace MCUtils
 			}
 		}
 
-		private long BitsToLong(string bits)
-		{
-			bits = bits.PadLeft(64, '0');
-			return Convert.ToInt64(bits, 2);
-		}
-
 		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)
 		private NBTCompound GetSectionCompound(NBTList sectionsList, sbyte y)
 		{
-			foreach (var o in sectionsList.cont)
+			foreach (var o in sectionsList.listContent)
 			{
 				var compound = (NBTCompound)o;
 				if (!compound.Contains("Y") || !compound.Contains("Palette")) continue;
