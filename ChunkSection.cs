@@ -1,4 +1,5 @@
-﻿using MCUtils.NBT;
+﻿using MCUtils.Lighting;
+using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +12,8 @@ namespace MCUtils
 
 		//Resolution: [1:4:1] for backwards compatibility
 		public BiomeID[,,] biomes;
+
+		public LightValue[,,] lightmap;
 
 		public bool HasBiomesDefined => biomes != null;
 
@@ -149,6 +152,18 @@ namespace MCUtils
 				}
 			}
 			return predominantBiome;
+		}
+
+		public LightValue GetLightAt(int x, int y, int z)
+		{
+			if (lightmap == null) return LightValue.None;
+			return lightmap[x, y, z];
+		}
+
+		public void SetLightAt(int x, int y, int z, LightValue value)
+		{
+			if (lightmap == null) lightmap = new LightValue[16,16,16];
+			lightmap[x, y, z] = value;
 		}
 
 		public NBTCompound CreateCompound(sbyte secY, bool use_1_16_Format)
