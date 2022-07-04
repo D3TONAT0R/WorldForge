@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -141,6 +143,37 @@ namespace MCUtils
 				}
 			});
 			return region;
+		}
+
+		public static Region LoadRegionAlphaChunks(string worldSaveDir, RegionLocation location)
+		{
+			List<(ChunkCoord, string)> chunkFileLocations = new List<(ChunkCoord, string)>();
+			var lowerChunkCoord = location.GetChunkCoord();
+			for (int z = lowerChunkCoord.z; z < lowerChunkCoord.z + 32; z++)
+			{
+				for (int x = lowerChunkCoord.x; x < lowerChunkCoord.x + 32; x++)
+				{
+					//TODO: likely won't work with chunks beyond +/- 127
+					string xf = EncodeBase36(GetPositive2sComplement((sbyte)x));
+					string zf = EncodeBase36(GetPositive2sComplement((sbyte)z));
+					string file = $"c.{EncodeBase36(x)}.{EncodeBase36(z)}.dat";
+					string path = Path.Combine(worldSaveDir, xf, zf,file);
+					if(File.Exists(path))
+					{
+						chunkFileLocations.Add((new ChunkCoord(x, z), path));
+					}
+				}
+			}
+
+			var reg = new Region(location);
+			var cs = new ChunkSerializerAlpha(Version.Alpha_1(0));
+			Parallel.ForEach(chunkFileLocations, c =>
+			{
+				var coord = c.Item1;
+				var chunk = cs.ReadChunkNBT(new NBTFile(c.Item2), reg, c.Item1);
+				reg.chunks[coord.x.Mod(16), coord.z.Mod(16)] = chunk;
+			});
+			return reg;
 		}
 
 		///<summary>Reads the height data from a region (With [0,0] being the top-left corner).</summary>
@@ -303,6 +336,54 @@ namespace MCUtils
 			{
 
 			}
+		}
+
+		private static byte GetPositive2sComplement(sbyte b)
+		{
+			unchecked
+			{
+				return (byte)b;
+			}
+		}
+
+
+		//Base 36 encoding / decoding taken from https://github.com/bogdanbujdea/csharpbase36
+
+		private const string base36Digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+		private static long DecodeBase36(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+				throw new ArgumentException("Empty value.");
+			value = value.ToUpper();
+			bool negative = false;
+			if (value[0] == '-')
+			{
+				negative = true;
+				value = value.Substring(1, value.Length - 1);
+			}
+			if (value.Any(c => !base36Digits.Contains(c)))
+				throw new ArgumentException("Invalid value: \"" + value + "\".");
+			var decoded = 0L;
+			for (var i = 0; i < value.Length; ++i)
+				decoded += base36Digits.IndexOf(value[i]) * (long)BigInteger.Pow(base36Digits.Length, value.Length - i - 1);
+			return negative ? decoded * -1 : decoded;
+		}
+
+		private static string EncodeBase36(long value)
+		{
+			if (value == long.MinValue)
+			{
+				//hard coded value due to error when getting absolute value below: "Negating the minimum value of a twos complement number is invalid.".
+				return "-1Y2P0IJ32E8E8";
+			}
+			bool negative = value < 0;
+			value = Math.Abs(value);
+			string encoded = string.Empty;
+			do
+				encoded = base36Digits[(int)(value % base36Digits.Length)] + encoded;
+			while ((value /= base36Digits.Length) != 0);
+			return negative ? "-" + encoded : encoded;
 		}
 	}
 }

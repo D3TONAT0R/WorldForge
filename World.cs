@@ -67,13 +67,23 @@ namespace MCUtils
 			world.levelData = LevelData.Load(nbt);
 			world.gameVersion = Version.FromDataVersion(world.levelData.dataVersion) ?? Version.FirstVersion;
 			world.regions = new Dictionary<RegionLocation, Region>();
+			bool isAlphaFormat = gameVersion < Version.Beta_1(3);
+			//TODO: how to load alpha chunks?
 			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
 				if (Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)")) {
 					try
 					{
-						var region = RegionLoader.LoadRegion(f, gameVersion);
+						Region region = null;
+						if (!isAlphaFormat)
+						{
+							region = RegionLoader.LoadRegion(f, gameVersion);
+						}
+						else
+						{
+							//region = RegionLoader.LoadRegionAlphaChunks(worldSaveDir, RegionLocation();
+						}
 						world.regions.Add(region.regionPos, region);
 					}
 					catch(Exception e) when (!throwOnRegionLoadFail)
