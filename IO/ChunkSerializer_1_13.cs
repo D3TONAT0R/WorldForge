@@ -23,6 +23,11 @@ namespace MCUtils.IO
 			chunkNBT.Add("Structures", new NBTCompound());
 		}
 
+		public override void WriteSection(ChunkSection c, NBTCompound sectionNBT, sbyte sectionY)
+		{
+			c.CreateCompound(sectionNBT, sectionY, false);
+		}
+
 		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);

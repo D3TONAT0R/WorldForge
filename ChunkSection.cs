@@ -166,9 +166,9 @@ namespace MCUtils
 			lightmap[x, y, z] = value;
 		}
 
-		public NBTCompound CreateCompound(sbyte secY, bool use_1_16_Format)
+		//TODO: move to separate serializers
+		public NBTCompound CreateCompound(NBTCompound comp, sbyte secY, bool use_1_16_Format)
 		{
-			var comp = new NBTCompound();
 			comp.Add("Y", (byte)secY);
 			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
 			foreach (var block in palette)

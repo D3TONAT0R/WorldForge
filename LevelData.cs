@@ -202,8 +202,9 @@ namespace MCUtils
 				this.seed = seed;
 				dimensionGenerators = new NBTCompound();
 				dimensionGenerators.Add("minecraft:overworld", CreateDimensionGenerator("minecraft:overworld", seed));
-				dimensionGenerators.Add("minecraft:the_nether", CreateDimensionGenerator("minecraft:the_nether", seed));
-				dimensionGenerators.Add("minecraft:the_end", CreateDimensionGenerator("minecraft:the_end", seed));
+				//TODO: needs fixing (the_nether and nether, the_end and end)
+				dimensionGenerators.Add("minecraft:the_nether", CreateDimensionGenerator("minecraft:nether", seed));
+				dimensionGenerators.Add("minecraft:the_end", CreateDimensionGenerator("minecraft:end", seed));
 			}
 
 			public WorldGenerator() : this(new Random().Next(int.MinValue, int.MaxValue))
