@@ -23,7 +23,7 @@ namespace MCUtils.NBT
 		}
 	}
 
-	public class NBTFieldManager
+	public class NBTConverter
 	{
 		public static void LoadFromNBT(NBTCompound sourceNBT, object target)
 		{
@@ -38,10 +38,10 @@ namespace MCUtils.NBT
 					{
 						value = sourceNBT.Get<byte>(name) > 0;
 					}
-					else if (typeof(INBTCompatible).IsAssignableFrom(fi.FieldType))
+					else if (typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
 					{
 						var inst = Activator.CreateInstance(fi.FieldType);
-						((INBTCompatible)inst).ParseFromNBT(sourceNBT.Get(name));
+						((INBTConverter)inst).FromNBT(sourceNBT.Get(name));
 						value = inst;
 					}
 					else
@@ -63,6 +63,10 @@ namespace MCUtils.NBT
 					object value = fi.GetValue(source);
 					if(value != null)
 					{
+						if(value is INBTConverter converter)
+						{
+							value = converter.ToNBT(targetVersion);
+						}
 						targetNBT.Add(key, value);
 					}
 				}
@@ -70,7 +74,7 @@ namespace MCUtils.NBT
 			return targetNBT;
 		}
 
-		public static (FieldInfo fi, NBTAttribute attr)[] GetFields(object obj)
+		private static (FieldInfo fi, NBTAttribute attr)[] GetFields(object obj)
 		{
 			List<(FieldInfo fi, NBTAttribute attr)> list = new List<(FieldInfo fi, NBTAttribute attr)>();
 			foreach(var fi in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))

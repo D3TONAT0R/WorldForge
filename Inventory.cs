@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MCUtils
 {
-	public class Inventory : INBTCompatible
+	public class Inventory : INBTConverter
 	{
 		public struct ItemStack
 		{
@@ -37,24 +37,19 @@ namespace MCUtils
 		
 		}
 
-		public NBTList CreateNBT()
+		public object ToNBT(Version version)
 		{
 			var list = new NBTList(NBTTag.TAG_Compound);
 			var indices = content.Keys.ToList();
 			indices.Sort();
-			foreach (var index in indices)
+			foreach(var index in indices)
 			{
 				list.Add(content[index].CreateNBT(index));
 			}
 			return list;
 		}
 
-		public object GetNBTCompatibleObject()
-		{
-			return CreateNBT();
-		}
-
-		public void ParseFromNBT(object nbtData)
+		public void FromNBT(object nbtData)
 		{
 			var inventoryNBT = (NBTList)nbtData;
 			for (int i = 0; i < inventoryNBT.Length; i++)

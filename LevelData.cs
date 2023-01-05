@@ -24,7 +24,7 @@ namespace MCUtils
 
 			public Spawnpoint(NBTCompound nbt)
 			{
-				NBTFieldManager.LoadFromNBT(nbt, this);
+				NBTConverter.LoadFromNBT(nbt, this);
 			}
 
 			public void Set(int x, int y, int z, float? angle = 0f)
@@ -63,7 +63,7 @@ namespace MCUtils
 
 			public GameTypeAndDifficulty(NBTCompound nbt)
 			{
-				NBTFieldManager.LoadFromNBT(nbt, this);
+				NBTConverter.LoadFromNBT(nbt, this);
 			}
 		}
 
@@ -180,31 +180,201 @@ namespace MCUtils
 
 			public WorldBorder(NBTCompound levelDat)
 			{
-				NBTFieldManager.LoadFromNBT(levelDat, this);
+				NBTConverter.LoadFromNBT(levelDat, this);
 			}
 		}
 
-		public class WorldGenerator
+		public struct SuperflatLayer
 		{
+			[NBT("block")]
+			public string block;
+			[NBT("height")]
+			public int height;
+
+			public SuperflatLayer(string block, int height)
+			{
+				this.block = block;
+				this.height = height;
+			}
+
+			public NBTCompound ToNBT()
+			{
+				return NBTCompound.FromObject(this);
+			}
+		}
+
+		public class DimensionGenerator : INBTConverter
+		{
+			public readonly string dimType;
+			public readonly string genType;
+			public readonly string genSetting;
+			public BiomeID? singleBiomeSource = null;
+
+			public long? seed;
+
+			public readonly bool isSuperflat = false;
+			public SuperflatLayer[] superflatLayers;
+			public BiomeID superflatBiome = BiomeID.the_void;
+			public bool superflatFeatures = false;
+			public bool superflatLakes = false;
+
+			private DimensionGenerator(string dimType, string genType, string genSetting, long? seed)
+			{
+				this.dimType = dimType;
+				this.genType = genType;
+				this.genSetting = genSetting;
+				this.seed = seed;
+				isSuperflat = genType == "minecraft:flat";
+			}
+
+			public static DimensionGenerator CreateDefaultOverworldGenerator(long? customSeed = null)
+			{
+				var gen = new DimensionGenerator("minecraft:overworld", "minecraft:noise", "minecraft:overworld", customSeed);
+				return gen;
+			}
+
+			public static DimensionGenerator CreateSuperflatOverworldGenerator(BiomeID biome, params SuperflatLayer[] layers)
+			{
+				var gen = new DimensionGenerator("minecraft:overworld", "minecraft:flat", null, null);
+				gen.superflatBiome = biome;
+				gen.superflatLayers = layers;
+				return gen;
+			}
+
+			public static DimensionGenerator CreateDefaultNetherGenerator(long? customSeed = null)
+			{
+				var gen = new DimensionGenerator("minecraft:the_nether", "minecraft:noise", "minecraft:nether", customSeed);
+				return gen;
+			}
+
+			public static DimensionGenerator CreateDefaultEndGenerator(long? customSeed = null)
+			{
+				var gen = new DimensionGenerator("minecraft:the_end", "minecraft:noise", "minecraft:end", customSeed);
+				gen.singleBiomeSource = BiomeID.the_end;
+				return gen;
+			}
+
+			public object ToNBT(Version version)
+			{
+				var comp = new NBTCompound();
+				comp.Add("type", dimType);
+				var gen = comp.AddCompound("generator");
+				gen.Add("type", genType);
+				if(seed.HasValue) gen.Add("seed", seed);
+				if(isSuperflat)
+				{
+					var settings = gen.AddCompound("settings");
+					if(superflatLayers != null)
+					{
+						var list = settings.AddList("layers", NBTTag.TAG_Compound);
+						for(int i = 0; i < superflatLayers.Length; i++)
+						{
+							list.Add(superflatLayers[i].ToNBT());
+						}
+					}
+					//Not sure if this should be a string list
+					settings.AddList("structure_overrides", NBTTag.TAG_String);
+					settings.Add("biome", superflatBiome.ToString());
+					settings.Add("features", superflatFeatures);
+					settings.Add("lakes", superflatLakes);
+				}
+				else
+				{
+					gen.Add("settings", genSetting);
+					var biomeSource = gen.AddCompound("biome_source");
+					if(!singleBiomeSource.HasValue)
+					{
+						biomeSource.Add("preset", genSetting);
+						biomeSource.Add("type", "minecraft:multi_noise");
+					}
+					else
+					{
+						biomeSource.Add("type", singleBiomeSource.Value.ToString());
+					}
+				}
+				return comp;
+			}
+
+			public static DimensionGenerator CreateFromNBT(object nbtData)
+			{
+				var gen = new DimensionGenerator(null, null, null, null);
+				gen.FromNBT(nbtData);
+				return gen;
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				//TODO
+				throw new NotImplementedException();
+			}
+		}
+
+		public class WorldGenerator : INBTConverter
+		{
+			public const string overworldID = "minecraft:overworld";
+			public const string theNetherID = "minecraft:the_nether";
+			public const string theEndID = "minecraft:the_end";
+
 			[NBT("bonus_chest")]
 			public bool generateBonusChest = false;
 			[NBT("generate_features")]
 			public bool generateFeatures = true;
 			[NBT("seed")]
 			private long seed;
-			[NBT("dimensions")]
-			public NBTCompound dimensionGenerators;
+			//[NBT("dimensions")]
+			public Dictionary<string, DimensionGenerator> dimensionGenerators;
+
+			public DimensionGenerator OverworldGenerator
+			{
+				get
+				{
+					if(dimensionGenerators.TryGetValue(overworldID, out var g)) return g;
+					else return null;
+				}
+				set
+				{
+					if(dimensionGenerators.ContainsKey(overworldID)) dimensionGenerators[overworldID] = value;
+					else dimensionGenerators.Add(overworldID, value);
+				}
+			}
+
+			public DimensionGenerator NetherGenerator
+			{
+				get
+				{
+					if(dimensionGenerators.TryGetValue(theNetherID, out var g)) return g;
+					else return null;
+				}
+				set
+				{
+					if(dimensionGenerators.ContainsKey(theNetherID)) dimensionGenerators[theNetherID] = value;
+					else dimensionGenerators.Add(theNetherID, value);
+				}
+			}
+
+			public DimensionGenerator EndGenerator
+			{
+				get
+				{
+					if(dimensionGenerators.TryGetValue(theEndID, out var g)) return g;
+					else return null;
+				}
+				set
+				{
+					if(dimensionGenerators.ContainsKey(theEndID)) dimensionGenerators[theEndID] = value;
+					else dimensionGenerators.Add(theEndID, value);
+				}
+			}
 
 			public long WorldSeed => seed;
 
 			public WorldGenerator(long seed)
 			{
 				this.seed = seed;
-				dimensionGenerators = new NBTCompound();
-				dimensionGenerators.Add("minecraft:overworld", CreateDimensionGenerator("minecraft:overworld", "minecraft:overworld", seed));
-				//TODO: needs fixing (the_nether and nether, the_end and end)
-				dimensionGenerators.Add("minecraft:the_nether", CreateDimensionGenerator("minecraft:the_nether", "minecraft:nether", seed));
-				dimensionGenerators.Add("minecraft:the_end", CreateDimensionGenerator("minecraft:the_end", "minecraft:end", seed));
+				dimensionGenerators = new Dictionary<string, DimensionGenerator>();
+				dimensionGenerators.Add(overworldID, DimensionGenerator.CreateDefaultOverworldGenerator());
+				dimensionGenerators.Add(theNetherID, DimensionGenerator.CreateDefaultNetherGenerator());
+				dimensionGenerators.Add(theEndID, DimensionGenerator.CreateDefaultEndGenerator());
 			}
 
 			public WorldGenerator() : this(new Random().Next(int.MinValue, int.MaxValue))
@@ -214,53 +384,37 @@ namespace MCUtils
 
 			public WorldGenerator(NBTCompound nbt)
 			{
-				NBTFieldManager.LoadFromNBT(nbt, this);
-			}
-
-			private NBTCompound CreateDimensionGenerator(string genType, string generator, long seed)
-			{
-				NBTCompound comp = new NBTCompound() {
-					{ "type", genType },
-					{ "generator", new NBTCompound() {
-						{ "seed", seed },
-						{ "settings", generator },
-						{ "type", "minecraft:noise" },
-						{ "biome_source", new NBTCompound() {
-							//Add preset/type/seed here
-						} }
-					} }
-				};
-				var bs = comp.GetAsCompound("generator").GetAsCompound("biome_source");
-				if (genType != "minecraft:the_end")
-				{
-					bs.Add("preset", genType);
-					bs.Add("type", "minecraft:multi_noise");
-				}
-				else
-				{
-					bs.Add("seed", seed);
-					bs.Add("type", genType);
-				}
-				return comp;
+				FromNBT(nbt);
 			}
 
 			public void SetWorldSeed(long newSeed)
 			{
 				seed = newSeed;
-				foreach(var k in dimensionGenerators.GetContentKeys())
-				{
-					SetSeed(dimensionGenerators.GetAsCompound(k), newSeed);
-				}
 			}
 
-			public void SetSeed(NBTCompound dimensionGenerator, long newSeed)
+			public object ToNBT(Version version)
 			{
-				var gen = dimensionGenerator.GetAsCompound("generator");
-				gen.Set("seed", newSeed);
-				var bs = gen.GetAsCompound("biome_source");
-				if(bs.Contains("seed"))
+				NBTCompound comp = new NBTCompound();
+				NBTConverter.WriteToNBT(this, comp, version);
+				var dim = comp.AddCompound("dimensions");
+				foreach(var kv in dimensionGenerators)
 				{
-					bs.Set("seed", newSeed);
+					dim.Add(kv.Key, kv.Value.ToNBT(version));
+				}
+				return comp;
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				var nbt = (NBTCompound)nbtData;
+				NBTConverter.LoadFromNBT(nbt, this);
+				dimensionGenerators = new Dictionary<string, DimensionGenerator>();
+				if(nbt.TryGet("dimensions", out NBTCompound dimensions))
+				{
+					foreach(var kv in dimensions)
+					{
+						dimensionGenerators.Add(kv.Key, DimensionGenerator.CreateFromNBT(kv.Value));
+					}
 				}
 			}
 		}
@@ -363,7 +517,7 @@ namespace MCUtils
 			
 			public WanderingTraderInfo(NBTCompound nbt)
 			{
-				NBTFieldManager.LoadFromNBT(nbt, this);
+				NBTConverter.LoadFromNBT(nbt, this);
 			}
 		}
 
@@ -381,7 +535,7 @@ namespace MCUtils
 
 			public DataPacks(NBTCompound nbt)
 			{
-				NBTFieldManager.LoadFromNBT(nbt, this);
+				NBTConverter.LoadFromNBT(nbt, this);
 			}
 		}
 
@@ -415,7 +569,7 @@ namespace MCUtils
 		{
 			var levelNBT = levelDat.contents;
 			var d = new LevelData();
-			NBTFieldManager.LoadFromNBT(levelNBT, d);
+			NBTConverter.LoadFromNBT(levelNBT, d);
 			if (levelNBT.TryGet<NBTCompound>("Player", out var playerComp))
 			{
 				d.player = new Player(playerComp);

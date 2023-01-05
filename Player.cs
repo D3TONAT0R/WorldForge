@@ -6,7 +6,7 @@ namespace MCUtils
 	{
 		public enum GameMode { Survival, Creative, Adventure, Spectator }
 
-		public class Abilities : INBTCompatible
+		public class Abilities : INBTConverter
 		{
 			[NBT]
 			public bool flying = false;
@@ -23,17 +23,17 @@ namespace MCUtils
 			[NBT]
 			public float walkSpeed = 0.1f;
 
-			public object GetNBTCompatibleObject()
+			public object ToNBT(Version version)
 			{
 				var nbt = new NBTCompound();
-				NBTFieldManager.WriteToNBT(this, nbt, Version.FirstVersion);
+				NBTConverter.WriteToNBT(this, nbt, version);
 				return nbt;
 			}
 
-			public void ParseFromNBT(object nbtData)
+			public void FromNBT(object nbtData)
 			{
 				var comp = (NBTCompound)nbtData;
-				NBTFieldManager.LoadFromNBT(comp, this);
+				NBTConverter.LoadFromNBT(comp, this);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace MCUtils
 
 		public Player(NBTCompound nbt)
 		{
-			NBTFieldManager.LoadFromNBT(nbt, this);
+			NBTConverter.LoadFromNBT(nbt, this);
 		}
 	}
 }

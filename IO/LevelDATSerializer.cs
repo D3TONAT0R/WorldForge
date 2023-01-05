@@ -51,17 +51,17 @@ namespace MCUtils.IO
 		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, Version version)
 		{
 			var comp = nbt.AddCompound("DataPacks");
-			NBTFieldManager.WriteToNBT(dataPacks, comp, version);
+			NBTConverter.WriteToNBT(dataPacks, comp, version);
 		}
 
 		private void WriteWanderingTraderInfo(NBTCompound nbt, LevelData.WanderingTraderInfo wanderingTraderInfo, Version version)
 		{
-			NBTFieldManager.WriteToNBT(wanderingTraderInfo, nbt, version);
+			NBTConverter.WriteToNBT(wanderingTraderInfo, nbt, version);
 		}
 
 		private void WriteWorldBorder(NBTCompound nbt, LevelData.WorldBorder worldBorder, Version version)
 		{
-			NBTFieldManager.WriteToNBT(worldBorder, nbt, version);
+			NBTConverter.WriteToNBT(worldBorder, nbt, version);
 		}
 
 		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, Version gameVersion)
@@ -69,8 +69,7 @@ namespace MCUtils.IO
 			//TODO: WorldGenSettings added in 1.13?
 			if(gameVersion >= Version.Release_1(13))
 			{
-				var comp = nbt.AddCompound("WorldGenSettings");
-				NBTFieldManager.WriteToNBT(worldGen, comp, gameVersion);
+				nbt.Add("WorldGenSettings", worldGen.ToNBT(gameVersion));
 			}
 			else
 			{
@@ -110,7 +109,7 @@ namespace MCUtils.IO
 					world.levelData.spawnpoint.spawnZ + 0.5d
 				);
 			}
-			NBTFieldManager.WriteToNBT(player, comp, version);
+			NBTConverter.WriteToNBT(player, comp, version);
 		}
 
 		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)
@@ -119,7 +118,7 @@ namespace MCUtils.IO
 			{
 				s.SetOnSurface(s.spawnX, s.spawnZ, w);
 			}
-			NBTFieldManager.WriteToNBT(s, nbt, w.gameVersion);
+			NBTConverter.WriteToNBT(s, nbt, w.gameVersion);
 		}
 
 		/*

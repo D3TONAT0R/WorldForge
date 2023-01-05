@@ -30,16 +30,31 @@ namespace MCUtils.NBT
 			}
 		}
 
+		public static NBTCompound FromObject(object obj, Version? version = null)
+		{
+			var comp = new NBTCompound();
+			NBTConverter.WriteToNBT(obj, comp, version ?? Version.FirstVersion);
+			return comp;
+		}
+
 		public T Add<T>(string key, T value)
 		{
+			if(key == null)
+			{
+				throw new NullReferenceException("Attempted to add a null key.");
+			}
+			if(value == null)
+			{
+				throw new NullReferenceException("Attempted to add null value: " + key);
+			}
 			if (value is bool b)
 			{
 				Add(key, (byte)(b ? 1 : 0));
 				return value;
 			}
-			else if(value is INBTCompatible i)
+			else if(value is INBTConverter i)
 			{
-				Add(key, i.GetNBTCompatibleObject());
+				Add(key, i.ToNBT(Version.FirstVersion));
 				return value;
 			}
 			contents.Add(key, value);
@@ -66,6 +81,10 @@ namespace MCUtils.NBT
 
 		public T Set<T>(string key, T value)
 		{
+			if(value == null)
+			{
+				throw new NullReferenceException("Attempted to set null value: " + key);
+			}
 			if (Contains(key))
 			{
 				contents.Remove(key);

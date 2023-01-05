@@ -2,7 +2,7 @@
 
 namespace MCUtils
 {
-	public class Vector2 : INBTCompatible
+	public class Vector2 : INBTConverter
 	{
 		public double x;
 		public double y;
@@ -20,7 +20,7 @@ namespace MCUtils
 
 		}
 
-		public object GetNBTCompatibleObject()
+		public object ToNBT(Version version)
 		{
 			return new NBTList(NBTTag.TAG_Double)
 			{
@@ -28,7 +28,7 @@ namespace MCUtils
 			};
 		}
 
-		public void ParseFromNBT(object nbtData)
+		public void FromNBT(object nbtData)
 		{
 			var list = (NBTList)nbtData;
 			x = list.Get<double>(0);
@@ -36,7 +36,7 @@ namespace MCUtils
 		}
 	}
 
-	public class Vector3 : INBTCompatible
+	public class Vector3 : INBTConverter
 	{
 		public double x;
 		public double y;
@@ -56,7 +56,7 @@ namespace MCUtils
 
 		}
 
-		public object GetNBTCompatibleObject()
+		public object ToNBT(Version version)
 		{
 			return new NBTList(NBTTag.TAG_Double)
 			{
@@ -64,7 +64,7 @@ namespace MCUtils
 			};
 		}
 
-		public void ParseFromNBT(object nbtData)
+		public void FromNBT(object nbtData)
 		{
 			var list = (NBTList)nbtData;
 			x = list.Get<double>(0);

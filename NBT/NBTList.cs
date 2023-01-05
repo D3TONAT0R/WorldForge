@@ -45,13 +45,17 @@ namespace MCUtils.NBT
 
 		private void AddValue(object value)
 		{
+			if(value == null)
+			{
+				throw new NullReferenceException("Attempted to add null value to list.");
+			}
 			if(value is bool b)
 			{
 				value = (byte)(b ? 1 : 0);
 			}
-			else if(value is INBTCompatible i)
+			else if(value is INBTConverter i)
 			{
-				value = i.GetNBTCompatibleObject();
+				value = i.ToNBT(Version.FirstVersion);
 			}
 
 			if (NBTMappings.GetTag(value.GetType()) != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
