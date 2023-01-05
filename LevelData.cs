@@ -201,10 +201,10 @@ namespace MCUtils
 			{
 				this.seed = seed;
 				dimensionGenerators = new NBTCompound();
-				dimensionGenerators.Add("minecraft:overworld", CreateDimensionGenerator("minecraft:overworld", seed));
+				dimensionGenerators.Add("minecraft:overworld", CreateDimensionGenerator("minecraft:overworld", "minecraft:overworld", seed));
 				//TODO: needs fixing (the_nether and nether, the_end and end)
-				dimensionGenerators.Add("minecraft:the_nether", CreateDimensionGenerator("minecraft:nether", seed));
-				dimensionGenerators.Add("minecraft:the_end", CreateDimensionGenerator("minecraft:end", seed));
+				dimensionGenerators.Add("minecraft:the_nether", CreateDimensionGenerator("minecraft:the_nether", "minecraft:nether", seed));
+				dimensionGenerators.Add("minecraft:the_end", CreateDimensionGenerator("minecraft:the_end", "minecraft:end", seed));
 			}
 
 			public WorldGenerator() : this(new Random().Next(int.MinValue, int.MaxValue))
@@ -217,13 +217,13 @@ namespace MCUtils
 				NBTFieldManager.LoadFromNBT(nbt, this);
 			}
 
-			private NBTCompound CreateDimensionGenerator(string genType, long seed)
+			private NBTCompound CreateDimensionGenerator(string genType, string generator, long seed)
 			{
 				NBTCompound comp = new NBTCompound() {
 					{ "type", genType },
 					{ "generator", new NBTCompound() {
 						{ "seed", seed },
-						{ "settings", genType },
+						{ "settings", generator },
 						{ "type", "minecraft:noise" },
 						{ "biome_source", new NBTCompound() {
 							//Add preset/type/seed here

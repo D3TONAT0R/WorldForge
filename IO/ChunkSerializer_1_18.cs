@@ -103,10 +103,5 @@ namespace MCUtils.IO
 				}
 			}
 		}
-
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
-		{
-			//TODO
-		}
 	}
 }

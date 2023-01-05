@@ -23,9 +23,80 @@ namespace MCUtils.IO
 			chunkNBT.Add("Structures", new NBTCompound());
 		}
 
-		public override void WriteSection(ChunkSection c, NBTCompound sectionNBT, sbyte sectionY)
+		protected virtual string PaletteBlockNameKey => "Name";
+		protected virtual string PaletteBlockPropertiesKey => "Properties";
+		protected virtual string PaletteKey => "Palette";
+		protected virtual string BlockStatesKey => "BlockStates";
+
+		public override void WriteSection(ChunkSection section, NBTCompound comp, sbyte sectionY)
 		{
-			c.CreateCompound(sectionNBT, sectionY, false);
+			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
+			foreach(var block in section.palette)
+			{
+				NBTCompound paletteBlock = new NBTCompound();
+				paletteBlock.Add(PaletteBlockNameKey, block.block.ID);
+				if(block.properties != null)
+				{
+					NBTCompound properties = new NBTCompound();
+					foreach(var prop in block.properties.contents.Keys)
+					{
+						var value = block.properties.Get(prop);
+						if(value is bool b) value = b.ToString().ToLower();
+						properties.Add(prop, value.ToString());
+					}
+					paletteBlock.Add(PaletteBlockPropertiesKey, properties);
+				}
+				paletteList.Add(paletteBlock);
+			}
+			comp.Add(PaletteKey, paletteList);
+			//Encode block indices to bits and longs
+			int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
+			//How many block indices fit inside a long?
+			//TODO: 1.13 and 1.16 should use different amounts
+			int indicesPerLong = (int)Math.Floor(64f / indexLength);
+			long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
+			string[] longsBinary = new string[longs.Length];
+			for(int j = 0; j < longsBinary.Length; j++)
+			{
+				longsBinary[j] = "";
+			}
+			int i = 0;
+			for(int y = 0; y < 16; y++)
+			{
+				for(int z = 0; z < 16; z++)
+				{
+					for(int x = 0; x < 16; x++)
+					{
+						string bin = NumToBits(section.blocks[x, y, z], indexLength);
+						bin = Converter.ReverseString(bin);
+						if(!UseFull64BitRange)
+						{
+							if(longsBinary[i].Length + indexLength > 64)
+							{
+								//The full value doesn't fit, start on the next long
+								i++;
+								longsBinary[i] += bin;
+							}
+							else
+							{
+								for(int j = 0; j < indexLength; j++)
+								{
+									if(longsBinary[i].Length >= 64) i++;
+									longsBinary[i] += bin[j];
+								}
+							}
+						}
+					}
+				}
+			}
+			for(int j = 0; j < longs.Length; j++)
+			{
+				string s = longsBinary[j];
+				s = s.PadRight(64, '0');
+				s = Converter.ReverseString(s);
+				longs[j] = Convert.ToInt64(s, 2);
+			}
+			comp.Add(BlockStatesKey, longs);
 		}
 
 		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
@@ -103,30 +174,6 @@ namespace MCUtils.IO
 			return sectionNBT.Get<long[]>("BlockStates");
 		}
 
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
-		{
-			int[] biomeData = new int[1024];
-			for (int y = 0; y < 64; y++)
-			{
-				for (int x = 0; x < 4; x++)
-				{
-					for (int z = 0; z < 4; z++)
-					{
-						int i = y * 16 + z * 4 + x;
-						var section = c.GetChunkSectionForYCoord(y * 4, false);
-						if (section != null)
-						{
-							biomeData[i] = (int)section.GetPredominantBiomeAt4x4(x, y % 4, z);
-						}
-						else
-						{
-							biomeData[i] = (int)BiomeID.plains;
-						}
-					}
-				}
-			}
-		}
-
 		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			if (chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
@@ -174,6 +221,16 @@ namespace MCUtils.IO
 				short packed = (short)((z << 8) + (y << 4) + x);
 				list.Add(packed);
 			}
+		}
+
+		private static string NumToBits(ushort num, int length)
+		{
+			string s = Convert.ToString(num, 2);
+			if(s.Length > length)
+			{
+				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
+			}
+			return s.PadLeft(length, '0');
 		}
 	}
 }
