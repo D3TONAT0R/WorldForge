@@ -200,6 +200,7 @@ namespace MCUtils
 			return heightmap;
 		}
 
+		//TODO: duplicate of World.GetSurfaceMap
 		public static Bitmap GetSurfaceMap(string filepath, HeightmapType surfaceType, bool mcMapShading)
 		{
 			Region r = LoadRegion(filepath);
@@ -240,7 +241,7 @@ namespace MCUtils
 							else shade = -1;
 							if (depth % 8 >= 4 && shade > -1)
 							{
-								if (x % 2 == z % 2) shade--;
+								if (x.Mod(2) == z.Mod(2)) shade--;
 							}
 						}
 						else

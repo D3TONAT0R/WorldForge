@@ -88,9 +88,9 @@ namespace MCUtils
 		{
 			//NOTE: biomes have a vertical resolution of 4 blocks
 			if (biomes == null) biomes = new BiomeID[16, 4, 16];
-			x %= 16;
-			z %= 16;
-			y %= 16;
+			x = x.Mod(16);
+			z = z.Mod(16);
+			y = y.Mod(16);
 			biomes[x, y / 4, z] = biome;
 		}
 
@@ -116,7 +116,7 @@ namespace MCUtils
 		public BiomeID GetBiomeAt(int x, int y, int z)
 		{
 			if (biomes == null) return BiomeID.plains;
-			return biomes[x % 16, y / 4 % 4, z % 16];
+			return biomes[x.Mod(16), (y / 4).Mod(4), z.Mod(16)];
 		}
 
 		public BiomeID GetBiomeAt(int x, int z)

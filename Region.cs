@@ -54,7 +54,7 @@ namespace MCUtils
 		public ProtoBlock GetBlock(int x, int y, int z) {
 			var chunk = GetChunk(x, z, false);
 			if(chunk != null) {
-				return chunk.GetBlockAt(x % 16, y, z % 16)?.block ?? BlockList.Find("minecraft:air");
+				return chunk.GetBlockAt(x.Mod(16), y, z.Mod(16))?.block ?? BlockList.Find("minecraft:air");
 			} else {
 				return null;
 			}
@@ -62,13 +62,13 @@ namespace MCUtils
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(int x, int y, int z) {
-			return GetChunk(x,z,false)?.GetBlockAt(x % 16, y, z % 16);
+			return GetChunk(x,z,false)?.GetBlockAt(x.Mod(16), y, z.Mod(16));
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
 		public TileEntity GetTileEntity(int x, int y, int z)
 		{
-			return GetChunk(x, z, true)?.GetTileEntity(x % 16, y, z % 16);
+			return GetChunk(x, z, true)?.GetTileEntity(x.Mod(16), y, z.Mod(16));
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
@@ -78,7 +78,7 @@ namespace MCUtils
 
 		///<summary>Sets the block state at the given location.</summary>
 		public bool SetBlock(int x, int y, int z, BlockState block) {
-			GetChunk(x, z, true)?.SetBlockAt(x % 16, y, z % 16, block);
+			GetChunk(x, z, true)?.SetBlockAt(x.Mod(16), y, z.Mod(16), block);
 			return true;
 		}
 
@@ -86,7 +86,7 @@ namespace MCUtils
 		public bool SetTileEntity(int x, int y, int z, TileEntity te)
 		{
 			var chunk = GetChunk(x, z, true);
-			chunk?.SetTileEntity(x % 16, y, z % 16, te);
+			chunk?.SetTileEntity(x.Mod(16), y, z.Mod(16), te);
 			return chunk != null;
 		}
 
@@ -111,7 +111,7 @@ namespace MCUtils
 			if(chunks[chunkX, chunkZ] == null) {
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
-			chunks[chunkX, chunkZ].SetDefaultBlockAt(localX % 16, y, localZ % 16);
+			chunks[chunkX, chunkZ].SetDefaultBlockAt(localX.Mod(16), y, localZ.Mod(16));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
@@ -122,7 +122,23 @@ namespace MCUtils
 			{
 				//for (int y = 0; y < 256; y++)
 				//{
-				return chunk.GetBiomeAt(x % 16, z % 16);
+				return chunk.GetBiomeAt(x.Mod(16), z.Mod(16));
+				//}
+			} else
+			{
+				return null;
+			}
+		}
+
+		///<summary>Gets the biome at the given location.</summary>
+		public BiomeID? GetBiome(int x, int y, int z)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				//for (int y = 0; y < 256; y++)
+				//{
+				return chunk.GetBiomeAt(x.Mod(16), y, z.Mod(16));
 				//}
 			} else
 			{
@@ -138,7 +154,20 @@ namespace MCUtils
 			{
 				//for(int y = 0; y < 256; y++)
 				//{
-				chunk.SetBiomeAt(x % 16, z % 16, biome);
+				chunk.SetBiomeAt(x.Mod(16), z.Mod(16), biome);
+				//}
+			}
+		}
+
+		///<summary>Sets the biome at the given location.</summary>
+		public void SetBiome(int x, int y, int z, BiomeID biome)
+		{
+			var chunk = GetChunk(x, z, false);
+			if (chunk != null)
+			{
+				//for(int y = 0; y < 256; y++)
+				//{
+				chunk.SetBiomeAt(x.Mod(16), y, z.Mod(16), biome);
 				//}
 			}
 		}
@@ -151,7 +180,7 @@ namespace MCUtils
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
 			{
-				chunk.MarkForTickUpdate(x % 16, y, z % 16);
+				chunk.MarkForTickUpdate(x.Mod(16), y, z.Mod(16));
 			}
 		}
 
@@ -163,7 +192,7 @@ namespace MCUtils
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
 			{
-				chunk.UnmarkForTickUpdate(x % 16, y, z % 16);
+				chunk.UnmarkForTickUpdate(x.Mod(16), y, z.Mod(16));
 			}
 		}
 
@@ -175,7 +204,7 @@ namespace MCUtils
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
 			{
-				return chunk.GetHighestBlock(x % 16, z % 16, heightmapType);
+				return chunk.GetHighestBlock(x.Mod(16), z.Mod(16), heightmapType);
 			}
 			else
 			{

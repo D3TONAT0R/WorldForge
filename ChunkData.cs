@@ -45,7 +45,7 @@ namespace MCUtils
 		public void SetBlockAt(int x, int y, int z, BlockState block)
 		{
 			if (!unlimitedHeight && (y < 0 || y > 255)) return;
-			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, block);
+			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y.Mod(16), z, block);
 		}
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
@@ -69,7 +69,7 @@ namespace MCUtils
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(int x, int y, int z)
 		{
-			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y % 16, z, 1); //1 is always the default block in a region generated from scratch
+			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y.Mod(16), z, 1); //1 is always the default block in a region generated from scratch
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
@@ -111,7 +111,7 @@ namespace MCUtils
 			var section = GetChunkSectionForYCoord(y, false);
 			if(section != null)
 			{
-				section.SetBiomeAt(x, y % 16, z, biome);
+				section.SetBiomeAt(x, y.Mod(16), z, biome);
 			}
 		}
 
@@ -130,7 +130,7 @@ namespace MCUtils
 			var section = GetChunkSectionForYCoord(y, false);
 			if(section != null)
 			{
-				return section.GetBiomeAt(x, y % 16, z);
+				return section.GetBiomeAt(x, y.Mod(16), z);
 			}
 			else
 			{
@@ -141,7 +141,12 @@ namespace MCUtils
 		///<summary>Gets the biome at the given chunk coordinate</summary>
 		public BiomeID GetBiomeAt(int x, int z)
 		{
-			return GetBiomeAt(x, HighestSection * 16 + 15, z);
+			sbyte highestSectionWithBiomeData = HighestSection;
+			while(highestSectionWithBiomeData > 0 && (!sections.TryGetValue(highestSectionWithBiomeData, out var s) || s.biomes == null))
+			{
+				highestSectionWithBiomeData--;
+			}
+			return GetBiomeAt(x, highestSectionWithBiomeData * 16 + 15, z);
 		}
 
 		/// <summary>
@@ -173,7 +178,7 @@ namespace MCUtils
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				if (Blocks.IsBlockForMap(GetBlockAt(x % 16, y, z % 16).block, type)) return y;
+				if (Blocks.IsBlockForMap(GetBlockAt(x.Mod(16), y, z.Mod(16)).block, type)) return y;
 				y--;
 			}
 			return short.MinValue;
@@ -250,7 +255,7 @@ namespace MCUtils
 					}
 					for (short y = yTop; y > 0; y--)
 					{
-						var block = sec.GetBlockAt(x, y % 16, z);
+						var block = sec.GetBlockAt(x, y.Mod(16), z);
 						if (Blocks.IsBlockForMap(block.block, type))
 						{
 							if (block.block.Compare("minecraft:snow"))

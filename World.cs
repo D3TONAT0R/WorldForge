@@ -174,25 +174,37 @@ namespace MCUtils
 		///<summary>Gets the block type at the given location.</summary>
 		public ProtoBlock GetBlock(int x, int y, int z)
 		{
-			return TryGetRegion(x, z)?.GetBlock(x % 512, y, z % 512);
+			return TryGetRegion(x, z)?.GetBlock(x.Mod(512), y, z.Mod(512));
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(int x, int y, int z)
 		{
-			return TryGetRegion(x, z)?.GetBlockState(x % 512, y, z % 512);
+			return TryGetRegion(x, z)?.GetBlockState(x.Mod(512), y, z.Mod(512));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID? GetBiome(int x, int z)
 		{
-			return TryGetRegion(x, z)?.GetBiome(x % 512,z % 512);
+			return TryGetRegion(x, z)?.GetBiome(x.Mod(512), z.Mod(512));
+		}
+
+		///<summary>Gets the biome at the given location.</summary>
+		public BiomeID? GetBiome(int x, int y, int z)
+		{
+			return TryGetRegion(x, z)?.GetBiome(x.Mod(512), y, z.Mod(512));
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			TryGetRegion(x, z)?.SetBiome(x % 512, z % 512, biome);
+			TryGetRegion(x, z)?.SetBiome(x.Mod(512), z.Mod(512), biome);
+		}
+
+		///<summary>Sets the biome at the given location.</summary>
+		public void SetBiome(int x, int y, int z, BiomeID biome)
+		{
+			TryGetRegion(x, z)?.SetBiome(x.Mod(512), y, z.Mod(512), biome);
 		}
 
 		/// <summary>
@@ -200,7 +212,7 @@ namespace MCUtils
 		/// </summary>
 		public void MarkForTickUpdate(int x, int y, int z)
 		{
-			TryGetRegion(x, z)?.MarkForTickUpdate(x % 512, y, z % 512);
+			TryGetRegion(x, z)?.MarkForTickUpdate(x.Mod(512), y, z.Mod(512));
 		}
 
 		/// <summary>
@@ -208,7 +220,7 @@ namespace MCUtils
 		/// </summary>
 		public void UnmarkForTickUpdate(int x, int y, int z)
 		{
-			TryGetRegion(x, z)?.UnmarkForTickUpdate(x % 512, y, z % 512);
+			TryGetRegion(x, z)?.UnmarkForTickUpdate(x.Mod(512), y, z.Mod(512));
 		}
 
 		//private readonly object lockObj = new object();
@@ -269,7 +281,7 @@ namespace MCUtils
 			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
-				return r.SetBlock(x % 512, y, z % 512, block);
+				return r.SetBlock(x.Mod(512), y, z.Mod(512), block);
 			}
 			else
 			{
@@ -284,7 +296,7 @@ namespace MCUtils
 			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
-				r.SetDefaultBlock(x % 512, y, z % 512);
+				r.SetDefaultBlock(x.Mod(512), y, z.Mod(512));
 			}
 			else
 			{
@@ -302,7 +314,7 @@ namespace MCUtils
 			{
 				for (int x = xMin; x <= xMax; x++)
 				{
-					hm[x - xMin, z - zMin] = GetRegionAt(x, z)?.GetChunk(x % 512, z % 512, false)?.GetHighestBlock(x % 16, z % 16, type) ?? short.MinValue;
+					hm[x - xMin, z - zMin] = GetRegionAt(x, z)?.GetChunk(x.Mod(512), z.Mod(512), false)?.GetHighestBlock(x.Mod(16), z.Mod(16), type) ?? short.MinValue;
 				}
 			}
 			return hm;
@@ -363,7 +375,7 @@ namespace MCUtils
 		/// </summary>
 		public int GetWaterDepth(int x, int y, int z)
 		{
-			return GetRegionAt(x, z)?.GetWaterDepth(x % 512, y, z % 512) ?? 0;
+			return GetRegionAt(x, z)?.GetWaterDepth(x.Mod(512), y, z.Mod(512)) ?? 0;
 		}
 
 		/// <summary>
@@ -371,7 +383,7 @@ namespace MCUtils
 		/// </summary>
 		public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
 		{
-			return GetRegionAt(x, z)?.GetHighestBlock(x % 512, z % 512, heightmapType) ?? short.MinValue;
+			return GetRegionAt(x, z)?.GetHighestBlock(x.Mod(512), z.Mod(512), heightmapType) ?? short.MinValue;
 		}
 
 		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ)

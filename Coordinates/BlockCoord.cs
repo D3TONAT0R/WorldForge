@@ -12,9 +12,9 @@ namespace MCUtils.Coordinates
 
 		public ChunkCoord Chunk => new ChunkCoord((int)Math.Floor(x / 16f), (int)Math.Floor(z / 16f));
 
-		public BlockCoord LocalRegionCoords => new BlockCoord(x % 512, y, z % 512);
+		public BlockCoord LocalRegionCoords => new BlockCoord(x.Mod(512), y, z.Mod(512));
 
-		public BlockCoord LocalChunkCoords => new BlockCoord(x % 16, y, z % 16);
+		public BlockCoord LocalChunkCoords => new BlockCoord(x.Mod(16), y, z.Mod(16));
 
 		public BlockCoord(int x, int y, int z)
 		{

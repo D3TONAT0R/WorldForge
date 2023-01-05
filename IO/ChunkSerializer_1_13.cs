@@ -167,9 +167,9 @@ namespace MCUtils.IO
 			foreach (var t in c.postProcessTicks)
 			{
 				int listIndex = t.y / 16;
-				var x = t.x % 16;
-				var y = t.y % 16;
-				var z = t.z % 16;
+				var x = t.x.Mod(16);
+				var y = t.y.Mod(16);
+				var z = t.z.Mod(16);
 				var list = ppList.Get<NBTList>(listIndex);
 				short packed = (short)((z << 8) + (y << 4) + x);
 				list.Add(packed);

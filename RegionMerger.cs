@@ -254,7 +254,7 @@ namespace MCUtils
 			{
 				foreach (var e in chunk.entities)
 				{
-					if (e.BlockPosX % 512 == 16 * cx + x && e.BlockPosZ % 512 == 16 * cz + z)
+					if (e.BlockPosX.Mod(512) == 16 * cx + x && e.BlockPosZ.Mod(512) == 16 * cz + z)
 					{
 						merged.chunks[cx, cz].entities.Add(e);
 					}
