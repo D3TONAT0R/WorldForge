@@ -2,16 +2,19 @@
 using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MCUtils
 {
 	public class ChunkSection
 	{
+		public readonly ChunkData containingChunk;
+
 		public ushort[,,] blocks = new ushort[16, 16, 16];
 		public List<BlockState> palette;
 
 		//Resolution: [1:4:1] for backwards compatibility
-		public BiomeID[,,] biomes;
+		private BiomeID[,,] biomes;
 
 		public LightValue[,,] lightmap;
 
@@ -19,8 +22,9 @@ namespace MCUtils
 
 		//private readonly object lockObj = new object();
 
-		public ChunkSection(string defaultBlock)
+		public ChunkSection(ChunkData chunk, string defaultBlock)
 		{
+			containingChunk = chunk;
 			palette = new List<BlockState>();
 			if (defaultBlock != null)
 			{
@@ -84,10 +88,41 @@ namespace MCUtils
 			return allSame;
 		}
 
+		public void InitializeBiomes(BiomeID fallback = BiomeID.plains)
+		{
+			var lowest = containingChunk.LowestSection;
+			sbyte secY = containingChunk.sections.First(kv => kv.Value == this).Key;
+			ChunkSection belowSection = null;
+			while(secY > lowest)
+			{
+				secY--;
+				if(containingChunk.sections.TryGetValue(secY, out var sec))
+				{
+					if(sec.HasBiomesDefined)
+					{
+						belowSection = sec;
+						break;
+					}
+				}
+			}
+			biomes = new BiomeID[16, 4, 16];
+			for(int x = 0; x < 16; x++)
+			{
+				for(int z = 0; z < 16; z++)
+				{
+					BiomeID b = belowSection?.GetBiomeAt(x, z) ?? fallback;
+					for(int y = 0; y < 4; y++)
+					{
+						biomes[x, y, z] = b;
+					}
+				}
+			}
+		}
+
 		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
 		{
 			//NOTE: biomes have a vertical resolution of 4 blocks
-			if (biomes == null) biomes = new BiomeID[16, 4, 16];
+			if (biomes == null) InitializeBiomes(biome);
 			x = x.Mod(16);
 			z = z.Mod(16);
 			y = y.Mod(16);
@@ -113,13 +148,13 @@ namespace MCUtils
 			}
 		}
 
-		public BiomeID GetBiomeAt(int x, int y, int z)
+		public BiomeID? GetBiomeAt(int x, int y, int z)
 		{
-			if (biomes == null) return BiomeID.plains;
+			if (biomes == null) return null;
 			return biomes[x.Mod(16), (y / 4).Mod(4), z.Mod(16)];
 		}
 
-		public BiomeID GetBiomeAt(int x, int z)
+		public BiomeID? GetBiomeAt(int x, int z)
 		{
 			return GetBiomeAt(x, 15, z);
 		}

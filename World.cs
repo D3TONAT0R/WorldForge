@@ -186,25 +186,25 @@ namespace MCUtils
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID? GetBiome(int x, int z)
 		{
-			return TryGetRegion(x, z)?.GetBiome(x.Mod(512), z.Mod(512));
+			return TryGetRegion(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID? GetBiome(int x, int y, int z)
 		{
-			return TryGetRegion(x, z)?.GetBiome(x.Mod(512), y, z.Mod(512));
+			return TryGetRegion(x, z)?.GetBiomeAt(x.Mod(512), y, z.Mod(512));
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			TryGetRegion(x, z)?.SetBiome(x.Mod(512), z.Mod(512), biome);
+			TryGetRegion(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int y, int z, BiomeID biome)
 		{
-			TryGetRegion(x, z)?.SetBiome(x.Mod(512), y, z.Mod(512), biome);
+			TryGetRegion(x, z)?.SetBiomeAt(x.Mod(512), y, z.Mod(512), biome);
 		}
 
 		/// <summary>
@@ -290,13 +290,13 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int x, int y, int z)
+		public void SetDefaultBlock(int x, int y, int z, bool allowNewChunks = false)
 		{
 			if (y < 0 || y > 255) return;
 			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
-				r.SetDefaultBlock(x.Mod(512), y, z.Mod(512));
+				r.SetDefaultBlock(x.Mod(512), y, z.Mod(512), allowNewChunks);
 			}
 			else
 			{

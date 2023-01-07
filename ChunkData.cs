@@ -55,7 +55,7 @@ namespace MCUtils
 			{
 				if (allowNew)
 				{
-					sections.Add(sectionY, new ChunkSection(defaultBlock));
+					sections.Add(sectionY, new ChunkSection(this, defaultBlock));
 					RecalculateSectionRange();
 				}
 				else
@@ -125,7 +125,7 @@ namespace MCUtils
 		}
 
 		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID GetBiomeAt(int x, int y, int z)
+		public BiomeID? GetBiomeAt(int x, int y, int z)
 		{
 			var section = GetChunkSectionForYCoord(y, false);
 			if(section != null)
@@ -134,15 +134,15 @@ namespace MCUtils
 			}
 			else
 			{
-				return BiomeID.plains;
+				return null;
 			}
 		}
 
 		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID GetBiomeAt(int x, int z)
+		public BiomeID? GetBiomeAt(int x, int z)
 		{
 			sbyte highestSectionWithBiomeData = HighestSection;
-			while(highestSectionWithBiomeData > 0 && (!sections.TryGetValue(highestSectionWithBiomeData, out var s) || s.biomes == null))
+			while(highestSectionWithBiomeData > 0 && (!sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
 			{
 				highestSectionWithBiomeData--;
 			}

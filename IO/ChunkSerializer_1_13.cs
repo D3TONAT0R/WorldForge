@@ -104,7 +104,7 @@ namespace MCUtils.IO
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.listContent)
 			{
-				var section = new ChunkSection(null);
+				var section = new ChunkSection(c, null);
 
 				var sectionComp = (NBTCompound)o;
 				if (!HasBlocks(sectionComp)) continue;

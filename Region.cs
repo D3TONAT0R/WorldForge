@@ -72,13 +72,13 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, string block) {
-			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)));
+		public bool SetBlock(int x, int y, int z, string block, bool allowNewChunks = false) {
+			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)), allowNewChunks);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, BlockState block) {
-			GetChunk(x, z, true)?.SetBlockAt(x.Mod(16), y, z.Mod(16), block);
+		public bool SetBlock(int x, int y, int z, BlockState block, bool allowNewChunks = false) {
+			GetChunk(x, z, allowNewChunks)?.SetBlockAt(x.Mod(16), y, z.Mod(16), block);
 			return true;
 		}
 
@@ -93,29 +93,31 @@ namespace MCUtils
 		/// <summary>
 		/// Gets the chunk containing the block's position
 		/// </summary>
-		public ChunkData GetChunk(int localX, int localZ, bool allowNew) {
+		public ChunkData GetChunk(int localX, int localZ, bool allowNewChunks) {
 			int chunkX = (int)Math.Floor(localX / 16.0);
 			int chunkZ = (int)Math.Floor(localZ / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
-			if(allowNew && chunks[chunkX, chunkZ] == null) {
+			if(allowNewChunks && chunks[chunkX, chunkZ] == null) {
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
 			return chunks[chunkX, chunkZ];
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int localX, int y, int localZ) {
+		public void SetDefaultBlock(int localX, int y, int localZ, bool allowNewChunks = false) {
 			int chunkX = (int)Math.Floor(localX / 16.0);
 			int chunkZ = (int)Math.Floor(localZ / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
-			if(chunks[chunkX, chunkZ] == null) {
+			if(chunks[chunkX, chunkZ] == null && allowNewChunks)
+			{
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
-			chunks[chunkX, chunkZ].SetDefaultBlockAt(localX.Mod(16), y, localZ.Mod(16));
+			var c = chunks[chunkX, chunkZ];
+			if(c != null) c.SetDefaultBlockAt(localX.Mod(16), y, localZ.Mod(16));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiome(int x, int z)
+		public BiomeID? GetBiomeAt(int x, int z)
 		{
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
@@ -124,14 +126,15 @@ namespace MCUtils
 				//{
 				return chunk.GetBiomeAt(x.Mod(16), z.Mod(16));
 				//}
-			} else
+			}
+			else
 			{
 				return null;
 			}
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiome(int x, int y, int z)
+		public BiomeID? GetBiomeAt(int x, int y, int z)
 		{
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
@@ -140,27 +143,25 @@ namespace MCUtils
 				//{
 				return chunk.GetBiomeAt(x.Mod(16), y, z.Mod(16));
 				//}
-			} else
+			}
+			else
 			{
 				return null;
 			}
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int z, BiomeID biome)
+		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
 			{
-				//for(int y = 0; y < 256; y++)
-				//{
 				chunk.SetBiomeAt(x.Mod(16), z.Mod(16), biome);
-				//}
 			}
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int y, int z, BiomeID biome)
+		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
 		{
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
@@ -227,7 +228,7 @@ namespace MCUtils
 		}
 
 		/// <summary>
-		/// Gets the depth of the water at the given location, in blocks
+		/// Gets the depth of the water at the given location, in blocks.
 		/// </summary>
 		public int GetWaterDepth(int x, int y, int z)
 		{
