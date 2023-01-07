@@ -133,7 +133,7 @@ namespace MCUtils
 			{
 				for (int z1 = 0; z1 < 4; z1++)
 				{
-					var b = biomes[x4 + x1, y4, z4 + z1];
+					var b = biomes[x4 * 4 + x1, y4, z4 * 4 + z1];
 					if (!occurences.ContainsKey(b))
 					{
 						occurences.Add(b, 0);
