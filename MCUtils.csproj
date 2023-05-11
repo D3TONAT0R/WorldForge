@@ -1,15 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <PackageId></PackageId>
     <StartupObject>MCUtils.MCUtilsConsole</StartupObject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Resources\colormap.tif" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.13.8" />
@@ -17,22 +13,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\colormap.tif" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <None Update="Resources\blocks.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\colormap.tif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\map_background.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

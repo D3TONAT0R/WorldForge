@@ -602,7 +602,7 @@ namespace MCUtils
 			numerics = new Dictionary<ProtoBlock, NumericID>();
 			protoByNumerics = new Dictionary<ushort, ProtoBlock>();
 			preFlatteningIDs = new Dictionary<ProtoBlock, string>();
-			var lines = Resources.blocks.Replace("\r", "").Split('\n');
+			var lines = ResourceLoader.LoadBlockListAsText().Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
 			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
 			for (int i = 2; i < lines.Length; i++)

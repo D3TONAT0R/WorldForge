@@ -142,7 +142,7 @@ namespace MCUtils
 		}
 
 		static Color[,] LoadColorMap() {
-			Bitmap bmp = new Bitmap(Image.FromStream(new MemoryStream(Resources.colormap)));
+			Bitmap bmp = new Bitmap(Image.FromFile(ResourceLoader.GetPathOfResource("colormap.tif")));
 			Color[,] colormap = new Color[bmp.Width, 3];
 			for(int x = 0; x < bmp.Width; x++) {
 				for(int y = 0; y < 3; y++) {
