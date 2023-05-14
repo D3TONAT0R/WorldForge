@@ -44,7 +44,7 @@ namespace MCUtils.IO
 					for (int i = 0; i < paletteNBT.Length; i++)
 					{
 						var id = paletteNBT.Get<string>(i).Replace("minecraft:", "");
-						if(Enum.TryParse<BiomeID>(id, out var b))
+						if(BiomeIDResolver.TryParseBiome(id, out var b))
 						{
 							palette[i] = b;
 						}

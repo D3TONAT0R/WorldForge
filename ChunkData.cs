@@ -9,6 +9,8 @@ namespace MCUtils
 	{
 		public ChunkCoord coords;
 
+		public ChunkStatus status = ChunkStatus.light;
+
 		public string defaultBlock = "minecraft:stone";
 		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
@@ -24,6 +26,9 @@ namespace MCUtils
 		public long inhabitedTime = 0;
 
 		public NBTFile sourceNBT;
+
+		public bool HasTerrain => status >= ChunkStatus.surface;
+		public bool HasFullyGeneratedTerrain => status >= ChunkStatus.light;
 
 		private readonly object lockObj = new object();
 
@@ -75,8 +80,9 @@ namespace MCUtils
 		///<summary>Gets the block at the given chunk coordinate</summary>
 		public BlockState GetBlockAt(int x, int y, int z)
 		{
+			if(!HasTerrain) return null;
 			var sec = GetChunkSectionForYCoord(y, false);
-			if (sec == null) return BlockState.Air;
+			if (sec == null) return null;
 			return sec.GetBlockAt(x, y.Mod(16), z);
 		}
 

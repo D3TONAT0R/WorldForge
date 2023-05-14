@@ -14,7 +14,7 @@ namespace MCUtils.IO
 			base.WriteCommonData(c, chunkNBT);
 
 			//TODO: find out in which version these tags were added
-			chunkNBT.Add("Status", "light");
+			chunkNBT.Add("Status", c.status.ToString());
 			chunkNBT.Add("InhabitedTime", c.inhabitedTime);
 
 			//Leave it empty (or implement heightmap gen in the future?)
@@ -97,6 +97,18 @@ namespace MCUtils.IO
 				longs[j] = Convert.ToInt64(s, 2);
 			}
 			comp.Add(BlockStatesKey, longs);
+		}
+
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
+		{
+			if(chunkNBT.TryGet("Status", out string statusString))
+			{
+				Enum.TryParse(statusString, out c.status);
+			}
+			else if(chunkNBT.TryGet("status", out statusString))
+			{
+				Enum.TryParse(statusString, out c.status);
+			}
 		}
 
 		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
