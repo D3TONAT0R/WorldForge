@@ -28,6 +28,8 @@ namespace MCUtils
 		private static BlockState unknown;
 
 		public ProtoBlock block;
+		//TODO: Don't auto-generate an empty compound, generates excessive amounts of garbage.
+		//Add methods for SetProperty / GetProperty / RemoveProperty ... instead.
 		public NBTCompound properties = new NBTCompound();
 
 		private BlockState() { }

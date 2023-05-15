@@ -15,6 +15,11 @@ namespace MCUtils
 			this.count = count;
 		}
 
+		public ItemStack(string itemID, sbyte count) : this(new Item(itemID), count)
+		{
+
+		}
+
 		public ItemStack(NBTCompound nbt, out sbyte slotIndex)
 		{
 			item = new Item(nbt);

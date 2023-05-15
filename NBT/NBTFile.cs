@@ -464,7 +464,7 @@ namespace MCUtils.NBT
 		{
 			if (tag == NBTTag.TAG_Byte)
 			{
-				bytes.Add((byte)o);
+				bytes.Add(Convert.ToByte(o));
 			}
 			else if (tag == NBTTag.TAG_Short)
 			{

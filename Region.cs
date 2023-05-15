@@ -84,10 +84,10 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the tile entity at the given location.</summary>
-		public bool SetTileEntity(int x, int y, int z, TileEntity te)
+		public bool SetTileEntity(TileEntity te)
 		{
-			var chunk = GetChunk(x, z, true);
-			chunk?.SetTileEntity(x.Mod(16), y, z.Mod(16), te);
+			var chunk = GetChunk(te.blockPos.x, te.blockPos.z, true);
+			chunk?.SetTileEntity(te.blockPos.x.Mod(16), te.blockPos.y, te.blockPos.z.Mod(16), te);
 			return chunk != null;
 		}
 
@@ -97,7 +97,7 @@ namespace MCUtils
 		public ChunkData GetChunk(int localX, int localZ, bool allowNewChunks) {
 			int chunkX = (int)Math.Floor(localX / 16.0);
 			int chunkZ = (int)Math.Floor(localZ / 16.0);
-			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return null;
+			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) throw new ArgumentOutOfRangeException();
 			if(allowNewChunks && chunks[chunkX, chunkZ] == null) {
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}

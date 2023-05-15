@@ -22,6 +22,14 @@ namespace MCUtils
 
 			}
 
+			public Spawnpoint(int x, int y, int z, float angle = 0)
+			{
+				spawnX = x;
+				spawnY = y;
+				spawnZ = z;
+				spawnAngle = angle;
+			}
+
 			public Spawnpoint(NBTCompound nbt)
 			{
 				NBTConverter.LoadFromNBT(nbt, this);

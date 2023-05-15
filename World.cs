@@ -268,20 +268,25 @@ namespace MCUtils
 			}
 		}
 
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, string block)
+		public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
 		{
-			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)));
+			//TODO
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(int x, int y, int z, string block, bool allowNewChunks = false)
+		{
+			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)), allowNewChunks);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, BlockState block)
+		public bool SetBlock(int x, int y, int z, BlockState block, bool allowNewChunks = false)
 		{
 			if (y < 0 || y > 255) return false;
 			var r = GetRegionAt(x, z);
 			if (r != null)
 			{
-				return r.SetBlock(x.Mod(512), y, z.Mod(512), block);
+				return r.SetBlock(x.Mod(512), y, z.Mod(512), block, allowNewChunks);
 			}
 			else
 			{

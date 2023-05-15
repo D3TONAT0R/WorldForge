@@ -233,7 +233,7 @@ namespace MCUtils
 					var te = source.GetTileEntity(x, y, z);
 					if (te != null)
 					{
-						dst.SetTileEntity(x, y, z, te);
+						dst.SetTileEntity(te);
 					}
 				}
 			}

@@ -37,6 +37,7 @@ namespace MCUtils.NBT
 
 		private static Dictionary<Type, NBTTag> NBTTagDictionary = new Dictionary<Type, NBTTag> {
 			{ typeof(byte), NBTTag.TAG_Byte },
+			{ typeof(sbyte), NBTTag.TAG_Byte },
 			{ typeof(short), NBTTag.TAG_Short },
 			{ typeof(int), NBTTag.TAG_Int },
 			{ typeof(long), NBTTag.TAG_Long },
