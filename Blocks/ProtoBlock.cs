@@ -10,6 +10,7 @@
 		public readonly Version addedInVersion;
 		public ProtoBlock substitute;
 
+		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
 		public bool IsAir => ID == "minecraft:air";
 		public bool IsWater => ID == "minecraft:water";
 		public bool IsLava => ID == "minecraft:lava";

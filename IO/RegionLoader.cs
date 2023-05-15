@@ -135,6 +135,7 @@ namespace MCUtils
 								}
 							}
 						}
+						//TODO: cache already created serializers, no need to recreate them every time.
 						var chunkSerializer = ChunkSerializer.CreateForVersion(gameVersion);
 
 						var coord = region.regionPos.GetChunkCoord(i % 32, i / 32);

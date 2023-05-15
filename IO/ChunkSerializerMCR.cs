@@ -1,5 +1,6 @@
 ﻿using MCUtils.Coordinates;
 using MCUtils.NBT;
+using MCUtils.TileEntities;
 using System.Collections.Generic;
 
 namespace MCUtils.IO
@@ -15,8 +16,8 @@ namespace MCUtils.IO
 
 		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
-			chunkNBT.Add("xPos", c.coords.x);
-			chunkNBT.Add("zPos", c.coords.z);
+			chunkNBT.Add("xPos", c.worldSpaceCoord.x);
+			chunkNBT.Add("zPos", c.worldSpaceCoord.z);
 			chunkNBT.Add("TerrainPopulated", (byte)1);
 			chunkNBT.Add("LastUpdate", 0L);
 			//TODO: Light data must be generated 
@@ -96,8 +97,8 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = new TileEntity(tileEntList.Get<NBTCompound>(i));
-						c.tileEntities.Add(new BlockCoord(te.BlockPosX, te.BlockPosY, te.BlockPosZ), te);
+						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i));
+						c.tileEntities.Add(te.blockPos, te);
 					}
 				}
 			}
@@ -109,7 +110,7 @@ namespace MCUtils.IO
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
 			foreach(var te in c.tileEntities.Values)
 			{
-				comp.Add(te.NBTCompound);
+				comp.Add(te.ToNBT(TargetVersion));
 			}
 		}
 

@@ -138,6 +138,26 @@ namespace MCUtils.NBT
 			return contents.Remove(key);
 		}
 
+		public T Take<T>(string key)
+		{
+			T value = Get<T>(key);
+			contents.Remove(key);
+			return value;
+		}
+
+		public bool TryTake<T>(string key, out T value)
+		{
+			if(TryGet(key, out value))
+			{
+				contents.Remove(key);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		public bool Contains(string key)
 		{
 			return contents.ContainsKey(key);
@@ -170,7 +190,7 @@ namespace MCUtils.NBT
 			contents.Add(key, group);
 		}
 
-		public void UnpackAll(NBTCompound parent)
+		public void UnpackInto(NBTCompound parent)
 		{
 			foreach(var child in this)
 			{
@@ -178,6 +198,18 @@ namespace MCUtils.NBT
 			}
 			var k = parent.FindKey(this);
 			parent.Remove(k);
+		}
+
+		public void Merge(NBTCompound target, bool replaceExisting)
+		{
+			foreach(var kv in this)
+			{
+				if(target.Contains(kv.Key) && !replaceExisting)
+				{
+					continue;
+				}
+				target.Set(kv.Key, kv.Value);
+			}
 		}
 
 		public static bool AreEqual(NBTCompound a, NBTCompound b)

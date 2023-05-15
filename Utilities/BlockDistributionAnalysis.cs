@@ -145,64 +145,48 @@ namespace MCUtils
 		{
 			try
 			{
-				/*
-				foreach(var kv in chunk.sections)
+				if(chunk.HasFullyGeneratedTerrain)
 				{
-					var section = kv.Value;
-					short baseY = (short)(kv.Key * 16);
-					for(byte y = 0; y < 16; y++)
+					chunk.ForEachBlock(YMin, YMax, (pos, b) =>
 					{
-						short worldY = (short)(baseY + y);
-						if(worldY < YMin || worldY >= YMax) continue;
-						for(byte z = 0; z < 16; z++)
+						if(b != null && results.TryGetValue(b.block, out var stat))
 						{
-							for(byte x = 0; x < 16; x++)
-							{
-								var b = section.GetBlockAt(x, y, z).block;
-								if(b != null && results.TryGetValue(b, out var stat))
-								{
-									stat[worldY]++;
-								}
-							}
+							stat[(short)pos.y]++;
 						}
-					}
-				}
-				*/
-				if(chunk.HasTerrain)
-				{
-					for(byte z = 0; z < 16; z++)
-					{
-						for(byte x = 0; x < 16; x++)
-						{
-							for(short y = YMin; y < YMax; y++)
-							{
-								var b = chunk.GetBlockAt(x, y, z);
-								if(b != null && results.TryGetValue(b.block, out var stat))
-								{
-									stat[y]++;
-								}
-							}
-						}
-					}
+					});
 					CountedChunks++;
 				}
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine($"Failed to read chunk at {chunk.coords}: " + e.Message);
+				Console.WriteLine($"Failed to read chunk at {chunk.worldSpaceCoord}: " + e.Message);
 			}
 		}
 
-		public void AnalyzeRegion(Region region)
+		public void AnalyzeRegion(Region region, bool parallel = true)
 		{
-			Parallel.For(0, 1024, (i) =>
+			if(parallel)
 			{
-				var chunk = region.chunks[i % 32, i / 32];
-				if(chunk != null)
+				Parallel.For(0, 1024, (i) =>
 				{
-					AnalyzeChunk(chunk);
+					var chunk = region.chunks[i % 32, i / 32];
+					if(chunk != null)
+					{
+						AnalyzeChunk(chunk);
+					}
+				});
+			}
+			else
+			{
+				for(int i = 0; i < 1024; i++)
+				{
+					var chunk = region.chunks[i % 32, i / 32];
+					if(chunk != null)
+					{
+						AnalyzeChunk(chunk);
+					}
 				}
-			});
+			}
 		}
 
 		public string GenerateResultsAsCSV()

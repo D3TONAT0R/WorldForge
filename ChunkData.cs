@@ -1,5 +1,6 @@
 using MCUtils.Coordinates;
 using MCUtils.NBT;
+using MCUtils.TileEntities;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +8,9 @@ namespace MCUtils
 {
 	public class ChunkData
 	{
-		public ChunkCoord coords;
+		public ChunkCoord worldSpaceCoord;
+
+		public ChunkCoord RegionSpaceCoord => new ChunkCoord(worldSpaceCoord.x.Mod(32), worldSpaceCoord.z.Mod(32));
 
 		public ChunkStatus status = ChunkStatus.light;
 
@@ -35,7 +38,7 @@ namespace MCUtils
 		public ChunkData(Region region, ChunkCoord pos, string defaultBlock)
 		{
 			containingRegion = region;
-			coords = pos;
+			worldSpaceCoord = pos;
 			this.defaultBlock = defaultBlock;
 		}
 
@@ -43,7 +46,7 @@ namespace MCUtils
 		{
 			containingRegion = region;
 			sourceNBT = chunk;
-			coords = chunkCoord;
+			worldSpaceCoord = chunkCoord;
 		}
 
 		///<summary>Sets the block at the given chunk coordinate</summary>
@@ -84,6 +87,39 @@ namespace MCUtils
 			var sec = GetChunkSectionForYCoord(y, false);
 			if (sec == null) return null;
 			return sec.GetBlockAt(x, y.Mod(16), z);
+		}
+
+		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
+		{
+			if(!HasTerrain) return 0;
+			int countedBlocks = 0;
+			foreach(var kv in sections)
+			{
+				var section = kv.Value;
+				short baseY = (short)(kv.Key * 16);
+				if(baseY > yMax || baseY + 15 < yMin) continue;
+
+				for(byte y = 0; y < 16; y++)
+				{
+					short worldY = (short)(baseY + y);
+					if(worldY < yMin || worldY >= yMax) continue;
+					for(byte z = 0; z < 16; z++)
+					{
+						for(byte x = 0; x < 16; x++)
+						{
+							var b = section.GetBlockAt(x, y, z);
+							action.Invoke(new BlockCoord(x, y, z), b);
+							countedBlocks++;
+						}
+					}
+				}
+			}
+			return countedBlocks;
+		}
+
+		public int ForEachBlock(Action<BlockCoord, BlockState> action)
+		{
+			return ForEachBlock((short)(LowestSection * 16), (short)(HighestSection * 16 + 15), action);
 		}
 
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>

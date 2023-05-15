@@ -25,6 +25,11 @@ namespace MCUtils.Coordinates
 			return new ChunkCoord(x * 32 + chunkOffsetX, z * 32 + chunkOffsetZ);
 		}
 
+		public BlockCoord GetBlockCoord(int blockOffsetX, int y, int blockOffsetZ)
+		{
+			return new BlockCoord(x * 512 + blockOffsetX, y, z * 512 + blockOffsetZ);
+		}
+
 		public string ToFileName() => $"r.{x}.{z}.mca";
 
 		public string ToFileNameMCR() => $"r.{x}.{z}.mcr";

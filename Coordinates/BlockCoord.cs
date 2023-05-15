@@ -23,6 +23,11 @@ namespace MCUtils.Coordinates
 			this.z = z;
 		}
 
+		public override string ToString()
+		{
+			return $"[{x},{y},{z}]";
+		}
+
 		public static BlockCoord operator +(BlockCoord l, BlockCoord r)
 		{
 			return new BlockCoord(l.x + r.x, l.y + r.y, l.z + r.z);
@@ -31,6 +36,30 @@ namespace MCUtils.Coordinates
 		public static BlockCoord operator -(BlockCoord l, BlockCoord r)
 		{
 			return new BlockCoord(l.x - r.x, l.y - r.y, l.z - r.z);
+		}
+
+		public BlockCoord ChunkToRegionSpace(ChunkCoord localChunk)
+		{
+			if(localChunk.x > 31 || localChunk.z > 31 || localChunk.x < 0 || localChunk.z < 0)
+			{
+				throw new ArgumentException("Chunk coordinate was not in region space: "+localChunk);
+			}
+			return this + localChunk.BlockCoord;
+		}
+
+		public BlockCoord RegionToWorldSpace(RegionLocation localRegion)
+		{
+			return this + localRegion.GetBlockCoord(0, 0, 0);
+		}
+
+		public BlockCoord ChunkToWorldSpace(ChunkCoord localChunk, RegionLocation localRegion)
+		{
+			return ChunkToRegionSpace(localChunk).RegionToWorldSpace(localRegion);
+		}
+
+		public BlockCoord ChunkToWorldSpace(ChunkData chunk)
+		{
+			return this + chunk.worldSpaceCoord.BlockCoord;
 		}
 	}
 }

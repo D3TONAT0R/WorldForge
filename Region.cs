@@ -1,5 +1,6 @@
 using MCUtils.Coordinates;
 using MCUtils.IO;
+using MCUtils.TileEntities;
 using System;
 using System.Collections.Generic;
 using System.IO;
