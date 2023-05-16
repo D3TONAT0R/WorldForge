@@ -1,3 +1,4 @@
+using MCUtils.Coordinates;
 using MCUtils.IO;
 using System;
 using System.IO;
@@ -35,7 +36,11 @@ namespace MCUtils.ConsoleTools
 						for(int i = 0; i < size; i++) {
 							for(int j = 0; j < size; j++) {
 								for(int k = 0; k < size; k++) {
-									if(region.IsWithinBoundaries(x+i, y+j, z+k)) region.SetBlock(x+i, y+j, z+k, block);
+									var pos = new BlockCoord(x + i, y + j, z + k);
+									if(region.IsWithinBoundaries(pos))
+									{
+										region.SetBlock(pos, block);
+									}
 								}
 							}
 						}

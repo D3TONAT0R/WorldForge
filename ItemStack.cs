@@ -24,7 +24,10 @@ namespace MCUtils
 		{
 			item = new Item(nbt);
 			count = nbt.Get<sbyte>("Count");
-			slotIndex = nbt.Get<sbyte>("Slot");
+			if(!nbt.TryGet("Slot", out slotIndex))
+			{
+				slotIndex = -1;
+			}
 		}
 
 		public NBTCompound ToNBT(sbyte? slotIndex, Version version)

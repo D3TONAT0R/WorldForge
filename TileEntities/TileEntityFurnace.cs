@@ -23,12 +23,27 @@ namespace MCUtils.TileEntities
 			set => SetItem(2, value);
 		}
 
-		public TileEntityFurnace(string id, BlockCoord blockPos) : base(id, blockPos, 3)
+		[NBT("BurnTime")]
+		public short burnTime = 0;
+		[NBT("CookTime")]
+		public short cookTime = 0;
+		[NBT("CookTimeTotal")]
+		public short cookTimeTotal = 200;
+
+		public TileEntityFurnace(string id) : base(id, 3)
+		{
+			if(id.EndsWith("blast_furnace") || id.EndsWith("smoker"))
+			{
+				cookTimeTotal = 100;
+			}
+		}
+
+		public TileEntityFurnace() : this("furnace")
 		{
 
 		}
 
-		public TileEntityFurnace(NBTCompound compound) : base(compound, 3)
+		public TileEntityFurnace(NBTCompound compound, out BlockCoord blockPos) : base(compound, 3, out blockPos)
 		{
 
 		}

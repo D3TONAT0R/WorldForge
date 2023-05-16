@@ -1,3 +1,4 @@
+using MCUtils.Coordinates;
 using System;
 using System.Drawing;
 
@@ -225,15 +226,16 @@ namespace MCUtils
 		{
 			for (int y = 0; y < 256; y++)
 			{
-				BlockState block = source.GetBlockState(x, y, z);
+				BlockCoord pos = (x, y, z);
+				BlockState block = source.GetBlockState(pos);
 				if (block != null)
 				{
-					dst.SetBlock(x, y, z, block);
+					dst.SetBlock(pos, block);
 					//Also copy any tile entities associated with this block
-					var te = source.GetTileEntity(x, y, z);
+					var te = source.GetTileEntity(pos);
 					if (te != null)
 					{
-						dst.SetTileEntity(te);
+						dst.SetTileEntity(pos, te);
 					}
 				}
 			}

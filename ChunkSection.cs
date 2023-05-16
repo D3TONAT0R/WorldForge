@@ -1,4 +1,5 @@
-﻿using MCUtils.Lighting;
+﻿using MCUtils.Coordinates;
+using MCUtils.Lighting;
 using MCUtils.NBT;
 using System;
 using System.Collections.Generic;
@@ -189,16 +190,16 @@ namespace MCUtils
 			return predominantBiome;
 		}
 
-		public LightValue GetLightAt(int x, int y, int z)
+		public LightValue GetLightAt(BlockCoord pos)
 		{
 			if (lightmap == null) return LightValue.None;
-			return lightmap[x, y, z];
+			return lightmap[pos.x, pos.y, pos.z];
 		}
 
-		public void SetLightAt(int x, int y, int z, LightValue value)
+		public void SetLightAt(BlockCoord pos, LightValue value)
 		{
 			if (lightmap == null) lightmap = new LightValue[16,16,16];
-			lightmap[x, y, z] = value;
+			lightmap[pos.x, pos.y, pos.z] = value;
 		}
 	}
 }

@@ -33,61 +33,61 @@ namespace MCUtils
 		}
 
 		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
-		public bool IsAir(int x, int y, int z) {
-			var b = GetBlock(x, y, z);
+		public bool IsAir(BlockCoord pos) {
+			var b = GetBlock(pos);
 			return b == null || b.IsAir;
 		}
 
 		///<summary>Is the location within the region's bounds?</summary>
-		public bool IsWithinBoundaries(int x, int y, int z) {
-			if(x < 0 || x >= 512 || y < 0 || y >= 256 || z < 0 || z >= 512) return false;
+		public bool IsWithinBoundaries(BlockCoord pos) {
+			if(pos.x < 0 || pos.x >= 512 || pos.y < 0 || pos.y >= 256 || pos.z < 0 || pos.z >= 512) return false;
 			else return true;
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
-		public bool IsDefaultBlock(int x, int y, int z) {
-			var b = GetBlock(x, y, z);
+		public bool IsDefaultBlock(BlockCoord pos) {
+			var b = GetBlock(pos);
 			if(b == null) return false;
 			return b == World.defaultBlock;
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public ProtoBlock GetBlock(int x, int y, int z) {
-			var chunk = GetChunk(x, z, false);
+		public ProtoBlock GetBlock(BlockCoord pos) {
+			var chunk = GetChunk(pos.x, pos.z, false);
 			if(chunk != null) {
-				return chunk.GetBlockAt(x.Mod(16), y, z.Mod(16))?.block ?? BlockList.Find("minecraft:air");
+				return chunk.GetBlockAt(pos.LocalChunkCoords)?.block ?? BlockList.Find("minecraft:air");
 			} else {
 				return null;
 			}
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(int x, int y, int z) {
-			return GetChunk(x,z,false)?.GetBlockAt(x.Mod(16), y, z.Mod(16));
+		public BlockState GetBlockState(BlockCoord pos) {
+			return GetChunk(pos.x,pos.z,false)?.GetBlockAt(pos.LocalChunkCoords);
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
-		public TileEntity GetTileEntity(int x, int y, int z)
+		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			return GetChunk(x, z, true)?.GetTileEntity(x.Mod(16), y, z.Mod(16));
+			return GetChunk(pos.x, pos.z, true)?.GetTileEntity(pos.LocalChunkCoords);
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, string block, bool allowNewChunks = false) {
-			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)), allowNewChunks);
+		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false) {
+			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, BlockState block, bool allowNewChunks = false) {
-			GetChunk(x, z, allowNewChunks)?.SetBlockAt(x.Mod(16), y, z.Mod(16), block);
+		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false) {
+			GetChunk(pos.x, pos.z, allowNewChunks)?.SetBlockAt(pos.LocalChunkCoords, block);
 			return true;
 		}
 
 		///<summary>Sets the tile entity at the given location.</summary>
-		public bool SetTileEntity(TileEntity te)
+		public bool SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			var chunk = GetChunk(te.blockPos.x, te.blockPos.z, true);
-			chunk?.SetTileEntity(te.blockPos.x.Mod(16), te.blockPos.y, te.blockPos.z.Mod(16), te);
+			var chunk = GetChunk(pos.x, pos.z, true);
+			chunk?.SetTileEntity(pos.LocalChunkCoords, te);
 			return chunk != null;
 		}
 
@@ -105,16 +105,16 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int localX, int y, int localZ, bool allowNewChunks = false) {
-			int chunkX = (int)Math.Floor(localX / 16.0);
-			int chunkZ = (int)Math.Floor(localZ / 16.0);
+		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false) {
+			int chunkX = (int)Math.Floor(pos.x / 16.0);
+			int chunkZ = (int)Math.Floor(pos.z / 16.0);
 			if(chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if(chunks[chunkX, chunkZ] == null && allowNewChunks)
 			{
 				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
 			}
 			var c = chunks[chunkX, chunkZ];
-			if(c != null) c.SetDefaultBlockAt(localX.Mod(16), y, localZ.Mod(16));
+			if(c != null) c.SetDefaultBlockAt(pos.LocalChunkCoords);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
@@ -135,15 +135,12 @@ namespace MCUtils
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiomeAt(int x, int y, int z)
+		public BiomeID? GetBiomeAt(BlockCoord pos)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)
 			{
-				//for (int y = 0; y < 256; y++)
-				//{
-				return chunk.GetBiomeAt(x.Mod(16), y, z.Mod(16));
-				//}
+				return chunk.GetBiomeAt(pos.LocalChunkCoords);
 			}
 			else
 			{
@@ -162,39 +159,36 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
+		public void SetBiomeAt(BlockCoord pos, BiomeID biome)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)
 			{
-				//for(int y = 0; y < 256; y++)
-				//{
-				chunk.SetBiomeAt(x.Mod(16), y, z.Mod(16), biome);
-				//}
+				chunk.SetBiomeAt(pos.LocalChunkCoords, biome);
 			}
 		}
 
 		/// <summary>
 		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
 		/// </summary>
-		public void MarkForTickUpdate(int x, int y, int z)
+		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)
 			{
-				chunk.MarkForTickUpdate(x.Mod(16), y, z.Mod(16));
+				chunk.MarkForTickUpdate(pos.LocalChunkCoords);
 			}
 		}
 
 		/// <summary>
 		/// Unmarks a previously marked coordinate to be ticked when thie respective chunk is loaded.
 		/// </summary>
-		public void UnmarkForTickUpdate(int x, int y, int z)
+		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)
 			{
-				chunk.UnmarkForTickUpdate(x.Mod(16), y, z.Mod(16));
+				chunk.UnmarkForTickUpdate(pos.LocalChunkCoords);
 			}
 		}
 
@@ -231,15 +225,15 @@ namespace MCUtils
 		/// <summary>
 		/// Gets the depth of the water at the given location, in blocks.
 		/// </summary>
-		public int GetWaterDepth(int x, int y, int z)
+		public int GetWaterDepth(BlockCoord pos)
 		{
 			int depth = 0;
-			var block = GetBlock(x, y, z);
+			var block = GetBlock(pos);
 			while(block.IsWater)
 			{
 				depth++;
-				y--;
-				block = GetBlock(x, y, z);
+				pos.y--;
+				block = GetBlock(pos);
 			}
 			return depth;
 		}

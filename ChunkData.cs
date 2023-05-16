@@ -50,10 +50,10 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the block at the given chunk coordinate</summary>
-		public void SetBlockAt(int x, int y, int z, BlockState block)
+		public void SetBlockAt(BlockCoord pos, BlockState block)
 		{
-			if (!unlimitedHeight && (y < 0 || y > 255)) return;
-			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y.Mod(16), z, block);
+			if (!unlimitedHeight && (pos.y < 0 || pos.y > 255)) return;
+			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, block);
 		}
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
@@ -75,18 +75,18 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlockAt(int x, int y, int z)
+		public void SetDefaultBlockAt(BlockCoord pos)
 		{
-			GetChunkSectionForYCoord(y, true).SetBlockAt(x, y.Mod(16), z, 1); //1 is always the default block in a region generated from scratch
+			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, 1); //1 is always the default block in a region generated from scratch
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
-		public BlockState GetBlockAt(int x, int y, int z)
+		public BlockState GetBlockAt(BlockCoord pos)
 		{
 			if(!HasTerrain) return null;
-			var sec = GetChunkSectionForYCoord(y, false);
+			var sec = GetChunkSectionForYCoord(pos.y, false);
 			if (sec == null) return null;
-			return sec.GetBlockAt(x, y.Mod(16), z);
+			return sec.GetBlockAt(pos.x, pos.y.Mod(16), pos.z);
 		}
 
 		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
@@ -123,23 +123,22 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
-		public void SetTileEntity(int x, int y, int z, TileEntity te)
+		public void SetTileEntity(BlockCoord pos, TileEntity te)
 		{
 			if (tileEntities == null)
 			{
 				tileEntities = new Dictionary<BlockCoord, TileEntity>();
 			}
-			tileEntities.Add(new BlockCoord(x, y, z), te);
+			tileEntities.Add(pos, te);
 		}
 
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
-		public TileEntity GetTileEntity(int x, int y, int z)
+		public TileEntity GetTileEntity(BlockCoord pos)
 		{
 			if (tileEntities == null) return null;
-			var c = new BlockCoord(x, y, z);
-			if (tileEntities.ContainsKey(c))
+			if (tileEntities.ContainsKey(pos))
 			{
-				return tileEntities[c];
+				return tileEntities[pos];
 			}
 			else
 			{
@@ -148,12 +147,12 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the biome at the given chunk coordinate</summary>
-		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
+		public void SetBiomeAt(BlockCoord pos, BiomeID biome)
 		{
-			var section = GetChunkSectionForYCoord(y, false);
+			var section = GetChunkSectionForYCoord(pos.y, false);
 			if(section != null)
 			{
-				section.SetBiomeAt(x, y.Mod(16), z, biome);
+				section.SetBiomeAt(pos.x, pos.y.Mod(16), pos.z, biome);
 			}
 		}
 
@@ -167,12 +166,12 @@ namespace MCUtils
 		}
 
 		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID? GetBiomeAt(int x, int y, int z)
+		public BiomeID? GetBiomeAt(BlockCoord pos)
 		{
-			var section = GetChunkSectionForYCoord(y, false);
+			var section = GetChunkSectionForYCoord(pos.y, false);
 			if(section != null)
 			{
-				return section.GetBiomeAt(x, y.Mod(16), z);
+				return section.GetBiomeAt(pos.x, pos.y.Mod(16), pos.z);
 			}
 			else
 			{
@@ -188,30 +187,28 @@ namespace MCUtils
 			{
 				highestSectionWithBiomeData--;
 			}
-			return GetBiomeAt(x, highestSectionWithBiomeData * 16 + 15, z);
+			return GetBiomeAt((x, highestSectionWithBiomeData * 16 + 15, z));
 		}
 
 		/// <summary>
 		/// Marks the given chunk coordinate to be ticked when this chunk is loaded.
 		/// </summary>
-		public void MarkForTickUpdate(int x, int y, int z)
+		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			var coord = new BlockCoord(x, y, z);
-			if (!postProcessTicks.Contains(coord))
+			if (!postProcessTicks.Contains(pos))
 			{
-				postProcessTicks.Add(coord);
+				postProcessTicks.Add(pos);
 			}
 		}
 
 		/// <summary>
 		/// Unmarks a previously marked chunk coordinate to be ticked when this chunk is loaded.
 		/// </summary>
-		public void UnmarkForTickUpdate(int x, int y, int z)
+		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			var coord = new BlockCoord(x, y, z);
-			if (postProcessTicks.Contains(coord))
+			if (postProcessTicks.Contains(pos))
 			{
-				postProcessTicks.Remove(coord);
+				postProcessTicks.Remove(pos);
 			}
 		}
 
@@ -220,7 +217,7 @@ namespace MCUtils
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				var blockState = GetBlockAt(x.Mod(16), y, z.Mod(16));
+				var blockState = GetBlockAt((x.Mod(16), y, z.Mod(16)));
 				if(blockState != null && Blocks.IsBlockForMap(blockState.block, type)) return y;
 				y--;
 			}

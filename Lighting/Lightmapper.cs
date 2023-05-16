@@ -68,8 +68,8 @@ namespace MCUtils.Lighting
 					//HACK: light starts spreading only at the first surface block
 					int y = chunk.GetHighestBlock(x, z, HeightmapType.SolidBlocks);
 					//int y = maxY;
-					LightValue lv = ApplyOcclusion(LightValue.FullSkyLight, GetOcclusionLevelAtLocationChunkOnly(chunk, x, y, z));
-					Spread(x, y, z, lv, chunk);
+					LightValue lv = ApplyOcclusion(LightValue.FullSkyLight, GetOcclusionLevelAtLocationChunkOnly(chunk, (x, y, z)));
+					Spread((x, y, z), lv, chunk);
 				}
 			}
 		}
@@ -93,37 +93,37 @@ namespace MCUtils.Lighting
 			}
 		}
 
-		private void SpreadHorizontal(int x, int y, int z, LightValue l, ChunkData limitChunk)
+		private void SpreadHorizontal(BlockCoord pos, LightValue l, ChunkData limitChunk)
 		{
 			if (l.IsDark) return;
-			LightValue oxn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x - 1, y, z)).Attenuated;
-			TrySpreadTo(x - 1, y, z, limitChunk, oxn);
-			LightValue oxp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x + 1, y, z)).Attenuated;
-			TrySpreadTo(x + 1, y, z, limitChunk, oxp);
-			LightValue ozn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x, y, z - 1)).Attenuated;
-			TrySpreadTo(x, y, z - 1, limitChunk, ozn);
-			LightValue ozp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x, y, z + 1)).Attenuated;
-			TrySpreadTo(x, y, z + 1, limitChunk, ozp);
+			LightValue oxn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Left)).Attenuated;
+			TrySpreadTo(pos.Left, limitChunk, oxn);
+			LightValue oxp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Right)).Attenuated;
+			TrySpreadTo(pos.Right, limitChunk, oxp);
+			LightValue ozn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Back)).Attenuated;
+			TrySpreadTo(pos.Back, limitChunk, ozn);
+			LightValue ozp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Forward)).Attenuated;
+			TrySpreadTo(pos.Forward, limitChunk, ozp);
 		}
 
-		private void Spread(int x, int y, int z, LightValue l, ChunkData limitChunk)
+		private void Spread(BlockCoord pos, LightValue l, ChunkData limitChunk)
 		{
 			if (l.IsDark) return;
-			SpreadHorizontal(x, y, z, l, limitChunk);
-			LightValue oyn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x, y, z - 1)).AttenuatedDown;
-			TrySpreadTo(x, y - 1, z, limitChunk, oyn);
-			LightValue oyp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, x, y, z + 1)).Attenuated;
-			TrySpreadTo(x, y + 1, z, limitChunk, oyp);
+			SpreadHorizontal(pos, l, limitChunk);
+			LightValue oyn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Below)).AttenuatedDown;
+			TrySpreadTo(pos.Below, limitChunk, oyn);
+			LightValue oyp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Above)).Attenuated;
+			TrySpreadTo(pos.Above, limitChunk, oyp);
 		}
 
-		private void TrySpreadTo(int x, int y, int z, ChunkData limitChunk, LightValue l)
+		private void TrySpreadTo(BlockCoord pos, ChunkData limitChunk, LightValue l)
 		{
-			if (x < 0 || x > 15 || z < 0 || z > 15 || y < limitChunk.LowestSection * 16 || y > limitChunk.HighestSection * 16 + 15) return;
-			var existingLight = limitChunk.GetChunkSectionForYCoord(y, false)?.GetLightAt(x, y.Mod(16), z) ?? LightValue.FullBright;
+			if (pos.x < 0 || pos.x > 15 || pos.z < 0 || pos.z > 15 || pos.y < limitChunk.LowestSection * 16 || pos.y > limitChunk.HighestSection * 16 + 15) return;
+			var existingLight = limitChunk.GetChunkSectionForYCoord(pos.y, false)?.GetLightAt(pos.LocalSectionCoords) ?? LightValue.FullBright;
 			if(!l.IsDark && l.HasStrongerLightThan(existingLight))
 			{
-				limitChunk.GetChunkSectionForYCoord(y, false)?.SetLightAt(x, y.Mod(16), z, l);
-				Spread(x, y, z, l, limitChunk);
+				limitChunk.GetChunkSectionForYCoord(pos.y, false)?.SetLightAt(pos.LocalSectionCoords, l);
+				Spread(pos, l, limitChunk);
 			}
 		}
 
@@ -135,15 +135,15 @@ namespace MCUtils.Lighting
 			else return 15;
 		}
 
-		public byte GetOcclusionLevelAtLocationChunkOnly(ChunkData c, int x, int y, int z)
+		public byte GetOcclusionLevelAtLocationChunkOnly(ChunkData c, BlockCoord pos)
 		{
-			if(x < 0 || x > 15 || z < 0 || z > 15 || y < c.LowestSection * 16 || y > c.HighestSection * 16 + 15)
+			if(pos.x < 0 || pos.x > 15 || pos.z < 0 || pos.z > 15 || pos.y < c.LowestSection * 16 || pos.y > c.HighestSection * 16 + 15)
 			{
 				return 15;
 			}
 			else
 			{
-				return GetOcclusionLevel(c.GetBlockAt(x, y, z).block);
+				return GetOcclusionLevel(c.GetBlockAt(pos).block);
 			}
 		}
 

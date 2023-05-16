@@ -138,6 +138,13 @@ namespace MCUtils.NBT
 			return contents.Remove(key);
 		}
 
+		public object Take(string key)
+		{
+			object value = Get(key);
+			contents.Remove(key);
+			return value;
+		}
+
 		public T Take<T>(string key)
 		{
 			T value = Get<T>(key);
@@ -200,11 +207,11 @@ namespace MCUtils.NBT
 			parent.Remove(k);
 		}
 
-		public void Merge(NBTCompound target, bool replaceExisting)
+		public void Merge(NBTCompound target, bool overwrite)
 		{
 			foreach(var kv in this)
 			{
-				if(target.Contains(kv.Key) && !replaceExisting)
+				if(target.Contains(kv.Key) && !overwrite)
 				{
 					continue;
 				}

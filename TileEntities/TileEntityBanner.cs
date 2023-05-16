@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityBanner : TileEntity
 	{
-		public TileEntityBanner(BlockCoord blockPos) : base("banner", blockPos)
+		public TileEntityBanner() : base("banner")
 		{
 		}
 
-		public TileEntityBanner(NBTCompound compound) : base(compound)
+		public TileEntityBanner(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

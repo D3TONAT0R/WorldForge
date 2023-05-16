@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityComparator : TileEntity
 	{
-		public TileEntityComparator(BlockCoord blockPos) : base("comparator", blockPos)
+		public TileEntityComparator() : base("comparator")
 		{
 		}
 
-		public TileEntityComparator(NBTCompound compound) : base(compound)
+		public TileEntityComparator(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

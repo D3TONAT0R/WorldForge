@@ -21,11 +21,22 @@ namespace MCUtils.NBT
 		{
 			tagName = name;
 		}
+
+		public NBTAttribute(string name, string addedInVersion) : this(name)
+		{
+			addedIn = Version.Parse(addedInVersion);
+		}
+
+		public NBTAttribute(string name, string addedInVersion, string removedInVersion) : this(name)
+		{
+			addedIn = Version.Parse(addedInVersion);
+			removedIn = Version.Parse(removedInVersion);
+		}
 	}
 
 	public class NBTConverter
 	{
-		public static void LoadFromNBT(NBTCompound sourceNBT, object target)
+		public static void LoadFromNBT(NBTCompound sourceNBT, object target, bool removeFromCompound = false)
 		{
 			var type = target.GetType();
 			foreach(var (fi, attr) in GetFields(target))
@@ -36,17 +47,22 @@ namespace MCUtils.NBT
 					object value;
 					if (fi.FieldType == typeof(bool))
 					{
-						value = sourceNBT.Get<byte>(name) > 0;
+						if(removeFromCompound) value = sourceNBT.Take<byte>(name) > 0;
+						else value = sourceNBT.Get<byte>(name) > 0;
 					}
 					else if (typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
 					{
 						var inst = Activator.CreateInstance(fi.FieldType);
-						((INBTConverter)inst).FromNBT(sourceNBT.Get(name));
+						object data;
+						if(removeFromCompound) data = sourceNBT.Take(name);
+						else data = sourceNBT.Get(name);
+						((INBTConverter)inst).FromNBT(data);
 						value = inst;
 					}
 					else
 					{
-						value = sourceNBT.Get(name);
+						if(removeFromCompound) value = sourceNBT.Take(name);
+						else value = sourceNBT.Get(name);
 					}
 					fi.SetValue(target, value);
 				}

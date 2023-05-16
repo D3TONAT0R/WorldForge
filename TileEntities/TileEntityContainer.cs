@@ -8,16 +8,23 @@ namespace MCUtils.TileEntities
 	public class TileEntityContainer : TileEntity
 	{
 		public Dictionary<sbyte, ItemStack> items = new Dictionary<sbyte, ItemStack>();
+		[NBT("CustomName")]
 		public string customName = null;
+		[NBT("Lock")]
+		public string lockItem = null;
 
 		public readonly int maxSlotCount;
 
-		public TileEntityContainer(string id, BlockCoord blockPos, int maxSlotCount) : base(id, blockPos)
+		public TileEntityContainer(string id, int maxSlotCount, params (sbyte, ItemStack)[] content) : base(id)
 		{
 			this.maxSlotCount = maxSlotCount;
+			foreach(var c in content)
+			{
+				items.Add(c.Item1, c.Item2);
+			}
 		}
 
-		public TileEntityContainer(NBTCompound compound, int maxSlotCount) : base(compound)
+		public TileEntityContainer(NBTCompound compound, int maxSlotCount, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 			if(compound.TryTake("Items", out NBTList itemsList))
 			{
@@ -29,7 +36,6 @@ namespace MCUtils.TileEntities
 					items.Add(slotIndex, stack);
 				}
 			}
-			compound.TryTake("CustomName", out customName);
 			this.maxSlotCount = maxSlotCount;
 		}
 
@@ -89,6 +95,19 @@ namespace MCUtils.TileEntities
 				}
 			}
 			nbt.Add("Items", itemList);
+		}
+
+		protected override string ResolveEntityID(Version version)
+		{
+			if(version >= Version.Release_1(11))
+			{
+				return id;
+			}
+			else
+			{
+				if(id == "dispenser") return "Trap";
+				return id;
+			}
 		}
 	}
 }

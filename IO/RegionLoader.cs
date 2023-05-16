@@ -211,7 +211,7 @@ namespace MCUtils
 				for (int x = 0; x < 512; x++)
 				{
 					short y = hm[x, z];
-					while (!Blocks.IsBlockForMap(r.GetBlock(x, y, z), surfaceType) && y > 0)
+					while (!Blocks.IsBlockForMap(r.GetBlock((x, y, z)), surfaceType) && y > 0)
 					{
 						y--;
 					}
@@ -224,7 +224,7 @@ namespace MCUtils
 				for (int x = 0; x < 512; x++)
 				{
 					int y = hm[x, z];
-					var block = r.GetBlock(x, y, z);
+					var block = r.GetBlock((x, y, z));
 					if (block.IsAir && y > 0)
 					{
 						throw new ArgumentException("the mapped block was air.");
@@ -236,7 +236,7 @@ namespace MCUtils
 						if (block.IsWater)
 						{
 							//Water dithering
-							var depth = r.GetWaterDepth(x, y, z);
+							var depth = r.GetWaterDepth((x, y, z));
 							if (depth < 8) shade = 1;
 							else if (depth < 16) shade = 0;
 							else shade = -1;

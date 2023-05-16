@@ -44,7 +44,7 @@ namespace MCUtils.IO
 						var block = BlockList.FindByNumeric(new NumericID(blocks[i], meta[i]));
 						if (block != null)
 						{
-							c.SetBlockAt(x, y + sectionY * 16, z, new BlockState(block));
+							c.SetBlockAt((x, y + sectionY * 16, z), new BlockState(block));
 						}
 					}
 				}
@@ -151,8 +151,8 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i));
-						c.tileEntities.Add(te.blockPos, te);
+						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), out var blockPos);
+						c.tileEntities.Add(blockPos, te);
 					}
 				}
 			}
@@ -162,9 +162,9 @@ namespace MCUtils.IO
 		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
-			foreach(var te in c.tileEntities.Values)
+			foreach(var kv in c.tileEntities)
 			{
-				comp.Add(te.ToNBT(TargetVersion));
+				comp.Add(kv.Value.ToNBT(TargetVersion, kv.Key));
 			}
 		}
 
@@ -229,7 +229,7 @@ namespace MCUtils.IO
 			foreach(var t in c.postProcessTicks)
 			{
 				NBTCompound tick = new NBTCompound();
-				tick.Add("i", BlockList.numerics[c.GetBlockAt(t.x, t.y, t.z).block]);
+				tick.Add("i", BlockList.numerics[c.GetBlockAt(t).block]);
 				tick.Add("p", 0);
 				tick.Add("t", 0);
 				tick.Add("x", t.x);

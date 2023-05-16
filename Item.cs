@@ -11,6 +11,7 @@ namespace MCUtils
 
 		public Item(string id, NBTCompound tag)
 		{
+			if(!id.Contains(":")) id = "minecraft:" + id;
 			this.id = id;
 		}
 

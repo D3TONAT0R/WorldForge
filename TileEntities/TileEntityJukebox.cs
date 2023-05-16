@@ -8,17 +8,46 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityJukebox : TileEntity
 	{
-		public TileEntityJukebox(BlockCoord blockPos) : base("jukebox", blockPos)
+		public ItemStack recordItem;
+
+		[NBT("IsPlaying", "1.19.1")]
+		public bool isPlaying;
+		[NBT("RecordStartTick", "1.19.1")]
+		public long recordStartTick;
+		[NBT("TickCount", "1.19.1")]
+		public long tickCount;
+
+		public TileEntityJukebox() : base("jukebox")
 		{
+			
 		}
 
-		public TileEntityJukebox(NBTCompound compound) : base(compound)
+		public TileEntityJukebox(NBTCompound nbt, out BlockCoord blockPos) : base(nbt, out blockPos)
 		{
+			if(nbt.TryGet("RecordItem", out NBTCompound itemNBT))
+			{
+				recordItem = new ItemStack(itemNBT, out _);
+			}
 		}
 
 		protected override void Serialize(NBTCompound nbt, Version version)
 		{
-			throw new NotImplementedException();
+			if(!recordItem.IsNull)
+			{
+				nbt.Add("RecordItem", recordItem.ToNBT(null, version));
+			}
+		}
+
+		protected override string ResolveEntityID(Version version)
+		{
+			if(version >= Version.Release_1(11))
+			{
+				return id;
+			}
+			else
+			{
+				return "RecordPlayer";
+			}
 		}
 	}
 }

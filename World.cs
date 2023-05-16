@@ -2,6 +2,7 @@
 using MCUtils.Coordinates;
 using MCUtils.IO;
 using MCUtils.NBT;
+using MCUtils.TileEntities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -135,99 +136,110 @@ namespace MCUtils
 
 		[Obsolete("Use TryGetRegion instead for better performance and direct access to the region", false)]
 		/// <summary>Is the location within the world's generated regions?</summary>
-		public bool IsWithinBoundaries(int x, int y, int z)
+		public bool IsWithinBoundaries(BlockCoord pos)
 		{
-			x = (int)Math.Floor(x / 512f);
-			z = (int)Math.Floor(z / 512f);
+			int x = (int)Math.Floor(pos.x / 512f);
+			int z = (int)Math.Floor(pos.z / 512f);
 			return regions.ContainsKey(new RegionLocation(x, z));
 		}
 
 		/// <summary>Gets the region at the given block coordinates, if present</summary>
-		public Region TryGetRegion(int x, int z)
+		public Region GetRegion(int x, int z)
 		{
 			regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out var region);
 			return region;
 		}
 
-		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
-		public bool IsDefaultBlock(int x, int y, int z)
+		public bool TryGetRegion(int x, int z, out Region region)
 		{
-			var b = GetBlock(x, y, z);
+			return regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out region);
+		}
+
+		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
+		public bool IsDefaultBlock(BlockCoord pos)
+		{
+			var b = GetBlock(pos);
 			if (b == null) return false;
 			return b == defaultBlock;
 		}
 
-		///<summary>Returns true if the block at the given location is air.</summary>
-		public bool IsAir(int x, int y, int z)
+		///<summary>Returns true if the block at the given location is air or null.</summary>
+		public bool IsAirOrNull(BlockCoord pos)
 		{
-			var b = GetBlock(x, y, z);
+			var b = GetBlock(pos);
 			return b == null || b.IsAir;
 		}
 
 		///<summary>Returns true if the block at the given location is air and does actually exist (a chunk is present at the location).</summary>
-		public bool IsAirNotNull(int x, int y, int z)
+		public bool IsAirNotNull(BlockCoord pos)
 		{
-			var b = GetBlock(x, y, z);
+			var b = GetBlock(pos);
 			return b != null && b.IsAir;
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public ProtoBlock GetBlock(int x, int y, int z)
+		public ProtoBlock GetBlock(BlockCoord pos)
 		{
-			return TryGetRegion(x, z)?.GetBlock(x.Mod(512), y, z.Mod(512));
+			return GetRegion(pos.x, pos.z)?.GetBlock(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(int x, int y, int z)
+		public BlockState GetBlockState(BlockCoord pos)
 		{
-			return TryGetRegion(x, z)?.GetBlockState(x.Mod(512), y, z.Mod(512));
+			return GetRegion(pos.x, pos.z)?.GetBlockState(pos.LocalRegionCoords);
+		}
+
+		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
+		public TileEntity GetTileEntity(BlockCoord pos)
+		{
+			return GetRegion(pos.x, pos.z)?.GetTileEntity(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID? GetBiome(int x, int z)
 		{
-			return TryGetRegion(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
+			return GetRegion(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiome(int x, int y, int z)
+		public BiomeID? GetBiome(BlockCoord pos)
 		{
-			return TryGetRegion(x, z)?.GetBiomeAt(x.Mod(512), y, z.Mod(512));
+			return GetRegion(pos.x, pos.z)?.GetBiomeAt(pos.LocalRegionCoords);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			TryGetRegion(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
+			GetRegion(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
-		public void SetBiome(int x, int y, int z, BiomeID biome)
+		public void SetBiome(BlockCoord pos, BiomeID biome)
 		{
-			TryGetRegion(x, z)?.SetBiomeAt(x.Mod(512), y, z.Mod(512), biome);
+			GetRegion(pos.x, pos.z)?.SetBiomeAt(pos.LocalRegionCoords, biome);
 		}
 
 		/// <summary>
 		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
 		/// </summary>
-		public void MarkForTickUpdate(int x, int y, int z)
+		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			TryGetRegion(x, z)?.MarkForTickUpdate(x.Mod(512), y, z.Mod(512));
+			GetRegion(pos.x, pos.z)?.MarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		/// <summary>
 		/// Unmarks a previously marked coordinate to be ticked when the respective chunk is loaded.
 		/// </summary>
-		public void UnmarkForTickUpdate(int x, int y, int z)
+		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			TryGetRegion(x, z)?.UnmarkForTickUpdate(x.Mod(512), y, z.Mod(512));
+			GetRegion(pos.x, pos.z)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		//private readonly object lockObj = new object();
 
 		private Region GetRegionAt(int x, int z)
 		{
-			return TryGetRegion(x, z);
+			return GetRegion(x, z);
 			/*lock (lockObj)
 			{
 				var region = TryGetRegion(x, z);
@@ -274,19 +286,20 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, string block, bool allowNewChunks = false)
+		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
 		{
-			return SetBlock(x, y, z, new BlockState(BlockList.Find(block)), allowNewChunks);
+			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(int x, int y, int z, BlockState block, bool allowNewChunks = false)
+		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
 		{
-			if (y < 0 || y > 255) return false;
-			var r = GetRegionAt(x, z);
+			//Check for varying build limits
+			if (pos.y < 0 || pos.y > 255) return false;
+			var r = GetRegionAt(pos.x, pos.z);
 			if (r != null)
 			{
-				return r.SetBlock(x.Mod(512), y, z.Mod(512), block, allowNewChunks);
+				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
 			}
 			else
 			{
@@ -295,17 +308,43 @@ namespace MCUtils
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(int x, int y, int z, bool allowNewChunks = false)
+		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
 		{
-			if (y < 0 || y > 255) return;
-			var r = GetRegionAt(x, z);
+			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
+			if (pos.y < 0 || pos.y > 255) return;
+			var r = GetRegionAt(pos.x, pos.z);
 			if (r != null)
 			{
-				r.SetDefaultBlock(x.Mod(512), y, z.Mod(512), allowNewChunks);
+				r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
 			}
 			else
 			{
-				throw new ArgumentException($"The location was outside of the world: {x},{y},{z}");
+				throw new ArgumentException($"The location was outside of the world: {pos}");
+			}
+		}
+
+		///<summary>Sets the tile entity at the given location.</summary>
+		public bool SetTileEntity(BlockCoord pos, TileEntity te)
+		{
+			if(TryGetRegion(pos.x, pos.z, out var region))
+			{
+				return region.SetTileEntity(pos, te);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
+		{
+			if(SetBlock(pos, block, allowNewChunks))
+			{
+				return SetTileEntity(pos, te);
+			}
+			else
+			{
+				return false;
 			}
 		}
 
@@ -344,14 +383,14 @@ namespace MCUtils
 				{
 					int y = heightmap[x - xMin, z - zMin];
 					if (y < 0) continue;
-					var block = GetBlock(x, y, z);
+					var block = GetBlock((x, y, z));
 					int shade = 0;
 					if (shading && z - 1 >= zMin)
 					{
 						if (block.IsWater)
 						{
 							//Water dithering
-							var depth = GetWaterDepth(x, y, z);
+							var depth = GetWaterDepth((x, y, z));
 							if (depth < 8) shade = 1;
 							else if (depth < 16) shade = 0;
 							else shade = -1;
@@ -367,7 +406,7 @@ namespace MCUtils
 							else if (above < y) shade = 1;
 						}
 					}
-					var aboveBlock = GetBlock(x, y + 1, z);
+					var aboveBlock = GetBlock((x, y + 1, z));
 					if (aboveBlock != null && aboveBlock.ID == "minecraft:snow") block = aboveBlock;
 					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
@@ -378,9 +417,9 @@ namespace MCUtils
 		/// <summary>
 		/// Gets the depth of the water at the given location, in blocks
 		/// </summary>
-		public int GetWaterDepth(int x, int y, int z)
+		public int GetWaterDepth(BlockCoord pos)
 		{
-			return GetRegionAt(x, z)?.GetWaterDepth(x.Mod(512), y, z.Mod(512)) ?? 0;
+			return GetRegionAt(pos.x, pos.z)?.GetWaterDepth(pos.LocalRegionCoords) ?? 0;
 		}
 
 		/// <summary>

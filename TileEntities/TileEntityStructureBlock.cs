@@ -8,17 +8,29 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityStructureBlock : TileEntity
 	{
-		public TileEntityStructureBlock(BlockCoord blockPos) : base("structure_block", blockPos)
+		public TileEntityStructureBlock() : base("structure_block")
 		{
 		}
 
-		public TileEntityStructureBlock(NBTCompound compound) : base(compound)
+		public TileEntityStructureBlock(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 
 		protected override void Serialize(NBTCompound nbt, Version version)
 		{
 			throw new NotImplementedException();
+		}
+
+		protected override string ResolveEntityID(Version version)
+		{
+			if(version >= Version.Release_1(11))
+			{
+				return id;
+			}
+			else
+			{
+				return "Structure";
+			}
 		}
 	}
 }

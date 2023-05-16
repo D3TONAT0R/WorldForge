@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityBeehive : TileEntity
 	{
-		public TileEntityBeehive(string id, BlockCoord blockPos) : base(id, blockPos)
+		public TileEntityBeehive(string id) : base(id)
 		{
 		}
 
-		public TileEntityBeehive(NBTCompound compound) : base(compound)
+		public TileEntityBeehive(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityJigsaw : TileEntity
 	{
-		public TileEntityJigsaw(BlockCoord blockPos) : base("jigsaw", blockPos)
+		public TileEntityJigsaw() : base("jigsaw")
 		{
 		}
 
-		public TileEntityJigsaw(NBTCompound compound) : base(compound)
+		public TileEntityJigsaw(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

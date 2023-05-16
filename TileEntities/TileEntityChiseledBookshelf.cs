@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityChiseledBookshelf : TileEntity
 	{
-		public TileEntityChiseledBookshelf(BlockCoord blockPos) : base("chiseled_bookshelf", blockPos)
+		public TileEntityChiseledBookshelf() : base("chiseled_bookshelf")
 		{
 		}
 
-		public TileEntityChiseledBookshelf(NBTCompound compound) : base(compound)
+		public TileEntityChiseledBookshelf(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

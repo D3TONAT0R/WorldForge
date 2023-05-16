@@ -7,6 +7,23 @@ namespace MCUtils
 	public class BlockState
 	{
 
+		public struct Property
+		{
+			public string id;
+			public string state;
+
+			public Property(string id, string state)
+			{
+				this.id = id;
+				this.state = state;
+			}
+
+			public static implicit operator Property((string, string) tuple)
+			{
+				return new Property(tuple.Item1, tuple.Item2);
+			}
+		}
+
 		public static BlockState Air
 		{
 			get
@@ -44,9 +61,12 @@ namespace MCUtils
 			AddDefaultBlockProperties();
 		}
 
-		public BlockState(string blockType) : this(BlockList.Find(blockType))
+		public BlockState(string blockType, params Property[] properties) : this(BlockList.Find(blockType))
 		{
-
+			foreach(var prop in properties)
+			{
+				this.properties.Set(prop.id, prop.state);
+			}
 		}
 
 		void AddDefaultBlockProperties()

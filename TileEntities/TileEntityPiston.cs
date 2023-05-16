@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityPiston : TileEntity
 	{
-		public TileEntityPiston(BlockCoord blockPos) : base("piston", blockPos)
+		public TileEntityPiston() : base("piston")
 		{
 		}
 
-		public TileEntityPiston(NBTCompound compound) : base(compound)
+		public TileEntityPiston(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

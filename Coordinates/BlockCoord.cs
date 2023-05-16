@@ -16,6 +16,15 @@ namespace MCUtils.Coordinates
 
 		public BlockCoord LocalChunkCoords => new BlockCoord(x.Mod(16), y, z.Mod(16));
 
+		public BlockCoord LocalSectionCoords => new BlockCoord(x.Mod(16), y.Mod(16), z.Mod(16));
+
+		public BlockCoord Below => new BlockCoord(x, y - 1, z);
+		public BlockCoord Above => new BlockCoord(x, y + 1, z);
+		public BlockCoord Left => new BlockCoord(x - 1, y, z);
+		public BlockCoord Right => new BlockCoord(x + 1, y, z);
+		public BlockCoord Back => new BlockCoord(x, y, z - 1);
+		public BlockCoord Forward => new BlockCoord(x, y, z + 1);
+
 		public BlockCoord(int x, int y, int z)
 		{
 			this.x = x;
@@ -36,6 +45,11 @@ namespace MCUtils.Coordinates
 		public static BlockCoord operator -(BlockCoord l, BlockCoord r)
 		{
 			return new BlockCoord(l.x - r.x, l.y - r.y, l.z - r.z);
+		}
+
+		public static implicit operator BlockCoord((int, int, int) tuple)
+		{
+			return new BlockCoord(tuple.Item1, tuple.Item2, tuple.Item3);
 		}
 
 		public BlockCoord ChunkToRegionSpace(ChunkCoord localChunk)

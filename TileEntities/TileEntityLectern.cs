@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityLectern : TileEntity
 	{
-		public TileEntityLectern(BlockCoord blockPos) : base("lectern", blockPos)
+		public TileEntityLectern() : base("lectern")
 		{
 		}
 
-		public TileEntityLectern(NBTCompound compound) : base(compound)
+		public TileEntityLectern(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

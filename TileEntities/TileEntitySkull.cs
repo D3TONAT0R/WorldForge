@@ -8,11 +8,11 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntitySkull : TileEntity
 	{
-		public TileEntitySkull(BlockCoord blockPos) : base("skull", blockPos)
+		public TileEntitySkull() : base("skull")
 		{
 		}
 
-		public TileEntitySkull(NBTCompound compound) : base(compound)
+		public TileEntitySkull(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 

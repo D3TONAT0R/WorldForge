@@ -8,17 +8,29 @@ namespace MCUtils.TileEntities
 {
 	public class TileEntityEndGateway : TileEntity
 	{
-		public TileEntityEndGateway(BlockCoord blockPos) : base("end_gateway", blockPos)
+		public TileEntityEndGateway() : base("end_gateway")
 		{
 		}
 
-		public TileEntityEndGateway(NBTCompound compound) : base(compound)
+		public TileEntityEndGateway(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
 		}
 
 		protected override void Serialize(NBTCompound nbt, Version version)
 		{
 			throw new NotImplementedException();
+		}
+
+		protected override string ResolveEntityID(Version version)
+		{
+			if(version >= Version.Release_1(11))
+			{
+				return id;
+			}
+			else
+			{
+				return "EndGateway";
+			}
 		}
 	}
 }
