@@ -51,18 +51,19 @@ namespace MCUtils.IO
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords)
+		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords, out Version? version)
 		{
 			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
+			version = Version.FromDataVersion(chunkNBTData.dataVersion);
 			var chunkNBT = GetRootCompound(chunkNBTData);
 
-			LoadCommonData(c, chunkNBT);
-			LoadBlocks(c, chunkNBT);
-			LoadTileEntities(c, chunkNBT);
-			LoadTileTicks(c, chunkNBT);
-			LoadBiomes(c, chunkNBT);
-			LoadEntities(c, chunkNBT, parentRegion);
-			PostLoad(c, chunkNBT);
+			LoadCommonData(c, chunkNBT, version);
+			LoadBlocks(c, chunkNBT, version);
+			LoadTileEntities(c, chunkNBT, version);
+			LoadTileTicks(c, chunkNBT, version);
+			LoadBiomes(c, chunkNBT, version);
+			LoadEntities(c, chunkNBT, parentRegion, version);
+			PostLoad(c, chunkNBT, version);
 
 			c.RecalculateSectionRange();
 
@@ -71,17 +72,19 @@ namespace MCUtils.IO
 
 		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");
 
-		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT);
+		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version);
 
-		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT);
+		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT, Version? version);
 
-		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT);
+		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, Version? version);
 
-		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion);
+		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, Version? version);
 
-		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT);
+		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version);
 
-		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT);
+		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version);
+
+		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, Version? version) { }
 
 		public virtual NBTFile CreateChunkNBT(ChunkData c, Region parentRegion)
 		{
@@ -106,8 +109,6 @@ namespace MCUtils.IO
 
 			return chunkRootNBT;
 		}
-
-		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT) { }
 
 		public abstract void WriteCommonData(ChunkData c, NBTCompound chunkNBT);
 

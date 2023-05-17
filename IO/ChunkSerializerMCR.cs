@@ -9,7 +9,7 @@ namespace MCUtils.IO
 	{
 		public ChunkSerializerMCR(Version version) : base(version) { }
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 
 		}
@@ -37,7 +37,7 @@ namespace MCUtils.IO
 			return x * 2048 + z * 128 + y;
 		}
 
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, Version? version)
 		{
 			if(nbtCompound.TryGet<byte[]>("Blocks", out var blocks))
 			{
@@ -87,7 +87,7 @@ namespace MCUtils.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
 			if (chunkNBT.Contains("TileEntities"))
@@ -97,7 +97,7 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), out var blockPos);
+						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
 						c.tileEntities.Add(blockPos, te);
 					}
 				}
@@ -114,7 +114,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
+		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, Version? version)
 		{
 			c.entities = new List<Entity>();
 			if (chunkNBT.TryGet<NBTList>("Entities", out var entList))
@@ -148,7 +148,7 @@ namespace MCUtils.IO
 			//TODO
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
@@ -158,7 +158,7 @@ namespace MCUtils.IO
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			//Do nothing, tile ticks were not implementen in old regions.
 		}

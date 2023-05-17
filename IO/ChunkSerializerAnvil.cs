@@ -16,7 +16,7 @@ namespace MCUtils.IO
 		}
 
 		#region Blocks
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, Version? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.listContent)
@@ -69,7 +69,7 @@ namespace MCUtils.IO
 			return sectionNBT.Contains("Blocks");
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			
 		}
@@ -141,7 +141,7 @@ namespace MCUtils.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
 			if (chunkNBT.Contains("TileEntities"))
@@ -151,7 +151,7 @@ namespace MCUtils.IO
 				{
 					for (int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), out var blockPos);
+						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
 						c.tileEntities.Add(blockPos, te);
 					}
 				}
@@ -168,7 +168,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
+		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, Version? version)
 		{
 			c.entities = new List<Entity>();
 			if (chunkNBT.Contains("Entities"))
@@ -189,7 +189,7 @@ namespace MCUtils.IO
 			chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			if (chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
@@ -218,7 +218,7 @@ namespace MCUtils.IO
 			chunkNBT.Add("Biomes", biomeData);
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			//TODO
 		}

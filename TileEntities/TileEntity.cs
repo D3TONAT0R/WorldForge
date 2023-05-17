@@ -22,7 +22,7 @@ namespace MCUtils.TileEntities
 			otherNBTData = nbt;
 		}
 
-		public static TileEntity CreateFromNBT(NBTCompound nbt, out BlockCoord blockPos)
+		public static TileEntity CreateFromNBT(NBTCompound nbt, Version? version, out BlockCoord blockPos)
 		{
 			string id = nbt.Get<string>("id");
 			switch(id)
@@ -47,6 +47,8 @@ namespace MCUtils.TileEntities
 					return new TileEntityContainer(nbt, 9, out blockPos);
 				case "hopper":
 					return new TileEntityContainer(nbt, 5, out blockPos);
+				case "sign":
+					return new TileEntitySign(nbt, version, out blockPos);
 				case "beacon":
 					return new TileEntityBeacon(nbt, out blockPos);
 				case "bee_nest":
@@ -120,6 +122,8 @@ namespace MCUtils.TileEntities
 						return CreateDropper();
 					case "hopper":
 						return CreateHopper();
+					case "sign":
+						return new TileEntitySign();
 					case "beacon":
 						return new TileEntityBeacon();
 					case "bee_nest":

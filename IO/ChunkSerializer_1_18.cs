@@ -31,7 +31,7 @@ namespace MCUtils.IO
 			return sectionNBT.GetAsCompound("block_states").Get<long[]>("data");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			var sectionsList = chunkNBT.GetAsList("sections");
 			foreach(var s in sectionsList.listContent)

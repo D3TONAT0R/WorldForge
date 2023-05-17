@@ -99,7 +99,7 @@ namespace MCUtils.IO
 			comp.Add(BlockStatesKey, longs);
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			if(chunkNBT.TryGet("Status", out string statusString))
 			{
@@ -111,7 +111,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, Version? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach (var o in sectionsList.listContent)
@@ -186,7 +186,7 @@ namespace MCUtils.IO
 			return sectionNBT.Get<long[]>("BlockStates");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			if (chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
 			{
@@ -209,7 +209,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version)
 		{
 			//TODO
 		}

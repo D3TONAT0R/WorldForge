@@ -139,7 +139,7 @@ namespace MCUtils
 						var chunkSerializer = ChunkSerializer.CreateForVersion(gameVersion);
 
 						var coord = region.regionPos.GetChunkCoord(i % 32, i / 32);
-						region.chunks[i % 32, i / 32] = chunkSerializer.ReadChunkNBT(nbt, region, coord);
+						region.chunks[i % 32, i / 32] = chunkSerializer.ReadChunkNBT(nbt, region, coord, out _);
 					}
 				}
 			});
@@ -171,7 +171,7 @@ namespace MCUtils
 			Parallel.ForEach(chunkFileLocations, c =>
 			{
 				var coord = c.Item1;
-				var chunk = cs.ReadChunkNBT(new NBTFile(c.Item2), reg, c.Item1);
+				var chunk = cs.ReadChunkNBT(new NBTFile(c.Item2), reg, c.Item1, out _);
 				reg.chunks[coord.x.Mod(16), coord.z.Mod(16)] = chunk;
 			});
 			return reg;
