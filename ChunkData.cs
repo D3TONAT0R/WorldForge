@@ -108,7 +108,7 @@ namespace MCUtils
 						for(byte x = 0; x < 16; x++)
 						{
 							var b = section.GetBlockAt(x, y, z);
-							action.Invoke(new BlockCoord(x, y, z), b);
+							action.Invoke(new BlockCoord(x, baseY + y, z), b);
 							countedBlocks++;
 						}
 					}

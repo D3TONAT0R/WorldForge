@@ -49,10 +49,12 @@ namespace MCUtils
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
 					v.Run(args);
 				}
+				/*
 				if(input.StartsWith("analyzedist ")) {
 					var v = new BlockDistributionConsoleTool();
 					v.Run(args);
 				}
+				*/
 			}
 		}
 

@@ -89,5 +89,18 @@
 		deep_dark,
 		meadow,
 		old_growth_birch_forest,
+
+		//TODO: map IDs
+		windswept_gravelly_hills,
+		sparse_jungle,
+		windswept_forest,
+		snowy_plains,
+		snowy_slopes,
+		stony_peaks,
+		old_growth_pine_taiga,
+		frozen_peaks,
+		grove,
+		jagged_peaks,
+
 	}
 }
