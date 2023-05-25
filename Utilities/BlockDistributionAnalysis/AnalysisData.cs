@@ -31,12 +31,17 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 					return 0;
 				}
 			}
+
+			public double GetRateAtY(short y, int chunkCount)
+			{
+				return GetCountAtY(y) / (double)chunkCount / 256d;
+			}
 		}
 
 		public Dictionary<string, BlockCount> data = new Dictionary<string, BlockCount>();
 		public int chunkCounter;
 
-		public static object lockObj = new object();
+		private readonly object lockObj = new object();
 
 		public void IncreaseCounter(string blockID, short y)
 		{
@@ -64,6 +69,18 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 			else
 			{
 				return 0;
+			}
+		}
+
+		public double GetRateAtY(string blockID, short y)
+		{
+			if(data.TryGetValue(blockID, out var c))
+			{
+				return c.GetRateAtY(y, chunkCounter);
+			}
+			else
+			{
+				return 0.0;
 			}
 		}
 

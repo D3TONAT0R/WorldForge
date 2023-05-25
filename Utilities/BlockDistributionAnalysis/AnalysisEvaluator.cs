@@ -96,7 +96,7 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 			return groups;
 		}
 
-		public static Dictionary<short, double> Evaluate(AnalysisData analysis, params string[] blockIDs)
+		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, bool relativeToStone, params string[] blockIDs)
 		{
 			Dictionary<short, long> combined = new Dictionary<short, long>();
 			foreach(var block in blockIDs)
@@ -106,17 +106,54 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 					JoinDictionaries(c.counts, combined);
 				}
 			}
-			Dictionary<short, double> results = new Dictionary<short, double>();
+			Dictionary<short, double?> results = new Dictionary<short, double?>();
 			foreach(var kv in combined)
 			{
-				results.Add(kv.Key, kv.Value / (double)analysis.chunkCounter / 256d);
+				short y = kv.Key;
+				double? rate;
+				if(relativeToStone)
+				{
+					long stoneCount = CountTerrainBlocksAtY(analysis, y);
+					if(stoneCount < analysis.chunkCounter * 0.35)
+					{
+						//Not enough stone at this height, results are not reliable enough
+						rate = null;
+					}
+					else
+					{
+						rate = kv.Value / (double)(kv.Value + stoneCount);
+					}
+				}
+				else
+				{
+					rate = kv.Value / (double)analysis.chunkCounter / 256d;
+				}
+				results.Add(y, rate);
 			}
 			return results;
 		}
 
-		public static Dictionary<short, double> Evaluate(AnalysisData analysis, BlockGroup group)
+		private static long CountTerrainBlocksAtY(AnalysisData analysis, short y)
 		{
-			return Evaluate(analysis, group.blocks.Select(b => b.ID).ToArray());
+			return
+				analysis.GetTotalAtY("minecraft:stone", y) +
+				analysis.GetTotalAtY("minecraft:deepslate", y) +
+				analysis.GetTotalAtY("minecraft:andesite", y) +
+				analysis.GetTotalAtY("minecraft:diorite", y) +
+				analysis.GetTotalAtY("minecraft:granite", y) +
+				analysis.GetTotalAtY("minecraft:tuff", y) +
+				analysis.GetTotalAtY("minecraft:gravel", y) +
+				analysis.GetTotalAtY("minecraft:dirt", y) +
+				analysis.GetTotalAtY("minecraft:grass_block", y) +
+				analysis.GetTotalAtY("minecraft:podzol", y) +
+				analysis.GetTotalAtY("minecraft:clay", y) +
+				analysis.GetTotalAtY("minecraft:mud", y) +
+				analysis.GetTotalAtY("minecraft:sand", y);
+		}
+
+		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, BlockGroup group, bool relativeToStone)
+		{
+			return Evaluate(analysis, relativeToStone, group.blocks.Select(b => b.ID).ToArray());
 		}
 
 		private static void JoinDictionaries(Dictionary<short, long> src, Dictionary<short, long> target)

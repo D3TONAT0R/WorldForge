@@ -101,6 +101,7 @@
 		frozen_peaks,
 		grove,
 		jagged_peaks,
-
+		windswept_savanna,
+		mangrove_swamp,
 	}
 }

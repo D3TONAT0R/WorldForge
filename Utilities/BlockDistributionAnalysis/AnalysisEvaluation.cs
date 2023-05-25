@@ -10,9 +10,9 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 		public class EvaluationEntry
 		{
 			public string name;
-			public Dictionary<short, double> evaluationData;
+			public Dictionary<short, double?> evaluationData;
 
-			public EvaluationEntry(string name, Dictionary<short, double> data)
+			public EvaluationEntry(string name, Dictionary<short, double?> data)
 			{
 				this.name = name;
 				evaluationData = data;
@@ -23,17 +23,19 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 		public short yMin;
 		public short yMax;
 		public List<EvaluationEntry> evaluations = new List<EvaluationEntry>();
+		public bool relativeToStone;
 
-		public AnalysisEvaluation(AnalysisData analysis, short yMin, short yMax)
+		public AnalysisEvaluation(AnalysisData analysis, short yMin, short yMax, bool relativeToStone)
 		{
 			this.analysis = analysis;
 			this.yMin = yMin;
 			this.yMax = yMax;
+			this.relativeToStone = relativeToStone;
 		}
 
 		public void AddEvaluation(BlockGroup group)
 		{
-			var entry = new EvaluationEntry(group.name, Evaluate(analysis, group));
+			var entry = new EvaluationEntry(group.name, Evaluate(analysis, group, relativeToStone));
 			evaluations.Add(entry);
 		}
 
@@ -54,8 +56,9 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 				csv.Append(y);
 				foreach(var ev in evaluations)
 				{
-					ev.evaluationData.TryGetValue(y, out double v);
-					csv.Append(sep + v.ToString());
+					ev.evaluationData.TryGetValue(y, out double? v);
+					string vString = v?.ToString() ?? "-";
+					csv.Append(sep + vString);
 				}
 				csv.AppendLine();
 			}
