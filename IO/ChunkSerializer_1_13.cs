@@ -67,7 +67,7 @@ namespace MCUtils.IO
 				{
 					for(int x = 0; x < 16; x++)
 					{
-						string bin = NumToBits(section.blocks[x, y, z], indexLength);
+						string bin = NumToBits(section.blocks[ChunkSection.GetIndex(x, y, z)], indexLength);
 						bin = Converter.ReverseString(bin);
 						if(!UseFull64BitRange)
 						{
@@ -147,7 +147,7 @@ namespace MCUtils.IO
 						{
 							for (int x = 0; x < 16; x++)
 							{
-								section.blocks[x, y, z] = indices[y * 256 + z * 16 + x];
+								section.blocks[ChunkSection.GetIndex(x, y, z)] = indices[y * 256 + z * 16 + x];
 							}
 						}
 					}

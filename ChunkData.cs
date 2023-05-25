@@ -15,7 +15,6 @@ namespace MCUtils
 		public ChunkStatus status = ChunkStatus.light;
 
 		public string defaultBlock = "minecraft:stone";
-		public bool unlimitedHeight = false; //Allow blocks below 0 and above 256 (Versions 1.17+)
 		public Region containingRegion;
 		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
 		public sbyte HighestSection { get; private set; }
@@ -52,7 +51,6 @@ namespace MCUtils
 		///<summary>Sets the block at the given chunk coordinate</summary>
 		public void SetBlockAt(BlockCoord pos, BlockState block)
 		{
-			if (!unlimitedHeight && (pos.y < 0 || pos.y > 255)) return;
 			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, block);
 		}
 

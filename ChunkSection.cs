@@ -11,7 +11,7 @@ namespace MCUtils
 	{
 		public readonly ChunkData containingChunk;
 
-		public ushort[,,] blocks = new ushort[16, 16, 16];
+		public ushort[] blocks = new ushort[4096];
 		public List<BlockState> palette;
 
 		//Resolution: [1:4:1] for backwards compatibility
@@ -43,7 +43,7 @@ namespace MCUtils
 			{
 				index = AddBlockToPalette(block);
 			}
-			blocks[x, y, z] = (ushort)index;
+			blocks[GetIndex(x,y,z)] = (ushort)index;
 			//}
 		}
 
@@ -51,13 +51,13 @@ namespace MCUtils
 		{
 			//lock (lockObj)
 			//{
-			blocks[x, y, z] = paletteIndex;
+			blocks[GetIndex(x, y, z)] = paletteIndex;
 			//}
 		}
 
 		public BlockState GetBlockAt(int x, int y, int z)
 		{
-			return palette[blocks[x, y, z]];
+			return palette[blocks[GetIndex(x, y, z)]];
 		}
 
 		public ushort? GetPaletteIndex(BlockState state)
@@ -67,6 +67,11 @@ namespace MCUtils
 				if (palette[i].Compare(state, true)) return (ushort)i;
 			}
 			return null;
+		}
+
+		public static int GetIndex(int x, int y, int z)
+		{
+			return z * 256 + y * 16 + x;
 		}
 
 		private ushort AddBlockToPalette(BlockState block)
@@ -80,7 +85,7 @@ namespace MCUtils
 		{
 			if (blocks == null) return true;
 			bool allSame = true;
-			var i = blocks[0, 0, 0];
+			var i = blocks[0];
 			if (!palette[i].Compare(BlockState.Air, false)) return false;
 			foreach (var j in blocks)
 			{

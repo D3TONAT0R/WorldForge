@@ -294,8 +294,8 @@ namespace MCUtils
 		///<summary>Sets the block state at the given location.</summary>
 		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
 		{
-			//Check for varying build limits
-			if (pos.y < 0 || pos.y > 255) return false;
+			//TODO: Check for varying build limits
+			//if (pos.y < 0 || pos.y > 255) return false;
 			var r = GetRegionAt(pos.x, pos.z);
 			if (r != null)
 			{
@@ -311,7 +311,7 @@ namespace MCUtils
 		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
 		{
 			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
-			if (pos.y < 0 || pos.y > 255) return;
+			//if (pos.y < 0 || pos.y > 255) return;
 			var r = GetRegionAt(pos.x, pos.z);
 			if (r != null)
 			{
