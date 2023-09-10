@@ -315,7 +315,11 @@ namespace MCUtils
 			try
 			{
 				//TODO: not global chunk coords
-				ChunkData chunk = new ChunkData(null, nbt, new ChunkCoord(localChunkX, localChunkZ));
+				ChunkSerializer serializer;
+				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
+				else serializer = new ChunkSerializerAnvil(Version.Release_1(8));
+
+				ChunkData chunk = serializer.ReadChunkNBT(nbt, null, new ChunkCoord(localChunkX, localChunkZ), out _);
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
 				/*for (int x = 0; x < 16; x++)
 				{
