@@ -238,6 +238,20 @@ namespace MCUtils
 			return depth;
 		}
 
+		public IEnumerable<(BlockCoord, TileEntity)> EnumerateTileEntities()
+		{
+			foreach(var c in chunks)
+			{
+				if(c != null)
+				{
+					foreach(var pos in c.tileEntities.Keys)
+					{
+						yield return (pos, c.tileEntities[pos]);
+					}
+				}
+			}
+		}
+
 		public void WriteToFile(string destinationDirectory, Version gameVersion, string name = null)
 		{
 			if (name == null) name = regionPos.ToFileName();

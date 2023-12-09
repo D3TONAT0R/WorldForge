@@ -75,5 +75,20 @@ namespace MCUtils.Coordinates
 		{
 			return this + chunk.worldSpaceCoord.BlockCoord;
 		}
+
+		public static float Distance(BlockCoord a, BlockCoord b)
+		{
+			int dx = b.x - a.x;
+			int dy = b.y - a.y;
+			int dz = b.z - a.z;
+			return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+		}
+
+		public static float Distance2D(BlockCoord a, BlockCoord b)
+		{
+			int dx = b.x - a.x;
+			int dz = b.z - a.z;
+			return (float)Math.Sqrt(dx * dx + dz * dz);
+		}
 	}
 }

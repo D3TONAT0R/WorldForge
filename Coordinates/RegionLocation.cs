@@ -33,5 +33,10 @@ namespace MCUtils.Coordinates
 		public string ToFileName() => $"r.{x}.{z}.mca";
 
 		public string ToFileNameMCR() => $"r.{x}.{z}.mcr";
+
+		public override string ToString()
+		{
+			return $"({x},{z})";
+		}
 	}
 }
