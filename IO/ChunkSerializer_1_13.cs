@@ -103,6 +103,7 @@ namespace MCUtils.IO
 		{
 			if(chunkNBT.TryGet("Status", out string statusString))
 			{
+				statusString = statusString.Replace("minecraft:", "");
 				Enum.TryParse(statusString, out c.status);
 			}
 			else if(chunkNBT.TryGet("status", out statusString))

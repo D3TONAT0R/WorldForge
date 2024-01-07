@@ -57,7 +57,7 @@ namespace MCUtils.Utilities.BlockDistributionAnalysis
 
 		public void IncreaseCounter(ProtoBlock block, short y)
 		{
-			IncreaseCounter(block.ID, y);
+			if(block != null) IncreaseCounter(block.ID, y);
 		}
 
 		public long GetTotalAtY(string blockID, short y)

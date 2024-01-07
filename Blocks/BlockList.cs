@@ -662,7 +662,7 @@ namespace MCUtils
 			return null;
 		}
 
-		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = true)
+		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = false)
 		{
 			if (!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
 			if (blockTypeName.StartsWith("minecraft:"))

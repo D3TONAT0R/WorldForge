@@ -75,7 +75,17 @@ namespace MCUtils
 			{Release_1(18,1), 2865},
 			{Release_1(18,2), 2975},
 
-			{Release_1(19,0), 3105}
+			{Release_1(19,0), 3105},
+			{Release_1(19,1), 3117},
+			{Release_1(19,2), 3120},
+			{Release_1(19,3), 3218},
+			{Release_1(19,4), 3337},
+
+			{Release_1(20,0), 3463},
+			{Release_1(20,1), 3465},
+			{Release_1(20,2), 3578},
+			{Release_1(20,3), 3698},
+			{Release_1(20,4), 3700}
 		};
 
 		public Version(Stage stage, byte major, byte minor, byte patch)

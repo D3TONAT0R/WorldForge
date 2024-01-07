@@ -103,5 +103,8 @@
 		jagged_peaks,
 		windswept_savanna,
 		mangrove_swamp,
+		cherry_grove,
+		old_growth_spruce_taiga,
+		wooded_badlands
 	}
 }
