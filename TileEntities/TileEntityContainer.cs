@@ -1,11 +1,12 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using WorldForge.Coordinates;
+using WorldForge.Items;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
-	public class TileEntityContainer : TileEntity
+    public class TileEntityContainer : TileEntity
 	{
 		public Dictionary<sbyte, ItemStack> items = new Dictionary<sbyte, ItemStack>();
 		[NBT("CustomName")]
@@ -84,7 +85,7 @@ namespace MCUtils.TileEntities
 			return stack;
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
 			NBTList itemList = new NBTList(NBTTag.TAG_Compound);
 			foreach(var kv in items)
@@ -97,9 +98,9 @@ namespace MCUtils.TileEntities
 			nbt.Add("Items", itemList);
 		}
 
-		protected override string ResolveEntityID(Version version)
+		protected override string ResolveEntityID(GameVersion version)
 		{
-			if(version >= Version.Release_1(11))
+			if(version >= GameVersion.Release_1(11))
 			{
 				return id;
 			}

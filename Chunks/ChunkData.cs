@@ -1,10 +1,10 @@
-using MCUtils.Coordinates;
-using MCUtils.NBT;
-using MCUtils.TileEntities;
 using System;
 using System.Collections.Generic;
+using WorldForge.Coordinates;
+using WorldForge.NBT;
+using WorldForge.TileEntities;
 
-namespace MCUtils
+namespace WorldForge
 {
 	public class ChunkData
 	{
@@ -57,9 +57,9 @@ namespace MCUtils
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
 			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
-			if (!sections.ContainsKey(sectionY))
+			if(!sections.ContainsKey(sectionY))
 			{
-				if (allowNew)
+				if(allowNew)
 				{
 					sections.Add(sectionY, new ChunkSection(this, defaultBlock));
 					RecalculateSectionRange();
@@ -83,7 +83,7 @@ namespace MCUtils
 		{
 			if(!HasTerrain) return null;
 			var sec = GetChunkSectionForYCoord(pos.y, false);
-			if (sec == null) return null;
+			if(sec == null) return null;
 			return sec.GetBlockAt(pos.x, pos.y.Mod(16), pos.z);
 		}
 
@@ -123,7 +123,7 @@ namespace MCUtils
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
 		public void SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			if (tileEntities == null)
+			if(tileEntities == null)
 			{
 				tileEntities = new Dictionary<BlockCoord, TileEntity>();
 			}
@@ -133,8 +133,8 @@ namespace MCUtils
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			if (tileEntities == null) return null;
-			if (tileEntities.ContainsKey(pos))
+			if(tileEntities == null) return null;
+			if(tileEntities.ContainsKey(pos))
 			{
 				return tileEntities[pos];
 			}
@@ -193,7 +193,7 @@ namespace MCUtils
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			if (!postProcessTicks.Contains(pos))
+			if(!postProcessTicks.Contains(pos))
 			{
 				postProcessTicks.Add(pos);
 			}
@@ -204,7 +204,7 @@ namespace MCUtils
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			if (postProcessTicks.Contains(pos))
+			if(postProcessTicks.Contains(pos))
 			{
 				postProcessTicks.Remove(pos);
 			}
@@ -213,7 +213,7 @@ namespace MCUtils
 		public short GetHighestBlock(int x, int z, HeightmapType type = HeightmapType.AllBlocks)
 		{
 			short y = (short)(HighestSection * 16 + 15);
-			while (y >= LowestSection * 16)
+			while(y >= LowestSection * 16)
 			{
 				var blockState = GetBlockAt((x.Mod(16), y, z.Mod(16)));
 				if(blockState != null && Blocks.IsBlockForMap(blockState.block, type)) return y;
@@ -225,7 +225,7 @@ namespace MCUtils
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
 		public void WriteToHeightmap(short[,] hm, int x, int z, HeightmapType type)
 		{
-			if (!WriteHeightmapFromNBT(hm, x, z, type))
+			if(!WriteHeightmapFromNBT(hm, x, z, type))
 			{
 				WriteHeightmapFromBlocks(hm, x, z, type);
 			}
@@ -235,13 +235,13 @@ namespace MCUtils
 		{
 			sbyte? lowest = null;
 			sbyte? highest = null;
-			for (sbyte s = -100; s < 127; s++)
+			for(sbyte s = -100; s < 127; s++)
 			{
-				if (lowest == null && sections.ContainsKey(s))
+				if(lowest == null && sections.ContainsKey(s))
 				{
 					lowest = s;
 				}
-				if (sections.ContainsKey(s))
+				if(sections.ContainsKey(s))
 				{
 					highest = s;
 				}
@@ -252,12 +252,12 @@ namespace MCUtils
 
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
-			if (sourceNBT == null) return false;
+			if(sourceNBT == null) return false;
 			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT(type);
-			if (chunkHM == null) return false;
-			for (int x = 0; x < 16; x++)
+			if(chunkHM == null) return false;
+			for(int x = 0; x < 16; x++)
 			{
-				for (int z = 0; z < 16; z++)
+				for(int z = 0; z < 16; z++)
 				{
 					hm[localChunkX * 16 + x, localChunkZ * 16 + z] = chunkHM[x, z];
 				}
@@ -275,9 +275,9 @@ namespace MCUtils
 			if (highestSection == -127) return;
 			var sec = sections[highestSection];
 			*/
-			for (int x = 0; x < 16; x++)
+			for(int x = 0; x < 16; x++)
 			{
-				for (int z = 0; z < 16; z++)
+				for(int z = 0; z < 16; z++)
 				{
 					hm[localChunkX * 16 + x, localChunkZ * 16 + z] = GetHighestBlock(x, z, type);
 					/*
@@ -313,11 +313,11 @@ namespace MCUtils
 		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)
 		private NBTCompound GetSectionCompound(NBTList sectionsList, sbyte y)
 		{
-			foreach (var o in sectionsList.listContent)
+			foreach(var o in sectionsList.listContent)
 			{
 				var compound = (NBTCompound)o;
-				if (!compound.Contains("Y") || !compound.Contains("Palette")) continue;
-				if ((byte)compound.Get("Y") == y) return compound;
+				if(!compound.Contains("Y") || !compound.Contains("Palette")) continue;
+				if((byte)compound.Get("Y") == y) return compound;
 			}
 			return null;
 		}

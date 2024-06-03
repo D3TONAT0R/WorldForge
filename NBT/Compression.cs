@@ -1,10 +1,7 @@
 ﻿using Ionic.Zlib;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
-namespace MCUtils.NBT
+namespace WorldForge.NBT
 {
 	public static class Compression
 	{

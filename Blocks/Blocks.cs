@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public static class Blocks {
+	public static class Blocks
+	{
 
 		public static readonly string[] commonTerrainBlocks = new string[] {
 			"minecraft:bedrock",
@@ -109,66 +108,90 @@ namespace MCUtils
 			return commonColors[r.Next(commonColors.Length)];
 		}
 
-		public static bool IsBlockForMap(ProtoBlock b, HeightmapType type) {
+		public static bool IsBlockForMap(ProtoBlock b, HeightmapType type)
+		{
 			if(b == null || IsAir(b)) return false;
-			if(type == HeightmapType.AllBlocks) {
+			if(type == HeightmapType.AllBlocks)
+			{
 				return true;
-			} else if(type == HeightmapType.SolidBlocks) {
+			}
+			else if(type == HeightmapType.SolidBlocks)
+			{
 				return !IsTransparentBlock(b);
-			} else if(type == HeightmapType.SolidBlocksNoLiquid) {
+			}
+			else if(type == HeightmapType.SolidBlocksNoLiquid)
+			{
 				return !IsTransparentBlock(b) && !IsLiquid(b) && !b.Compare("minecraft:ice");
-			} else if(type == HeightmapType.TerrainBlocks) {
+			}
+			else if(type == HeightmapType.TerrainBlocks)
+			{
 				return b.CompareMultiple(commonTerrainBlocks) || b.CompareMultiple(waterBlock, lavaBlock);
-			} else if(type == HeightmapType.TerrainBlocksNoLiquid) {
+			}
+			else if(type == HeightmapType.TerrainBlocksNoLiquid)
+			{
 				return b.CompareMultiple(commonTerrainBlocks);
-			} else {
+			}
+			else
+			{
 				return false;
 			}
 		}
-		
-		public static BitmapColor GetMapColor(ProtoBlock block, int shade) {
-			if(colormap == null) {
+
+		public static BitmapColor GetMapColor(ProtoBlock block, int shade)
+		{
+			if(colormap == null)
+			{
 				colormap = LoadColorMap();
 			}
-			if(block != null) {
-				if(!colorMapIndices.TryGetValue(block.ID, out int index)) {
+			if(block != null)
+			{
+				if(!colorMapIndices.TryGetValue(block.ID, out int index))
+				{
 					index = 15;
 				}
 				shade = 1 - shade;
 				return colormap[index, shade];
-			} else {
+			}
+			else
+			{
 				return new BitmapColor(0, 0, 0, 0);
 			}
 		}
 
-		static BitmapColor[,] LoadColorMap() {
+		static BitmapColor[,] LoadColorMap()
+		{
 			var bmp = Bitmaps.Load(ResourceLoader.GetPathOfResource("colormap.tif"));
 			BitmapColor[,] colormap = new BitmapColor[bmp.Width, 3];
-			for(int x = 0; x < bmp.Width; x++) {
-				for(int y = 0; y < 3; y++) {
+			for(int x = 0; x < bmp.Width; x++)
+			{
+				for(int y = 0; y < 3; y++)
+				{
 					colormap[x, y] = bmp.GetPixel(x, y);
 				}
 			}
 			return colormap;
 		}
 
-		public static bool IsAir(ProtoBlock b) {
-			if (b == null) return false;
+		public static bool IsAir(ProtoBlock b)
+		{
+			if(b == null) return false;
 			return b.CompareMultiple("minecraft:air", "minecraft:cave_air");
 		}
 
-		public static bool IsLiquid(ProtoBlock b) {
-			if (b == null) return false;
+		public static bool IsLiquid(ProtoBlock b)
+		{
+			if(b == null) return false;
 			return b.CompareMultiple(waterBlock, lavaBlock);
 		}
 
 		public static bool IsPlantSustaining(ProtoBlock b)
 		{
-			if (b == null) return false;
+			if(b == null) return false;
 			return b.CompareMultiple(plantSustainingBlocks);
 		}
 
-		public static bool IsTransparentBlock(ProtoBlock b) {
+		public static bool IsTransparentBlock(ProtoBlock b)
+		{
 			string id = b.ID;
 			if(id == null) return true;
 			if(id.Contains("minecraft:glass")) return true;
@@ -183,7 +206,8 @@ namespace MCUtils
 			if(id.Contains("minecraft:fence")) return true;
 			if(id.Contains("minecraft:door")) return true;
 			if(id.Contains("minecraft:carpet")) return true;
-			switch(id) {
+			switch(id)
+			{
 				case "minecraft:air":
 				case "minecraft:cave_air":
 				case "minecraft:cobweb":

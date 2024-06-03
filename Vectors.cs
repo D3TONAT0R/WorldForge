@@ -1,6 +1,6 @@
-﻿using MCUtils.NBT;
+﻿using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
 	public class Vector2 : INBTConverter
 	{
@@ -20,7 +20,7 @@ namespace MCUtils
 
 		}
 
-		public object ToNBT(Version version)
+		public object ToNBT(GameVersion version)
 		{
 			return new NBTList(NBTTag.TAG_Double)
 			{
@@ -56,7 +56,7 @@ namespace MCUtils
 
 		}
 
-		public object ToNBT(Version version)
+		public object ToNBT(GameVersion version)
 		{
 			return new NBTList(NBTTag.TAG_Double)
 			{

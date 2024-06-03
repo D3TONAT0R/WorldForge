@@ -1,24 +1,30 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using WorldForge.NBT;
+using WorldForge.Regions;
 
-namespace MCUtils.ConsoleTools
+namespace WorldForge.ConsoleTools
 {
-	class NBTViewer : IConsoleTool {
+    class NBTViewer : IConsoleTool
+	{
 
-		public class ChangeState {
+		public class ChangeState
+		{
 
-			public enum ChangeType {
+			public enum ChangeType
+			{
 				None, Modification, Addition, Removal
 			}
 
 			public object oldValue = null;
 			public ChangeType changeType = ChangeType.None;
 
-			public ConsoleColor GetColor(bool bg) {
-				switch(changeType) {
+			public ConsoleColor GetColor(bool bg)
+			{
+				switch(changeType)
+				{
 					case ChangeType.Modification: return bg ? ConsoleColor.DarkCyan : ConsoleColor.Cyan;
 					case ChangeType.Addition: return bg ? ConsoleColor.DarkGreen : ConsoleColor.Green;
 					case ChangeType.Removal: return bg ? ConsoleColor.DarkRed : ConsoleColor.Red;
@@ -46,19 +52,26 @@ namespace MCUtils.ConsoleTools
 		int overflow = -1;
 		int moreItems = 0;
 
-		public NBTViewer(string path) {
+		public NBTViewer(string path)
+		{
 			filename = Path.GetFileName(path);
-			if(path.EndsWith(".mca")) {
+			if(path.EndsWith(".mca"))
+			{
 				content = new NBTFile();
 				Region r = RegionLoader.LoadRegion(path);
-				for(int z = 0; z < 32; z++) {
-					for(int x = 0; x < 32; x++) {
-						if(r.chunks[x, z] != null) {
+				for(int z = 0; z < 32; z++)
+				{
+					for(int x = 0; x < 32; x++)
+					{
+						if(r.chunks[x, z] != null)
+						{
 							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceNBT.contents);
 						}
 					}
 				}
-			} else {
+			}
+			else
+			{
 				content = new NBTFile(path);
 			}
 			//filename = "root";
@@ -70,39 +83,53 @@ namespace MCUtils.ConsoleTools
 			//content.contents.Add(filename, root);
 		}
 
-		public NBTViewer(NBTFile data) {
+		public NBTViewer(NBTFile data)
+		{
 			content = data;
 		}
 
-		public void Run(string[] args) {
+		public void Run(string[] args)
+		{
 			currentContainer = content.contents;
 			UpdateContentKeys();
-			while(true) {
+			while(true)
+			{
 				overflow = -1;
 				//buffer = "";
 				moreItems = 0;
 				Draw("", "", content.contents, 0, false, false);
-				if(moreItems > 0) {
+				if(moreItems > 0)
+				{
 					MCUtilsConsole.WriteLine("[" + moreItems + " more]");
 				}
 				//Console.Write(buffer);
-				if(cursorBufferLoc > 1) {
-					while(cursorBufferLoc - Console.WindowTop < 1) {
+				if(cursorBufferLoc > 1)
+				{
+					while(cursorBufferLoc - Console.WindowTop < 1)
+					{
 						Console.WindowTop--;
 					}
-					while(cursorBufferLoc - Console.WindowTop + Console.WindowHeight < 3) {
+					while(cursorBufferLoc - Console.WindowTop + Console.WindowHeight < 3)
+					{
 						Console.WindowTop++;
 					}
 				}
 				var key = Console.ReadKey().Key;
 				if(key == ConsoleKey.Escape) break;
-				else if(key == ConsoleKey.DownArrow) {
+				else if(key == ConsoleKey.DownArrow)
+				{
 					cursorChildPos++;
-				} else if(key == ConsoleKey.UpArrow) {
+				}
+				else if(key == ConsoleKey.UpArrow)
+				{
 					cursorChildPos--;
-				} else if(key == ConsoleKey.RightArrow) {
+				}
+				else if(key == ConsoleKey.RightArrow)
+				{
 					EnterContainer(currentContentKeys[cursorChildPos].Split(sep).Last());
-				} else if(key == ConsoleKey.LeftArrow) {
+				}
+				else if(key == ConsoleKey.LeftArrow)
+				{
 					ExitContainer();
 				}
 				cursorChildPos = Math.Max(0, Math.Min(currentContentKeys.Length - 1, cursorChildPos));
@@ -110,22 +137,31 @@ namespace MCUtils.ConsoleTools
 			}
 		}
 
-		void Draw(string tree, string name, object obj, int indent, bool drawAll, bool isLast) {
-			if(overflow > 20) {
+		void Draw(string tree, string name, object obj, int indent, bool drawAll, bool isLast)
+		{
+			if(overflow > 20)
+			{
 				moreItems++;
 				return;
 			}
 			if(!string.IsNullOrEmpty(tree)) tree += sep;
 			tree += name;
 			string s = "";
-			for(int i = 0; i < indent; i++) {
-				if(i == indent - 1) {
-					if(isLast) {
+			for(int i = 0; i < indent; i++)
+			{
+				if(i == indent - 1)
+				{
+					if(isLast)
+					{
 						s += "└ ";
-					} else {
+					}
+					else
+					{
 						s += "│ ";
 					}
-				} else {
+				}
+				else
+				{
 					s += "│ ";
 				}
 			}
@@ -134,73 +170,97 @@ namespace MCUtils.ConsoleTools
 			if(IsContainer(obj)) s += enterContainer ? "▼ " : "► ";
 			s += (string.IsNullOrEmpty(name) ? filename : name + "[" + GetTag(obj) + "] = " + obj);
 			ChangeState state;
-			if(changes.ContainsKey(tree)) {
+			if(changes.ContainsKey(tree))
+			{
 				state = changes[tree];
-			} else {
+			}
+			else
+			{
 				state = defaultState;
 			}
-			if(cursorChildPos < currentContentKeys.Length && currentContentKeys[cursorChildPos] == tree) {
+			if(cursorChildPos < currentContentKeys.Length && currentContentKeys[cursorChildPos] == tree)
+			{
 				overflow = 0;
 				//Console.Write(buffer);
 				//buffer = "";
 				cursorBufferLoc = Console.CursorTop;
 				MCUtilsConsole.WriteLine(s, ConsoleColor.White, state.GetColor(true));
-			} else {
+			}
+			else
+			{
 				if(overflow >= 0) overflow++;
-				if(overflow > 20) {
+				if(overflow > 20)
+				{
 					moreItems++;
 					return;
 				}
 				MCUtilsConsole.WriteLine(s, state.GetColor(false));
 				//buffer += s + "\n";
 			}
-			if(obj is NBTCompound) {
+			if(obj is NBTCompound)
+			{
 				var content = ((NBTCompound)obj).contents;
-				if(enterContainer) {
+				if(enterContainer)
+				{
 					var keys = content.Keys.ToArray();
-					for(int i = 0; i < keys.Length; i++) {
+					for(int i = 0; i < keys.Length; i++)
+					{
 						Draw(tree, keys[i], content[keys[i]], indent + 1, drawAll, i == keys.Length - 1);
 					}
 				}
-			} else if(obj is NBTList) {
+			}
+			else if(obj is NBTList)
+			{
 				var content = ((NBTList)obj).listContent;
-				if(enterContainer) {
-					for(int i = 0; i < content.Count; i++) {
+				if(enterContainer)
+				{
+					for(int i = 0; i < content.Count; i++)
+					{
 						Draw(tree, i.ToString(), content[i], indent + 1, drawAll, i == content.Count - 1);
 					}
 				}
 			}
 		}
 
-		bool IsContainer(object obj) {
+		bool IsContainer(object obj)
+		{
 			return obj is AbstractNBTContainer;
 		}
 
-		NBTTag GetTag(object obj) {
+		NBTTag GetTag(object obj)
+		{
 			return NBTMappings.GetTag(obj.GetType());
 		}
 
-		void EnterContainer(string enter) {
+		void EnterContainer(string enter)
+		{
 			string lastParent = cursorParent;
 			cursorParent += sep + enter;
 			int lastIndex = cursorChildPos;
 			bool b = UpdateContentKeys();
-			if(currentContentKeys.Length == 0 || !b) {
+			if(currentContentKeys.Length == 0 || !b)
+			{
 				cursorParent = lastParent;
 				UpdateContentKeys();
 				cursorChildPos = lastIndex;
-			} else {
+			}
+			else
+			{
 				indexTree.Add(lastIndex);
 			}
 		}
 
-		void ExitContainer() {
+		void ExitContainer()
+		{
 			if(cursorParent.Length == 0) return;
 			//if(!cursorParent.Contains(sep)) return;
 			var split = cursorParent.Split(sep);
-			if(split.Length <= 1) {
+			if(split.Length <= 1)
+			{
 				cursorParent = "";
-			} else {
+			}
+			else
+			{
 				cursorParent = cursorParent.Substring(0, cursorParent.Length - split[split.Length - 1].Length - 1);
 			}
 			UpdateContentKeys();
@@ -208,13 +268,18 @@ namespace MCUtils.ConsoleTools
 			indexTree.RemoveAt(indexTree.Count - 1);
 		}
 
-		bool UpdateContentKeys() {
-			try {
+		bool UpdateContentKeys()
+		{
+			try
+			{
 				if(cursorParent.StartsWith(sep.ToString())) cursorParent = cursorParent.Substring(1);
 				cursorChildPos = 0;
-				if(string.IsNullOrEmpty(cursorParent)) {
+				if(string.IsNullOrEmpty(cursorParent))
+				{
 					currentContainer = content.contents;
-				} else {
+				}
+				else
+				{
 					string[] split = cursorParent.Split(sep);
 					currentContainer = content.contents;
 					foreach(var s in split)
@@ -233,28 +298,34 @@ namespace MCUtils.ConsoleTools
 				if(prefix.Length > 0) prefix += sep;
 				currentContentKeys = currentContainer.GetContentKeys(prefix);
 				return true;
-			} catch {
+			}
+			catch
+			{
 				return false;
 			}
 		}
 
-		string[] SplitParentAndChild(string tree) {
+		string[] SplitParentAndChild(string tree)
+		{
 			string[] split = tree.Split(sep);
 			string[] ret = new string[2];
 			ret[0] = "";
-			for(int i = 0; i < split.Length - 1; i++) {
+			for(int i = 0; i < split.Length - 1; i++)
+			{
 				ret[0] += split[i];
 			}
 			ret[1] = split[split.Length - 1];
 			return ret;
 		}
 
-		bool ContainsPath(string tree, string path) {
+		bool ContainsPath(string tree, string path)
+		{
 			if(string.IsNullOrEmpty(tree)) return true;
 			var ts = tree.Split(sep);
 			var ps = path.Split(sep);
 			if(ps.Length < ts.Length) return false;
-			for(int i = 0; i < ts.Length; i++) {
+			for(int i = 0; i < ts.Length; i++)
+			{
 				if(ts[i] != ps[i]) return false;
 			}
 			return true;

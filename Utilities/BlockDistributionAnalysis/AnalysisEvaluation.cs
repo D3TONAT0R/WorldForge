@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using static MCUtils.Utilities.BlockDistributionAnalysis.AnalysisEvaluator;
+using static WorldForge.Utilities.BlockDistributionAnalysis.AnalysisEvaluator;
 
-namespace MCUtils.Utilities.BlockDistributionAnalysis
+namespace WorldForge.Utilities.BlockDistributionAnalysis
 {
 	public class AnalysisEvaluation
 	{

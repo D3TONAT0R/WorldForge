@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MCUtils.NBT
+namespace WorldForge.NBT
 {
 	///<summary>A container for the TAG_List tag.</summary>
 	public class NBTList : AbstractNBTContainer, IEnumerable<object>
@@ -55,10 +55,10 @@ namespace MCUtils.NBT
 			}
 			else if(value is INBTConverter i)
 			{
-				value = i.ToNBT(Version.FirstVersion);
+				value = i.ToNBT(GameVersion.FirstVersion);
 			}
 
-			if (NBTMappings.GetTag(value.GetType()) != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
+			if(NBTMappings.GetTag(value.GetType()) != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
 			listContent.Add(value);
 			//return value;
 		}
@@ -71,7 +71,7 @@ namespace MCUtils.NBT
 
 		public void AddRange(params object[] values)
 		{
-			foreach (var value in values)
+			foreach(var value in values)
 			{
 				AddValue(value);
 			}
@@ -91,7 +91,7 @@ namespace MCUtils.NBT
 		public override string[] GetContentKeys(string prefix = null)
 		{
 			string[] k = new string[listContent.Count];
-			for (int i = 0; i < listContent.Count; i++) k[i] = prefix + i.ToString();
+			for(int i = 0; i < listContent.Count; i++) k[i] = prefix + i.ToString();
 			return k;
 		}
 

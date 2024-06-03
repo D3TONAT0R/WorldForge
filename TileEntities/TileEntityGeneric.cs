@@ -1,7 +1,7 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
+﻿using WorldForge.Coordinates;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
 	public class TileEntityGeneric : TileEntity
 	{
@@ -15,14 +15,14 @@ namespace MCUtils.TileEntities
 
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
-			
+
 		}
 
-		protected override string ResolveEntityID(Version version)
+		protected override string ResolveEntityID(GameVersion version)
 		{
-			if(version >= Version.Release_1(11))
+			if(version >= GameVersion.Release_1(11))
 			{
 				return id;
 			}

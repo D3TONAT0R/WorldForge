@@ -1,12 +1,10 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using WorldForge.Coordinates;
+using WorldForge.Items;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
-	public class TileEntityBrewingStand : TileEntityContainer
+    public class TileEntityBrewingStand : TileEntityContainer
 	{
 		public ItemStack LeftPotionSlot
 		{
@@ -42,7 +40,7 @@ namespace MCUtils.TileEntities
 		//20 = Full
 		[NBT("Fuel", "1.9")]
 		public byte fuelLevel;
-		
+
 		[NBT("BrewTime")]
 		public short brewTime;
 
@@ -55,14 +53,14 @@ namespace MCUtils.TileEntities
 
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
-			
+
 		}
 
-		protected override string ResolveEntityID(Version version)
+		protected override string ResolveEntityID(GameVersion version)
 		{
-			if(version >= Version.Release_1(11))
+			if(version >= GameVersion.Release_1(11))
 			{
 				return id;
 			}

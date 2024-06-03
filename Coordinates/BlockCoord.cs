@@ -1,8 +1,9 @@
 ﻿using System;
+using WorldForge.Chunks;
 
-namespace MCUtils.Coordinates
+namespace WorldForge.Coordinates
 {
-	public struct BlockCoord
+    public struct BlockCoord
 	{
 		public int x;
 		public int y;
@@ -56,7 +57,7 @@ namespace MCUtils.Coordinates
 		{
 			if(localChunk.x > 31 || localChunk.z > 31 || localChunk.x < 0 || localChunk.z < 0)
 			{
-				throw new ArgumentException("Chunk coordinate was not in region space: "+localChunk);
+				throw new ArgumentException("Chunk coordinate was not in region space: " + localChunk);
 			}
 			return this + localChunk.BlockCoord;
 		}

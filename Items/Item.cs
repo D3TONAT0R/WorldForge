@@ -1,6 +1,6 @@
-﻿using MCUtils.NBT;
+﻿using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
 	public class Item
 	{
@@ -25,7 +25,7 @@ namespace MCUtils
 			NBTConverter.LoadFromNBT(nbt, this);
 		}
 
-		public void WriteToNBT(NBTCompound nbt, Version version)
+		public void WriteToNBT(NBTCompound nbt, GameVersion version)
 		{
 			NBTConverter.WriteToNBT(this, nbt, version);
 		}

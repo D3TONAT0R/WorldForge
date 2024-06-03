@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 
-namespace MCUtils.Utilities.BlockDistributionAnalysis
+namespace WorldForge.Utilities.BlockDistributionAnalysis
 {
 	[Serializable]
 	public class AnalysisData

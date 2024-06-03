@@ -1,12 +1,10 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using WorldForge.Coordinates;
+using WorldForge.Items;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
-	public class TileEntityJukebox : TileEntity
+    public class TileEntityJukebox : TileEntity
 	{
 		public ItemStack recordItem;
 
@@ -19,7 +17,7 @@ namespace MCUtils.TileEntities
 
 		public TileEntityJukebox() : base("jukebox")
 		{
-			
+
 		}
 
 		public TileEntityJukebox(NBTCompound nbt, out BlockCoord blockPos) : base(nbt, out blockPos)
@@ -30,7 +28,7 @@ namespace MCUtils.TileEntities
 			}
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
 			if(!recordItem.IsNull)
 			{
@@ -38,9 +36,9 @@ namespace MCUtils.TileEntities
 			}
 		}
 
-		protected override string ResolveEntityID(Version version)
+		protected override string ResolveEntityID(GameVersion version)
 		{
-			if(version >= Version.Release_1(11))
+			if(version >= GameVersion.Release_1(11))
 			{
 				return id;
 			}

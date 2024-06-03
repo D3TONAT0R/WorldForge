@@ -1,8 +1,9 @@
-﻿using MCUtils.NBT;
+﻿using WorldForge.Items;
+using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public class Player
+    public class Player
 	{
 		public enum GameMode { Survival, Creative, Adventure, Spectator }
 
@@ -23,7 +24,7 @@ namespace MCUtils
 			[NBT]
 			public float walkSpeed = 0.1f;
 
-			public object ToNBT(Version version)
+			public object ToNBT(GameVersion version)
 			{
 				var nbt = new NBTCompound();
 				NBTConverter.WriteToNBT(this, nbt, version);
@@ -43,11 +44,11 @@ namespace MCUtils
 		[NBT("Dimension")]
 		public string dimension = "minecraft:overworld";
 		[NBT("Pos")]
-		public Vector3 position = new Vector3(0,0,0);
+		public Vector3 position = new Vector3(0, 0, 0);
 		[NBT("Rotation")]
-		public Vector2 rotation = new Vector2(0,0);
+		public Vector2 rotation = new Vector2(0, 0);
 		[NBT("Motion")]
-		public Vector3 motion = new Vector3(0,0,0);
+		public Vector3 motion = new Vector3(0, 0, 0);
 
 		[NBT("abilities")]
 		public Abilities abilities = new Abilities();

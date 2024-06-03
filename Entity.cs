@@ -1,7 +1,7 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
+using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
 	public class Entity
 	{

@@ -1,23 +1,23 @@
-﻿using Ionic.Zlib;
-using MCUtils.Coordinates;
-using MCUtils.IO;
-using MCUtils.NBT;
-using MCUtils.TileEntities;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WorldForge.Biomes;
+using WorldForge.Coordinates;
+using WorldForge.IO;
+using WorldForge.NBT;
+using WorldForge.Regions;
+using WorldForge.TileEntities;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public class World
+    public class World
 	{
 
 		public static readonly ProtoBlock defaultBlock = BlockList.Find("minecraft:stone");
 
-		public Version gameVersion;
+		public GameVersion gameVersion;
 		public LevelData levelData;
 		public Dictionary<RegionLocation, Region> regions;
 
@@ -27,12 +27,12 @@ namespace MCUtils
 			set => levelData.worldName = value;
 		}
 
-		public World(Version version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
+		public World(GameVersion version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
 		{
 			gameVersion = version;
-			if (!string.IsNullOrEmpty(levelDatPath))
+			if(!string.IsNullOrEmpty(levelDatPath))
 			{
-				using (var stream = File.OpenRead(levelDatPath))
+				using(var stream = File.OpenRead(levelDatPath))
 				{
 					levelData = LevelData.Load(new NBTFile(stream));
 				}
@@ -42,9 +42,9 @@ namespace MCUtils
 				levelData = LevelData.CreateNew();
 			}
 			regions = new Dictionary<RegionLocation, Region>();
-			for (int x = regionLowerX; x <= regionUpperX; x++)
+			for(int x = regionLowerX; x <= regionUpperX; x++)
 			{
-				for (int z = regionLowerZ; z <= regionUpperZ; z++)
+				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
 					var reg = new Region(x, z)
 					{
@@ -61,23 +61,24 @@ namespace MCUtils
 		}
 
 		//TODO: Danger, loads entire world at once
-		public static World Load(string worldSaveDir, Version? gameVersion = null, bool throwOnRegionLoadFail = false)
+		public static World Load(string worldSaveDir, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
 			var nbt = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			world.levelData = LevelData.Load(nbt);
-			world.gameVersion = Version.FromDataVersion(world.levelData.dataVersion) ?? Version.FirstVersion;
+			world.gameVersion = GameVersion.FromDataVersion(world.levelData.dataVersion) ?? GameVersion.FirstVersion;
 			world.regions = new Dictionary<RegionLocation, Region>();
-			bool isAlphaFormat = gameVersion < Version.Beta_1(3);
+			bool isAlphaFormat = gameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
-			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
+			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
-				if (Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)")) {
+				if(Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)"))
+				{
 					try
 					{
 						Region region = null;
-						if (!isAlphaFormat)
+						if(!isAlphaFormat)
 						{
 							region = RegionLoader.LoadRegion(f, gameVersion);
 						}
@@ -87,7 +88,7 @@ namespace MCUtils
 						}
 						world.regions.Add(region.regionPos, region);
 					}
-					catch(Exception e) when (!throwOnRegionLoadFail)
+					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
 						Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
 					}
@@ -100,15 +101,15 @@ namespace MCUtils
 			return world;
 		}
 
-		public static void GetWorldInfo(string worldSaveDir, out string worldName, out Version gameVersion, out RegionLocation[] regions)
+		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out RegionLocation[] regions)
 		{
 			NBTFile levelDat = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			var dataComp = levelDat.contents.GetAsCompound("Data");
-			
-			gameVersion = Version.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? Version.FirstVersion;
+
+			gameVersion = GameVersion.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? GameVersion.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
 			var regionList = new List<RegionLocation>();
-			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
+			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				try
 				{
@@ -125,9 +126,9 @@ namespace MCUtils
 		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed</summary>
 		public void InitializeArea(int x1, int z1, int x2, int z2)
 		{
-			for (int x = x1.RegionCoord(); x <= x2.RegionCoord(); x++)
+			for(int x = x1.RegionCoord(); x <= x2.RegionCoord(); x++)
 			{
-				for (int z = z1.RegionCoord(); z <= z2.RegionCoord(); z++)
+				for(int z = z1.RegionCoord(); z <= z2.RegionCoord(); z++)
 				{
 					AddRegion(x, z);
 				}
@@ -159,7 +160,7 @@ namespace MCUtils
 		public bool IsDefaultBlock(BlockCoord pos)
 		{
 			var b = GetBlock(pos);
-			if (b == null) return false;
+			if(b == null) return false;
 			return b == defaultBlock;
 		}
 
@@ -266,7 +267,7 @@ namespace MCUtils
 
 		public bool AddRegion(int rx, int rz)
 		{
-			if (regions.ContainsKey(new RegionLocation(rx, rz)))
+			if(regions.ContainsKey(new RegionLocation(rx, rz)))
 			{
 				var rloc = new RegionLocation(rx, rz);
 				var r = new Region(rloc);
@@ -297,7 +298,7 @@ namespace MCUtils
 			//TODO: Check for varying build limits
 			//if (pos.y < 0 || pos.y > 255) return false;
 			var r = GetRegionAt(pos.x, pos.z);
-			if (r != null)
+			if(r != null)
 			{
 				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
 			}
@@ -313,7 +314,7 @@ namespace MCUtils
 			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
 			//if (pos.y < 0 || pos.y > 255) return;
 			var r = GetRegionAt(pos.x, pos.z);
-			if (r != null)
+			if(r != null)
 			{
 				r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
 			}
@@ -354,9 +355,9 @@ namespace MCUtils
 		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type)
 		{
 			short[,] hm = new short[xMax - xMin + 1, zMax - zMin + 1];
-			for (int z = zMin; z <= zMax; z++)
+			for(int z = zMin; z <= zMax; z++)
 			{
-				for (int x = xMin; x <= xMax; x++)
+				for(int x = xMin; x <= xMax; x++)
 				{
 					hm[x - xMin, z - zMin] = GetRegionAt(x, z)?.GetChunk(x.Mod(512), z.Mod(512), false)?.GetHighestBlock(x.Mod(16), z.Mod(16), type) ?? short.MinValue;
 				}
@@ -381,37 +382,37 @@ namespace MCUtils
 				throw new ArgumentNullException("No bitmap factory was provided.");
 			}
 			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
-			for (int z = zMin; z < zMax; z++)
+			for(int z = zMin; z < zMax; z++)
 			{
-				for (int x = xMin; x < xMax; x++)
+				for(int x = xMin; x < xMax; x++)
 				{
 					int y = heightmap[x - xMin, z - zMin];
-					if (y < 0) continue;
+					if(y < 0) continue;
 					var block = GetBlock((x, y, z));
 					int shade = 0;
-					if (shading && z - 1 >= zMin)
+					if(shading && z - 1 >= zMin)
 					{
-						if (block.IsWater)
+						if(block.IsWater)
 						{
 							//Water dithering
 							var depth = GetWaterDepth((x, y, z));
-							if (depth < 8) shade = 1;
-							else if (depth < 16) shade = 0;
+							if(depth < 8) shade = 1;
+							else if(depth < 16) shade = 0;
 							else shade = -1;
-							if (depth % 8 >= 4 && shade > -1)
+							if(depth % 8 >= 4 && shade > -1)
 							{
-								if (x % 2 == z % 2) shade--;
+								if(x % 2 == z % 2) shade--;
 							}
 						}
 						else
 						{
 							var above = heightmap[x - xMin, z - 1 - zMin];
-							if (above > y) shade = -1;
-							else if (above < y) shade = 1;
+							if(above > y) shade = -1;
+							else if(above < y) shade = 1;
 						}
 					}
 					var aboveBlock = GetBlock((x, y + 1, z));
-					if (aboveBlock != null && aboveBlock.ID == "minecraft:snow") block = aboveBlock;
+					if(aboveBlock != null && aboveBlock.ID == "minecraft:snow") block = aboveBlock;
 					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
 			}
@@ -450,7 +451,7 @@ namespace MCUtils
 			Directory.CreateDirectory(Path.Combine(path, "region"));
 
 			var options = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
-			string extension = gameVersion >= Version.FirstAnvilVersion ? "mca" : "mcr";
+			string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
 			Parallel.ForEach(regions, options, (KeyValuePair<RegionLocation, Region> region) =>
 			{
 				string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";

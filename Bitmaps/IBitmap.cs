@@ -1,4 +1,4 @@
-﻿namespace MCUtils
+﻿namespace WorldForge
 {
 
 	public interface IBitmapFactory

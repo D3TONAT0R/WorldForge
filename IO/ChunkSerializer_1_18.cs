@@ -1,13 +1,15 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
+using WorldForge.Biomes;
+using WorldForge.Chunks;
+using WorldForge.NBT;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
-	public class ChunkSerializer_1_18 : ChunkSerializer_1_16
+    public class ChunkSerializer_1_18 : ChunkSerializer_1_16
 	{
 		public override bool AddRootLevelCompound => false;
 
-		public ChunkSerializer_1_18(Version version) : base(version) { }
+		public ChunkSerializer_1_18(GameVersion version) : base(version) { }
 
 		public override NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents;
 
@@ -31,7 +33,7 @@ namespace MCUtils.IO
 			return sectionNBT.GetAsCompound("block_states").Get<long[]>("data");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			var sectionsList = chunkNBT.GetAsList("sections");
 			foreach(var s in sectionsList.listContent)
@@ -41,7 +43,7 @@ namespace MCUtils.IO
 				{
 					var paletteNBT = biomesComp.GetAsList("palette");
 					BiomeID[] palette = new BiomeID[paletteNBT.Length];
-					for (int i = 0; i < paletteNBT.Length; i++)
+					for(int i = 0; i < paletteNBT.Length; i++)
 					{
 						var id = paletteNBT.Get<string>(i).Replace("minecraft:", "");
 						if(BiomeIDResolver.TryParseBiome(id, out var b))
@@ -56,7 +58,8 @@ namespace MCUtils.IO
 					}
 
 					sbyte secY;
-					unchecked {
+					unchecked
+					{
 						secY = (sbyte)sectionNBT.Get<byte>("Y");
 					}
 					var chunkSection = c.sections[secY];
@@ -67,11 +70,11 @@ namespace MCUtils.IO
 						var indexBitLength = BitUtils.GetMaxBitCount((uint)palette.Length - 1);
 						var indices = BitUtils.ExtractCompressedInts(biomeData, indexBitLength, 64, false);
 
-						for (int y = 0; y < 4; y++)
+						for(int y = 0; y < 4; y++)
 						{
-							for (int z = 0; z < 4; z++)
+							for(int z = 0; z < 4; z++)
 							{
-								for (int x = 0; x < 4; x++)
+								for(int x = 0; x < 4; x++)
 								{
 									int i = y * 16 + z * 4 + x;
 									var paletteIndex = indices[i];
@@ -84,11 +87,11 @@ namespace MCUtils.IO
 					{
 						if(palette[0] != BiomeID.plains)
 						{
-							for (int y = 0; y < 16; y+=4)
+							for(int y = 0; y < 16; y += 4)
 							{
-								for (int z = 0; z < 16; z += 4)
+								for(int z = 0; z < 16; z += 4)
 								{
-									for (int x = 0; x < 16; x += 4)
+									for(int x = 0; x < 16; x += 4)
 									{
 										chunkSection.SetBiome3D4x4At(x, y, z, palette[0]);
 									}

@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace MCUtils.NBT
+namespace WorldForge.NBT
 {
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
 	public class NBTAttribute : Attribute
 	{
 
 		public string tagName = null;
-		public Version addedIn = Version.FirstVersion;
-		public Version removedIn = new Version(Version.Stage.Release, 9, 9, 9);
+		public GameVersion addedIn = GameVersion.FirstVersion;
+		public GameVersion removedIn = new GameVersion(GameVersion.Stage.Release, 9, 9, 9);
 
 		public NBTAttribute()
-		{		
-			
+		{
+
 		}
 
 		public NBTAttribute(string name)
@@ -24,13 +24,13 @@ namespace MCUtils.NBT
 
 		public NBTAttribute(string name, string addedInVersion) : this(name)
 		{
-			addedIn = Version.Parse(addedInVersion);
+			addedIn = GameVersion.Parse(addedInVersion);
 		}
 
 		public NBTAttribute(string name, string addedInVersion, string removedInVersion) : this(name)
 		{
-			addedIn = Version.Parse(addedInVersion);
-			removedIn = Version.Parse(removedInVersion);
+			addedIn = GameVersion.Parse(addedInVersion);
+			removedIn = GameVersion.Parse(removedInVersion);
 		}
 	}
 
@@ -45,12 +45,12 @@ namespace MCUtils.NBT
 				if(sourceNBT.Contains(name))
 				{
 					object value;
-					if (fi.FieldType == typeof(bool))
+					if(fi.FieldType == typeof(bool))
 					{
 						if(removeFromCompound) value = sourceNBT.Take<byte>(name) > 0;
 						else value = sourceNBT.Get<byte>(name) > 0;
 					}
-					else if (typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
+					else if(typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
 					{
 						var inst = Activator.CreateInstance(fi.FieldType);
 						object data;
@@ -69,7 +69,7 @@ namespace MCUtils.NBT
 			}
 		}
 
-		public static NBTCompound WriteToNBT(object source, NBTCompound targetNBT, Version targetVersion)
+		public static NBTCompound WriteToNBT(object source, NBTCompound targetNBT, GameVersion targetVersion)
 		{
 			foreach(var (fi, attr) in GetFields(source))
 			{

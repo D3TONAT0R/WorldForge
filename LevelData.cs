@@ -1,10 +1,11 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using WorldForge.Biomes;
+using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public class LevelData
+    public class LevelData
 	{
 		public class Spawnpoint
 		{
@@ -120,19 +121,19 @@ namespace MCUtils
 
 			public GameRules(NBTCompound levelDataNBT)
 			{
-				if (levelDataNBT.TryGet<NBTCompound>("GameRules", out var gameRulesNBT))
+				if(levelDataNBT.TryGet<NBTCompound>("GameRules", out var gameRulesNBT))
 				{
-					foreach (var f in typeof(GameRules).GetFields())
+					foreach(var f in typeof(GameRules).GetFields())
 					{
 						try
 						{
-							if (gameRulesNBT.TryGet(f.Name, out string nbtValue))
+							if(gameRulesNBT.TryGet(f.Name, out string nbtValue))
 							{
-								if (f.FieldType == typeof(bool))
+								if(f.FieldType == typeof(bool))
 								{
 									f.SetValue(this, bool.Parse(nbtValue));
 								}
-								else if (f.FieldType == typeof(int))
+								else if(f.FieldType == typeof(int))
 								{
 									f.SetValue(this, int.Parse(nbtValue));
 								}
@@ -142,7 +143,7 @@ namespace MCUtils
 								}
 							}
 						}
-						catch (Exception e)
+						catch(Exception e)
 						{
 							Console.WriteLine($"Failed to load GameRule '{f.Name}': {e.Message}");
 						}
@@ -153,7 +154,7 @@ namespace MCUtils
 			public NBTCompound CreateNBT()
 			{
 				var comp = new NBTCompound();
-				foreach (var f in typeof(GameRules).GetFields())
+				foreach(var f in typeof(GameRules).GetFields())
 				{
 					comp.Add(f.Name, f.GetValue(this).ToString().ToLower());
 				}
@@ -262,7 +263,7 @@ namespace MCUtils
 				return gen;
 			}
 
-			public object ToNBT(Version version)
+			public object ToNBT(GameVersion version)
 			{
 				var comp = new NBTCompound();
 				comp.Add("type", dimType);
@@ -400,7 +401,7 @@ namespace MCUtils
 				seed = newSeed;
 			}
 
-			public object ToNBT(Version version)
+			public object ToNBT(GameVersion version)
 			{
 				NBTCompound comp = new NBTCompound();
 				NBTConverter.WriteToNBT(this, comp, version);
@@ -461,27 +462,27 @@ namespace MCUtils
 
 			public void SetTimeSunrise()
 			{
-				if (TimeOfDay == 0) return;
+				if(TimeOfDay == 0) return;
 				WorldTime += 24000 - TimeOfDay;
 			}
 
 			public void SetTimeMidday()
 			{
-				if (TimeOfDay == 6000) return;
+				if(TimeOfDay == 6000) return;
 				SetTimeSunrise();
 				WorldTime += 6000;
 			}
 
 			public void SetTimeSunset()
 			{
-				if (TimeOfDay == 12000) return;
+				if(TimeOfDay == 12000) return;
 				SetTimeSunrise();
 				WorldTime += 12000;
 			}
 
 			public void SetTimeMidnight()
 			{
-				if (TimeOfDay == 18000) return;
+				if(TimeOfDay == 18000) return;
 				SetTimeSunrise();
 				WorldTime += 18000;
 			}
@@ -522,7 +523,7 @@ namespace MCUtils
 			{
 
 			}
-			
+
 			public WanderingTraderInfo(NBTCompound nbt)
 			{
 				NBTConverter.LoadFromNBT(nbt, this);
@@ -556,7 +557,7 @@ namespace MCUtils
 		[NBT("WasModded")]
 		public bool wasModded;
 
-		public Player player = new Player(new Vector3(0,0,0));
+		public Player player = new Player(new Vector3(0, 0, 0));
 
 		public Spawnpoint spawnpoint = new Spawnpoint();
 		public GameTypeAndDifficulty gameTypeAndDifficulty = new GameTypeAndDifficulty();
@@ -578,17 +579,17 @@ namespace MCUtils
 			var levelNBT = levelDat.contents;
 			var d = new LevelData();
 			NBTConverter.LoadFromNBT(levelNBT, d);
-			if (levelNBT.TryGet<NBTCompound>("Player", out var playerComp))
+			if(levelNBT.TryGet<NBTCompound>("Player", out var playerComp))
 			{
 				d.player = new Player(playerComp);
 			}
 			d.spawnpoint = new Spawnpoint(levelNBT);
 			d.gameTypeAndDifficulty = new GameTypeAndDifficulty(levelNBT);
-			if (levelNBT.TryGet<NBTCompound>("GameRules", out var rulesComp))
+			if(levelNBT.TryGet<NBTCompound>("GameRules", out var rulesComp))
 			{
 				d.gameRules = new GameRules(rulesComp);
 			}
-			if (levelNBT.TryGet<NBTCompound>("WorldGenSettings", out var wg))
+			if(levelNBT.TryGet<NBTCompound>("WorldGenSettings", out var wg))
 			{
 				d.worldGen = new WorldGenerator(wg);
 			}

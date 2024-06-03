@@ -1,10 +1,12 @@
-﻿using MCUtils.NBT;
+﻿using WorldForge.Biomes;
+using WorldForge.Chunks;
+using WorldForge.NBT;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
-	public class ChunkSerializer_1_15 : ChunkSerializer_1_13
+    public class ChunkSerializer_1_15 : ChunkSerializer_1_13
 	{
-		public ChunkSerializer_1_15(Version version) : base(version) { }
+		public ChunkSerializer_1_15(GameVersion version) : base(version) { }
 
 		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{

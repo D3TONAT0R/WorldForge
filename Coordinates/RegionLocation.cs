@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MCUtils.Coordinates
+namespace WorldForge.Coordinates
 {
 	public struct RegionLocation
 	{

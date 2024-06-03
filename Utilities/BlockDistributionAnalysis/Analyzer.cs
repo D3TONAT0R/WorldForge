@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using WorldForge.Chunks;
+using WorldForge.Regions;
 
-namespace MCUtils.Utilities.BlockDistributionAnalysis
+namespace WorldForge.Utilities.BlockDistributionAnalysis
 {
-	public class Analyzer
+    public class Analyzer
 	{
 
 		public AnalysisData analysisData = new AnalysisData();

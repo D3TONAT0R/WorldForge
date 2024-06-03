@@ -1,12 +1,8 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System.Collections.Generic;
-
-namespace MCUtils.IO
+﻿namespace WorldForge.IO
 {
 	public class ChunkSerializerAlpha : ChunkSerializerMCR
 	{
-		public ChunkSerializerAlpha(Version version) : base(version) { }
+		public ChunkSerializerAlpha(GameVersion version) : base(version) { }
 
 	}
 }

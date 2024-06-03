@@ -1,10 +1,8 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using WorldForge.Coordinates;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
 	public class TileEntitySkull : TileEntity
 	{
@@ -16,7 +14,7 @@ namespace MCUtils.TileEntities
 		{
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
 			throw new NotImplementedException();
 		}

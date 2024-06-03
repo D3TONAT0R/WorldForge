@@ -1,8 +1,7 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
+﻿using WorldForge.Coordinates;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
 	public partial class TileEntitySign : TileEntity
 	{
@@ -28,19 +27,19 @@ namespace MCUtils.TileEntities
 				glowingText = false;
 			}
 
-			public void WriteToNBT(NBTCompound nbt, Version version)
+			public void WriteToNBT(NBTCompound nbt, GameVersion version)
 			{
-				if(version < Version.Release_1(20))
+				if(version < GameVersion.Release_1(20))
 				{
 					nbt.Add("Text1", GetSignLineData(line1, version));
 					nbt.Add("Text2", GetSignLineData(line2, version));
 					nbt.Add("Text3", GetSignLineData(line3, version));
 					nbt.Add("Text4", GetSignLineData(line4, version));
-					if(version >= Version.Release_1(14))
+					if(version >= GameVersion.Release_1(14))
 					{
 						nbt.Add("Color", color);
 					}
-					if(version >= Version.Release_1(17))
+					if(version >= GameVersion.Release_1(17))
 					{
 						nbt.Add("GlowingText", glowingText);
 					}
@@ -58,9 +57,9 @@ namespace MCUtils.TileEntities
 				}
 			}
 
-			private string GetSignLineData(JSONTextComponent text, Version version)
+			private string GetSignLineData(JSONTextComponent text, GameVersion version)
 			{
-				if(version < Version.Release_1(8))
+				if(version < GameVersion.Release_1(8))
 				{
 					return text?.ToLegacyPlainText() ?? "";
 				}
@@ -70,9 +69,9 @@ namespace MCUtils.TileEntities
 				}
 			}
 
-			public void ReadFromNBT(NBTCompound nbt, bool isNewFormat, Version? version)
+			public void ReadFromNBT(NBTCompound nbt, bool isNewFormat, GameVersion? version)
 			{
-				if(version.HasValue && version >= Version.Release_1(20))
+				if(version.HasValue && version >= GameVersion.Release_1(20))
 				{
 					//1.20+ format
 					if(nbt.TryGet("messages", out string[] linesJson))
@@ -89,7 +88,7 @@ namespace MCUtils.TileEntities
 				{
 					//Pre 1.20 format
 					//TODO: how to determine pre-1.8 versions? 'version' becomes null prior to 1.9 (due to DataVersion).
-					if(version.HasValue && version >= Version.Release_1(8))
+					if(version.HasValue && version >= GameVersion.Release_1(8))
 					{
 						line1 = JSONTextComponent.Parse("Text1");
 						line2 = JSONTextComponent.Parse("Text2");
@@ -126,9 +125,9 @@ namespace MCUtils.TileEntities
 			front = new SignData(line1Text, line2Text, line3Text, line4Text);
 		}
 
-		public TileEntitySign(NBTCompound nbt, Version? version, out BlockCoord blockPos) : base(nbt, out blockPos)
+		public TileEntitySign(NBTCompound nbt, GameVersion? version, out BlockCoord blockPos) : base(nbt, out blockPos)
 		{
-			if(version.HasValue && version.Value >= Version.Release_1(20))
+			if(version.HasValue && version.Value >= GameVersion.Release_1(20))
 			{
 				nbt.TryTake("is_waxed", out isWaxed);
 				if(nbt.TryTake("front_text", out NBTCompound frontNBT))
@@ -146,9 +145,9 @@ namespace MCUtils.TileEntities
 			}
 		}
 
-		protected override void Serialize(NBTCompound nbt, Version version)
+		protected override void Serialize(NBTCompound nbt, GameVersion version)
 		{
-			if(version < Version.Release_1(20))
+			if(version < GameVersion.Release_1(20))
 			{
 				front.WriteToNBT(nbt, version);
 			}

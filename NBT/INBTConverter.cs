@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MCUtils.NBT
+﻿namespace WorldForge.NBT
 {
 	public interface INBTConverter
 	{
-		object ToNBT(Version version);
+		object ToNBT(GameVersion version);
 
 		void FromNBT(object nbtData);
 	}

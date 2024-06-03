@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public static class BlockList {
+	public static class BlockList
+	{
 
 		public static string[] blocks = new string[] {
 			"stone",
@@ -605,13 +606,13 @@ namespace MCUtils
 			var lines = ResourceLoader.LoadBlockListAsText().Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
 			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
-			for (int i = 2; i < lines.Length; i++)
+			for(int i = 2; i < lines.Length; i++)
 			{
 				var split = lines[i].Split(';');
 				if(split[0].Length > 0)
 				{
 					string id = split[0];
-					if(allBlocks.ContainsKey("minecraft:"+id))
+					if(allBlocks.ContainsKey("minecraft:" + id))
 					{
 						//TODO: how to handle multiple equal ids (such as different facing logs) ?
 						continue;
@@ -619,24 +620,24 @@ namespace MCUtils
 					string props = split[1]; //TODO: introduce default properties?
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
-					Version version = split[4].Length > 1 ? Version.Parse(split[4]) : Version.FirstVersion;
+					GameVersion version = split[4].Length > 1 ? GameVersion.Parse(split[4]) : GameVersion.FirstVersion;
 					var newBlocks = ProtoBlock.RegisterNewVanillaBlock(id, version);
-					foreach (var newBlock in newBlocks)
+					foreach(var newBlock in newBlocks)
 					{
-						if (split[5].Length > 1)
+						if(split[5].Length > 1)
 						{
 							fallbacks.Add((newBlock, split[5]));
 						}
-						if (numeric.HasValue)
+						if(numeric.HasValue)
 						{
 							numerics.Add(newBlock, numeric.Value);
 							var hash = numeric.Value.Hash;
-							if (!protoByNumerics.ContainsKey(hash))
+							if(!protoByNumerics.ContainsKey(hash))
 							{
 								protoByNumerics.Add(hash, newBlock);
 							}
 						}
-						if (preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:" + preFlattening);
+						if(preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:" + preFlattening);
 					}
 				}
 			}
@@ -657,15 +658,15 @@ namespace MCUtils
 		{
 			foreach(var col in Blocks.commonColors)
 			{
-				if (blockID.StartsWith(col + "_")) return col;
+				if(blockID.StartsWith(col + "_")) return col;
 			}
 			return null;
 		}
 
 		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = false)
 		{
-			if (!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
-			if (blockTypeName.StartsWith("minecraft:"))
+			if(!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
+			if(blockTypeName.StartsWith("minecraft:"))
 			{
 				if(allBlocks.TryGetValue(blockTypeName, out var b))
 				{
@@ -673,14 +674,14 @@ namespace MCUtils
 				}
 				else
 				{
-					if (throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
+					if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
 					return null;
 				}
 			}
 			else
 			{
 				//Modded block, add it to the list if we haven't done so already.
-				if (allBlocks.TryGetValue(blockTypeName, out var pb))
+				if(allBlocks.TryGetValue(blockTypeName, out var pb))
 				{
 					return pb;
 				}

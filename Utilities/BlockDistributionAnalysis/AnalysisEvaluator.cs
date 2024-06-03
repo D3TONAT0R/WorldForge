@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
-namespace MCUtils.Utilities.BlockDistributionAnalysis
+namespace WorldForge.Utilities.BlockDistributionAnalysis
 {
 	public static class AnalysisEvaluator
 	{

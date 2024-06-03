@@ -1,4 +1,4 @@
-﻿namespace MCUtils.NBT
+﻿namespace WorldForge.NBT
 {
 	public abstract class AbstractNBTContainer
 	{

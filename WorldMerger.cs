@@ -1,15 +1,16 @@
-using MCUtils.Coordinates;
-using MCUtils.IO;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
+using WorldForge.Coordinates;
+using WorldForge.IO;
 
-namespace MCUtils.ConsoleTools
+namespace WorldForge.ConsoleTools
 {
-	public class WorldMerger : IConsoleTool {
+	public class WorldMerger : IConsoleTool
+	{
 
-		public class RegionRecord {
+		public class RegionRecord
+		{
 			public RegionLocation loc;
 
 			public bool existsInWorld1;
@@ -19,7 +20,8 @@ namespace MCUtils.ConsoleTools
 
 			public bool CanMerge => existsInWorld1 && existsInWorld2;
 
-			public RegionRecord(WorldMerger merger, int rx, int rz) {
+			public RegionRecord(WorldMerger merger, int rx, int rz)
+			{
 				loc = new RegionLocation(rx, rz);
 				filename = $"r.{rx}.{rz}.mca";
 				existsInWorld1 = File.Exists(Path.Combine(merger.world1Path, filename));
@@ -36,7 +38,8 @@ namespace MCUtils.ConsoleTools
 
 		public World mergedWorld;
 
-		public void Run(string[] args) {
+		public void Run(string[] args)
+		{
 			MCUtilsConsole.WriteLine("Enter path to world 1's region files:");
 			world1Path = GetFilePath(true);
 			if(world1Path == null) return;
@@ -59,7 +62,8 @@ namespace MCUtils.ConsoleTools
 			byte mergeMode = 0;
 			if(worldMergeMap.Width == sizeX * 512 && worldMergeMap.Height == sizeZ * 512) mergeMode = 1;
 			if(worldMergeMap.Width == sizeX * 32 && worldMergeMap.Height == sizeZ * 32) mergeMode = 2;
-			if(mergeMode == 0) {
+			if(mergeMode == 0)
+			{
 				MCUtilsConsole.WriteError("Map was not the correct size!");
 				return;
 			}
@@ -69,8 +73,10 @@ namespace MCUtils.ConsoleTools
 
 			List<RegionRecord> records = new List<RegionRecord>();
 
-			for(int rz = lowerBound.z; rz <= upperBound.z; rz++) {
-				for(int rx = lowerBound.x; rx <= upperBound.x; rx++) {
+			for(int rz = lowerBound.z; rz <= upperBound.z; rz++)
+			{
+				for(int rx = lowerBound.x; rx <= upperBound.x; rx++)
+				{
 					records.Add(new RegionRecord(this, rx, rz));
 				}
 			}
@@ -79,10 +85,14 @@ namespace MCUtils.ConsoleTools
 			int w2only = 0;
 			int mergeable = 0;
 
-			foreach(var r in records) {
-				if(r.CanMerge) {
+			foreach(var r in records)
+			{
+				if(r.CanMerge)
+				{
 					mergeable++;
-				} else {
+				}
+				else
+				{
 					if(r.existsInWorld1) w1only++;
 					else if(r.existsInWorld2) w2only++;
 				}
@@ -94,11 +104,12 @@ namespace MCUtils.ConsoleTools
 			Console.ReadKey();
 
 			MCUtilsConsole.WriteLine("Starting world merge...");
-			foreach(var r in records) {
+			foreach(var r in records)
+			{
 				int localX = r.loc.x - lowerBound.x;
 				int localZ = r.loc.z - lowerBound.z;
 				int scale = mergeMode == 1 ? 512 : 32;
-				IBitmap section = worldMergeMap.CloneArea(localX*scale, localZ*scale, scale, scale);
+				IBitmap section = worldMergeMap.CloneArea(localX * scale, localZ * scale, scale, scale);
 
 				MCUtilsConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
 				var region1 = RegionLoader.LoadRegion(Path.Combine(world1Path, r.filename));
@@ -108,32 +119,44 @@ namespace MCUtils.ConsoleTools
 
 				MCUtilsConsole.WriteLine("Writing file...");
 				FileStream stream = new FileStream(Path.Combine(outputPath, r.filename), FileMode.Create);
-				RegionSerializer.WriteRegionToStream(mergedRegion, stream, Version.DefaultVersion);
+				RegionSerializer.WriteRegionToStream(mergedRegion, stream, GameVersion.DefaultVersion);
 				stream.Close();
 			}
 		}
 
-		private RegionLocation ParseCoordinates(string input) {
+		private RegionLocation ParseCoordinates(string input)
+		{
 			string[] split = input.Trim().Split(' ');
 			if(split.Length < 2) throw new FormatException();
 			return new RegionLocation(int.Parse(split[0]), int.Parse(split[1]));
 		}
 
-		private string GetFilePath(bool isDirectory) {
+		private string GetFilePath(bool isDirectory)
+		{
 			bool exit = false;
-			while(!exit) {
+			while(!exit)
+			{
 				string file = MCUtilsConsole.GetInput().Replace("\"", "");
 				if(file.StartsWith("exit")) break;
-				if(!isDirectory) {
-					if(File.Exists(file)) {
+				if(!isDirectory)
+				{
+					if(File.Exists(file))
+					{
 						return file;
-					} else {
+					}
+					else
+					{
 						MCUtilsConsole.WriteWarning("Path is invalid. Try again.");
 					}
-				} else {
-					if(Directory.Exists(Path.GetDirectoryName(file))) {
+				}
+				else
+				{
+					if(Directory.Exists(Path.GetDirectoryName(file)))
+					{
 						return file;
-					} else {
+					}
+					else
+					{
 						MCUtilsConsole.WriteWarning("Directory does not exist. Try again.");
 					}
 				}

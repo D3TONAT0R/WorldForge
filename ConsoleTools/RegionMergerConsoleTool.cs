@@ -1,24 +1,24 @@
-﻿using MCUtils.IO;
-using System;
-using System.Drawing;
+﻿using System;
 using System.IO;
+using WorldForge.IO;
+using WorldForge.Regions;
 
-namespace MCUtils.ConsoleTools
+namespace WorldForge.ConsoleTools
 {
-	public class RegionMergerConsoleTool : IConsoleTool
+    public class RegionMergerConsoleTool : IConsoleTool
 	{
 
 		public void Run(string[] args)
 		{
 			MCUtilsConsole.WriteLine("Enter path to region file 1:");
 			string r1 = GetFilePath(false);
-			if (r1 == null) return;
+			if(r1 == null) return;
 			MCUtilsConsole.WriteLine("Enter path to region file 2:");
 			string r2 = GetFilePath(false);
-			if (r2 == null) return;
+			if(r2 == null) return;
 			MCUtilsConsole.WriteLine("Enter path to map image:");
 			string map = GetFilePath(false);
-			if (map == null) return;
+			if(map == null) return;
 			MCUtilsConsole.WriteLine("Enter path to output file:");
 			string savepath = GetFilePath(true);
 			MCUtilsConsole.WriteLine("Starting merge...");
@@ -29,7 +29,7 @@ namespace MCUtils.ConsoleTools
 				region1 = RegionLoader.LoadRegion(r1);
 				region2 = RegionLoader.LoadRegion(r2);
 			}
-			catch (Exception e)
+			catch(Exception e)
 			{
 				MCUtilsConsole.WriteError("Failed to open region file(s):");
 				MCUtilsConsole.WriteError(e.ToString());
@@ -41,7 +41,7 @@ namespace MCUtils.ConsoleTools
 			var mergedRegion = merger.Merge();
 			MCUtilsConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
-			RegionSerializer.WriteRegionToStream(mergedRegion, stream, Version.DefaultVersion);
+			RegionSerializer.WriteRegionToStream(mergedRegion, stream, GameVersion.DefaultVersion);
 			stream.Close();
 			MCUtilsConsole.WriteLine("Done");
 		}
@@ -49,13 +49,13 @@ namespace MCUtils.ConsoleTools
 		private string GetFilePath(bool isSaveLocation)
 		{
 			bool exit = false;
-			while (!exit)
+			while(!exit)
 			{
 				string file = MCUtilsConsole.GetInput().Replace("\"", "");
-				if (file.StartsWith("exit")) break;
-				if (!isSaveLocation)
+				if(file.StartsWith("exit")) break;
+				if(!isSaveLocation)
 				{
-					if (File.Exists(file))
+					if(File.Exists(file))
 					{
 						return file;
 					}
@@ -66,7 +66,7 @@ namespace MCUtils.ConsoleTools
 				}
 				else
 				{
-					if (Directory.Exists(Path.GetDirectoryName(file)))
+					if(Directory.Exists(Path.GetDirectoryName(file)))
 					{
 						return file;
 					}

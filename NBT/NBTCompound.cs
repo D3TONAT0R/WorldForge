@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MCUtils.NBT
+namespace WorldForge.NBT
 {
 	///<summary>A container for the TAG_Compound tag.</summary>
 	public class NBTCompound : AbstractNBTContainer, IEnumerable<KeyValuePair<string, object>>
@@ -19,7 +19,7 @@ namespace MCUtils.NBT
 
 		public NBTCompound() : base()
 		{
-			
+
 		}
 
 		public NBTCompound(IDictionary<string, object> contents) : base()
@@ -30,10 +30,10 @@ namespace MCUtils.NBT
 			}
 		}
 
-		public static NBTCompound FromObject(object obj, Version? version = null)
+		public static NBTCompound FromObject(object obj, GameVersion? version = null)
 		{
 			var comp = new NBTCompound();
-			NBTConverter.WriteToNBT(obj, comp, version ?? Version.FirstVersion);
+			NBTConverter.WriteToNBT(obj, comp, version ?? GameVersion.FirstVersion);
 			return comp;
 		}
 
@@ -47,14 +47,14 @@ namespace MCUtils.NBT
 			{
 				throw new NullReferenceException("Attempted to add null value: " + key);
 			}
-			if (value is bool b)
+			if(value is bool b)
 			{
 				Add(key, (byte)(b ? 1 : 0));
 				return value;
 			}
 			else if(value is INBTConverter i)
 			{
-				Add(key, i.ToNBT(Version.FirstVersion));
+				Add(key, i.ToNBT(GameVersion.FirstVersion));
 				return value;
 			}
 			contents.Add(key, value);
@@ -63,7 +63,7 @@ namespace MCUtils.NBT
 
 		public void AddRange(params (string key, object obj)[] values)
 		{
-			foreach (var (key, obj) in values)
+			foreach(var (key, obj) in values)
 			{
 				Add(key, obj);
 			}
@@ -85,7 +85,7 @@ namespace MCUtils.NBT
 			{
 				throw new NullReferenceException("Attempted to set null value: " + key);
 			}
-			if (Contains(key))
+			if(Contains(key))
 			{
 				contents.Remove(key);
 			}
@@ -95,7 +95,7 @@ namespace MCUtils.NBT
 
 		public object Get(string key)
 		{
-			if (contents.ContainsKey(key))
+			if(contents.ContainsKey(key))
 			{
 				return contents[key];
 			}
@@ -113,7 +113,7 @@ namespace MCUtils.NBT
 
 		public bool TryGet<T>(string key, out T value)
 		{
-			if (Contains(key))
+			if(Contains(key))
 			{
 				try
 				{
@@ -184,7 +184,7 @@ namespace MCUtils.NBT
 		{
 			foreach(var kv in contents)
 			{
-				if (kv.Value.Equals(value)) return kv.Key;
+				if(kv.Value.Equals(value)) return kv.Key;
 			}
 			return null;
 		}
@@ -221,18 +221,18 @@ namespace MCUtils.NBT
 
 		public static bool AreEqual(NBTCompound a, NBTCompound b)
 		{
-			if (a == null && b == null) return true;
-			if ((a == null) != (b == null)) return false;
+			if(a == null && b == null) return true;
+			if((a == null) != (b == null)) return false;
 			return a.HasSameContent(b);
 		}
 
 		public bool HasSameContent(NBTCompound other)
 		{
-			if (other.contents.Keys.Count != contents.Keys.Count) return false;
-			foreach (string k in contents.Keys)
+			if(other.contents.Keys.Count != contents.Keys.Count) return false;
+			foreach(string k in contents.Keys)
 			{
-				if (!other.Contains(k)) return false;
-				if (!contents[k].Equals(other.contents[k])) return false;
+				if(!other.Contains(k)) return false;
+				if(!contents[k].Equals(other.contents[k])) return false;
 			}
 			return true;
 		}
@@ -241,7 +241,7 @@ namespace MCUtils.NBT
 		{
 			string[] k = new string[contents.Count];
 			int i = 0;
-			foreach (var key in contents.Keys)
+			foreach(var key in contents.Keys)
 			{
 				k[i] = prefix + key;
 				i++;

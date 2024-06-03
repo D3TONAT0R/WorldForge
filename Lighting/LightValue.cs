@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace MCUtils.Lighting
+namespace WorldForge.Lighting
 {
 	public struct LightValue
 	{
@@ -37,7 +35,7 @@ namespace MCUtils.Lighting
 			get
 			{
 				var l = new LightValue(rawValue);
-				l.BlockLight = (byte)Math.Max(0, l.BlockLight-1);
+				l.BlockLight = (byte)Math.Max(0, l.BlockLight - 1);
 				l.SkyLight = (byte)Math.Max(0, l.SkyLight - 1);
 				return l;
 			}
@@ -68,8 +66,8 @@ namespace MCUtils.Lighting
 
 		public void Attenuate()
 		{
-			if (SkyLight > 0) SkyLight--;
-			if (BlockLight > 0) BlockLight--;
+			if(SkyLight > 0) SkyLight--;
+			if(BlockLight > 0) BlockLight--;
 		}
 
 		public void DiffuseSkyLight(byte amount)

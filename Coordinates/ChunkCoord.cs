@@ -1,4 +1,4 @@
-﻿namespace MCUtils.Coordinates
+﻿namespace WorldForge.Coordinates
 {
 	public struct ChunkCoord
 	{

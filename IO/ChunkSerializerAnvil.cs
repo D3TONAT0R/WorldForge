@@ -1,14 +1,16 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using MCUtils.TileEntities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using WorldForge.Biomes;
+using WorldForge.Chunks;
+using WorldForge.NBT;
+using WorldForge.Regions;
+using WorldForge.TileEntities;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
-	public class ChunkSerializerAnvil : ChunkSerializer
+    public class ChunkSerializerAnvil : ChunkSerializer
 	{
-		public ChunkSerializerAnvil(Version version) : base(version) { }
+		public ChunkSerializerAnvil(GameVersion version) : base(version) { }
 
 		public int GetIndex(int x, int y, int z)
 		{
@@ -16,13 +18,13 @@ namespace MCUtils.IO
 		}
 
 		#region Blocks
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, Version? version)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
-			foreach (var o in sectionsList.listContent)
+			foreach(var o in sectionsList.listContent)
 			{
 				var sectionComp = (NBTCompound)o;
-				if (!HasBlocks(sectionComp)) continue;
+				if(!HasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 				ParseNumericIDBlocks(c, sectionComp, secY);
 			}
@@ -32,17 +34,17 @@ namespace MCUtils.IO
 		{
 			byte[] blocks = nbtCompound.Get<byte[]>("Blocks");
 			byte[] add; //TODO: include "Add" bits in ID (from modded worlds)
-			if (nbtCompound.Contains("Add")) add = nbtCompound.Get<byte[]>("Add");
+			if(nbtCompound.Contains("Add")) add = nbtCompound.Get<byte[]>("Add");
 			byte[] meta = BitUtils.ExtractNibblesFromByteArray(nbtCompound.Get<byte[]>("Data"));
-			for (int x = 0; x < 16; x++)
+			for(int x = 0; x < 16; x++)
 			{
-				for (int z = 0; z < 16; z++)
+				for(int z = 0; z < 16; z++)
 				{
-					for (int y = 0; y < 16; y++)
+					for(int y = 0; y < 16; y++)
 					{
-						int i = GetIndex(x,y,z);
+						int i = GetIndex(x, y, z);
 						var block = BlockList.FindByNumeric(new NumericID(blocks[i], meta[i]));
-						if (block != null)
+						if(block != null)
 						{
 							c.SetBlockAt((x, y + sectionY * 16, z), new BlockState(block));
 						}
@@ -69,9 +71,9 @@ namespace MCUtils.IO
 			return sectionNBT.Contains("Blocks");
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			
+
 		}
 
 		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
@@ -95,9 +97,9 @@ namespace MCUtils.IO
 		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
 		{
 			var sectionList = chunkNBT.Add("Sections", new NBTList(NBTTag.TAG_Compound));
-			for (sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
+			for(sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
 			{
-				if (c.sections.TryGetValue(secY, out var section))
+				if(c.sections.TryGetValue(secY, out var section))
 				{
 					var sectionNBT = sectionList.Add(new NBTCompound());
 					unchecked
@@ -113,14 +115,14 @@ namespace MCUtils.IO
 		{
 			byte[] ids = new byte[4096];
 			byte[] metaNibbles = new byte[4096];
-			for (int y = 0; y < 16; y++)
+			for(int y = 0; y < 16; y++)
 			{
-				for (int z = 0; z < 16; z++)
+				for(int z = 0; z < 16; z++)
 				{
-					for (int x = 0; x < 16; x++)
+					for(int x = 0; x < 16; x++)
 					{
 						int i = GetIndex(x, y, z);
-						if (BlockList.numerics.TryGetValue(c.GetBlockAt(x, y, z).block, out var numID))
+						if(BlockList.numerics.TryGetValue(c.GetBlockAt(x, y, z).block, out var numID))
 						{
 							ids[i] = numID.id;
 							metaNibbles[i] = numID.meta;
@@ -141,15 +143,15 @@ namespace MCUtils.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
-			if (chunkNBT.Contains("TileEntities"))
+			if(chunkNBT.Contains("TileEntities"))
 			{
 				var tileEntList = chunkNBT.GetAsList("TileEntities");
-				if (tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
+				if(tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
 				{
-					for (int i = 0; i < tileEntList.Length; i++)
+					for(int i = 0; i < tileEntList.Length; i++)
 					{
 						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
 						c.tileEntities.Add(blockPos, te);
@@ -168,15 +170,15 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, Version? version)
+		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
 		{
 			c.entities = new List<Entity>();
-			if (chunkNBT.Contains("Entities"))
+			if(chunkNBT.Contains("Entities"))
 			{
 				var entList = chunkNBT.GetAsList("Entities");
-				if (entList != null && entList.contentsType == NBTTag.TAG_Compound)
+				if(entList != null && entList.contentsType == NBTTag.TAG_Compound)
 				{
-					for (int i = 0; i < entList.Length; i++)
+					for(int i = 0; i < entList.Length; i++)
 					{
 						c.entities.Add(new Entity(entList.Get<NBTCompound>(i)));
 					}
@@ -189,9 +191,9 @@ namespace MCUtils.IO
 			chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			if (chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
+			if(chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
 				byte defaultBiomeID = (byte)BiomeID.plains;
 				if(biomeData.All(b => b == defaultBiomeID))
@@ -200,7 +202,7 @@ namespace MCUtils.IO
 				}
 				else
 				{
-					for (int i = 0; i < 256; i++)
+					for(int i = 0; i < 256; i++)
 					{
 						c.SetBiomeAt(i % 16, i / 16, (BiomeID)biomeData[i]);
 					}
@@ -211,14 +213,14 @@ namespace MCUtils.IO
 		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			byte[] biomeData = new byte[256];
-			for (int i = 0; i < 256; i++)
+			for(int i = 0; i < 256; i++)
 			{
 				biomeData[i] = (byte)c.GetBiomeAt(i % 16, i / 16);
 			}
 			chunkNBT.Add("Biomes", biomeData);
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//TODO
 		}

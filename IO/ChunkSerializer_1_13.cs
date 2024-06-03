@@ -1,11 +1,13 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
+using WorldForge.Biomes;
+using WorldForge.Chunks;
+using WorldForge.NBT;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
-	public class ChunkSerializer_1_13 : ChunkSerializerAnvil
+    public class ChunkSerializer_1_13 : ChunkSerializerAnvil
 	{
-		public ChunkSerializer_1_13(Version version) : base(version) { }
+		public ChunkSerializer_1_13(GameVersion version) : base(version) { }
 
 		public virtual bool UseFull64BitRange => true;
 
@@ -99,7 +101,7 @@ namespace MCUtils.IO
 			comp.Add(BlockStatesKey, longs);
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			if(chunkNBT.TryGet("Status", out string statusString))
 			{
@@ -112,25 +114,25 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, Version? version)
+		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
-			foreach (var o in sectionsList.listContent)
+			foreach(var o in sectionsList.listContent)
 			{
 				var section = new ChunkSection(c, null);
 
 				var sectionComp = (NBTCompound)o;
-				if (!HasBlocks(sectionComp)) continue;
+				if(!HasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 
 				section.palette.Clear();
-				foreach (var cont in GetBlockPalette(sectionComp).listContent)
+				foreach(var cont in GetBlockPalette(sectionComp).listContent)
 				{
 					var paletteItem = (NBTCompound)cont;
 					section.palette.Add(ParseBlockState(paletteItem));
 				}
 
-				if (section.palette.Count == 1)
+				if(section.palette.Count == 1)
 				{
 					//Do nothing, as all blocks already have an index of 0
 				}
@@ -142,11 +144,11 @@ namespace MCUtils.IO
 
 					ushort[] indices = BitUtils.ExtractCompressedInts(longs, indexBitCount, 4096, UseFull64BitRange);
 
-					for (int y = 0; y < 16; y++)
+					for(int y = 0; y < 16; y++)
 					{
-						for (int z = 0; z < 16; z++)
+						for(int z = 0; z < 16; z++)
 						{
-							for (int x = 0; x < 16; x++)
+							for(int x = 0; x < 16; x++)
 							{
 								section.blocks[ChunkSection.GetIndex(x, y, z)] = indices[y * 256 + z * 16 + x];
 							}
@@ -170,10 +172,10 @@ namespace MCUtils.IO
 		protected virtual BlockState ParseBlockState(NBTCompound paletteItemNBT)
 		{
 			var proto = BlockList.Find((string)paletteItemNBT.Get("Name"));
-			if (proto != null)
+			if(proto != null)
 			{
 				var blockState = new BlockState(proto);
-				if (paletteItemNBT.Contains("Properties")) blockState.properties = paletteItemNBT.GetAsCompound("Properties");
+				if(paletteItemNBT.Contains("Properties")) blockState.properties = paletteItemNBT.GetAsCompound("Properties");
 				return blockState;
 			}
 			else
@@ -187,20 +189,20 @@ namespace MCUtils.IO
 			return sectionNBT.Get<long[]>("BlockStates");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			if (chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
+			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
 			{
-				for (int y = 0; y < 64; y++)
+				for(int y = 0; y < 64; y++)
 				{
-					for (int x = 0; x < 4; x++)
+					for(int x = 0; x < 4; x++)
 					{
-						for (int z = 0; z < 4; z++)
+						for(int z = 0; z < 4; z++)
 						{
 							int i = y * 16 + z * 4 + x;
 							var biome = (BiomeID)biomeData[i];
 							var section = c.GetChunkSectionForYCoord(y * 4, false);
-							if (section != null)
+							if(section != null)
 							{
 								section.SetBiome3D4x4At(x * 4, y * 4, z * 4, biome);
 							}
@@ -210,7 +212,7 @@ namespace MCUtils.IO
 			}
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version)
+		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//TODO
 		}
@@ -219,12 +221,12 @@ namespace MCUtils.IO
 		{
 			//Add "post processing" positions (i.e. block positions that need an update)
 			var ppList = chunkNBT.Add("PostProcessing", new NBTList(NBTTag.TAG_List));
-			for (int i = 0; i < 16; i++)
+			for(int i = 0; i < 16; i++)
 			{
 				ppList.Add(new NBTList(NBTTag.TAG_Short));
 			}
 
-			foreach (var t in c.postProcessTicks)
+			foreach(var t in c.postProcessTicks)
 			{
 				int listIndex = t.y / 16;
 				var x = t.x.Mod(16);

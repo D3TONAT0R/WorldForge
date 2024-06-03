@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public struct Version
+	public struct GameVersion
 	{
 		public enum Stage : byte
 		{
@@ -20,14 +20,14 @@ namespace MCUtils
 		public byte minor;
 		public byte patch;
 
-		public static readonly Version FirstVersion = new Version(Stage.Indev, 0, 0, 0);
+		public static readonly GameVersion FirstVersion = new GameVersion(Stage.Indev, 0, 0, 0);
 
-		public static readonly Version DefaultVersion = Release_1(16);
+		public static readonly GameVersion DefaultVersion = Release_1(16);
 
-		public static readonly Version FirstMCRVersion = Beta_1(3);
-		public static readonly Version FirstAnvilVersion = Release_1(2, 1);
+		public static readonly GameVersion FirstMCRVersion = Beta_1(3);
+		public static readonly GameVersion FirstAnvilVersion = Release_1(2, 1);
 
-		public static readonly Dictionary<Version, int> dataVersionAssociations = new Dictionary<Version, int>()
+		public static readonly Dictionary<GameVersion, int> dataVersionAssociations = new Dictionary<GameVersion, int>()
 		{
 			{Release_1(9,0), 169},
 			{Release_1(9,1), 175},
@@ -88,7 +88,7 @@ namespace MCUtils
 			{Release_1(20,4), 3700}
 		};
 
-		public Version(Stage stage, byte major, byte minor, byte patch)
+		public GameVersion(Stage stage, byte major, byte minor, byte patch)
 		{
 			this.stage = stage;
 			this.major = major;
@@ -96,29 +96,30 @@ namespace MCUtils
 			this.patch = patch;
 		}
 
-		public static Version Alpha_1(byte minor, byte patch = 0)
+		public static GameVersion Alpha_1(byte minor, byte patch = 0)
 		{
-			return new Version(Stage.Alpha, 1, minor, patch);
+			return new GameVersion(Stage.Alpha, 1, minor, patch);
 		}
 
-		public static Version Beta_1(byte minor, byte patch = 0)
+		public static GameVersion Beta_1(byte minor, byte patch = 0)
 		{
-			return new Version(Stage.Beta, 1, minor, patch);
+			return new GameVersion(Stage.Beta, 1, minor, patch);
 		}
 
-		public static Version Release_1(byte minor, byte patch = 0)
+		public static GameVersion Release_1(byte minor, byte patch = 0)
 		{
-			return new Version(Stage.Release, 1, minor, patch);
+			return new GameVersion(Stage.Release, 1, minor, patch);
 		}
 
-		public static Version Parse(string s)
+		public static GameVersion Parse(string s)
 		{
 			s = s.Trim().ToLower();
 			Stage stage;
-			if(char.IsLetter(s[0])) {
-				if (s[0] == 'a') stage = Stage.Alpha;
-				else if (s[0] == 'b') stage = Stage.Beta;
-				else if (s[0] == 'r') stage = Stage.Release;
+			if(char.IsLetter(s[0]))
+			{
+				if(s[0] == 'a') stage = Stage.Alpha;
+				else if(s[0] == 'b') stage = Stage.Beta;
+				else if(s[0] == 'r') stage = Stage.Release;
 				else throw new System.FormatException("Unrecognized stage character: " + s[0]);
 				s = s.Substring(1);
 			}
@@ -130,15 +131,15 @@ namespace MCUtils
 			byte major = byte.Parse(split[0]);
 			byte minor = byte.Parse(split[1]);
 			byte patch = split.Length >= 3 ? byte.Parse(split[2]) : (byte)0;
-			return new Version(stage, major, minor, patch);
+			return new GameVersion(stage, major, minor, patch);
 		}
 
 		/// <summary>
 		/// Returns the game version from the given data version number (if applicable).
 		/// </summary>
-		public static Version? FromDataVersion(int? dataVersion)
+		public static GameVersion? FromDataVersion(int? dataVersion)
 		{
-			if (dataVersion == null) return null;
+			if(dataVersion == null) return null;
 			if(dataVersion >= 100)
 			{
 				var list = dataVersionAssociations.ToList();
@@ -157,10 +158,10 @@ namespace MCUtils
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder();
-			if (stage == Stage.Alpha) sb.Append("a");
-			else if (stage == Stage.Beta) sb.Append("b");
+			if(stage == Stage.Alpha) sb.Append("a");
+			else if(stage == Stage.Beta) sb.Append("b");
 			sb.Append($"{major}.{minor}");
-			if (patch != 0) sb.Append($".{patch}");
+			if(patch != 0) sb.Append($".{patch}");
 			return sb.ToString();
 		}
 
@@ -171,7 +172,7 @@ namespace MCUtils
 
 		public override bool Equals(object obj)
 		{
-			if(obj is Version v)
+			if(obj is GameVersion v)
 			{
 				return this == v;
 			}
@@ -191,32 +192,32 @@ namespace MCUtils
 			return dv;
 		}
 
-		public static bool operator ==(Version l, Version r)
+		public static bool operator ==(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() == r.GetHashCode();
 		}
 
-		public static bool operator !=(Version l, Version r)
+		public static bool operator !=(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() != r.GetHashCode();
 		}
 
-		public static bool operator >(Version l, Version r)
+		public static bool operator >(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() > r.GetHashCode();
 		}
 
-		public static bool operator <(Version l, Version r)
+		public static bool operator <(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() < r.GetHashCode();
 		}
 
-		public static bool operator <=(Version l, Version r)
+		public static bool operator <=(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() <= r.GetHashCode();
 		}
 
-		public static bool operator >=(Version l, Version r)
+		public static bool operator >=(GameVersion l, GameVersion r)
 		{
 			return l.GetHashCode() >= r.GetHashCode();
 		}

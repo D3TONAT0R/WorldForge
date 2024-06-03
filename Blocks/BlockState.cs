@@ -1,8 +1,8 @@
-﻿using MCUtils.NBT;
-using System;
+﻿using System;
 using System.Text;
+using WorldForge.NBT;
 
-namespace MCUtils
+namespace WorldForge
 {
 	public class BlockState
 	{
@@ -28,7 +28,7 @@ namespace MCUtils
 		{
 			get
 			{
-				if (air == null) air = new BlockState(BlockList.Find("air"));
+				if(air == null) air = new BlockState(BlockList.Find("air"));
 				return air;
 			}
 		}
@@ -38,7 +38,7 @@ namespace MCUtils
 		{
 			get
 			{
-				if (unknown == null) unknown = new BlockState();
+				if(unknown == null) unknown = new BlockState();
 				return unknown;
 			}
 		}
@@ -71,8 +71,8 @@ namespace MCUtils
 
 		void AddDefaultBlockProperties()
 		{
-			if (block == null) return;
-			switch (block.shortID)
+			if(block == null) return;
+			switch(block.shortID)
 			{
 				case "oak_leaves":
 				case "spruce_leaves":
@@ -88,9 +88,9 @@ namespace MCUtils
 
 		public bool Compare(BlockState other, bool compareProperties = true)
 		{
-			if (compareProperties)
+			if(compareProperties)
 			{
-				if (!NBTCompound.AreEqual(properties, other.properties)) return false;
+				if(!NBTCompound.AreEqual(properties, other.properties)) return false;
 			}
 			return block == other.block;
 		}
@@ -104,7 +104,7 @@ namespace MCUtils
 				bool first = true;
 				foreach(var prop in properties.contents)
 				{
-					if (!first) sb.Append(",");
+					if(!first) sb.Append(",");
 					first = false;
 					sb.Append($"{prop.Key}={prop.Value}");
 				}

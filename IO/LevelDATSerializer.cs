@@ -1,11 +1,11 @@
-﻿using MCUtils.NBT;
+﻿using WorldForge.NBT;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
 	public class LevelDATSerializer
 	{
 
-		public static LevelDATSerializer CreateForVersion(Version gameVersion)
+		public static LevelDATSerializer CreateForVersion(GameVersion gameVersion)
 		{
 			//TODO: implement different dat serializers for newer versions
 			return new LevelDATSerializer();
@@ -22,7 +22,7 @@ namespace MCUtils.IO
 			if(dv != null) nbt.Add("DataVersion", dv.Value);
 			*/
 
-			nbt.Add("version", world.gameVersion >= Version.FirstAnvilVersion ? 19133 : 19132);
+			nbt.Add("version", world.gameVersion >= GameVersion.FirstAnvilVersion ? 19133 : 19132);
 
 			var dat = world.levelData;
 			var version = world.gameVersion;
@@ -37,37 +37,37 @@ namespace MCUtils.IO
 			WriteDataPackInfo(nbt, dat.dataPacks, version);
 
 			//TODO: make separate DAT serializer for "newer" NBT data
-			if(world.gameVersion >= Version.Beta_1(8))
+			if(world.gameVersion >= GameVersion.Beta_1(8))
 			{
 				nbt.Add("GameType", creativeMode ? 1 : 0);
 			}
 			//TODO: find out when cheat option was added
-			if(world.gameVersion >= Version.Release_1(0))
+			if(world.gameVersion >= GameVersion.Release_1(0))
 			{
 				nbt.Add("allowCommands", (byte)(creativeMode ? 1 : 0));
 			}
 		}
 
-		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, Version version)
+		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, GameVersion version)
 		{
 			var comp = nbt.AddCompound("DataPacks");
 			NBTConverter.WriteToNBT(dataPacks, comp, version);
 		}
 
-		private void WriteWanderingTraderInfo(NBTCompound nbt, LevelData.WanderingTraderInfo wanderingTraderInfo, Version version)
+		private void WriteWanderingTraderInfo(NBTCompound nbt, LevelData.WanderingTraderInfo wanderingTraderInfo, GameVersion version)
 		{
 			NBTConverter.WriteToNBT(wanderingTraderInfo, nbt, version);
 		}
 
-		private void WriteWorldBorder(NBTCompound nbt, LevelData.WorldBorder worldBorder, Version version)
+		private void WriteWorldBorder(NBTCompound nbt, LevelData.WorldBorder worldBorder, GameVersion version)
 		{
 			NBTConverter.WriteToNBT(worldBorder, nbt, version);
 		}
 
-		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, Version gameVersion)
+		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, GameVersion gameVersion)
 		{
 			//TODO: WorldGenSettings added in 1.13?
-			if(gameVersion >= Version.Release_1(13))
+			if(gameVersion >= GameVersion.Release_1(13))
 			{
 				nbt.Add("WorldGenSettings", worldGen.ToNBT(gameVersion));
 			}
@@ -77,20 +77,20 @@ namespace MCUtils.IO
 			}
 		}
 
-		private void WriteGameRules(NBTCompound nbt, LevelData.GameRules gameRules, Version gameVersion)
+		private void WriteGameRules(NBTCompound nbt, LevelData.GameRules gameRules, GameVersion gameVersion)
 		{
 			//TODO: when were game rules added?
-			if (gameVersion > Version.Release_1(0))
+			if(gameVersion > GameVersion.Release_1(0))
 			{
 				nbt.Add("GameRules", gameRules.CreateNBT());
 			}
 		}
 
-		protected virtual void WriteWorldInfo(LevelData dat, NBTCompound nbt, Version targetVersion)
+		protected virtual void WriteWorldInfo(LevelData dat, NBTCompound nbt, GameVersion targetVersion)
 		{
 			nbt.Add("LevelName", dat.worldName);
 			var dv = targetVersion.GetDataVersion();
-			if (dv.HasValue)
+			if(dv.HasValue)
 			{
 				nbt.Add("DataVersion", dv.Value);
 			}
@@ -98,7 +98,7 @@ namespace MCUtils.IO
 			nbt.Add("WasModded", dat.wasModded);
 		}
 
-		protected void WritePlayerData(World world, Player player, NBTCompound dat, Version version)
+		protected void WritePlayerData(World world, Player player, NBTCompound dat, GameVersion version)
 		{
 			var comp = dat.AddCompound("Player");
 			if(player.position.IsZero)

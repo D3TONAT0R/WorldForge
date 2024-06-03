@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MCUtils.NBT
+namespace WorldForge.NBT
 {
 	public enum NBTTag
 	{

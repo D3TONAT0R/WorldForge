@@ -1,19 +1,19 @@
-﻿using Ionic.Zlib;
-using MCUtils.Coordinates;
-using MCUtils.IO;
-using MCUtils.NBT;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WorldForge.Chunks;
+using WorldForge.Coordinates;
+using WorldForge.IO;
+using WorldForge.NBT;
+using WorldForge.Regions;
 
-namespace MCUtils
+namespace WorldForge
 {
-	public static class RegionLoader
+    public static class RegionLoader
 	{
 		private class RegionData
 		{
@@ -38,15 +38,15 @@ namespace MCUtils
 				if(Regex.IsMatch(fname, @".*\.-?[0-9]+\.-?[0-9]+\.mc.*"))
 				{
 					var split = fname.Split('.');
-					regionX = int.Parse(split[split.Length-3]);
-					regionZ = int.Parse(split[split.Length-2]);
+					regionX = int.Parse(split[split.Length - 3]);
+					regionZ = int.Parse(split[split.Length - 2]);
 				}
 				else
 				{
 					Console.WriteLine("Unable to interpret region location from file name: " + fname);
 				}
 
-				for (uint i = 0; i < 1024; i++)
+				for(uint i = 0; i < 1024; i++)
 				{
 					locations[i] = Read3ByteInt(stream);
 					sizes[i] = ReadNext(stream);
@@ -55,9 +55,9 @@ namespace MCUtils
 				//Ingore timestamps between 4096 and 8192
 
 				expectedEOF = 8192;
-				for (int i = 0; i < 1024; i++)
+				for(int i = 0; i < 1024; i++)
 				{
-					if (locations[i] > 0)
+					if(locations[i] > 0)
 					{
 						stream.Seek(locations[i] * 4096, SeekOrigin.Begin);
 						try
@@ -84,14 +84,14 @@ namespace MCUtils
 			}
 		}
 
-		public static Region LoadRegion(string filepath, Version? worldSaveVersion = null, bool loadOrphanChunks = false)
+		public static Region LoadRegion(string filepath, GameVersion? worldSaveVersion = null, bool loadOrphanChunks = false)
 		{
 			bool isAnvilFormat;
-			if (filepath.EndsWith(".mcr")) isAnvilFormat = false;
-			else if (filepath.EndsWith(".mca")) isAnvilFormat = true;
+			if(filepath.EndsWith(".mcr")) isAnvilFormat = false;
+			else if(filepath.EndsWith(".mca")) isAnvilFormat = true;
 			else throw new InvalidOperationException("Unknown or unsupported file extension");
 			RegionData rd;
-			using (var stream = File.Open(filepath, FileMode.Open))
+			using(var stream = File.Open(filepath, FileMode.Open))
 			{
 				rd = new RegionData(stream, filepath);
 			}
@@ -101,15 +101,15 @@ namespace MCUtils
 				if(rd.compressedChunks[i] != null)
 				{
 					var cd = rd.compressedChunks[i];
-					using (var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
+					using(var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
 					{
 						var nbt = new NBTFile(chunkStream);
-						Version gameVersion;
-						if (worldSaveVersion.HasValue)
+						GameVersion gameVersion;
+						if(worldSaveVersion.HasValue)
 						{
-							if (nbt.contents.TryGet("DataVersion", out int dv))
+							if(nbt.contents.TryGet("DataVersion", out int dv))
 							{
-								gameVersion = Version.FromDataVersion(dv).Value;
+								gameVersion = GameVersion.FromDataVersion(dv).Value;
 							}
 							else
 							{
@@ -118,19 +118,19 @@ namespace MCUtils
 						}
 						else
 						{
-							if (nbt.contents.TryGet("DataVersion", out int dv))
+							if(nbt.contents.TryGet("DataVersion", out int dv))
 							{
-								gameVersion = Version.FromDataVersion(dv).Value;
+								gameVersion = GameVersion.FromDataVersion(dv).Value;
 							}
 							else
 							{
-								if (worldSaveVersion != null)
+								if(worldSaveVersion != null)
 								{
 									gameVersion = worldSaveVersion.Value;
 								}
 								else
 								{
-									gameVersion = isAnvilFormat ? Version.Release_1(2) : Version.Beta_1(3);
+									gameVersion = isAnvilFormat ? GameVersion.Release_1(2) : GameVersion.Beta_1(3);
 
 								}
 							}
@@ -150,15 +150,15 @@ namespace MCUtils
 		{
 			List<(ChunkCoord, string)> chunkFileLocations = new List<(ChunkCoord, string)>();
 			var lowerChunkCoord = location.GetChunkCoord();
-			for (int z = lowerChunkCoord.z; z < lowerChunkCoord.z + 32; z++)
+			for(int z = lowerChunkCoord.z; z < lowerChunkCoord.z + 32; z++)
 			{
-				for (int x = lowerChunkCoord.x; x < lowerChunkCoord.x + 32; x++)
+				for(int x = lowerChunkCoord.x; x < lowerChunkCoord.x + 32; x++)
 				{
 					//TODO: likely won't work with chunks beyond +/- 127
 					string xf = EncodeBase36(GetPositive2sComplement((sbyte)x));
 					string zf = EncodeBase36(GetPositive2sComplement((sbyte)z));
 					string file = $"c.{EncodeBase36(x)}.{EncodeBase36(z)}.dat";
-					string path = Path.Combine(worldSaveDir, xf, zf,file);
+					string path = Path.Combine(worldSaveDir, xf, zf, file);
 					if(File.Exists(path))
 					{
 						chunkFileLocations.Add((new ChunkCoord(x, z), path));
@@ -167,7 +167,7 @@ namespace MCUtils
 			}
 
 			var reg = new Region(location);
-			var cs = new ChunkSerializerAlpha(Version.Alpha_1(0));
+			var cs = new ChunkSerializerAlpha(GameVersion.Alpha_1(0));
 			Parallel.ForEach(chunkFileLocations, c =>
 			{
 				var coord = c.Item1;
@@ -182,17 +182,17 @@ namespace MCUtils
 		{
 			short[,] heightmap = new short[512, 512];
 			RegionData rd;
-			using (var stream = File.Open(filepath, FileMode.Open))
+			using(var stream = File.Open(filepath, FileMode.Open))
 			{
 				rd = new RegionData(stream, filepath);
 			}
 
 			Parallel.For(0, 1024, i =>
 			{
-				if (rd.compressedChunks[i] != null)
+				if(rd.compressedChunks[i] != null)
 				{
 					var cd = rd.compressedChunks[i];
-					using (var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
+					using(var chunkStream = Compression.CreateZlibDecompressionStream(cd.compressedChunk))
 					{
 						WriteChunkToHeightmap(heightmap, new NBTFile(chunkStream), i % 32, i / 32, heightmapType);
 					}
@@ -205,11 +205,11 @@ namespace MCUtils
 		public static NBTFile LoadChunkDataAtIndex(string filepath, int index)
 		{
 			RegionData rd;
-			using (var stream = File.Open(filepath, FileMode.Open))
+			using(var stream = File.Open(filepath, FileMode.Open))
 			{
 				rd = new RegionData(stream, filepath);
 			}
-			using (var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[index].compressedChunk))
+			using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[index].compressedChunk))
 			{
 				return new NBTFile(chunkStream);
 			}
@@ -230,7 +230,7 @@ namespace MCUtils
 		private static byte ReadNext(Stream stream)
 		{
 			int r = stream.ReadByte();
-			if (r >= 0)
+			if(r >= 0)
 			{
 				return (byte)r;
 			}
@@ -243,7 +243,7 @@ namespace MCUtils
 		private static byte[] ReadNext(Stream stream, int count)
 		{
 			byte[] b = new byte[count];
-			for (int i = 0; i < count; i++)
+			for(int i = 0; i < count; i++)
 			{
 				b[i] = ReadNext(stream);
 			}
@@ -260,7 +260,7 @@ namespace MCUtils
 				//TODO: not global chunk coords
 				ChunkSerializer serializer;
 				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
-				else serializer = new ChunkSerializerAnvil(Version.Release_1(8));
+				else serializer = new ChunkSerializerAnvil(GameVersion.Release_1(8));
 
 				ChunkData chunk = serializer.ReadChunkNBT(nbt, null, new ChunkCoord(localChunkX, localChunkZ), out _);
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
@@ -302,26 +302,26 @@ namespace MCUtils
 
 		private static long DecodeBase36(string value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			if(string.IsNullOrWhiteSpace(value))
 				throw new ArgumentException("Empty value.");
 			value = value.ToUpper();
 			bool negative = false;
-			if (value[0] == '-')
+			if(value[0] == '-')
 			{
 				negative = true;
 				value = value.Substring(1, value.Length - 1);
 			}
-			if (value.Any(c => !base36Digits.Contains(c)))
+			if(value.Any(c => !base36Digits.Contains(c)))
 				throw new ArgumentException("Invalid value: \"" + value + "\".");
 			var decoded = 0L;
-			for (var i = 0; i < value.Length; ++i)
+			for(var i = 0; i < value.Length; ++i)
 				decoded += base36Digits.IndexOf(value[i]) * (long)BigInteger.Pow(base36Digits.Length, value.Length - i - 1);
 			return negative ? decoded * -1 : decoded;
 		}
 
 		private static string EncodeBase36(long value)
 		{
-			if (value == long.MinValue)
+			if(value == long.MinValue)
 			{
 				//hard coded value due to error when getting absolute value below: "Negating the minimum value of a twos complement number is invalid.".
 				return "-1Y2P0IJ32E8E8";
@@ -331,7 +331,7 @@ namespace MCUtils
 			string encoded = string.Empty;
 			do
 				encoded = base36Digits[(int)(value % base36Digits.Length)] + encoded;
-			while ((value /= base36Digits.Length) != 0);
+			while((value /= base36Digits.Length) != 0);
 			return negative ? "-" + encoded : encoded;
 		}
 	}

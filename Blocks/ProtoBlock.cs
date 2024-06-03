@@ -1,4 +1,4 @@
-﻿namespace MCUtils
+﻿namespace WorldForge
 {
 	public class ProtoBlock
 	{
@@ -7,7 +7,7 @@
 		public readonly string customNamespace = null;
 		public readonly string shortID;
 
-		public readonly Version addedInVersion;
+		public readonly GameVersion addedInVersion;
 		public ProtoBlock substitute;
 
 		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
@@ -19,7 +19,7 @@
 		/// <summary>
 		/// Registers a new vanilla block type.
 		/// </summary>
-		public static ProtoBlock[] RegisterNewVanillaBlock(string shortID, Version versionAdded, ProtoBlock substitute = null)
+		public static ProtoBlock[] RegisterNewVanillaBlock(string shortID, GameVersion versionAdded, ProtoBlock substitute = null)
 		{
 			return RegisterNewBlock(null, shortID, versionAdded, substitute);
 		}
@@ -32,14 +32,14 @@
 			return RegisterNewBlock(modNamespace, shortID, null, null);
 		}
 
-		static ProtoBlock[] RegisterNewBlock(string modNamespace, string shortID, Version? versionAdded, ProtoBlock substitute)
+		static ProtoBlock[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, ProtoBlock substitute)
 		{
-			if(!versionAdded.HasValue) versionAdded = Version.FirstVersion;
+			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
 			if(shortID.Contains("*"))
 			{
 				//Multicolored blocks
 				ProtoBlock[] blocks = new ProtoBlock[Blocks.commonColors.Length];
-				for (int i = 0; i < Blocks.commonColors.Length; i++)
+				for(int i = 0; i < Blocks.commonColors.Length; i++)
 				{
 					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
 					//TODO: how to substitute color block with another color block?
@@ -57,7 +57,7 @@
 			}
 		}
 
-		private ProtoBlock(string ns, string id, Version v, ProtoBlock sub)
+		private ProtoBlock(string ns, string id, GameVersion v, ProtoBlock sub)
 		{
 			customNamespace = ns;
 			shortID = id;
@@ -68,7 +68,7 @@
 		/// <summary>
 		/// Returns the most appropriate block by game version. If this block does not yet exist in the given version, it will recursively search for a replacement. If there is none available, null (air) is returned.
 		/// </summary>
-		public ProtoBlock FindAppropriateBlock(Version gameVersion)
+		public ProtoBlock FindAppropriateBlock(GameVersion gameVersion)
 		{
 			if(gameVersion >= addedInVersion)
 			{
@@ -90,7 +90,7 @@
 		public bool CompareMultiple(params string[] ids)
 		{
 			bool b = false;
-			for (int i = 0; i < ids.Length; i++)
+			for(int i = 0; i < ids.Length; i++)
 			{
 				b |= Compare(ids[i]);
 			}
@@ -107,7 +107,8 @@
 			if(obj is ProtoBlock pb)
 			{
 				return this == pb;
-			} else if(obj is string s)
+			}
+			else if(obj is string s)
 			{
 				return ID == s;
 			}
@@ -119,8 +120,8 @@
 
 		public static bool operator ==(ProtoBlock l, ProtoBlock r)
 		{
-			if (l is null && r is null) return true;
-			else if (l is null || r is null) return false;
+			if(l is null && r is null) return true;
+			else if(l is null || r is null) return false;
 			else return l.ID == r.ID;
 		}
 

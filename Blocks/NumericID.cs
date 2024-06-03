@@ -1,4 +1,4 @@
-﻿namespace MCUtils
+﻿namespace WorldForge
 {
 	public struct NumericID
 	{
@@ -15,11 +15,11 @@
 		{
 			try
 			{
-				if (string.IsNullOrWhiteSpace(s)) return null;
+				if(string.IsNullOrWhiteSpace(s)) return null;
 				var split = s.Split(':');
 				byte id = byte.Parse(split[0]);
 				byte meta = 0;
-				if (split.Length > 1) byte.TryParse(split[1], out meta);
+				if(split.Length > 1) byte.TryParse(split[1], out meta);
 				return new NumericID(id, meta);
 			}
 			catch

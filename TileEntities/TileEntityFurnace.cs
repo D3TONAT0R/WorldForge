@@ -1,7 +1,7 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
+﻿using WorldForge.Coordinates;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
 	public class TileEntityFurnace : TileEntityContainer
 	{

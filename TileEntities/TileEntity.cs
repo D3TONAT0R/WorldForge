@@ -1,9 +1,10 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
+﻿using WorldForge.Coordinates;
+using WorldForge.Items;
+using WorldForge.NBT;
 
-namespace MCUtils.TileEntities
+namespace WorldForge.TileEntities
 {
-	public abstract class TileEntity
+    public abstract class TileEntity
 	{
 		public string id;
 		public NBTCompound otherNBTData;
@@ -22,7 +23,7 @@ namespace MCUtils.TileEntities
 			otherNBTData = nbt;
 		}
 
-		public static TileEntity CreateFromNBT(NBTCompound nbt, Version? version, out BlockCoord blockPos)
+		public static TileEntity CreateFromNBT(NBTCompound nbt, GameVersion? version, out BlockCoord blockPos)
 		{
 			string id = nbt.Get<string>("id");
 			switch(id)
@@ -178,7 +179,7 @@ namespace MCUtils.TileEntities
 		public static TileEntityFurnace CreateBlastFurnace() => new TileEntityFurnace("blast_furnace");
 		public static TileEntityFurnace CreateSmoker() => new TileEntityFurnace("smoker");
 
-		public NBTCompound ToNBT(Version version, BlockCoord blockPos)
+		public NBTCompound ToNBT(GameVersion version, BlockCoord blockPos)
 		{
 			NBTCompound nbt = new NBTCompound
 			{
@@ -193,9 +194,9 @@ namespace MCUtils.TileEntities
 			return nbt;
 		}
 
-		protected abstract void Serialize(NBTCompound nbt, Version version);
+		protected abstract void Serialize(NBTCompound nbt, GameVersion version);
 
-		protected virtual string ResolveEntityID(Version version)
+		protected virtual string ResolveEntityID(GameVersion version)
 		{
 			return id;
 		}

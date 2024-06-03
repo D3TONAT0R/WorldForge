@@ -1,30 +1,32 @@
-﻿using MCUtils.Coordinates;
-using MCUtils.NBT;
-using System;
+﻿using System;
+using WorldForge.Chunks;
+using WorldForge.Coordinates;
+using WorldForge.NBT;
+using WorldForge.Regions;
 
-namespace MCUtils.IO
+namespace WorldForge.IO
 {
-	public abstract class ChunkSerializer
+    public abstract class ChunkSerializer
 	{
-		public static ChunkSerializer CreateForVersion(Version gameVersion)
+		public static ChunkSerializer CreateForVersion(GameVersion gameVersion)
 		{
-			if(gameVersion >= Version.Release_1(18))
+			if(gameVersion >= GameVersion.Release_1(18))
 			{
 				return new ChunkSerializer_1_18(gameVersion);
 			}
-			else if(gameVersion >= Version.Release_1(16))
+			else if(gameVersion >= GameVersion.Release_1(16))
 			{
 				return new ChunkSerializer_1_16(gameVersion);
 			}
-			else if (gameVersion >= Version.Release_1(13))
+			else if(gameVersion >= GameVersion.Release_1(13))
 			{
 				return new ChunkSerializer_1_13(gameVersion);
 			}
-			else if(gameVersion >= Version.Release_1(2,1))
+			else if(gameVersion >= GameVersion.Release_1(2, 1))
 			{
 				return new ChunkSerializerAnvil(gameVersion);
 			}
-			else if(gameVersion >= Version.Beta_1(3))
+			else if(gameVersion >= GameVersion.Beta_1(3))
 			{
 				return new ChunkSerializerMCR(gameVersion);
 			}
@@ -37,24 +39,24 @@ namespace MCUtils.IO
 
 		public static ChunkSerializer CreateForDataVersion(NBTFile nbt)
 		{
-			var gv = Version.FromDataVersion(nbt.dataVersion);
-			if (!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
+			var gv = GameVersion.FromDataVersion(nbt.dataVersion);
+			if(!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
 			return CreateForVersion(gv.Value);
 		}
 
 		public virtual bool AddRootLevelCompound => true;
 
-		public Version TargetVersion { get; private set; }
+		public GameVersion TargetVersion { get; private set; }
 
-		public ChunkSerializer(Version version)
+		public ChunkSerializer(GameVersion version)
 		{
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords, out Version? version)
+		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords, out GameVersion? version)
 		{
 			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
-			version = Version.FromDataVersion(chunkNBTData.dataVersion);
+			version = GameVersion.FromDataVersion(chunkNBTData.dataVersion);
 			var chunkNBT = GetRootCompound(chunkNBTData);
 
 			LoadCommonData(c, chunkNBT, version);
@@ -72,25 +74,25 @@ namespace MCUtils.IO
 
 		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");
 
-		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT, Version? version);
+		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT, Version? version);
+		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, Version? version);
+		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, Version? version);
+		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version);
 
-		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT, Version? version);
+		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, Version? version);
+		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, Version? version) { }
+		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
 		public virtual NBTFile CreateChunkNBT(ChunkData c, Region parentRegion)
 		{
 			var chunkRootNBT = new NBTFile();
 			NBTCompound chunkNBT;
-			if (AddRootLevelCompound)
+			if(AddRootLevelCompound)
 			{
 				chunkNBT = chunkRootNBT.contents.AddCompound("Level");
 			}

@@ -1,6 +1,7 @@
-﻿namespace MCUtils
+﻿namespace WorldForge
 {
-	public enum HeightmapType {
+	public enum HeightmapType
+	{
 		AllBlocks,
 		SolidBlocks,
 		SolidBlocksNoLiquid,
