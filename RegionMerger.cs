@@ -47,7 +47,7 @@ namespace MCUtils
 			}
 		}
 
-		public RegionMerger(Region r1, Region r2, Bitmap mask) : this(r1, r2, ConvertToMergeMask(mask))
+		public RegionMerger(Region r1, Region r2, IBitmap mask) : this(r1, r2, ConvertToMergeMask(mask))
 		{
 		}
 
@@ -55,7 +55,7 @@ namespace MCUtils
 		{
 		}
 
-		public static byte[,] ConvertToMergeMask(Bitmap mask)
+		public static byte[,] ConvertToMergeMask(IBitmap mask)
 		{
 			if (!(mask.Width == 512 && mask.Height == 512) && !(mask.Width == 32 && mask.Height == 32))
 			{
@@ -66,7 +66,7 @@ namespace MCUtils
 			{
 				for (int z = 0; z < mask.Height; z++)
 				{
-					map[x, z] = (byte)((mask.GetPixel(x, z).GetBrightness() > 0.5f) ? 2 : 1);
+					map[x, z] = (byte)((mask.GetPixel(x, z).r > 0.5f) ? 2 : 1);
 				}
 			}
 			return map;

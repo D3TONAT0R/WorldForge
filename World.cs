@@ -367,16 +367,20 @@ namespace MCUtils
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public Bitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
+		public IBitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
 		{
 			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType), shading);
 		}
 
-		public Bitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap, bool shading)
+		public IBitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap, bool shading)
 		{
 			int xMax = xMin + heightmap.GetLength(0);
 			int zMax = zMin + heightmap.GetLength(1);
-			Bitmap bmp = new Bitmap(heightmap.GetLength(0), heightmap.GetLength(1), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			if(Bitmaps.BitmapFactory == null)
+			{
+				throw new ArgumentNullException("No bitmap factory was provided.");
+			}
+			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
 			for (int z = zMin; z < zMax; z++)
 			{
 				for (int x = xMin; x < xMax; x++)

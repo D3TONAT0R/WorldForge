@@ -55,7 +55,7 @@ namespace MCUtils.ConsoleTools
 			MCUtilsConsole.WriteLine($"Enter path to map image (Must be {sizeX * 512}x{sizeZ * 512} or {sizeX * 32}x{sizeZ * 32}:");
 			string map = GetFilePath(false);
 			if(map == null) return;
-			Bitmap worldMergeMap = new Bitmap(map);
+			IBitmap worldMergeMap = Bitmaps.Load(map);
 			byte mergeMode = 0;
 			if(worldMergeMap.Width == sizeX * 512 && worldMergeMap.Height == sizeZ * 512) mergeMode = 1;
 			if(worldMergeMap.Width == sizeX * 32 && worldMergeMap.Height == sizeZ * 32) mergeMode = 2;
@@ -98,7 +98,7 @@ namespace MCUtils.ConsoleTools
 				int localX = r.loc.x - lowerBound.x;
 				int localZ = r.loc.z - lowerBound.z;
 				int scale = mergeMode == 1 ? 512 : 32;
-				Bitmap section = worldMergeMap.Clone(new Rectangle(localX*scale, localZ*scale, scale, scale), worldMergeMap.PixelFormat);
+				IBitmap section = worldMergeMap.CloneArea(localX*scale, localZ*scale, scale, scale);
 
 				MCUtilsConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
 				var region1 = RegionLoader.LoadRegion(Path.Combine(world1Path, r.filename));

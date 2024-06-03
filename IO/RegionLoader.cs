@@ -201,63 +201,6 @@ namespace MCUtils
 			return heightmap;
 		}
 
-		//TODO: duplicate of World.GetSurfaceMap
-		public static Bitmap GetSurfaceMap(string filepath, HeightmapType surfaceType, bool mcMapShading)
-		{
-			Region r = LoadRegion(filepath);
-			var hm = r.GetHeightmapFromNBT(surfaceType);
-			for (int z = 0; z < 512; z++)
-			{
-				for (int x = 0; x < 512; x++)
-				{
-					short y = hm[x, z];
-					while (!Blocks.IsBlockForMap(r.GetBlock((x, y, z)), surfaceType) && y > 0)
-					{
-						y--;
-					}
-					hm[x, z] = y;
-				}
-			}
-			Bitmap bmp = new Bitmap(512, 512, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-			for (int z = 0; z < 512; z++)
-			{
-				for (int x = 0; x < 512; x++)
-				{
-					int y = hm[x, z];
-					var block = r.GetBlock((x, y, z));
-					if (block.IsAir && y > 0)
-					{
-						throw new ArgumentException("the mapped block was air.");
-					}
-					int shade = 0;
-
-					if (mcMapShading && z > 0)
-					{
-						if (block.IsWater)
-						{
-							//Water dithering
-							var depth = r.GetWaterDepth((x, y, z));
-							if (depth < 8) shade = 1;
-							else if (depth < 16) shade = 0;
-							else shade = -1;
-							if (depth % 8 >= 4 && shade > -1)
-							{
-								if (x.Mod(2) == z.Mod(2)) shade--;
-							}
-						}
-						else
-						{
-							int above = hm[x, z - 1];
-							if (above > y) shade = -1;
-							else if (above < y) shade = 1;
-						}
-					}
-					bmp.SetPixel(x, z, Blocks.GetMapColor(block, shade));
-				}
-			}
-			return bmp;
-		}
-
 		///<summary>Loads chunk data from a specified index in a region file (for debugging purposes)</summary>
 		public static NBTFile LoadChunkDataAtIndex(string filepath, int index)
 		{

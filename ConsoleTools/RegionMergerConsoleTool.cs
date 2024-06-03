@@ -35,7 +35,7 @@ namespace MCUtils.ConsoleTools
 				MCUtilsConsole.WriteError(e.ToString());
 				return;
 			}
-			Bitmap mask = new Bitmap(map);
+			IBitmap mask = Bitmaps.Load(map);
 			var merger = new RegionMerger(region1, region2, mask);
 			MCUtilsConsole.WriteLine("Merging ...");
 			var mergedRegion = merger.Merge();

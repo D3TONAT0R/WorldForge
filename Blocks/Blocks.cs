@@ -102,7 +102,7 @@ namespace MCUtils
 			"purple"
 		};
 
-		static Color[,] colormap;
+		static BitmapColor[,] colormap;
 
 		public static string GetRandomColor(Random r)
 		{
@@ -126,7 +126,7 @@ namespace MCUtils
 			}
 		}
 		
-		public static Color GetMapColor(ProtoBlock block, int shade) {
+		public static BitmapColor GetMapColor(ProtoBlock block, int shade) {
 			if(colormap == null) {
 				colormap = LoadColorMap();
 			}
@@ -137,13 +137,13 @@ namespace MCUtils
 				shade = 1 - shade;
 				return colormap[index, shade];
 			} else {
-				return Color.FromArgb(0, 0, 0, 0);
+				return new BitmapColor(0, 0, 0, 0);
 			}
 		}
 
-		static Color[,] LoadColorMap() {
-			Bitmap bmp = new Bitmap(Image.FromFile(ResourceLoader.GetPathOfResource("colormap.tif")));
-			Color[,] colormap = new Color[bmp.Width, 3];
+		static BitmapColor[,] LoadColorMap() {
+			var bmp = Bitmaps.Load(ResourceLoader.GetPathOfResource("colormap.tif"));
+			BitmapColor[,] colormap = new BitmapColor[bmp.Width, 3];
 			for(int x = 0; x < bmp.Width; x++) {
 				for(int y = 0; y < 3; y++) {
 					colormap[x, y] = bmp.GetPixel(x, y);
