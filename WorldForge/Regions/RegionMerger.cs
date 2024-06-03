@@ -133,7 +133,7 @@ namespace WorldForge.Regions
 
 		public Region Merge()
 		{
-			var merged = new Region(region1.regionPos.x, region1.regionPos.z);
+			var merged = new Region(region1.regionPos.x, region1.regionPos.z, null);
 			//Merge full chunks first, then move on to single blocks
 			if (chunkMask != null)
 			{

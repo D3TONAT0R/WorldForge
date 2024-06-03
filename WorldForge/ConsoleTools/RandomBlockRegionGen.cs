@@ -19,7 +19,7 @@ namespace WorldForge.ConsoleTools
 			WorldForgeConsole.WriteLine("Enter path to output file:");
 			string savepath = GetFilePath(true);
 			WorldForgeConsole.WriteLine("Starting...");
-			region = new Region(0, 0);
+			region = new Region(0, 0, null);
 			FillWithRandomBlocks();
 			WorldForgeConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);

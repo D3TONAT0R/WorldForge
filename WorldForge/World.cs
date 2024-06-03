@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
@@ -19,7 +20,7 @@ namespace WorldForge
 
 		public GameVersion gameVersion;
 		public LevelData levelData;
-		public Dictionary<RegionLocation, Region> regions;
+		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
 
 		public string WorldName
 		{
@@ -27,32 +28,34 @@ namespace WorldForge
 			set => levelData.worldName = value;
 		}
 
-		public World(GameVersion version, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ, string levelDatPath = null)
+		public static World CreateNew(GameVersion version, string worldName, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
-			gameVersion = version;
-			if(!string.IsNullOrEmpty(levelDatPath))
-			{
-				using(var stream = File.OpenRead(levelDatPath))
-				{
-					levelData = LevelData.Load(new NBTFile(stream));
-				}
-			}
-			else
-			{
-				levelData = LevelData.CreateNew();
-			}
-			regions = new Dictionary<RegionLocation, Region>();
+			var world = new World(version, LevelData.CreateNew());
+			world.levelData.worldName = worldName;
 			for(int x = regionLowerX; x <= regionUpperX; x++)
 			{
 				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
-					var reg = new Region(x, z)
-					{
-						containingWorld = this
-					};
-					regions.Add(new RegionLocation(x, z), reg);
+					var reg = new Region(x, z, world);
+					world.regions.Add(new RegionLocation(x, z), reg);
 				}
 			}
+			return world;
+		}
+
+		public static World Open(GameVersion? version, string levelDatPath)
+		{
+			using(var stream = File.OpenRead(levelDatPath))
+			{
+				var levelData = LevelData.Load(new NBTFile(stream));
+				return new World(version ?? GameVersion.FirstVersion, levelData);
+			}
+		}
+
+		private World(GameVersion targetVersion, LevelData levelData)
+		{
+			gameVersion = targetVersion;
+			this.levelData = levelData;
 		}
 
 		private World()
@@ -81,6 +84,7 @@ namespace WorldForge
 						if(!isAlphaFormat)
 						{
 							region = RegionLoader.LoadRegion(f, gameVersion);
+							region.containingWorld = world;
 						}
 						else
 						{
@@ -270,7 +274,7 @@ namespace WorldForge
 			if(regions.ContainsKey(new RegionLocation(rx, rz)))
 			{
 				var rloc = new RegionLocation(rx, rz);
-				var r = new Region(rloc);
+				var r = new Region(rloc, this);
 				r.containingWorld = this;
 				regions.Add(rloc, r);
 				return true;

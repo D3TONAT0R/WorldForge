@@ -26,13 +26,14 @@ namespace WorldForge.Regions
 
 		public World containingWorld;
 
-		public Region(int x, int z)
+		public Region(int x, int z, World parentWorld)
 		{
+			containingWorld = parentWorld;
 			regionPos = new RegionLocation(x, z);
 			chunks = new ChunkData[32, 32];
 		}
 
-		public Region(RegionLocation rloc) : this(rloc.x, rloc.z)
+		public Region(RegionLocation rloc, World parentWorld) : this(rloc.x, rloc.z, parentWorld)
 		{
 
 		}

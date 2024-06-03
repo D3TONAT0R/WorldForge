@@ -95,7 +95,7 @@ namespace WorldForge
 			{
 				rd = new RegionData(stream, filepath);
 			}
-			Region region = new Region(rd.regionX, rd.regionZ);
+			Region region = new Region(rd.regionX, rd.regionZ, null);
 			Parallel.For(0, 1024, i =>
 			{
 				if(rd.compressedChunks[i] != null)
@@ -166,7 +166,7 @@ namespace WorldForge
 				}
 			}
 
-			var reg = new Region(location);
+			var reg = new Region(location, null);
 			var cs = new ChunkSerializerAlpha(GameVersion.Alpha_1(0));
 			Parallel.ForEach(chunkFileLocations, c =>
 			{
