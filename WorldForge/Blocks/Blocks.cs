@@ -101,7 +101,7 @@ namespace WorldForge
 			"purple"
 		};
 
-		static BitmapColor[,] colormap;
+		internal static BitmapColor[,] colormap;
 
 		public static string GetRandomColor(Random r)
 		{
@@ -139,10 +139,6 @@ namespace WorldForge
 
 		public static BitmapColor GetMapColor(ProtoBlock block, int shade)
 		{
-			if(colormap == null)
-			{
-				colormap = LoadColorMap();
-			}
 			if(block != null)
 			{
 				if(!colorMapIndices.TryGetValue(block.ID, out int index))
@@ -158,10 +154,10 @@ namespace WorldForge
 			}
 		}
 
-		static BitmapColor[,] LoadColorMap()
+		public static void InitializeColorMap(string filePath)
 		{
-			var bmp = Bitmaps.Load(ResourceLoader.GetPathOfResource("colormap.tif"));
-			BitmapColor[,] colormap = new BitmapColor[bmp.Width, 3];
+			var bmp = Bitmaps.Load(filePath);
+			var colormap = new BitmapColor[bmp.Width, 3];
 			for(int x = 0; x < bmp.Width; x++)
 			{
 				for(int y = 0; y < 3; y++)
@@ -169,7 +165,6 @@ namespace WorldForge
 					colormap[x, y] = bmp.GetPixel(x, y);
 				}
 			}
-			return colormap;
 		}
 
 		public static bool IsAir(ProtoBlock b)

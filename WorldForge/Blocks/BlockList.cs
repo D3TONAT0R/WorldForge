@@ -597,13 +597,13 @@ namespace WorldForge
 		public static Dictionary<ushort, ProtoBlock> protoByNumerics;
 		public static Dictionary<ProtoBlock, string> preFlatteningIDs;
 
-		static BlockList()
+		public static void Initialize(string blockData)
 		{
 			allBlocks = new Dictionary<string, ProtoBlock>();
 			numerics = new Dictionary<ProtoBlock, NumericID>();
 			protoByNumerics = new Dictionary<ushort, ProtoBlock>();
 			preFlatteningIDs = new Dictionary<ProtoBlock, string>();
-			var lines = ResourceLoader.LoadBlockListAsText().Replace("\r", "").Split('\n');
+			var lines = blockData.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
 			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
 			for(int i = 2; i < lines.Length; i++)
