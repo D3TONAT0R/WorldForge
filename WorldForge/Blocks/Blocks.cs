@@ -157,7 +157,7 @@ namespace WorldForge
 		public static void InitializeColorMap(string filePath)
 		{
 			var bmp = Bitmaps.Load(filePath);
-			var colormap = new BitmapColor[bmp.Width, 3];
+			colormap = new BitmapColor[bmp.Width, 3];
 			for(int x = 0; x < bmp.Width; x++)
 			{
 				for(int y = 0; y < 3; y++)

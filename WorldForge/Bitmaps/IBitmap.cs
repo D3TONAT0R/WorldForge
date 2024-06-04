@@ -23,5 +23,9 @@
 		IBitmap Clone();
 
 		IBitmap CloneArea(int x, int y, int width, int height);
+
+		void Save(string path);
+
+		void Save(System.IO.Stream stream);
 	}
 }

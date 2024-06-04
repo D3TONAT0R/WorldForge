@@ -16,7 +16,7 @@
     <None Update="Resources\blocks.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\colormap.tif">
+    <None Update="Resources\colormap.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\map_background.png">

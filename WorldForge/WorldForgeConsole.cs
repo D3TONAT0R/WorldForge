@@ -13,6 +13,10 @@ namespace WorldForge
 		{
 			Console.ResetColor();
 			Console.Clear();
+			if(!WorldForgeManager.Initialized)
+			{
+				WorldForgeManager.Initialize(null, null);
+			}
 			WriteLine("--------------");
 			WriteLine("MinecraftUtils");
 			WriteLine("--------------");
@@ -24,10 +28,10 @@ namespace WorldForge
 					var v = new NBTViewer(args[0]);
 					v.Run(args);
 				}
-			}
-			else
-			{
-				Console.WriteLine("File '" + fname + "' does not exist!");
+				else
+				{
+					Console.WriteLine("File '" + fname + "' does not exist!");
+				}
 			}
 			string input = "";
 			while(input != "exit")
@@ -73,10 +77,8 @@ namespace WorldForge
 		{
 			Console.CursorVisible = true;
 			string s;
-			Console.ForegroundColor = ConsoleColor.Yellow;
 			Console.Write("> ");
 			s = Console.ReadLine();
-			Console.ResetColor();
 			return s;
 		}
 
