@@ -16,8 +16,8 @@ namespace WorldForge.IO
 			base.WriteCommonData(c, chunkNBT);
 
 			//TODO: find out in which version these tags were added
-			chunkNBT.Add("Status", c.status.ToString());
-			chunkNBT.Add("InhabitedTime", c.inhabitedTime);
+			chunkNBT.Add("Status", c.Status.ToString());
+			chunkNBT.Add("InhabitedTime", c.InhabitedTime);
 
 			//Leave it empty (or implement heightmap gen in the future?)
 			chunkNBT.Add("Heightmaps", new NBTCompound());
@@ -106,11 +106,17 @@ namespace WorldForge.IO
 			if(chunkNBT.TryGet("Status", out string statusString))
 			{
 				statusString = statusString.Replace("minecraft:", "");
-				Enum.TryParse(statusString, out c.status);
+				if(Enum.TryParse(statusString, out ChunkStatus s))
+				{
+					c.Status = s;
+				}
 			}
 			else if(chunkNBT.TryGet("status", out statusString))
 			{
-				Enum.TryParse(statusString, out c.status);
+				if(Enum.TryParse(statusString, out ChunkStatus s))
+				{
+					c.Status = s;
+				}
 			}
 		}
 
@@ -155,7 +161,7 @@ namespace WorldForge.IO
 						}
 					}
 				}
-				c.sections.Add(secY, section);
+				c.Sections.Add(secY, section);
 			}
 		}
 
@@ -226,7 +232,7 @@ namespace WorldForge.IO
 				ppList.Add(new NBTList(NBTTag.TAG_Short));
 			}
 
-			foreach(var t in c.postProcessTicks)
+			foreach(var t in c.PostProcessTicks)
 			{
 				int listIndex = t.y / 16;
 				var x = t.x.Mod(16);

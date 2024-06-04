@@ -158,19 +158,31 @@ namespace WorldForge.Regions
 						CopyChunk(mergedRegion, sourceRegion, x, z);
 						if (mergeEntities == MergeAction.Ignore)
 						{
-							mergedRegion.chunks[x, z].entities = null;
+							mergedRegion.chunks[x, z].Entities.Clear();
 						}
 						else if (mergeEntities == MergeAction.FromRegion1)
 						{
-							mergedRegion.chunks[x, z].entities = region1.chunks[x, z]?.entities;
+							mergedRegion.chunks[x, z].Entities.Clear();
+							if(region1.chunks[x, z] != null)
+							{
+								mergedRegion.chunks[x, z].Entities.AddRange(region1.chunks[x, z].Entities);
+							}
 						}
 						else if (mergeEntities == MergeAction.FromRegion2)
 						{
-							mergedRegion.chunks[x, z].entities = region2.chunks[x, z]?.entities;
+							mergedRegion.chunks[x, z].Entities.Clear();
+							if(region2.chunks[x, z] != null)
+							{
+								mergedRegion.chunks[x, z].Entities.AddRange(region2.chunks[x, z].Entities);
+							}
 						}
 						else if (mergeEntities == MergeAction.Merge)
 						{
-							mergedRegion.chunks[x, z].entities = sourceRegion.chunks[x, z]?.entities;
+							mergedRegion.chunks[x, z].Entities.Clear();
+							if(sourceRegion.chunks[x, z] != null)
+							{
+								mergedRegion.chunks[x, z].Entities.AddRange(sourceRegion.chunks[x, z].Entities);
+							}
 						}
 					}
 				}
@@ -251,13 +263,13 @@ namespace WorldForge.Regions
 		void CopyEntitiesFromSourceColumn(Region merged, Region sourceRegion, int cx, int cz, int x, int z)
 		{
 			var chunk = sourceRegion.chunks[cx, cz];
-			if (chunk != null && chunk.entities != null)
+			if (chunk != null && chunk.Entities != null)
 			{
-				foreach (var e in chunk.entities)
+				foreach (var e in chunk.Entities)
 				{
 					if (e.BlockPosX.Mod(512) == 16 * cx + x && e.BlockPosZ.Mod(512) == 16 * cz + z)
 					{
-						merged.chunks[cx, cz].entities.Add(e);
+						merged.chunks[cx, cz].Entities.Add(e);
 					}
 				}
 			}

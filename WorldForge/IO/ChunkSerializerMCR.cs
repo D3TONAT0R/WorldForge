@@ -17,8 +17,8 @@ namespace WorldForge.IO
 
 		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
 		{
-			chunkNBT.Add("xPos", c.worldSpaceCoord.x);
-			chunkNBT.Add("zPos", c.worldSpaceCoord.z);
+			chunkNBT.Add("xPos", c.WorldSpaceCoord.x);
+			chunkNBT.Add("zPos", c.WorldSpaceCoord.z);
 			chunkNBT.Add("TerrainPopulated", (byte)1);
 			chunkNBT.Add("LastUpdate", 0L);
 			//TODO: Light data must be generated 
@@ -90,7 +90,7 @@ namespace WorldForge.IO
 		//TODO: which game version is this for?
 		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			c.tileEntities = new Dictionary<Coordinates.BlockCoord, TileEntity>();
+			c.TileEntities.Clear();
 			if(chunkNBT.Contains("TileEntities"))
 			{
 				var tileEntList = chunkNBT.GetAsList("TileEntities");
@@ -99,7 +99,7 @@ namespace WorldForge.IO
 					for(int i = 0; i < tileEntList.Length; i++)
 					{
 						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
-						c.tileEntities.Add(blockPos, te);
+						c.TileEntities.Add(blockPos, te);
 					}
 				}
 			}
@@ -109,7 +109,7 @@ namespace WorldForge.IO
 		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
-			foreach(var kv in c.tileEntities)
+			foreach(var kv in c.TileEntities)
 			{
 				comp.Add(kv.Value.ToNBT(TargetVersion, kv.Key));
 			}
@@ -117,14 +117,14 @@ namespace WorldForge.IO
 
 		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
 		{
-			c.entities = new List<Entity>();
+			c.Entities.Clear();
 			if(chunkNBT.TryGet<NBTList>("Entities", out var entList))
 			{
 				if(entList.contentsType == NBTTag.TAG_Compound)
 				{
 					for(int i = 0; i < entList.Length; i++)
 					{
-						c.entities.Add(new Entity(entList.Get<NBTCompound>(i)));
+						c.Entities.Add(new Entity(entList.Get<NBTCompound>(i)));
 					}
 				}
 			}

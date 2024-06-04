@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
+using WorldForge.IO;
 using WorldForge.NBT;
 using WorldForge.Regions;
 using WorldForge.TileEntities;
@@ -10,60 +11,84 @@ namespace WorldForge.Chunks
 {
 	public class ChunkData
 	{
-		public ChunkCoord worldSpaceCoord;
+		public ChunkCoord WorldSpaceCoord { get; set; }
+		public Region ContainingRegion { get; set; }
+		public ChunkCoord RegionSpaceCoord => new ChunkCoord(WorldSpaceCoord.x.Mod(32), WorldSpaceCoord.z.Mod(32));
 
-		public ChunkCoord RegionSpaceCoord => new ChunkCoord(worldSpaceCoord.x.Mod(32), worldSpaceCoord.z.Mod(32));
+		public ChunkStatus Status { get; set; } = ChunkStatus.light;
 
-		public ChunkStatus status = ChunkStatus.light;
 
 		public string defaultBlock = "minecraft:stone";
-		public Region containingRegion;
-		public Dictionary<sbyte, ChunkSection> sections = new Dictionary<sbyte, ChunkSection>();
+		public Dictionary<sbyte, ChunkSection> Sections { get; private set; }
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
-
-		public List<Entity> entities = new List<Entity>();
-		public Dictionary<BlockCoord, TileEntity> tileEntities = new Dictionary<BlockCoord, TileEntity>();
-
-		public List<BlockCoord> postProcessTicks = new List<BlockCoord>();
-
-		public long inhabitedTime = 0;
+		public List<Entity> Entities { get; private set; }
+		public Dictionary<BlockCoord, TileEntity> TileEntities { get; private set; }
+		public List<BlockCoord> PostProcessTicks { get; private set; }
+		public long InhabitedTime { get; set; } = 0;
+		public GameVersion? ChunkGameVersion { get; private set; } = default;
 
 		public NBTFile sourceNBT;
 
-		public bool HasTerrain => status >= ChunkStatus.surface;
-		public bool HasFullyGeneratedTerrain => status >= ChunkStatus.light;
+		public bool IsLoaded => Sections != null;
+		public bool HasTerrain => Status >= ChunkStatus.surface;
+		public bool HasFullyGeneratedTerrain => Status >= ChunkStatus.light;
 
 		private readonly object lockObj = new object();
 
-		public ChunkData(Region region, ChunkCoord pos, string defaultBlock)
+		public ChunkData(Region region, ChunkCoord pos)
 		{
-			containingRegion = region;
-			worldSpaceCoord = pos;
+			ContainingRegion = region;
+			WorldSpaceCoord = pos;
 			this.defaultBlock = defaultBlock;
 		}
 
 		public ChunkData(Region region, NBTFile chunk, ChunkCoord chunkCoord)
 		{
-			containingRegion = region;
+			ContainingRegion = region;
 			sourceNBT = chunk;
-			worldSpaceCoord = chunkCoord;
+			WorldSpaceCoord = chunkCoord;
 		}
 
-		///<summary>Sets the block at the given chunk coordinate</summary>
+		/// <summary>
+		/// Loads the chunk from the region file
+		/// </summary>
+		public void Load()
+		{
+			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
+
+			GameVersion gameVersion;
+			if(sourceNBT.dataVersion.HasValue)
+			{
+				gameVersion = GameVersion.FromDataVersion(sourceNBT.dataVersion.Value).Value;
+			}
+			else
+			{
+				gameVersion = ContainingRegion.ContainingWorld.gameVersion;
+			}
+
+			var chunkSerializer = ChunkSerializer.GetForVersion(gameVersion);
+			chunkSerializer.ReadChunkNBT(this, out var version);
+			ChunkGameVersion = version;
+		}
+
+		/// <summary>
+		/// Sets the block at the given chunk coordinate
+		/// </summary>
 		public void SetBlockAt(BlockCoord pos, BlockState block)
 		{
+			if(!IsLoaded) 
 			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, block);
 		}
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
 			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
-			if (!sections.ContainsKey(sectionY))
+			if (!Sections.ContainsKey(sectionY))
 			{
 				if (allowNew)
 				{
-					sections.Add(sectionY, new ChunkSection(this, defaultBlock));
+					Sections.Add(sectionY, new ChunkSection(this, defaultBlock));
 					RecalculateSectionRange();
 				}
 				else
@@ -71,7 +96,7 @@ namespace WorldForge.Chunks
 					return null;
 				}
 			}
-			return sections[sectionY];
+			return Sections[sectionY];
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
@@ -93,7 +118,7 @@ namespace WorldForge.Chunks
 		{
 			if (!HasTerrain) return 0;
 			int countedBlocks = 0;
-			foreach (var kv in sections)
+			foreach (var kv in Sections)
 			{
 				var section = kv.Value;
 				short baseY = (short)(kv.Key * 16);
@@ -125,20 +150,20 @@ namespace WorldForge.Chunks
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
 		public void SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			if (tileEntities == null)
+			if (TileEntities == null)
 			{
-				tileEntities = new Dictionary<BlockCoord, TileEntity>();
+				TileEntities = new Dictionary<BlockCoord, TileEntity>();
 			}
-			tileEntities.Add(pos, te);
+			TileEntities.Add(pos, te);
 		}
 
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			if (tileEntities == null) return null;
-			if (tileEntities.ContainsKey(pos))
+			if (TileEntities == null) return null;
+			if (TileEntities.ContainsKey(pos))
 			{
-				return tileEntities[pos];
+				return TileEntities[pos];
 			}
 			else
 			{
@@ -159,7 +184,7 @@ namespace WorldForge.Chunks
 		///<summary>Sets the biome at the given chunk coordinate</summary>
 		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
-			foreach (var sec in sections.Values)
+			foreach (var sec in Sections.Values)
 			{
 				sec.SetBiomeColumnAt(x, z, biome);
 			}
@@ -183,7 +208,7 @@ namespace WorldForge.Chunks
 		public BiomeID? GetBiomeAt(int x, int z)
 		{
 			sbyte highestSectionWithBiomeData = HighestSection;
-			while (highestSectionWithBiomeData > 0 && (!sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
+			while (highestSectionWithBiomeData > 0 && (!Sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
 			{
 				highestSectionWithBiomeData--;
 			}
@@ -195,9 +220,9 @@ namespace WorldForge.Chunks
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			if (!postProcessTicks.Contains(pos))
+			if (!PostProcessTicks.Contains(pos))
 			{
-				postProcessTicks.Add(pos);
+				PostProcessTicks.Add(pos);
 			}
 		}
 
@@ -206,9 +231,9 @@ namespace WorldForge.Chunks
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			if (postProcessTicks.Contains(pos))
+			if (PostProcessTicks.Contains(pos))
 			{
-				postProcessTicks.Remove(pos);
+				PostProcessTicks.Remove(pos);
 			}
 		}
 
@@ -239,11 +264,11 @@ namespace WorldForge.Chunks
 			sbyte? highest = null;
 			for (sbyte s = -100; s < 127; s++)
 			{
-				if (lowest == null && sections.ContainsKey(s))
+				if (lowest == null && Sections.ContainsKey(s))
 				{
 					lowest = s;
 				}
-				if (sections.ContainsKey(s))
+				if (Sections.ContainsKey(s))
 				{
 					highest = s;
 				}

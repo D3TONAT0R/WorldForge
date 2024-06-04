@@ -97,12 +97,12 @@ namespace WorldForge.Chunks
 		public void InitializeBiomes(BiomeID fallback = BiomeID.plains)
 		{
 			var lowest = containingChunk.LowestSection;
-			sbyte secY = containingChunk.sections.First(kv => kv.Value == this).Key;
+			sbyte secY = containingChunk.Sections.First(kv => kv.Value == this).Key;
 			ChunkSection belowSection = null;
 			while (secY > lowest)
 			{
 				secY--;
-				if (containingChunk.sections.TryGetValue(secY, out var sec))
+				if (containingChunk.Sections.TryGetValue(secY, out var sec))
 				{
 					if (sec.HasBiomesDefined)
 					{

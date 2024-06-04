@@ -62,7 +62,7 @@ namespace WorldForge.IO
 					{
 						secY = (sbyte)sectionNBT.Get<byte>("Y");
 					}
-					var chunkSection = c.sections[secY];
+					var chunkSection = c.Sections[secY];
 
 					if(palette.Length > 1)
 					{

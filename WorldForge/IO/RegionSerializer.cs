@@ -18,7 +18,7 @@ namespace WorldForge.IO
 				stream.WriteByte(0);
 			}
 
-			var chunkSerializer = ChunkSerializer.CreateForVersion(version);
+			var chunkSerializer = ChunkSerializer.GetForVersion(version);
 
 			for(int z = 0; z < 32; z++)
 			{

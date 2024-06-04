@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
 using WorldForge.NBT;
@@ -8,27 +9,40 @@ namespace WorldForge.IO
 {
 	public abstract class ChunkSerializer
 	{
-		public static ChunkSerializer CreateForVersion(GameVersion gameVersion)
+		private readonly static List<ChunkSerializer> serializerCache = new List<ChunkSerializer>();
+
+		public static ChunkSerializer GetOrCreateSerializer<T>(GameVersion version) where T : ChunkSerializer
+		{
+			foreach(var s in serializerCache)
+			{
+				if(s.GetType() == typeof(T)) return s;
+			}
+			var newSerializer = (T)Activator.CreateInstance(typeof(T), version);
+			serializerCache.Add(newSerializer);
+			return newSerializer;
+		}
+
+		public static ChunkSerializer GetForVersion(GameVersion gameVersion)
 		{
 			if(gameVersion >= GameVersion.Release_1(18))
 			{
-				return new ChunkSerializer_1_18(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializer_1_18>(gameVersion);
 			}
 			else if(gameVersion >= GameVersion.Release_1(16))
 			{
-				return new ChunkSerializer_1_16(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializer_1_16>(gameVersion);
 			}
 			else if(gameVersion >= GameVersion.Release_1(13))
 			{
-				return new ChunkSerializer_1_13(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializer_1_13>(gameVersion);
 			}
 			else if(gameVersion >= GameVersion.Release_1(2, 1))
 			{
-				return new ChunkSerializerAnvil(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializerAnvil>(gameVersion);
 			}
 			else if(gameVersion >= GameVersion.Beta_1(3))
 			{
-				return new ChunkSerializerMCR(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializerMCR>(gameVersion);
 			}
 			else
 			{
@@ -41,7 +55,7 @@ namespace WorldForge.IO
 		{
 			var gv = GameVersion.FromDataVersion(nbt.dataVersion);
 			if(!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
-			return CreateForVersion(gv.Value);
+			return GetForVersion(gv.Value);
 		}
 
 		public virtual bool AddRootLevelCompound => true;
@@ -53,23 +67,20 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual ChunkData ReadChunkNBT(NBTFile chunkNBTData, Region parentRegion, ChunkCoord coords, out GameVersion? version)
+		public virtual void ReadChunkNBT(ChunkData c, out GameVersion? version)
 		{
-			ChunkData c = new ChunkData(parentRegion, chunkNBTData, coords);
-			version = GameVersion.FromDataVersion(chunkNBTData.dataVersion);
-			var chunkNBT = GetRootCompound(chunkNBTData);
+			version = GameVersion.FromDataVersion(c.sourceNBT.dataVersion);
+			var chunkNBT = GetRootCompound(c.sourceNBT);
 
 			LoadCommonData(c, chunkNBT, version);
 			LoadBlocks(c, chunkNBT, version);
 			LoadTileEntities(c, chunkNBT, version);
 			LoadTileTicks(c, chunkNBT, version);
 			LoadBiomes(c, chunkNBT, version);
-			LoadEntities(c, chunkNBT, parentRegion, version);
+			LoadEntities(c, chunkNBT, c.ContainingRegion, version);
 			PostLoad(c, chunkNBT, version);
 
 			c.RecalculateSectionRange();
-
-			return c;
 		}
 
 		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");

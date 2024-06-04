@@ -77,9 +77,9 @@ namespace WorldForge.Lighting
 		private void BakeBlockLight(ChunkData chunk)
 		{
 			List<(BlockCoord pos, byte l)> lightSources = new List<(BlockCoord pos, byte l)>();
-			foreach(var sY in chunk.sections.Keys)
+			foreach(var sY in chunk.Sections.Keys)
 			{
-				var s = chunk.sections[sY];
+				var s = chunk.Sections[sY];
 				for(int y = 0; y < 16; y++)
 				{
 					for(int z = 0; z < 16; z++)

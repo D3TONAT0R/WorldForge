@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
+using WorldForge.Chunks;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 using WorldForge.NBT;
@@ -87,7 +88,7 @@ namespace WorldForge
 
 		private static void LoadAlphaChunkFiles(string worldSaveDir, GameVersion? version, bool throwOnRegionLoadFail, World world)
 		{
-			var cs = new ChunkSerializerAlpha(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
+			var cs = ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
 			foreach(var f in Directory.GetFiles(worldSaveDir, "c.*.dat"))
 			{
 				string filename = Path.GetFileName(f);
@@ -103,7 +104,10 @@ namespace WorldForge
 						region = new Region(regionPos, world);
 						world.regions.Add(regionPos, region);
 					}
-					region.chunks[chunkPos.x.Mod(32), chunkPos.z.Mod(32)] = cs.ReadChunkNBT(new NBTFile(f), region, chunkPos, out _);
+					//TODO: find a way to enable late loading of alpha chunks
+					var nbt = new NBTFile(f);
+					var chunk = new ChunkData(region, nbt, chunkPos);
+					cs.ReadChunkNBT(chunk, out _);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
 				{
@@ -122,7 +126,7 @@ namespace WorldForge
 					try
 					{
 						Region region = RegionLoader.LoadRegion(f, gameVersion);
-						region.containingWorld = world;
+						region.ContainingWorld = world;
 						world.regions.Add(region.regionPos, region);
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
@@ -307,7 +311,7 @@ namespace WorldForge
 			{
 				var rloc = new RegionLocation(rx, rz);
 				var r = new Region(rloc, this);
-				r.containingWorld = this;
+				r.ContainingWorld = this;
 				regions.Add(rloc, r);
 				return true;
 			}

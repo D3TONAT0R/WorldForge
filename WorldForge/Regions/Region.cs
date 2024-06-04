@@ -11,8 +11,8 @@ namespace WorldForge.Regions
 {
 	public class Region
 	{
-
 		public readonly RegionLocation regionPos;
+		public readonly string sourceFilePath;
 
 		public RegionPOI poiStorage;
 		public RegionEntities entitiyStorage;
@@ -24,16 +24,19 @@ namespace WorldForge.Regions
 
 		public int[,,] finalBiomeData;
 
-		public World containingWorld;
+		public World ContainingWorld { get; internal set; }
 
-		public Region(int x, int z, World parentWorld)
+		public RegionFileDataPositions RegionFileInfo { get; internal set; }
+
+		public Region(int x, int z, World parentWorld, string sourceFilePath = null)
 		{
-			containingWorld = parentWorld;
+			ContainingWorld = parentWorld;
 			regionPos = new RegionLocation(x, z);
 			chunks = new ChunkData[32, 32];
+			this.sourceFilePath = sourceFilePath;
 		}
 
-		public Region(RegionLocation rloc, World parentWorld) : this(rloc.x, rloc.z, parentWorld)
+		public Region(RegionLocation rloc, World parentWorld, string sourceFilePath = null) : this(rloc.x, rloc.z, parentWorld)
 		{
 
 		}
@@ -117,7 +120,7 @@ namespace WorldForge.Regions
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) throw new ArgumentOutOfRangeException();
 			if (allowNewChunks && chunks[chunkX, chunkZ] == null)
 			{
-				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ));
 			}
 			return chunks[chunkX, chunkZ];
 		}
@@ -130,7 +133,7 @@ namespace WorldForge.Regions
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if (chunks[chunkX, chunkZ] == null && allowNewChunks)
 			{
-				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ), "minecraft:stone");
+				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ));
 			}
 			var c = chunks[chunkX, chunkZ];
 			if (c != null) c.SetDefaultBlockAt(pos.LocalChunkCoords);
@@ -267,9 +270,9 @@ namespace WorldForge.Regions
 			{
 				if (c != null)
 				{
-					foreach (var pos in c.tileEntities.Keys)
+					foreach (var pos in c.TileEntities.Keys)
 					{
-						yield return (pos, c.tileEntities[pos]);
+						yield return (pos, c.TileEntities[pos]);
 					}
 				}
 			}

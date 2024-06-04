@@ -74,7 +74,7 @@ namespace WorldForge.Coordinates
 
 		public BlockCoord ChunkToWorldSpace(ChunkData chunk)
 		{
-			return this + chunk.worldSpaceCoord.BlockCoord;
+			return this + chunk.WorldSpaceCoord.BlockCoord;
 		}
 
 		public static float Distance(BlockCoord a, BlockCoord b)
