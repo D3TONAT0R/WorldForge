@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
@@ -73,6 +74,46 @@ namespace WorldForge
 			world.regions = new Dictionary<RegionLocation, Region>();
 			bool isAlphaFormat = gameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
+			if(isAlphaFormat)
+			{
+				LoadAlphaChunkFiles(worldSaveDir, gameVersion, throwOnRegionLoadFail, world);
+			}
+			else
+			{
+				LoadRegionFiles(worldSaveDir, gameVersion, throwOnRegionLoadFail, world);
+			}
+			return world;
+		}
+
+		private static void LoadAlphaChunkFiles(string worldSaveDir, GameVersion? version, bool throwOnRegionLoadFail, World world)
+		{
+			var cs = new ChunkSerializerAlpha(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
+			foreach(var f in Directory.GetFiles(worldSaveDir, "c.*.dat"))
+			{
+				string filename = Path.GetFileName(f);
+				try
+				{
+					var split = filename.Split('.');
+					string xBase36 = split[1];
+					string zBase36 = split[2];
+					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
+					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
+					if(!world.TryGetRegion(regionPos.x, regionPos.z, out var region))
+					{
+						region = new Region(regionPos, world);
+						world.regions.Add(regionPos, region);
+					}
+					region.chunks[chunkPos.x.Mod(32), chunkPos.z.Mod(32)] = cs.ReadChunkNBT(new NBTFile(f), region, chunkPos, out _);
+				}
+				catch(Exception e) when(!throwOnRegionLoadFail)
+				{
+					Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
+				}
+			}
+		}
+
+		private static void LoadRegionFiles(string worldSaveDir, GameVersion? gameVersion, bool throwOnRegionLoadFail, World world)
+		{
 			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
@@ -80,16 +121,8 @@ namespace WorldForge
 				{
 					try
 					{
-						Region region = null;
-						if(!isAlphaFormat)
-						{
-							region = RegionLoader.LoadRegion(f, gameVersion);
-							region.containingWorld = world;
-						}
-						else
-						{
-							//region = RegionLoader.LoadRegionAlphaChunks(worldSaveDir, RegionLocation();
-						}
+						Region region = RegionLoader.LoadRegion(f, gameVersion);
+						region.containingWorld = world;
 						world.regions.Add(region.regionPos, region);
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
@@ -102,7 +135,6 @@ namespace WorldForge
 					Console.WriteLine($"Invalid file '{filename}' in region folder.");
 				}
 			}
-			return world;
 		}
 
 		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out RegionLocation[] regions)
