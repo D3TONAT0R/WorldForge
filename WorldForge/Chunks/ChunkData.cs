@@ -43,11 +43,12 @@ namespace WorldForge.Chunks
 			return c;
 		}
 
-		public static ChunkData CreateFromNBT(Region region, ChunkCoord chunkCoord, NBTFile nbt, bool loadContent = false)
+		public static ChunkData CreateFromNBT(Region region, ChunkCoord chunkCoord, NBTFile nbt, GameVersion? chunkGameVersion = null, bool loadContent = false)
 		{
 			var c = new ChunkData(region, chunkCoord)
 			{
-				sourceNBT = nbt
+				sourceNBT = nbt,
+				ChunkGameVersion = chunkGameVersion
 			};
 			if(loadContent) c.Load();
 			return c;
@@ -80,7 +81,10 @@ namespace WorldForge.Chunks
 			}
 			else
 			{
-				ChunkGameVersion = ContainingRegion?.ContainingWorld?.gameVersion;
+				if(ContainingRegion != null && ContainingRegion.ContainingWorld != null)
+				{
+					ChunkGameVersion = ContainingRegion.ContainingWorld.gameVersion;
+				}
 			}
 
 			InitializeNewChunk();

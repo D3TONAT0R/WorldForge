@@ -103,7 +103,7 @@ namespace WorldForge
 					using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[i].compressedChunk))
 					{
 						var coord = new ChunkCoord(i % 32, i / 32);
-						region.chunks[i % 32, i / 32] = ChunkData.CreateFromNBT(region, coord, new NBTFile(chunkStream), loadChunks);
+						region.chunks[i % 32, i / 32] = ChunkData.CreateFromNBT(region, coord, new NBTFile(chunkStream), worldSaveVersion, loadChunks);
 					}
 				}
 			});
@@ -228,7 +228,7 @@ namespace WorldForge
 				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
 				else serializer = new ChunkSerializerAnvil(GameVersion.Release_1(8));
 
-				var chunk = ChunkData.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, true);
+				var chunk = ChunkData.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, null, true);
 				//serializer.ReadChunkNBT(chunk, serializer.TargetVersion);
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
 				/*for (int x = 0; x < 16; x++)
