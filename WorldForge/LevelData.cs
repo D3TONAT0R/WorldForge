@@ -231,6 +231,7 @@ namespace WorldForge
 				else if(type == "fixed") return new FixedBiomeSource(comp.Get<string>("biome"));
 				else if(type == "multi_noise") return new MultiNoiseBiomeSource(comp);
 				else if(type == "the_end") return new TheEndBiomeSource();
+				else if(type == "vanilla_layered") return new VanillaLayeredBiomeSource(comp);
 				else throw new NotImplementedException("Unknown BiomeSource type: " + type);
 			}
 
@@ -242,6 +243,42 @@ namespace WorldForge
 			public virtual object ToNBT(GameVersion version)
 			{
 				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
+		//Legacy biome source, not used in newer versions (1.16+ ?)
+		public class VanillaLayeredBiomeSource : BiomeSource
+		{
+			[NBT("seed")]
+			public long seed;
+			[NBT("large_biomes")]
+			public bool largeBiomes = false;
+
+			public VanillaLayeredBiomeSource(long seed, bool largeBiomes = false) : base("vanilla_layered")
+			{
+				this.seed = seed;
+				this.largeBiomes = largeBiomes;
+			}
+
+			public VanillaLayeredBiomeSource(NBTCompound nbt) : base("vanilla_layered")
+			{
+				FromNBT(nbt);
+			}
+
+			public override void FromNBT(object nbtData)
+			{
+				base.FromNBT(nbtData);
+				var comp = (NBTCompound)nbtData;
+				comp.TryGet("seed", out seed);
+				comp.TryGet("large_biomes", out largeBiomes);
+			}
+
+			public override object ToNBT(GameVersion version)
+			{
+				var comp = (NBTCompound)base.ToNBT(version);
+				comp.Add("seed", seed);
+				comp.Add("large_biomes", largeBiomes);
+				return comp;
 			}
 		}
 
@@ -304,6 +341,7 @@ namespace WorldForge
 		{
 			public string preset;
 			public NBTList customBiomes;
+			public long seed;
 
 			public MultiNoiseBiomeSource(string preset) : base("multi_noise")
 			{
@@ -326,6 +364,7 @@ namespace WorldForge
 				var comp = (NBTCompound)nbtData;
 				if(comp.TryGet("preset", out string p)) preset = p;
 				else customBiomes = comp.Get<NBTList>("biomes");
+				comp.TryGet("seed", out seed);
 			}
 
 			public override object ToNBT(GameVersion version)
@@ -333,6 +372,7 @@ namespace WorldForge
 				var comp = (NBTCompound)base.ToNBT(version);
 				if(customBiomes != null) comp.Add("biomes", customBiomes);
 				else comp.Add("preset", preset);
+				comp.Add("seed", seed);
 				return comp;
 			}
 		}

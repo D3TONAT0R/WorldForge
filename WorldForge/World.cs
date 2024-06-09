@@ -71,17 +71,17 @@ namespace WorldForge
 			var world = new World();
 			var nbt = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			world.levelData = LevelData.Load(nbt);
-			world.gameVersion = GameVersion.FromDataVersion(world.levelData.dataVersion) ?? GameVersion.FirstVersion;
+			world.gameVersion = GameVersion.FromDataVersion(world.levelData.dataVersion) ?? gameVersion ?? GameVersion.FirstVersion;
 			world.regions = new Dictionary<RegionLocation, Region>();
-			bool isAlphaFormat = gameVersion < GameVersion.Beta_1(3);
+			bool isAlphaFormat = world.gameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
 			if(isAlphaFormat)
 			{
-				LoadAlphaChunkFiles(worldSaveDir, gameVersion, throwOnRegionLoadFail, world);
+				LoadAlphaChunkFiles(worldSaveDir, world.gameVersion, throwOnRegionLoadFail, world);
 			}
 			else
 			{
-				LoadRegionFiles(worldSaveDir, gameVersion, throwOnRegionLoadFail, world);
+				LoadRegionFiles(worldSaveDir, world.gameVersion, throwOnRegionLoadFail, world);
 			}
 			return world;
 		}
@@ -106,8 +106,8 @@ namespace WorldForge
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
-					var chunk = new ChunkData(region, nbt, chunkPos);
-					cs.ReadChunkNBT(chunk, out _);
+					var chunk = ChunkData.CreateFromNBT(region, chunkPos, nbt);
+					cs.ReadChunkNBT(chunk, version);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
 				{

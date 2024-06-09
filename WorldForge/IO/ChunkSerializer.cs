@@ -67,9 +67,8 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual void ReadChunkNBT(ChunkData c, out GameVersion? version)
+		public virtual void ReadChunkNBT(ChunkData c, GameVersion? version)
 		{
-			version = GameVersion.FromDataVersion(c.sourceNBT.dataVersion);
 			var chunkNBT = GetRootCompound(c.sourceNBT);
 
 			LoadCommonData(c, chunkNBT, version);

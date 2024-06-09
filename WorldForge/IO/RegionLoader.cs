@@ -100,15 +100,10 @@ namespace WorldForge
 			{
 				if(rd.compressedChunks[i] != null)
 				{
-					var chunk = new ChunkData(region, new ChunkCoord(i % 32, i / 32));
 					using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[i].compressedChunk))
 					{
-						chunk.sourceNBT = new NBTFile(chunkStream);
-					}
-					region.chunks[i % 32, i / 32] = chunk;
-					if(loadChunks)
-					{
-						chunk.Load();
+						var coord = new ChunkCoord(i % 32, i / 32);
+						region.chunks[i % 32, i / 32] = ChunkData.CreateFromNBT(region, coord, new NBTFile(chunkStream), loadChunks);
 					}
 				}
 			});
@@ -140,7 +135,9 @@ namespace WorldForge
 			Parallel.ForEach(chunkFileLocations, c =>
 			{
 				var coord = c.Item1;
-				var chunk = new ChunkData(reg, coord);
+				//TODO: not sure if path is correct
+				var path = c.Item2;
+				var chunk = ChunkData.CreateFromNBT(reg, coord, new NBTFile(path));
 				reg.chunks[coord.x.Mod(16), coord.z.Mod(16)] = chunk;
 			});
 			return reg;
@@ -231,8 +228,8 @@ namespace WorldForge
 				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
 				else serializer = new ChunkSerializerAnvil(GameVersion.Release_1(8));
 
-				var chunk = new ChunkData(null, nbt, new ChunkCoord(localChunkX, localChunkZ));
-				serializer.ReadChunkNBT(chunk, out _);
+				var chunk = ChunkData.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, true);
+				//serializer.ReadChunkNBT(chunk, serializer.TargetVersion);
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
 				/*for (int x = 0; x < 16; x++)
 				{

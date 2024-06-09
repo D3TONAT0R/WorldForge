@@ -120,7 +120,7 @@ namespace WorldForge.Regions
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) throw new ArgumentOutOfRangeException();
 			if (allowNewChunks && chunks[chunkX, chunkZ] == null)
 			{
-				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ));
+				chunks[chunkX, chunkZ] = ChunkData.CreateNew(this, regionPos.GetChunkCoord(chunkX, chunkZ));
 			}
 			return chunks[chunkX, chunkZ];
 		}
@@ -133,7 +133,7 @@ namespace WorldForge.Regions
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if (chunks[chunkX, chunkZ] == null && allowNewChunks)
 			{
-				chunks[chunkX, chunkZ] = new ChunkData(this, regionPos.GetChunkCoord(chunkX, chunkZ));
+				chunks[chunkX, chunkZ] = ChunkData.CreateNew(this, regionPos.GetChunkCoord(chunkX, chunkZ));
 			}
 			var c = chunks[chunkX, chunkZ];
 			if (c != null) c.SetDefaultBlockAt(pos.LocalChunkCoords);

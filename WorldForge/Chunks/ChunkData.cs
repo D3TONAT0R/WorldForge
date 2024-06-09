@@ -36,18 +36,35 @@ namespace WorldForge.Chunks
 
 		private readonly object lockObj = new object();
 
-		public ChunkData(Region region, ChunkCoord pos)
+		public static ChunkData CreateNew(Region region, ChunkCoord pos)
 		{
-			ContainingRegion = region;
-			WorldSpaceCoord = pos;
-			this.defaultBlock = defaultBlock;
+			var c = new ChunkData(region, pos);
+			c.InitializeNewChunk();
+			return c;
 		}
 
-		public ChunkData(Region region, NBTFile chunk, ChunkCoord chunkCoord)
+		public static ChunkData CreateFromNBT(Region region, ChunkCoord chunkCoord, NBTFile nbt, bool loadContent = false)
 		{
-			ContainingRegion = region;
-			sourceNBT = chunk;
-			WorldSpaceCoord = chunkCoord;
+			var c = new ChunkData(region, chunkCoord)
+			{
+				sourceNBT = nbt
+			};
+			if(loadContent) c.Load();
+			return c;
+		}
+
+		private ChunkData(Region containingRegion, ChunkCoord pos)
+		{
+			ContainingRegion = containingRegion;
+			WorldSpaceCoord = pos;
+		}
+
+		public void InitializeNewChunk()
+		{
+			Sections = new Dictionary<sbyte, ChunkSection>();
+			TileEntities = new Dictionary<BlockCoord, TileEntity>();
+			Entities = new List<Entity>();
+			PostProcessTicks = new List<BlockCoord>();
 		}
 
 		/// <summary>
@@ -57,19 +74,19 @@ namespace WorldForge.Chunks
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
 
-			GameVersion gameVersion;
-			if(sourceNBT.dataVersion.HasValue)
+			if(sourceNBT != null && sourceNBT.dataVersion.HasValue)
 			{
-				gameVersion = GameVersion.FromDataVersion(sourceNBT.dataVersion.Value).Value;
+				ChunkGameVersion = GameVersion.FromDataVersion(sourceNBT.dataVersion.Value).Value;
 			}
 			else
 			{
-				gameVersion = ContainingRegion.ContainingWorld.gameVersion;
+				ChunkGameVersion = ContainingRegion?.ContainingWorld?.gameVersion;
 			}
 
-			var chunkSerializer = ChunkSerializer.GetForVersion(gameVersion);
-			chunkSerializer.ReadChunkNBT(this, out var version);
-			ChunkGameVersion = version;
+			InitializeNewChunk();
+
+			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
+			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion);
 		}
 
 		/// <summary>
@@ -77,7 +94,7 @@ namespace WorldForge.Chunks
 		/// </summary>
 		public void SetBlockAt(BlockCoord pos, BlockState block)
 		{
-			if(!IsLoaded) 
+			if(!IsLoaded) Load();
 			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, block);
 		}
 
@@ -102,6 +119,7 @@ namespace WorldForge.Chunks
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlockAt(BlockCoord pos)
 		{
+			if(!IsLoaded) Load();
 			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, 1); //1 is always the default block in a region generated from scratch
 		}
 
@@ -109,6 +127,7 @@ namespace WorldForge.Chunks
 		public BlockState GetBlockAt(BlockCoord pos)
 		{
 			if (!HasTerrain) return null;
+			if(!IsLoaded) Load();
 			var sec = GetChunkSectionForYCoord(pos.y, false);
 			if (sec == null) return null;
 			return sec.GetBlockAt(pos.x, pos.y.Mod(16), pos.z);
@@ -117,6 +136,7 @@ namespace WorldForge.Chunks
 		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
 		{
 			if (!HasTerrain) return 0;
+			if(!IsLoaded) Load();
 			int countedBlocks = 0;
 			foreach (var kv in Sections)
 			{
@@ -150,6 +170,7 @@ namespace WorldForge.Chunks
 		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
 		public void SetTileEntity(BlockCoord pos, TileEntity te)
 		{
+			if(!IsLoaded) Load();
 			if (TileEntities == null)
 			{
 				TileEntities = new Dictionary<BlockCoord, TileEntity>();
@@ -160,6 +181,7 @@ namespace WorldForge.Chunks
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
+			if (!IsLoaded) Load();
 			if (TileEntities == null) return null;
 			if (TileEntities.ContainsKey(pos))
 			{
@@ -174,6 +196,7 @@ namespace WorldForge.Chunks
 		///<summary>Sets the biome at the given chunk coordinate</summary>
 		public void SetBiomeAt(BlockCoord pos, BiomeID biome)
 		{
+			if(!IsLoaded) Load();
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if (section != null)
 			{
@@ -184,6 +207,7 @@ namespace WorldForge.Chunks
 		///<summary>Sets the biome at the given chunk coordinate</summary>
 		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
+			if(!IsLoaded) Load();
 			foreach (var sec in Sections.Values)
 			{
 				sec.SetBiomeColumnAt(x, z, biome);
@@ -193,6 +217,7 @@ namespace WorldForge.Chunks
 		///<summary>Gets the biome at the given chunk coordinate</summary>
 		public BiomeID? GetBiomeAt(BlockCoord pos)
 		{
+			if(!IsLoaded) Load();
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if (section != null)
 			{
@@ -207,6 +232,7 @@ namespace WorldForge.Chunks
 		///<summary>Gets the biome at the given chunk coordinate</summary>
 		public BiomeID? GetBiomeAt(int x, int z)
 		{
+			if(!IsLoaded) Load();
 			sbyte highestSectionWithBiomeData = HighestSection;
 			while (highestSectionWithBiomeData > 0 && (!Sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
 			{
@@ -220,6 +246,7 @@ namespace WorldForge.Chunks
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
+			if(!IsLoaded) Load();
 			if (!PostProcessTicks.Contains(pos))
 			{
 				PostProcessTicks.Add(pos);
@@ -231,6 +258,7 @@ namespace WorldForge.Chunks
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
+			if(!IsLoaded) Load();
 			if (PostProcessTicks.Contains(pos))
 			{
 				PostProcessTicks.Remove(pos);
@@ -239,6 +267,7 @@ namespace WorldForge.Chunks
 
 		public short GetHighestBlock(int x, int z, HeightmapType type = HeightmapType.AllBlocks)
 		{
+			if(!IsLoaded) Load();
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
@@ -252,6 +281,7 @@ namespace WorldForge.Chunks
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
 		public void WriteToHeightmap(short[,] hm, int x, int z, HeightmapType type)
 		{
+			if(!IsLoaded) Load();
 			if (!WriteHeightmapFromNBT(hm, x, z, type))
 			{
 				WriteHeightmapFromBlocks(hm, x, z, type);

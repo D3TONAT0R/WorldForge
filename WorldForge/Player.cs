@@ -41,7 +41,8 @@ namespace WorldForge
 		[NBT("UUID")]
 		public int[] uuid = new int[4];
 
-		[NBT("Dimension")]
+		//[NBT("Dimension")]
+		//This needs to be loaded manually because it can be either a string or an int
 		public string dimension = "minecraft:overworld";
 		[NBT("Pos")]
 		public Vector3 position = new Vector3(0, 0, 0);
@@ -97,6 +98,23 @@ namespace WorldForge
 		public Player(NBTCompound nbt)
 		{
 			NBTConverter.LoadFromNBT(nbt, this);
+			object dim = nbt.Get("Dimension");
+			if(dim != null)
+			{
+				if(dim is string dimString) dimension = dimString;
+				else dimension = DimensionIndexToID((int)dim);
+			}
+		}
+
+		public static string DimensionIndexToID(int index)
+		{
+			switch(index)
+			{
+				case -1: return "minecraft:the_nether";
+				case 0: return "minecraft:overworld";
+				case 1: return "minecraft:the_end";
+				default: return "minecraft:overworld";
+			}
 		}
 	}
 }
