@@ -46,7 +46,7 @@ namespace WorldForge
 		[NBT("Pos")]
 		public Vector3 position = new Vector3(0, 0, 0);
 		[NBT("Rotation")]
-		public Vector2 rotation = new Vector2(0, 0);
+		public Vector2F rotation = new Vector2F(0, 0);
 		[NBT("Motion")]
 		public Vector3 motion = new Vector3(0, 0, 0);
 

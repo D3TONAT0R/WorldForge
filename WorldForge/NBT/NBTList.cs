@@ -33,6 +33,17 @@ namespace WorldForge.NBT
 			}
 		}
 
+		public static NBTList FromList<T>(List<T> list)
+		{
+			var nbtList = new NBTList(NBTMappings.GetTag(typeof(T)));
+			foreach(var item in list)
+			{
+				nbtList.Add(item);
+			}
+			return nbtList;
+		}
+
+
 		public object Get(int index)
 		{
 			return this[index];
@@ -103,6 +114,16 @@ namespace WorldForge.NBT
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return listContent.GetEnumerator();
+		}
+
+		public List<T> ToList<T>()
+		{
+			var list = new List<T>();
+			foreach(var item in listContent)
+			{
+				list.Add((T)item);
+			}
+			return list;
 		}
 	}
 }
