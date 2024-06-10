@@ -210,6 +210,11 @@ namespace WorldForge
 			{
 				return NBTCompound.FromObject(this);
 			}
+
+			public static SuperflatLayer FromNBT(NBTCompound nbt)
+			{
+				return new SuperflatLayer(nbt.Get<string>("block"), nbt.Get<int>("height"));
+			}
 		}
 
 		public abstract class BiomeSource : INBTConverter
@@ -398,7 +403,7 @@ namespace WorldForge
 			public BiomeID? singleBiomeSource = null;
 			public BiomeSource biomeSource;
 
-			public readonly bool isSuperflat = false;
+			public bool isSuperflat = false;
 			public SuperflatLayer[] superflatLayers;
 			public BiomeID superflatBiome = BiomeID.the_void;
 			public bool superflatFeatures = false;
@@ -494,11 +499,33 @@ namespace WorldForge
 				dimType = comp.Get<string>("type");
 				var genComp = comp.Get<NBTCompound>("generator");
 				genType = genComp.Get<string>("type");
-				genSettingsID = genComp.Get<string>("settings");
-				genComp.TryGet("seed", out seed);
-				if(genComp.TryGet<NBTCompound>("biome_source", out var biomeSourceComp))
+				isSuperflat = genType == "minecraft:flat";
+				if(isSuperflat)
 				{
-					biomeSource = BiomeSource.CreateFromNBT(genComp.Get<NBTCompound>("biome_source"));
+					if(genComp.TryGet<NBTList>("layers", out var layerList))
+					{
+						var layers = new List<SuperflatLayer>();
+                        for(int i = 0; i < layerList.Length; i++)
+                        {
+                            layers.Add(SuperflatLayer.FromNBT(layerList.Get<NBTCompound>(i)));
+                        }
+						superflatLayers = layers.ToArray();
+                    }
+					if(genComp.TryGet("biome", out string biomeString))
+					{
+						BiomeIDResolver.TryParseBiome(biomeString, out superflatBiome);
+					}
+					genComp.TryGet("features", out superflatFeatures);
+					genComp.TryGet("lakes", out superflatLakes);
+				}
+				else
+				{
+					genComp.TryGet("seed", out seed);
+					genSettingsID = genComp.Get<string>("settings");
+					if(genComp.TryGet<NBTCompound>("biome_source", out var biomeSourceComp))
+					{
+						biomeSource = BiomeSource.CreateFromNBT(genComp.Get<NBTCompound>("biome_source"));
+					}
 				}
 			}
 		}
