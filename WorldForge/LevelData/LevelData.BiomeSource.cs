@@ -134,13 +134,42 @@ namespace WorldForge
 
 		public class MultiNoiseBiomeSource : BiomeSource
 		{
+			public enum PresetType
+			{
+				Overworld,
+				Nether,
+				End,
+				OverworldLargeBiomes
+			}
+
+			public const string OVERWORLD_PRESET = "minecraft:overworld";
+			public const string NETHER_PRESET = "minecraft:nether";
+			public const string END_PRESET = "minecraft:end";
+			public const string OVERWORLD_LARGE_BIOMES_PRESET = "minecraft:large_biomes";
+
 			public string preset;
 			public NBTList customBiomes;
 			public long seed;
 
+			public bool LargeBiomes
+			{
+				get => preset == OVERWORLD_LARGE_BIOMES_PRESET;
+			}
+
 			public MultiNoiseBiomeSource(string preset) : base("multi_noise")
 			{
 				this.preset = preset;
+			}
+
+			public MultiNoiseBiomeSource(PresetType presetType) : base("multi_noise")
+			{
+				switch(presetType)
+				{
+					case PresetType.Overworld: preset = OVERWORLD_PRESET; break;
+					case PresetType.Nether: preset = NETHER_PRESET; break;
+					case PresetType.End: preset = END_PRESET; break;
+					case PresetType.OverworldLargeBiomes: preset = OVERWORLD_LARGE_BIOMES_PRESET; break;
+				}
 			}
 
 			public MultiNoiseBiomeSource(NBTList biomes) : base("multi_noise")

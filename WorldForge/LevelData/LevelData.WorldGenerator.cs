@@ -99,12 +99,14 @@ namespace WorldForge
 			public static DimensionGenerator CreateDefaultOverworldGenerator(long? customSeed = null)
 			{
 				var gen = new DimensionGenerator(Dimension.Overworld);
+				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:overworld");
 				return gen;
 			}
 
 			public static DimensionGenerator CreateDefaultNetherGenerator(long? customSeed = null)
 			{
 				var gen = new DimensionGenerator(Dimension.Nether);
+				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:nether");
 				return gen;
 			}
 
