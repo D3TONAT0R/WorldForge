@@ -5,7 +5,13 @@ namespace WorldForge
 {
 	public class Player
 	{
-		public enum GameMode { Survival, Creative, Adventure, Spectator }
+		public enum GameMode : int
+		{ 
+			Survival = 0, 
+			Creative = 1, 
+			Adventure = 2, 
+			Spectator = 3
+		}
 
 		public class Abilities : INBTConverter
 		{

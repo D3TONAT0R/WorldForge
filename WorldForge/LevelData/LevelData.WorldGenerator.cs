@@ -45,6 +45,8 @@ namespace WorldForge
 
 			public abstract string Type { get; }
 
+			public abstract string LegacyGeneratorTypeName { get; }
+
 			public DimensionGeneratorBase(Dimension dimensionType)
 			{
 				this.dimensionType = dimensionType;
@@ -95,6 +97,17 @@ namespace WorldForge
 			public NBTCompound customSettings;
 
 			public override string Type => "minecraft:noise";
+
+			public override string LegacyGeneratorTypeName
+			{
+				get
+				{
+					bool largeBiomes = false;
+					if(biomeSource is MultiNoiseBiomeSource m) largeBiomes = m.LargeBiomes;
+					else if(biomeSource is VanillaLayeredBiomeSource v) largeBiomes = v.largeBiomes;
+					return largeBiomes ? "largeBiomes" : "default";
+				}
+			}
 
 			public static DimensionGenerator CreateDefaultOverworldGenerator(long? customSeed = null)
 			{
@@ -185,6 +198,8 @@ namespace WorldForge
 
 			public override string Type => "minecraft:flat";
 
+			public override string LegacyGeneratorTypeName => "flat";
+
 			protected override void ReadSettings(NBTCompound nbt)
 			{
 				layers = new List<SuperflatLayer>();
@@ -213,6 +228,8 @@ namespace WorldForge
 
 			public override string Type => "minecraft:debug";
 
+			public override string LegacyGeneratorTypeName => "debug_all_block_states";
+
 			protected override void ReadSettings(NBTCompound nbt)
 			{
 				//no settings
@@ -224,7 +241,7 @@ namespace WorldForge
 			}
 		}
 
-		public class WorldGenerator : INBTConverter
+		public class WorldGenerator
 		{
 			public const string overworldID = "minecraft:overworld";
 			public const string theNetherID = "minecraft:the_nether";
@@ -307,16 +324,30 @@ namespace WorldForge
 				seed = newSeed;
 			}
 
-			public object ToNBT(GameVersion version)
+			public void WriteToNBT(NBTCompound nbt, GameVersion version)
 			{
-				NBTCompound comp = new NBTCompound();
-				NBTConverter.WriteToNBT(this, comp, version);
-				var dim = comp.AddCompound("dimensions");
-				foreach(var kv in dimensionGenerators)
+				if(version >= GameVersion.Release_1(15))
 				{
-					dim.Add(kv.Key, kv.Value.ToNBT(version));
+					var worldGenComp = nbt.AddCompound("WorldGenSettings");
+					NBTConverter.WriteToNBT(this, worldGenComp, version);
+					var dim = worldGenComp.AddCompound("dimensions");
+					foreach(var kv in dimensionGenerators)
+					{
+						dim.Add(kv.Key, kv.Value.ToNBT(version));
+					}
 				}
-				return comp;
+				else
+				{
+					var overworldGen = OverworldGenerator;
+					if(overworldGen != null)
+					{
+						nbt.Add("generatorName", overworldGen.LegacyGeneratorTypeName);
+						//TODO: custom generator options
+						nbt.Add("generatorOptions", "");
+						//nbt.Add("generatorOptions", overworldGen.ToNBT(version));
+						nbt.Add("generatorVersion", 1);
+					}
+				}
 			}
 
 			public void FromNBT(object nbtData)

@@ -319,6 +319,8 @@ namespace WorldForge
 		public int dataVersion;
 		[NBT("LastPlayed")]
 		public long lastPlayedUnixTimestamp;
+		[NBT("enabled_features")]
+		public List<string> enabledFeatures;
 		[NBT("WasModded")]
 		public bool wasModded;
 

@@ -67,14 +67,8 @@ namespace WorldForge.IO
 		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, GameVersion gameVersion)
 		{
 			//TODO: WorldGenSettings added in 1.13?
-			if(gameVersion >= GameVersion.Release_1(13))
-			{
-				nbt.Add("WorldGenSettings", worldGen.ToNBT(gameVersion));
-			}
-			else
-			{
-				nbt.Add("RandomSeed", worldGen.WorldSeed);
-			}
+			nbt.Add("RandomSeed", worldGen.WorldSeed);
+			worldGen.WriteToNBT(nbt, gameVersion);
 		}
 
 		private void WriteGameRules(NBTCompound nbt, LevelData.GameRules gameRules, GameVersion gameVersion)
