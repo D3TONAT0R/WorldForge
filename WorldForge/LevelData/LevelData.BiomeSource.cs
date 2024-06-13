@@ -11,10 +11,18 @@ namespace WorldForge
 		{
 			[NBT("type")]
 			public readonly string type;
+			[NBT("seed", "1.13", "1.19")]
+			public long? seed;
 
 			public BiomeSource(string type)
 			{
 				this.type = type;
+			}
+
+			public BiomeSource(string type, NBTCompound nbt)
+			{
+				this.type = type;
+				if(nbt.TryGet("seed", out long s)) seed = s;
 			}
 
 			public static BiomeSource CreateFromNBT(object nbtData)
@@ -35,17 +43,27 @@ namespace WorldForge
 				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
 			}
 
-			public virtual object ToNBT(GameVersion version)
+			public object ToNBT(GameVersion version)
 			{
-				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+				NBTCompound comp = new NBTCompound();
+				comp.Add("type", type);
+				if(seed != null && version >= GameVersion.Release_1(13) && version < GameVersion.Release_1(19))
+				{
+					comp.Add("seed", seed.Value);
+				}
+				WriteToNBT(comp, version);
+				return comp;
+			}
+
+			protected virtual void WriteToNBT(NBTCompound comp, GameVersion version)
+			{
+
 			}
 		}
 
 		//Legacy biome source, not used in newer versions (1.16+ ?)
 		public class VanillaLayeredBiomeSource : BiomeSource
 		{
-			[NBT("seed")]
-			public long seed;
 			[NBT("large_biomes")]
 			public bool largeBiomes = false;
 
@@ -55,7 +73,7 @@ namespace WorldForge
 				this.largeBiomes = largeBiomes;
 			}
 
-			public VanillaLayeredBiomeSource(NBTCompound nbt) : base("vanilla_layered")
+			public VanillaLayeredBiomeSource(NBTCompound nbt) : base("vanilla_layered", nbt)
 			{
 				FromNBT(nbt);
 			}
@@ -64,16 +82,23 @@ namespace WorldForge
 			{
 				base.FromNBT(nbtData);
 				var comp = (NBTCompound)nbtData;
-				comp.TryGet("seed", out seed);
 				comp.TryGet("large_biomes", out largeBiomes);
 			}
 
-			public override object ToNBT(GameVersion version)
+			protected override void WriteToNBT(NBTCompound comp, GameVersion version)
 			{
-				var comp = (NBTCompound)base.ToNBT(version);
-				comp.Add("seed", seed);
-				comp.Add("large_biomes", largeBiomes);
-				return comp;
+				//Write nbt data as if it were a MultiNoiseBiomeSource in versions past 1.16
+				if(version >= GameVersion.Release_1(16))
+				{
+					comp.Set("type", "minecraft:vanilla_layered");
+					//TODO: check if this is actually an overworld generator
+					var preset = largeBiomes ? MultiNoiseBiomeSource.OVERWORLD_LARGE_BIOMES_PRESET : MultiNoiseBiomeSource.OVERWORLD_PRESET;
+					comp.Add("preset", preset);
+				}
+				else
+				{
+					comp.Add("large_biomes", largeBiomes);
+				}
 			}
 		}
 
@@ -94,7 +119,7 @@ namespace WorldForge
 				this.scale = scale;
 			}
 
-			public CheckerboardBiomeSource(NBTCompound nbt) : base("checkerboard")
+			public CheckerboardBiomeSource(NBTCompound nbt) : base("checkerboard", nbt)
 			{
 				FromNBT(nbt);
 			}
@@ -115,9 +140,10 @@ namespace WorldForge
 				if(comp.TryGet("scale", out int s)) scale = s;
 			}
 
-			public override object ToNBT(GameVersion version)
+			protected override void WriteToNBT(NBTCompound comp, GameVersion version)
 			{
-				return base.ToNBT(version);
+				comp.Add("biomes", new NBTList(NBTTag.TAG_String, biomes));
+				if(scale != null) comp.Add("scale", scale.Value);
 			}
 		}
 
@@ -129,6 +155,11 @@ namespace WorldForge
 			public FixedBiomeSource(string biome) : base("fixed")
 			{
 				this.biome = biome;
+			}
+
+			protected override void WriteToNBT(NBTCompound comp, GameVersion version)
+			{
+				comp.Add("biome", biome);
 			}
 		}
 
@@ -149,7 +180,6 @@ namespace WorldForge
 
 			public string preset;
 			public NBTList customBiomes;
-			public long seed;
 
 			public bool LargeBiomes
 			{
@@ -177,7 +207,7 @@ namespace WorldForge
 				customBiomes = biomes;
 			}
 
-			public MultiNoiseBiomeSource(NBTCompound nbt) : base("multi_noise")
+			public MultiNoiseBiomeSource(NBTCompound nbt) : base("multi_noise", nbt)
 			{
 				FromNBT(nbt);
 			}
@@ -188,16 +218,12 @@ namespace WorldForge
 				var comp = (NBTCompound)nbtData;
 				if(comp.TryGet("preset", out string p)) preset = p;
 				else customBiomes = comp.Get<NBTList>("biomes");
-				comp.TryGet("seed", out seed);
 			}
 
-			public override object ToNBT(GameVersion version)
+			protected override void WriteToNBT(NBTCompound comp, GameVersion version)
 			{
-				var comp = (NBTCompound)base.ToNBT(version);
 				if(customBiomes != null) comp.Add("biomes", customBiomes);
 				else comp.Add("preset", preset);
-				comp.Add("seed", seed);
-				return comp;
 			}
 		}
 
