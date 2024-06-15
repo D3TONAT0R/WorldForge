@@ -55,15 +55,16 @@ namespace WorldForge
 
 		public class GameTypeAndDifficulty
 		{
-			[NBT("allowCommands")]
+			//TODO: find out when all of these were added
+			[NBT("allowCommands", "1.3.1")]
 			public bool allowCommands = false;
-			[NBT("GameType")]
+			[NBT("GameType", "1.0.0")]
 			public Player.GameMode gameType = Player.GameMode.Survival;
-			[NBT("Difficulty")]
+			[NBT("Difficulty", "1.8")]
 			public DifficultyLevel difficulty = DifficultyLevel.Easy;
-			[NBT("DifficultyLocked")]
+			[NBT("DifficultyLocked", "1.8")]
 			public bool difficultyLocked = false;
-			[NBT("hardcore")]
+			[NBT("hardcore", "1.0.0")]
 			public bool hardcoreMode = false;
 
 			public GameTypeAndDifficulty()
@@ -74,6 +75,11 @@ namespace WorldForge
 			public GameTypeAndDifficulty(NBTCompound nbt)
 			{
 				NBTConverter.LoadFromNBT(nbt, this);
+			}
+
+			public void WriteToNBT(NBTCompound nbt, GameVersion version)
+			{
+				NBTConverter.WriteToNBT(this, nbt, version);
 			}
 		}
 
@@ -245,6 +251,9 @@ namespace WorldForge
 			}
 		}
 
+		//TODO: find out when this was added
+		[NBT("initialized")]
+		public bool initialized = true;
 		[NBT("LevelName")]
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
 		[NBT("DataVersion")]
@@ -255,7 +264,7 @@ namespace WorldForge
 		[NBT("enabled_features", "1.19")]
 		public List<string> enabledFeatures;
 		//TODO: find out when this was added
-		[NBT("WasModded", "1.0.0")]
+		[NBT("WasModded", "1.13.0")]
 		public bool wasModded;
 
 		public Player player = new Player(new Vector3(0, 0, 0));

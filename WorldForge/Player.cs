@@ -100,6 +100,8 @@ namespace WorldForge
 		public float foodSaturationLevel = 5f;
 		[NBT("foodExhaustionLevel", "b1.8")]
 		public float foodExhaustionLevel = 0f;
+		[NBT("foodTickTimer", "b1.8")]
+		public int foodTickTimer = 0;
 
 		[NBT("Air")]
 		public short Air = 300;

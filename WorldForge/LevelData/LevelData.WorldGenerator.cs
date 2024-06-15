@@ -247,6 +247,9 @@ namespace WorldForge
 			public const string theNetherID = "minecraft:the_nether";
 			public const string theEndID = "minecraft:the_end";
 
+			[NBT("MapFeatures")]
+			public bool mapFeatures = true;
+
 			[NBT("bonus_chest")]
 			public bool generateBonusChest = false;
 			[NBT("generate_features")]
@@ -328,6 +331,7 @@ namespace WorldForge
 			{
 				//TODO: WorldGenSettings added in 1.13?
 				nbt.Add("RandomSeed", WorldSeed);
+				nbt.Add("MapFeatures", mapFeatures);
 
 				if(version >= GameVersion.Release_1(15))
 				{

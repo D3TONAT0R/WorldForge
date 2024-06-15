@@ -34,9 +34,12 @@ namespace WorldForge.IO
 					versionInfoNBT.Add("Series", "main");
 				}
 			}
+			nbt.Add("initialized", dat.initialized);
 
+			//TODO: make separate DAT serializer for "newer" NBT data
 			WriteWorldInfo(dat, nbt, world.gameVersion);
 			WriteSpawnPoint(world, dat.spawnpoint, nbt);
+			WriteGameTypeAndDifficulty(dat.gameTypeAndDifficulty, nbt, version);
 			WritePlayerData(world, dat.player, nbt, version);
 			WriteTimeAndWeather(world, dat.timeAndWeather, nbt, version);
 			WriteGameRules(nbt, dat.gameRules, version);
@@ -44,16 +47,11 @@ namespace WorldForge.IO
 			WriteWorldBorder(nbt, dat.worldBorder, version);
 			WriteWanderingTraderInfo(nbt, dat.wanderingTraderInfo, version);
 			WriteDataPackInfo(nbt, dat.dataPacks, version);
+		}
 
-			//TODO: make separate DAT serializer for "newer" NBT data
-			if(world.gameVersion >= GameVersion.Beta_1(8))
-			{
-				nbt.Add("GameType", creativeMode ? 1 : 0);
-			}
-			if(world.gameVersion >= GameVersion.Release_1(3, 1))
-			{
-				nbt.Add("allowCommands", (byte)(creativeMode ? 1 : 0));
-			}
+		private void WriteGameTypeAndDifficulty(LevelData.GameTypeAndDifficulty gameTypeAndDifficulty, NBTCompound nbt, GameVersion version)
+		{
+			gameTypeAndDifficulty.WriteToNBT(nbt, version);
 		}
 
 		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, GameVersion version)
@@ -98,8 +96,7 @@ namespace WorldForge.IO
 		{
 			nbt.Add("LevelName", dat.worldName);
 			nbt.Add("LastPlayed", dat.lastPlayedUnixTimestamp);
-			if(targetVersion >= GameVersion.Release_1(0, 0))
-			nbt.Add("WasModded", dat.wasModded);
+			if(targetVersion >= GameVersion.Release_1(13, 0)) nbt.Add("WasModded", dat.wasModded);
 			//TODO: calculate size on disk
 			nbt.Add("SizeOnDisk", (long)0);
 		}
