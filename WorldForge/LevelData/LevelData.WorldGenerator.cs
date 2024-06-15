@@ -326,6 +326,9 @@ namespace WorldForge
 
 			public void WriteToNBT(NBTCompound nbt, GameVersion version)
 			{
+				//TODO: WorldGenSettings added in 1.13?
+				nbt.Add("RandomSeed", WorldSeed);
+
 				if(version >= GameVersion.Release_1(15))
 				{
 					var worldGenComp = nbt.AddCompound("WorldGenSettings");
@@ -339,7 +342,8 @@ namespace WorldForge
 				else
 				{
 					var overworldGen = OverworldGenerator;
-					if(overworldGen != null)
+					//TODO: find out when customizable generators were added
+					if(overworldGen != null && version >= GameVersion.Release_1(0))
 					{
 						nbt.Add("generatorName", overworldGen.LegacyGeneratorTypeName);
 						//TODO: custom generator options

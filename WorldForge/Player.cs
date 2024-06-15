@@ -1,4 +1,5 @@
-﻿using WorldForge.Items;
+﻿using System.Net.NetworkInformation;
+using WorldForge.Items;
 using WorldForge.NBT;
 
 namespace WorldForge
@@ -44,7 +45,8 @@ namespace WorldForge
 			}
 		}
 
-		[NBT("UUID")]
+		//TODO: find out when this was added
+		[NBT("UUID", "1.0.0")]
 		public int[] uuid = new int[4];
 
 		//[NBT("Dimension")]
@@ -56,43 +58,75 @@ namespace WorldForge
 		public Vector2F rotation = new Vector2F(0, 0);
 		[NBT("Motion")]
 		public Vector3 motion = new Vector3(0, 0, 0);
+		[NBT("OnGround")]
+		public bool onGround = false;
+		[NBT("FallDistance")]
+		public float fallDistance = 0;
+		[NBT("Fire")]
+		public short fire = -20;
+		[NBT("Dimension")]
+		public int dimensionIndex = 0;
 
-		[NBT("abilities")]
+		[NBT("abilities", "1.0.0")]
 		public Abilities abilities = new Abilities();
-		[NBT("playerGameType")]
+		//TODO: find out when this was added
+		[NBT("playerGameType", "1.0.0")]
 		public GameMode playerGameType = GameMode.Survival;
-		[NBT("Invulnerable")]
+
+		[NBT("AttackTime")]
+		public short attackTime = 0;
+		[NBT("DeathTime")]
+		public short deathTime = 0;
+
+		//TODO: find out when this was added
+		[NBT("Invulnerable", "1.0.0")]
 		public bool invulnerable = false;
 		[NBT("Health")]
-		public float health = 20f;
-		[NBT("foodLevel")]
+		public short health = 20;
+		//TODO: find out when this was added
+		[NBT("HealF", "1.0.0")]
+		public float healF = 20;
+		[NBT("HurtTime")]
+		public short hurtTime = 0;
+
+		[NBT("Sleeping")]
+		public bool sleeping;
+		[NBT("SleepTimer")]
+		public short sleepTimer = 0;
+
+		[NBT("foodLevel", "b1.8")]
 		public int foodLevel = 20;
-		[NBT("foodSaturationLevel")]
+		[NBT("foodSaturationLevel", "b1.8")]
 		public float foodSaturationLevel = 5f;
-		[NBT("foodExhaustionLevel")]
+		[NBT("foodExhaustionLevel", "b1.8")]
 		public float foodExhaustionLevel = 0f;
+
 		[NBT("Air")]
 		public short Air = 300;
-		[NBT("AbsorptionAmount")]
+		//TODO: find out when these were added
+		[NBT("AbsorptionAmount", "1.0.0")]
 		public float absorptionAmount = 0;
-		[NBT("seenCredits")]
+		[NBT("seenCredits", "1.0.0")]
 		public bool seenCredits = false;
 
 		[NBT("Inventory")]
 		public Inventory inventory = new Inventory();
-		[NBT("SelectedItemSlot")]
+		//TODO: find out when this was added
+		[NBT("SelectedItemSlot", "1.0.0")]
 		public int selectedItemSlot = 0;
-		[NBT("EnderItems")]
+		[NBT("EnderItems", "1.3.1")]
 		public Inventory enderItems = new Inventory();
 
-		[NBT("XpP")]
+		//TODO: find out when xp was added
+		[NBT("XpP", "1.0.0")]
 		public float xpP = 0f;
-		[NBT("XpLevel")]
+		[NBT("XpLevel", "1.0.0")]
 		public int xpLevel = 0;
-		[NBT("XpSeed")]
+		[NBT("XpSeed", "1.0.0")]
 		public int xpSeed = 25565;
-		[NBT("XpTotal")]
+		[NBT("XpTotal", "1.0.0")]
 		public int xpTotal = 0;
+		//TODO: find out when this was added
 		[NBT("Score")]
 		public int Score = 0;
 
@@ -110,6 +144,13 @@ namespace WorldForge
 				if(dim is string dimString) dimension = dimString;
 				else dimension = DimensionIndexToID((int)dim);
 			}
+		}
+
+		public NBTCompound ToNBT(GameVersion version)
+		{
+			NBTCompound nbt = new NBTCompound();
+			NBTConverter.WriteToNBT(this, nbt, version);
+			return nbt;
 		}
 
 		public static string DimensionIndexToID(int index)

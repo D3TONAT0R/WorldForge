@@ -38,6 +38,7 @@ namespace WorldForge.IO
 			WriteWorldInfo(dat, nbt, world.gameVersion);
 			WriteSpawnPoint(world, dat.spawnpoint, nbt);
 			WritePlayerData(world, dat.player, nbt, version);
+			WriteTimeAndWeather(world, dat.timeAndWeather, nbt, version);
 			WriteGameRules(nbt, dat.gameRules, version);
 			WriteWorldGenAndSeed(nbt, dat.worldGen, version);
 			WriteWorldBorder(nbt, dat.worldBorder, version);
@@ -82,8 +83,6 @@ namespace WorldForge.IO
 
 		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, GameVersion gameVersion)
 		{
-			//TODO: WorldGenSettings added in 1.13?
-			nbt.Add("RandomSeed", worldGen.WorldSeed);
 			worldGen.WriteToNBT(nbt, gameVersion);
 		}
 
@@ -99,12 +98,14 @@ namespace WorldForge.IO
 		{
 			nbt.Add("LevelName", dat.worldName);
 			nbt.Add("LastPlayed", dat.lastPlayedUnixTimestamp);
+			if(targetVersion >= GameVersion.Release_1(0, 0))
 			nbt.Add("WasModded", dat.wasModded);
+			//TODO: calculate size on disk
+			nbt.Add("SizeOnDisk", (long)0);
 		}
 
 		protected void WritePlayerData(World world, Player player, NBTCompound dat, GameVersion version)
 		{
-			var comp = dat.AddCompound("Player");
 			if(player.position.IsZero)
 			{
 				player.position = new Vector3(
@@ -113,7 +114,12 @@ namespace WorldForge.IO
 					world.levelData.spawnpoint.spawnZ + 0.5d
 				);
 			}
-			NBTConverter.WriteToNBT(player, comp, version);
+			dat.Add("Player", player.ToNBT(version));
+		}
+
+		protected void WriteTimeAndWeather(World world, LevelData.TimeAndWeather timeAndWeather, NBTCompound dat, GameVersion version)
+		{
+			NBTConverter.WriteToNBT(timeAndWeather, dat, version);
 		}
 
 		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)

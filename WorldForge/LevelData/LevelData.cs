@@ -16,7 +16,7 @@ namespace WorldForge
 			public int spawnY = -1;
 			[NBT("SpawnZ")]
 			public int spawnZ = 0;
-			[NBT("SpawnAngle")]
+			[NBT("SpawnAngle", "1.16")]
 			public float spawnAngle = 0f;
 
 			public Spawnpoint()
@@ -114,7 +114,8 @@ namespace WorldForge
 
 			[NBT("Time")]
 			private long timeSinceStart = 0;
-			[NBT("DayTime")]
+			//TODO: find version where this was added
+			[NBT("DayTime", "1.0.0")]
 			private long worldTime = 0;
 
 			public long WorldTime
@@ -135,7 +136,7 @@ namespace WorldForge
 
 			public long TimeOfDay => worldTime % 24000;
 
-			[NBT]
+			[NBT(null, "1.8")]
 			public int clearWeatherTime = 0;
 			[NBT]
 			public bool raining = false;
@@ -145,6 +146,16 @@ namespace WorldForge
 			public bool thundering = false;
 			[NBT]
 			public int thunderTime = 120000;
+
+			public TimeAndWeather()
+			{
+
+			}
+
+			public TimeAndWeather(NBTCompound nbt)
+			{
+				NBTConverter.LoadFromNBT(nbt, this);
+			}
 
 			public void SetTimeSunrise()
 			{
@@ -240,15 +251,18 @@ namespace WorldForge
 		public int dataVersion;
 		[NBT("LastPlayed")]
 		public long lastPlayedUnixTimestamp;
-		[NBT("enabled_features")]
+		//TODO: find out when this was added
+		[NBT("enabled_features", "1.19")]
 		public List<string> enabledFeatures;
-		[NBT("WasModded")]
+		//TODO: find out when this was added
+		[NBT("WasModded", "1.0.0")]
 		public bool wasModded;
 
 		public Player player = new Player(new Vector3(0, 0, 0));
 
 		public Spawnpoint spawnpoint = new Spawnpoint();
 		public GameTypeAndDifficulty gameTypeAndDifficulty = new GameTypeAndDifficulty();
+		public TimeAndWeather timeAndWeather = new TimeAndWeather();
 		public GameRules gameRules = new GameRules();
 		public WorldGenerator worldGen = new WorldGenerator();
 		public WorldBorder worldBorder = new WorldBorder();
@@ -273,6 +287,7 @@ namespace WorldForge
 			}
 			d.spawnpoint = new Spawnpoint(levelNBT);
 			d.gameTypeAndDifficulty = new GameTypeAndDifficulty(levelNBT);
+			d.timeAndWeather = new TimeAndWeather(levelNBT);
 			if(levelNBT.TryGet<NBTCompound>("GameRules", out var rulesComp))
 			{
 				d.gameRules = new GameRules(rulesComp);
