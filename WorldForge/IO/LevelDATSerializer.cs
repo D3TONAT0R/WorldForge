@@ -17,15 +17,23 @@ namespace WorldForge.IO
 		{
 			var nbt = levelDatNBT.contents.AddCompound("Data");
 
-			/*
-			var dv = world.gameVersion.GetDataVersion();
-			if(dv != null) nbt.Add("DataVersion", dv.Value);
-			*/
-
-			nbt.Add("version", world.gameVersion >= GameVersion.FirstAnvilVersion ? 19133 : 19132);
-
 			var dat = world.levelData;
 			var version = world.gameVersion;
+
+			nbt.Add("version", LevelData.GetNBTVersion(version));
+			if(version.GetDataVersion().HasValue)
+			{
+				nbt.Add("DataVersion", version.GetDataVersion().Value);
+
+				var versionInfoNBT = nbt.AddCompound("Version");
+				versionInfoNBT.Add("Id", version.GetDataVersion().Value);
+				versionInfoNBT.Add("Name", version.ToString());
+				versionInfoNBT.Add("Snapshot", false);
+				if(version >= GameVersion.Release_1(18))
+				{
+					versionInfoNBT.Add("Series", "main");
+				}
+			}
 
 			WriteWorldInfo(dat, nbt, world.gameVersion);
 			WriteSpawnPoint(world, dat.spawnpoint, nbt);
@@ -41,8 +49,7 @@ namespace WorldForge.IO
 			{
 				nbt.Add("GameType", creativeMode ? 1 : 0);
 			}
-			//TODO: find out when cheat option was added
-			if(world.gameVersion >= GameVersion.Release_1(0))
+			if(world.gameVersion >= GameVersion.Release_1(3, 1))
 			{
 				nbt.Add("allowCommands", (byte)(creativeMode ? 1 : 0));
 			}
@@ -50,18 +57,27 @@ namespace WorldForge.IO
 
 		private void WriteDataPackInfo(NBTCompound nbt, LevelData.DataPacks dataPacks, GameVersion version)
 		{
-			var comp = nbt.AddCompound("DataPacks");
-			NBTConverter.WriteToNBT(dataPacks, comp, version);
+			if(version >= GameVersion.Release_1(13))
+			{
+				var comp = nbt.AddCompound("DataPacks");
+				NBTConverter.WriteToNBT(dataPacks, comp, version);
+			}
 		}
 
 		private void WriteWanderingTraderInfo(NBTCompound nbt, LevelData.WanderingTraderInfo wanderingTraderInfo, GameVersion version)
 		{
-			NBTConverter.WriteToNBT(wanderingTraderInfo, nbt, version);
+			if(version >= GameVersion.Release_1(14))
+			{
+				NBTConverter.WriteToNBT(wanderingTraderInfo, nbt, version);
+			}
 		}
 
 		private void WriteWorldBorder(NBTCompound nbt, LevelData.WorldBorder worldBorder, GameVersion version)
 		{
-			NBTConverter.WriteToNBT(worldBorder, nbt, version);
+			if(version >= GameVersion.Release_1(8))
+			{
+				NBTConverter.WriteToNBT(worldBorder, nbt, version);
+			}
 		}
 
 		private void WriteWorldGenAndSeed(NBTCompound nbt, LevelData.WorldGenerator worldGen, GameVersion gameVersion)
@@ -73,21 +89,15 @@ namespace WorldForge.IO
 
 		private void WriteGameRules(NBTCompound nbt, LevelData.GameRules gameRules, GameVersion gameVersion)
 		{
-			//TODO: when were game rules added?
-			if(gameVersion > GameVersion.Release_1(0))
+			if(gameVersion > GameVersion.Release_1(4, 2))
 			{
-				nbt.Add("GameRules", gameRules.CreateNBT());
+				nbt.Add("GameRules", gameRules.CreateNBT(gameVersion));
 			}
 		}
 
 		protected virtual void WriteWorldInfo(LevelData dat, NBTCompound nbt, GameVersion targetVersion)
 		{
 			nbt.Add("LevelName", dat.worldName);
-			var dv = targetVersion.GetDataVersion();
-			if(dv.HasValue)
-			{
-				nbt.Add("DataVersion", dv.Value);
-			}
 			nbt.Add("LastPlayed", dat.lastPlayedUnixTimestamp);
 			nbt.Add("WasModded", dat.wasModded);
 		}
@@ -108,10 +118,6 @@ namespace WorldForge.IO
 
 		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)
 		{
-			if(s.spawnY == -1)
-			{
-				s.SetOnSurface(s.spawnX, s.spawnZ, w);
-			}
 			NBTConverter.WriteToNBT(s, nbt, w.gameVersion);
 		}
 
