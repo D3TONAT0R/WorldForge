@@ -6,16 +6,34 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
+	/// <summary>
+	/// Data structure containing various information about the world (the level.dat file).
+	/// </summary>
 	public partial class LevelData
 	{
+		/// <summary>
+		/// Represents the location of a spawnpoint in the world.
+		/// </summary>
 		public class Spawnpoint
 		{
+			/// <summary>
+			/// The X coordinate of the spawnpoint.
+			/// </summary>
 			[NBT("SpawnX")]
 			public int spawnX = 0;
+			/// <summary>
+			/// The Y coordinate of the spawnpoint.
+			/// </summary>
 			[NBT("SpawnY")]
-			public int spawnY = -1;
+			public int spawnY = 0;
+			/// <summary>
+			/// The Z coordinate of the spawnpoint.
+			/// </summary>
 			[NBT("SpawnZ")]
 			public int spawnZ = 0;
+			/// <summary>
+			/// The angle at which the player will spawn. (1.16+)
+			/// </summary>
 			[NBT("SpawnAngle", "1.16")]
 			public float spawnAngle = 0f;
 
@@ -37,6 +55,9 @@ namespace WorldForge
 				NBTConverter.LoadFromNBT(nbt, this);
 			}
 
+			/// <summary>
+			/// Sets the spawnpoint to the specified coordinates.
+			/// </summary>
 			public void Set(int x, int y, int z, float? angle = 0f)
 			{
 				spawnX = x;
@@ -45,6 +66,9 @@ namespace WorldForge
 				spawnAngle = angle ?? spawnAngle;
 			}
 
+			/// <summary>
+			/// Sets the spawnpoint to the specified coordinates on the surface of the world.
+			/// </summary>
 			public void SetOnSurface(int x, int z, World w)
 			{
 				spawnX = x;
@@ -53,17 +77,35 @@ namespace WorldForge
 			}
 		}
 
+		/// <summary>
+		/// Data related to the game type and difficulty of the world.
+		/// </summary>
 		public class GameTypeAndDifficulty
 		{
 			//TODO: find out when all of these were added
+			/// <summary>
+			/// If true, commands (cheats) are allowed in the world. (1.3.1+)
+			/// </summary>
 			[NBT("allowCommands", "1.3.1")]
 			public bool allowCommands = false;
+			/// <summary>
+			/// The default game mode for new players joining the world. This does not affect existing players. (1.0.0+)
+			/// </summary>
 			[NBT("GameType", "1.0.0")]
 			public Player.GameMode gameType = Player.GameMode.Survival;
+			/// <summary>
+			/// The difficulty level of the world. (1.8+)
+			/// </summary>
 			[NBT("Difficulty", "1.8")]
 			public DifficultyLevel difficulty = DifficultyLevel.Easy;
+			/// <summary>
+			/// If true, the difficulty level of the world is locked and cannot be changed. (1.8+)
+			/// </summary>
 			[NBT("DifficultyLocked", "1.8")]
 			public bool difficultyLocked = false;
+			/// <summary>
+			/// If true, the world is in hardcore mode. (1.0.0+)
+			/// </summary>
 			[NBT("hardcore", "1.0.0")]
 			public bool hardcoreMode = false;
 
@@ -118,6 +160,9 @@ namespace WorldForge
 		{
 			private static Random random = new Random();
 
+			/// <summary>
+			/// The number of ticks since the start of the level. Does not represent the time of day.
+			/// </summary>
 			[NBT("Time")]
 			private long timeSinceStart = 0;
 			//TODO: find version where this was added
@@ -254,10 +299,16 @@ namespace WorldForge
 		//TODO: find out when this was added
 		[NBT("initialized")]
 		public bool initialized = true;
+		/// <summary>
+		/// The name of the world.
+		/// </summary>
 		[NBT("LevelName")]
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
 		[NBT("DataVersion")]
 		public int dataVersion;
+		/// <summary>
+		/// The time the world was last played, in Unix timestamp format.
+		/// </summary>
 		[NBT("LastPlayed")]
 		public long lastPlayedUnixTimestamp;
 		//TODO: find out when this was added
@@ -269,6 +320,9 @@ namespace WorldForge
 
 		public Player player = new Player(new Vector3(0, 0, 0));
 
+		/// <summary>
+		/// The world spawnpoint where players will spawn.
+		/// </summary>
 		public Spawnpoint spawnpoint = new Spawnpoint();
 		public GameTypeAndDifficulty gameTypeAndDifficulty = new GameTypeAndDifficulty();
 		public TimeAndWeather timeAndWeather = new TimeAndWeather();
