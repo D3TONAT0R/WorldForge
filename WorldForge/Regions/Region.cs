@@ -24,19 +24,20 @@ namespace WorldForge.Regions
 
 		public int[,,] finalBiomeData;
 
-		public World ContainingWorld { get; internal set; }
+		public Dimension ParentDimension { get; internal set; }
+		public World ParentWorld => ParentDimension?.ParentWorld;
 
 		public RegionFileDataPositions RegionFileInfo { get; internal set; }
 
-		public Region(int x, int z, World parentWorld, string sourceFilePath = null)
+		public Region(int x, int z, Dimension parentDimension, string sourceFilePath = null)
 		{
-			ContainingWorld = parentWorld;
+			ParentDimension = parentDimension;
 			regionPos = new RegionLocation(x, z);
 			chunks = new ChunkData[32, 32];
 			this.sourceFilePath = sourceFilePath;
 		}
 
-		public Region(RegionLocation rloc, World parentWorld, string sourceFilePath = null) : this(rloc.x, rloc.z, parentWorld)
+		public Region(RegionLocation rloc, Dimension parentDimension, string sourceFilePath = null) : this(rloc.x, rloc.z, parentDimension)
 		{
 
 		}
@@ -60,7 +61,7 @@ namespace WorldForge.Regions
 		{
 			var b = GetBlock(pos);
 			if (b == null) return false;
-			return b == World.defaultBlock;
+			return b == World.DEFAULT_BLOCK;
 		}
 
 		///<summary>Gets the block type at the given location.</summary>

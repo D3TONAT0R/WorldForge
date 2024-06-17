@@ -5,13 +5,13 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public struct Dimension : INBTConverter
+	public struct DimensionID : INBTConverter
 	{
 		public string ID { get; private set; }
 
-		public static readonly Dimension Overworld = new Dimension("minecraft:overworld");
-		public static readonly Dimension Nether = new Dimension("minecraft:the_nether");
-		public static readonly Dimension End = new Dimension("minecraft:the_end");
+		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld");
+		public static readonly DimensionID Nether = new DimensionID("minecraft:the_nether");
+		public static readonly DimensionID End = new DimensionID("minecraft:the_end");
 
 		public int? DimensionIndex
 		{
@@ -27,12 +27,12 @@ namespace WorldForge
 			}
 		}
 
-		public Dimension(string id)
+		public DimensionID(string id)
 		{
 			ID = id;
 		}
 
-		public static Dimension FromIndex(int index)
+		public static DimensionID FromIndex(int index)
 		{
 			switch(index)
 			{

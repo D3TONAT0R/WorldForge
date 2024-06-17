@@ -17,8 +17,8 @@ namespace WorldForge.IO
 		{
 			var nbt = levelDatNBT.contents.AddCompound("Data");
 
-			var dat = world.levelData;
-			var version = world.gameVersion;
+			var dat = world.LevelData;
+			var version = world.GameVersion;
 
 			nbt.Add("version", LevelData.GetNBTVersion(version));
 			if(version.GetDataVersion().HasValue)
@@ -37,7 +37,7 @@ namespace WorldForge.IO
 			nbt.Add("initialized", dat.initialized);
 
 			//TODO: make separate DAT serializer for "newer" NBT data
-			WriteWorldInfo(dat, nbt, world.gameVersion);
+			WriteWorldInfo(dat, nbt, world.GameVersion);
 			WriteSpawnPoint(world, dat.spawnpoint, nbt);
 			WriteGameTypeAndDifficulty(dat.gameTypeAndDifficulty, nbt, version);
 			WritePlayerData(world, dat.player, nbt, version);
@@ -106,9 +106,9 @@ namespace WorldForge.IO
 			if(player.position.IsZero)
 			{
 				player.position = new Vector3(
-					world.levelData.spawnpoint.spawnX + 0.5d,
-					world.levelData.spawnpoint.spawnY + 1.0d,
-					world.levelData.spawnpoint.spawnZ + 0.5d
+					world.LevelData.spawnpoint.spawnX + 0.5d,
+					world.LevelData.spawnpoint.spawnY + 1.0d,
+					world.LevelData.spawnpoint.spawnZ + 0.5d
 				);
 			}
 			dat.Add("Player", player.ToNBT(version));
@@ -121,7 +121,7 @@ namespace WorldForge.IO
 
 		protected virtual void WriteSpawnPoint(World w, LevelData.Spawnpoint s, NBTCompound nbt)
 		{
-			NBTConverter.WriteToNBT(s, nbt, w.gameVersion);
+			NBTConverter.WriteToNBT(s, nbt, w.GameVersion);
 		}
 
 		/*

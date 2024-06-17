@@ -76,7 +76,7 @@ namespace WorldForge.IO
 			LoadTileEntities(c, chunkNBT, version);
 			LoadTileTicks(c, chunkNBT, version);
 			LoadBiomes(c, chunkNBT, version);
-			LoadEntities(c, chunkNBT, c.ContainingRegion, version);
+			LoadEntities(c, chunkNBT, c.ParentRegion, version);
 			PostLoad(c, chunkNBT, version);
 
 			c.RecalculateSectionRange();

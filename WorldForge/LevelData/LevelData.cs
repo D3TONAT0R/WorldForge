@@ -73,7 +73,7 @@ namespace WorldForge
 			{
 				spawnX = x;
 				spawnZ = z;
-				spawnY = w.GetHighestBlock(x, z, HeightmapType.SolidBlocks);
+				spawnY = w.Overworld.GetHighestBlock(x, z, HeightmapType.SolidBlocks);
 			}
 		}
 

@@ -12,7 +12,10 @@ namespace WorldForge.Chunks
 	public class ChunkData
 	{
 		public ChunkCoord WorldSpaceCoord { get; set; }
-		public Region ContainingRegion { get; set; }
+		public Region ParentRegion { get; set; }
+		public Dimension ParentDimension => ParentRegion?.ParentDimension;
+		public World ParentWorld => ParentRegion?.ParentDimension?.ParentWorld;
+
 		public ChunkCoord RegionSpaceCoord => new ChunkCoord(WorldSpaceCoord.x.Mod(32), WorldSpaceCoord.z.Mod(32));
 
 		public ChunkStatus Status { get; set; } = ChunkStatus.light;
@@ -56,7 +59,7 @@ namespace WorldForge.Chunks
 
 		private ChunkData(Region containingRegion, ChunkCoord pos)
 		{
-			ContainingRegion = containingRegion;
+			ParentRegion = containingRegion;
 			WorldSpaceCoord = pos;
 		}
 
@@ -81,9 +84,9 @@ namespace WorldForge.Chunks
 			}
 			else
 			{
-				if(ContainingRegion != null && ContainingRegion.ContainingWorld != null)
+				if(ParentWorld != null)
 				{
-					ChunkGameVersion = ContainingRegion.ContainingWorld.gameVersion;
+					ChunkGameVersion = ParentWorld.GameVersion;
 				}
 			}
 

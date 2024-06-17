@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
 
 namespace WorldForge.NBT
@@ -44,27 +45,48 @@ namespace WorldForge.NBT
 				var name = !string.IsNullOrEmpty(attr.tagName) ? attr.tagName : fi.Name;
 				if(sourceNBT.Contains(name))
 				{
-					object value;
-					if(fi.FieldType == typeof(bool))
+					try
 					{
-						if(removeFromCompound) value = sourceNBT.Take<byte>(name) > 0;
-						else value = sourceNBT.Get<byte>(name) > 0;
+						object value;
+						if(fi.FieldType == typeof(bool))
+						{
+							if(removeFromCompound) value = sourceNBT.Take<byte>(name) > 0;
+							else value = sourceNBT.Get<byte>(name) > 0;
+						}
+						else if(typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
+						{
+							var inst = Activator.CreateInstance(fi.FieldType);
+							object data;
+							if(removeFromCompound) data = sourceNBT.Take(name);
+							else data = sourceNBT.Get(name);
+							((INBTConverter)inst).FromNBT(data);
+							value = inst;
+						}
+						else if(fi.FieldType.IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+						{
+							var list = Activator.CreateInstance(fi.FieldType);
+							var addMethod = fi.FieldType.GetMethod("Add");
+
+							NBTList nbtList;
+							if(removeFromCompound) nbtList = sourceNBT.Take<NBTList>(name);
+							else nbtList = sourceNBT.Get<NBTList>(name);
+							foreach(var item in nbtList)
+							{
+								addMethod.Invoke(list, new object[] { item });
+							}
+							value = list;
+						}
+						else
+						{
+							if(removeFromCompound) value = sourceNBT.Take(name);
+							else value = sourceNBT.Get(name);
+						}
+						fi.SetValue(target, value);
 					}
-					else if(typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
+					catch(Exception e)
 					{
-						var inst = Activator.CreateInstance(fi.FieldType);
-						object data;
-						if(removeFromCompound) data = sourceNBT.Take(name);
-						else data = sourceNBT.Get(name);
-						((INBTConverter)inst).FromNBT(data);
-						value = inst;
+						throw new Exception("Failed to set value: " + name, e);
 					}
-					else
-					{
-						if(removeFromCompound) value = sourceNBT.Take(name);
-						else value = sourceNBT.Get(name);
-					}
-					fi.SetValue(target, value);
 				}
 			}
 		}

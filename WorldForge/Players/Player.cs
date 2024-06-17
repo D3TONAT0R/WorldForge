@@ -64,8 +64,6 @@ namespace WorldForge
 		public float fallDistance = 0;
 		[NBT("Fire")]
 		public short fire = -20;
-		[NBT("Dimension")]
-		public int dimensionIndex = 0;
 
 		[NBT("abilities", "1.0.0")]
 		public Abilities abilities = new Abilities();
@@ -81,7 +79,7 @@ namespace WorldForge
 		//TODO: find out when this was added
 		[NBT("Invulnerable", "1.0.0")]
 		public bool invulnerable = false;
-		[NBT("Health")]
+		//[NBT("Health")]
 		public short health = 20;
 		//TODO: find out when this was added
 		[NBT("HealF", "1.0.0")]
@@ -145,6 +143,12 @@ namespace WorldForge
 			{
 				if(dim is string dimString) dimension = dimString;
 				else dimension = DimensionIndexToID((int)dim);
+			}
+			object healthValue = nbt.Get("Health");
+			if(healthValue != null)
+			{
+				if(healthValue is short hs) health = hs;
+				else health = (short)(float)healthValue;
 			}
 		}
 

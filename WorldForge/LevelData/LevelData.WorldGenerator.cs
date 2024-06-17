@@ -41,18 +41,18 @@ namespace WorldForge
 
 		public abstract class DimensionGeneratorBase : INBTConverter
 		{
-			public Dimension dimensionType;
+			public DimensionID dimensionType;
 
 			public abstract string Type { get; }
 
 			public abstract string LegacyGeneratorTypeName { get; }
 
-			public DimensionGeneratorBase(Dimension dimensionType)
+			public DimensionGeneratorBase(DimensionID dimensionType)
 			{
 				this.dimensionType = dimensionType;
 			}
 
-			public static DimensionGeneratorBase CreateFromNBT(Dimension dim, NBTCompound comp)
+			public static DimensionGeneratorBase CreateFromNBT(DimensionID dim, NBTCompound comp)
 			{
 				var genComp = comp.Get<NBTCompound>("generator");
 				string type = genComp.Get<string>("type");
@@ -68,7 +68,7 @@ namespace WorldForge
 			public virtual void FromNBT(object nbtData)
 			{
 				var comp = (NBTCompound)nbtData;
-				dimensionType = new Dimension(comp.Get<string>("type"));
+				dimensionType = new DimensionID(comp.Get<string>("type"));
 				ReadSettings(comp);
 			}
 
@@ -111,26 +111,26 @@ namespace WorldForge
 
 			public static DimensionGenerator CreateDefaultOverworldGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(Dimension.Overworld);
+				var gen = new DimensionGenerator(DimensionID.Overworld);
 				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:overworld");
 				return gen;
 			}
 
 			public static DimensionGenerator CreateDefaultNetherGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(Dimension.Nether);
+				var gen = new DimensionGenerator(DimensionID.Nether);
 				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:nether");
 				return gen;
 			}
 
 			public static DimensionGenerator CreateDefaultEndGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(Dimension.End);
+				var gen = new DimensionGenerator(DimensionID.End);
 				gen.biomeSource = new TheEndBiomeSource();
 				return gen;
 			}
 
-			public DimensionGenerator(Dimension dim) : base(dim)
+			public DimensionGenerator(DimensionID dim) : base(dim)
 			{
 
 			}
@@ -184,14 +184,14 @@ namespace WorldForge
 			[NBT("lakes")]
 			public bool lakes = false;
 
-			public SuperflatDimensionGenerator(Dimension dim, params SuperflatLayer[] layers) : base(dim)
+			public SuperflatDimensionGenerator(DimensionID dim, params SuperflatLayer[] layers) : base(dim)
 			{
 				this.layers.AddRange(layers);
 			}
 
 			public static SuperflatDimensionGenerator CreateSuperflatOverworldGenerator(BiomeID biome, params SuperflatLayer[] layers)
 			{
-				var gen = new SuperflatDimensionGenerator(Dimension.Overworld, layers);
+				var gen = new SuperflatDimensionGenerator(DimensionID.Overworld, layers);
 				gen.biome = biome;
 				return gen;
 			}
@@ -221,7 +221,7 @@ namespace WorldForge
 
 		public class DebugDimensionGenerator : DimensionGeneratorBase
 		{
-			public DebugDimensionGenerator(Dimension dim) : base(dim)
+			public DebugDimensionGenerator(DimensionID dim) : base(dim)
 			{
 
 			}
@@ -367,7 +367,7 @@ namespace WorldForge
 				{
 					foreach(var kv in dimensions)
 					{
-						var dim = new Dimension(kv.Key);
+						var dim = new DimensionID(kv.Key);
 						var dimNBT = (NBTCompound)kv.Value;
 						dimensionGenerators.Add(kv.Key, DimensionGeneratorBase.CreateFromNBT(dim, dimNBT));
 					}

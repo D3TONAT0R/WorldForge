@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Text;
 
@@ -447,10 +449,17 @@ namespace WorldForge.NBT
 
 		void Write(List<byte> bytes, string name, object o)
 		{
+			//Convert enums to their underlying type
 			if(o is Enum e)
 			{
 				o = Convert.ChangeType(o, Enum.GetUnderlyingType(e.GetType()));
 			}
+			//Convert lists to NBT lists
+			if(o.GetType().IsGenericType && o.GetType().GetGenericTypeDefinition() == typeof(List<>))
+			{
+				o = GenericListToNBTList(o);
+			}
+
 			var tag = NBTMappings.GetTag(o.GetType());
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
@@ -458,6 +467,25 @@ namespace WorldForge.NBT
 			bytes.AddRange(lengthBytes);
 			bytes.AddRange(nameBytes);
 			WriteValue(bytes, tag, o);
+		}
+
+		NBTList GenericListToNBTList(object obj)
+		{
+			var list = (IList)obj;
+
+			//Get the type of the list
+			var type = obj.GetType();
+			//Get the type of the list's contents
+			var contentsType = type.GetGenericArguments()[0];
+			//Get the NBT tag for the list's contents
+			var tag = NBTMappings.GetTag(contentsType);
+
+			var nbtList = new NBTList(tag);
+			foreach(var item in list)
+			{
+				nbtList.Add(item);
+			}
+			return nbtList;
 		}
 
 		void WriteValue(List<byte> bytes, NBTTag tag, object o)
