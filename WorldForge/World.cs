@@ -24,6 +24,13 @@ namespace WorldForge
 		public LevelData levelData;
 		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
 
+		public Dictionary<string, PlayerData> playerData = new Dictionary<string, PlayerData>();
+
+		public Dictionary<string, NBTCompound> commandStorage = new Dictionary<string, NBTCompound>();
+		public NBTCompound idCounts;
+		public NBTCompound raids;
+		public Dictionary<int, NBTFile> maps = new Dictionary<int, NBTFile>();
+
 		public string WorldName
 		{
 			get => levelData.worldName;
