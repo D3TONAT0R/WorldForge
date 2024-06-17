@@ -127,24 +127,54 @@ namespace WorldForge
 
 		public enum DifficultyLevel { Peaceful, Easy, Medium, Hard }
 
+		/// <summary>
+		/// Data related to the world border.
+		/// </summary>
 		public class WorldBorder
 		{
+			/// <summary>
+			/// Center of the world border on the X coordinate.
+			/// </summary>
 			[NBT("BorderCenterX")]
 			public double borderCenterX = 0.0d;
+			/// <summary>
+			/// Center of the world border on the Z coordinate.
+			/// </summary>
 			[NBT("BorderCenterZ")]
 			public double borderCenterZ = 0.0d;
+			/// <summary>
+			/// The amount of damage the world border deals to players per second per block.
+			/// </summary>
 			[NBT("BorderDamagePerBlock")]
 			public double borderDamagePerBlock = 0.2d;
+			/// <summary>
+			/// The radius before the world border starts dealing damage.
+			/// </summary>
 			[NBT("BorderSafeZone")]
 			public double borderSafeZone = 5.0d;
+			/// <summary>
+			/// Width and length of the world border. Default is 60 million blocks.
+			/// </summary>
 			[NBT("BorderSize")]
-			public double borderSize = 59999968.0d;
+			public double borderSize = 60000000d;
+			/// <summary>
+			/// The border size target to interpolate towards.
+			/// </summary>
 			[NBT("BorderSizeLerpTarget")]
-			public double borderSizeLerpTarget = 59999968.0d;
+			public double borderSizeLerpTarget = 60000000;
+			/// <summary>
+			/// The time in milliseconds until the border reaches its target size.
+			/// </summary>
 			[NBT("BorderSizeLerpTime")]
 			public long borderSizeLerpTime = 0;
+			/// <summary>
+			/// Maximum distance away from the border until the border warning overlay appears on the player's screen.
+			/// </summary>
 			[NBT("BorderWarningBlocks")]
 			public double borderWarningBlocks = 5.0d;
+			/// <summary>
+			/// Time in seconds before the player is warned about the shrinking world border.
+			/// </summary>
 			[NBT("BorderWarningTime")]
 			public double borderWarningTime = 15.0d;
 
@@ -161,40 +191,50 @@ namespace WorldForge
 			private static Random random = new Random();
 
 			/// <summary>
-			/// The number of ticks since the start of the level. Does not represent the time of day.
+			/// The effective number of ticks elapsed since world creation. May or may not correspond to the time of day.
 			/// </summary>
 			[NBT("Time")]
-			private long timeSinceStart = 0;
+			public long worldTime = 0;
+			/// <summary>
+			/// The time of day in ticks. 0 is sunrise, 6000 is midday, 12000 is sunset, and 18000 is midnight. This value keeps counting past 24000.
+			/// </summary>
 			//TODO: find version where this was added
 			[NBT("DayTime", "1.0.0")]
-			private long worldTime = 0;
+			public long dayTime = 0;
 
-			public long WorldTime
-			{
-				get => timeSinceStart;
-				set
-				{
-					timeSinceStart = value;
-					worldTime = value;
-				}
-			}
+			/// <summary>
+			/// The actual time of the current day in ticks. 0 is sunrise, 6000 is midday, 12000 is sunset, and 18000 is midnight.
+			/// </summary>
+			public long TimeOfDay => dayTime % 24000;
 
-			public long TimeSinceLevelStart
-			{
-				get => timeSinceStart;
-				set => timeSinceStart = value;
-			}
+			/// <summary>
+			/// The number of days elapsed through the day time.
+			/// </summary>
+			public double TimeInDays => dayTime / 24000d;
 
-			public long TimeOfDay => worldTime % 24000;
-
+			/// <summary>
+			/// The number of ticks until clear weather ends. (1.8+)
+			/// </summary>
 			[NBT(null, "1.8")]
 			public int clearWeatherTime = 0;
+			/// <summary>
+			/// If true, it is currently raining.
+			/// </summary>
 			[NBT]
 			public bool raining = false;
+			/// <summary>
+			/// The number of ticks until the rain ends.
+			/// </summary>
 			[NBT]
 			public int rainTime = 12000;
+			/// <summary>
+			/// If true, it is currently thundering.
+			/// </summary>
 			[NBT]
 			public bool thundering = false;
+			/// <summary>
+			/// The number of ticks until the thunderstorm ends.
+			/// </summary>
 			[NBT]
 			public int thunderTime = 120000;
 
@@ -208,62 +248,77 @@ namespace WorldForge
 				NBTConverter.LoadFromNBT(nbt, this);
 			}
 
+			public void SetDayTime(int day, int timeOfDay)
+			{
+				dayTime = day * 24000 + timeOfDay;
+			}
+
 			public void SetTimeSunrise()
 			{
 				if(TimeOfDay == 0) return;
-				WorldTime += 24000 - TimeOfDay;
+				dayTime += 24000 - TimeOfDay;
 			}
 
 			public void SetTimeMidday()
 			{
 				if(TimeOfDay == 6000) return;
 				SetTimeSunrise();
-				WorldTime += 6000;
+				dayTime += 6000;
 			}
 
 			public void SetTimeSunset()
 			{
 				if(TimeOfDay == 12000) return;
 				SetTimeSunrise();
-				WorldTime += 12000;
+				dayTime += 12000;
 			}
 
 			public void SetTimeMidnight()
 			{
 				if(TimeOfDay == 18000) return;
 				SetTimeSunrise();
-				WorldTime += 18000;
+				dayTime += 18000;
 			}
 
 			public void SetClearWeather(int? fixedDuration = null)
 			{
 				int duration = fixedDuration ?? random.Next(12000, 180000);
-				clearWeatherTime = 0;
+				clearWeatherTime = duration;
 				raining = false;
+				thundering = false;
 				rainTime = duration;
 			}
 
 			public void SetRain(int? fixedDuration = null)
 			{
 				int duration = fixedDuration ?? random.Next(12000, 24000);
-				rainTime = 0;
+				thunderTime = 0;
 				raining = true;
-				clearWeatherTime = duration;
+				thunderTime = duration;
 			}
 
 			public void SetThunderstorm(int? fixedDuration = null)
 			{
-				//TODO: needs check if this actually works
 				SetRain(fixedDuration);
 				thundering = true;
-				thunderTime = 0;
+				thunderTime = rainTime;
 			}
 		}
 
+		/// <summary>
+		/// Data related to the wandering trader.
+		/// </summary>
 		public class WanderingTraderInfo
 		{
+			/// <summary>
+			/// The current chance of the wandering trader spawning next attempt; 
+			/// this value is the percentage and is divided by 10 when loaded by the game, for example a value of 50 means 5.0% chance.
+			/// </summary>
 			[NBT("WanderingTraderSpawnChance")]
 			public int spawnChance = 25;
+			/// <summary>
+			/// The amount of ticks until another wandering trader spawn attempt is made.
+			/// </summary>
 			[NBT("WanderingTraderSpawnDelay")]
 			public int spawnDelay = 24000;
 
@@ -278,12 +333,15 @@ namespace WorldForge
 			}
 		}
 
+		/// <summary>
+		/// List of data packs enabled and disabled in the world.
+		/// </summary>
 		public class DataPacks
 		{
 			[NBT("Disabled")]
-			public NBTList disabled = new NBTList(NBTTag.TAG_String);
+			public List<string> disabled = new List<string>();
 			[NBT("Enabled")]
-			public NBTList enabled = new NBTList(NBTTag.TAG_String);
+			public List<string> enabled = new List<string>();
 
 			public DataPacks()
 			{
@@ -296,7 +354,14 @@ namespace WorldForge
 			}
 		}
 
+		[NBT("DataVersion")]
+		public int dataVersion;
+
 		//TODO: find out when this was added
+		/// <summary>
+		/// Normally true after a world has been initialized properly after creation. 
+		/// If the initial simulation was canceled somehow, this can be false and the world is re-initialized on next load.
+		/// </summary>
 		[NBT("initialized")]
 		public bool initialized = true;
 		/// <summary>
@@ -304,32 +369,67 @@ namespace WorldForge
 		/// </summary>
 		[NBT("LevelName")]
 		public string worldName = "MCUtils generated world " + new Random().Next(10000);
-		[NBT("DataVersion")]
-		public int dataVersion;
 		/// <summary>
 		/// The time the world was last played, in Unix timestamp format.
 		/// </summary>
 		[NBT("LastPlayed")]
 		public long lastPlayedUnixTimestamp;
 		//TODO: find out when this was added
+		/// <summary>
+		/// List of experimental features enabled for this world. Defaults to null if there are no expirimental features enabled. (1.19+)
+		/// </summary>
 		[NBT("enabled_features", "1.19")]
 		public List<string> enabledFeatures;
 		//TODO: find out when this was added
+		/// <summary>
+		/// True if the world was opened in a modified version. (1.13+)
+		/// </summary>
 		[NBT("WasModded", "1.13.0")]
 		public bool wasModded;
 
+		/// <summary>
+		/// Data related to the (single player) player.
+		/// </summary>
 		public Player player = new Player(new Vector3(0, 0, 0));
 
 		/// <summary>
 		/// The world spawnpoint where players will spawn.
 		/// </summary>
 		public Spawnpoint spawnpoint = new Spawnpoint();
+
+		/// <summary>
+		/// Settings related to game type and difficulty.
+		/// </summary>
 		public GameTypeAndDifficulty gameTypeAndDifficulty = new GameTypeAndDifficulty();
+
+		/// <summary>
+		/// Settings related to time and weather.
+		/// </summary>
 		public TimeAndWeather timeAndWeather = new TimeAndWeather();
+
+		/// <summary>
+		/// The game rules set for the world.
+		/// </summary>
 		public GameRules gameRules = new GameRules();
+
+		/// <summary>
+		/// Settings related to world generation.
+		/// </summary>
 		public WorldGenerator worldGen = new WorldGenerator();
+
+		/// <summary>
+		/// Settings related to the world border.
+		/// </summary>
 		public WorldBorder worldBorder = new WorldBorder();
+
+		/// <summary>
+		/// Settings related to the wandering trader.
+		/// </summary>
 		public WanderingTraderInfo wanderingTraderInfo = new WanderingTraderInfo();
+
+		/// <summary>
+		/// List of data packs enabled and disabled in the world.
+		/// </summary>
 		public DataPacks dataPacks = new DataPacks();
 
 		private LevelData() { }
