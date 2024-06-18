@@ -69,7 +69,8 @@ namespace WorldForge
 			{
 				var comp = (NBTCompound)nbtData;
 				dimensionType = new DimensionID(comp.Get<string>("type"));
-				ReadSettings(comp);
+				var generator = comp.Get<NBTCompound>("generator");
+				ReadSettings(generator);
 			}
 
 			public virtual object ToNBT(GameVersion version)
@@ -78,7 +79,10 @@ namespace WorldForge
 				{
 					{ "type", dimensionType.ID }
 				};
-				return NBTConverter.WriteToNBT(this, comp, version);
+				var generator = comp.AddCompound("generator");
+				generator.Add("type", Type);
+				WriteSettings(generator, version);
+				return comp;
 			}
 
 			protected abstract void ReadSettings(NBTCompound nbt);
@@ -125,7 +129,7 @@ namespace WorldForge
 
 			public static DimensionGenerator CreateDefaultEndGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(DimensionID.End);
+				var gen = new DimensionGenerator(DimensionID.TheEnd);
 				gen.biomeSource = new TheEndBiomeSource();
 				return gen;
 			}
@@ -171,7 +175,7 @@ namespace WorldForge
 
 		public class SuperflatDimensionGenerator : DimensionGeneratorBase
 		{
-			[NBT("layers")]
+			//[NBT("layers")]
 			public List<SuperflatLayer> layers = new List<SuperflatLayer>();
 
 			[NBT("structure_overrides")]
@@ -202,20 +206,32 @@ namespace WorldForge
 
 			protected override void ReadSettings(NBTCompound nbt)
 			{
+				var settings = nbt.GetAsCompound("settings");
 				layers = new List<SuperflatLayer>();
-				if(nbt.TryGet<NBTList>("layers", out var list))
+				if(settings.TryGet<NBTList>("layers", out var list))
 				{
 					foreach(var layer in list)
 					{
 						layers.Add(new SuperflatLayer((NBTCompound)layer));
 					}
 				}
+				structureOverrides = settings.Get<List<string>>("structure_overrides");
 				biome = BiomeIDResolver.ParseBiome(nbt.Get<string>("biome"));
 			}
 
 			protected override void WriteSettings(NBTCompound nbt, GameVersion version)
 			{
-				NBTConverter.WriteToNBT(this, nbt, version);
+				var settings = nbt.AddCompound("settings");
+				var list = new NBTList(NBTTag.TAG_Compound);
+				foreach(var layer in layers)
+				{
+					list.Add(layer.ToNBT(version));
+				}
+				settings.Add("layers", list);
+				settings.Add("structure_overrides", structureOverrides);
+				settings.Add("biome", BiomeIDResolver.GetIDForVersion(biome, version));
+				settings.Add("features", features);
+				settings.Add("lakes", lakes);
 			}
 		}
 
@@ -247,7 +263,7 @@ namespace WorldForge
 			public const string theNetherID = "minecraft:the_nether";
 			public const string theEndID = "minecraft:the_end";
 
-			[NBT("MapFeatures")]
+			//[NBT("MapFeatures")]
 			public bool mapFeatures = true;
 
 			[NBT("bonus_chest")]

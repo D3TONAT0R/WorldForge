@@ -80,7 +80,7 @@ namespace WorldForge
 			}
 			if(Directory.Exists(Path.Combine(worldSaveDir, "DIM1")))
 			{
-				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.End, gameVersion, throwOnRegionLoadFail);
+				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.TheEnd, gameVersion, throwOnRegionLoadFail);
 			}
 
 			return world;
@@ -177,11 +177,11 @@ namespace WorldForge
 			}
 			if(HasNether)
 			{
-				Nether.WriteData(path, GameVersion, createRegionCopyDir);
+				Nether.WriteData(Path.Combine(path, "DIM-1"), GameVersion, createRegionCopyDir);
 			}
 			if(HasTheEnd)
 			{
-				TheEnd.WriteData(path, GameVersion, createRegionCopyDir);
+				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion, createRegionCopyDir);
 			}
 		}
 

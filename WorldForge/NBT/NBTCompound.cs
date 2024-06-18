@@ -108,7 +108,15 @@ namespace WorldForge.NBT
 
 		public T Get<T>(string key)
 		{
-			return (T)Convert.ChangeType(Get(key), typeof(T));
+			var v = Get(key);
+			if(v is NBTList list)
+			{
+				return (T)list.ToList(typeof(T).GetGenericArguments()[0]);
+			}
+			else
+			{
+				return (T)Convert.ChangeType(Get(key), typeof(T));
+			}
 		}
 
 		public bool TryGet<T>(string key, out T value)

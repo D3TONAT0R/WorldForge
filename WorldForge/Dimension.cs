@@ -292,11 +292,10 @@ namespace WorldForge
 
 		public bool AddRegion(int rx, int rz)
 		{
-			if(regions.ContainsKey(new RegionLocation(rx, rz)))
+			var rloc = new RegionLocation(rx, rz);
+			if(!regions.ContainsKey(rloc))
 			{
-				var rloc = new RegionLocation(rx, rz);
 				var r = new Region(rloc, this);
-				r.ParentDimension = this;
 				regions.Add(rloc, r);
 				return true;
 			}

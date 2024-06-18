@@ -125,5 +125,16 @@ namespace WorldForge.NBT
 			}
 			return list;
 		}
+
+		public IList ToList(Type elementType)
+		{
+			var listType = typeof(List<>).MakeGenericType(elementType);
+			var list = (IList)Activator.CreateInstance(listType);
+			foreach(var item in listContent)
+			{
+				list.Add(item);
+			}
+			return list;
+		}
 	}
 }
