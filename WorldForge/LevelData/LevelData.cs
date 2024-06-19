@@ -445,6 +445,41 @@ namespace WorldForge
 			}
 		}
 
+		public class DragonFight : INBTConverter
+		{
+			[NBT("DragonKilled")]
+			public bool dragonKilled = false;
+			[NBT("NeedsStateScanning")]
+			public bool needsStateScanning = true;
+			[NBT("PreviouslyKilled")]
+			public bool previouslyKilled = false;
+			[NBT("Gateways")]
+			public int[] gateways = new int[20] { 18, 8, 10, 13, 14, 5, 15, 1, 0, 7, 11, 17, 3, 19, 6, 2, 9, 12, 4, 16 };
+
+			public DragonFight()
+			{
+
+			}
+
+			public DragonFight(NBTCompound nbt)
+			{
+				if(nbt.TryGet<NBTCompound>("DragonFight", out var comp))
+				{
+					FromNBT(comp);
+				}
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
 		[NBT("DataVersion")]
 		public int dataVersion;
 
@@ -528,6 +563,11 @@ namespace WorldForge
 		/// </summary>
 		public Dictionary<string, CustomBossEvent> customBossEvents = new Dictionary<string, CustomBossEvent>();
 
+		/// <summary>
+		/// Data related to the dragon fight.
+		/// </summary>
+		public DragonFight dragonFight = new DragonFight();
+
 		private LevelData() { }
 
 		public static LevelData CreateNew()
@@ -558,6 +598,7 @@ namespace WorldForge
 			d.worldBorder = new WorldBorder(levelNBT);
 			d.wanderingTraderInfo = new WanderingTraderInfo(levelNBT);
 			d.customBossEvents = CustomBossEvent.LoadEventsFromNBT(levelNBT);
+			d.dragonFight = new DragonFight(levelNBT);
 			if(levelNBT.TryGet<NBTCompound>("DataPacks", out var dp))
 			{
 				d.dataPacks = new DataPacks(dp);

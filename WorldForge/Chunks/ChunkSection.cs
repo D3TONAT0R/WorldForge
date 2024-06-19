@@ -167,10 +167,10 @@ namespace WorldForge.Chunks
 		}
 
 
-		public BiomeID? GetPredominantBiomeAt4x4(int x4, int y4, int z4)
+		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
 			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
-			if (!HasBiomesDefined) return null;
+			if (!HasBiomesDefined) return containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void;
 			for (int x1 = 0; x1 < 4; x1++)
 			{
 				for (int z1 = 0; z1 < 4; z1++)

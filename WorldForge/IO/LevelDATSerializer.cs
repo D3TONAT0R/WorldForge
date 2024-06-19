@@ -49,6 +49,7 @@ namespace WorldForge.IO
 			WriteWanderingTraderInfo(nbt, dat.wanderingTraderInfo, version);
 			WriteCustomBossEvents(nbt, dat.customBossEvents, version);
 			WriteDataPackInfo(nbt, dat.dataPacks, version);
+			WriteDragonFightInfo(nbt, dat.dragonFight, version);
 		}
 
 		private void WriteGameTypeAndDifficulty(LevelData.GameTypeAndDifficulty gameTypeAndDifficulty, NBTCompound nbt, GameVersion version)
@@ -62,6 +63,15 @@ namespace WorldForge.IO
 			{
 				var comp = nbt.AddCompound("DataPacks");
 				NBTConverter.WriteToNBT(dataPacks, comp, version);
+			}
+		}
+
+		private void WriteDragonFightInfo(NBTCompound nbt, LevelData.DragonFight dragonFight, GameVersion version)
+		{
+			//TODO: check version
+			if(version >= GameVersion.Release_1(0))
+			{
+				NBTConverter.WriteToNBT(dragonFight, nbt, version);
 			}
 		}
 
