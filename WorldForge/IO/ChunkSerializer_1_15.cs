@@ -1,4 +1,5 @@
-﻿using WorldForge.Biomes;
+﻿using System;
+using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.NBT;
 
@@ -10,6 +11,7 @@ namespace WorldForge.IO
 
 		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
+			//TODO: check if the biomes exists in the target version & replace them if necessary
 			int[] biomeData = new int[1024];
 			for(int y = 0; y < 64; y++)
 			{
@@ -25,7 +27,19 @@ namespace WorldForge.IO
 						}
 						else
 						{
-							biomeData[i] = (int)BiomeID.plains;
+							//Repeat bottom- / topmost biome for the entire chunk
+							if(c.Sections.Count > 0)
+							{
+								int sy = (sbyte)Math.Floor(y * 4 / 16f);
+								bool above = sy > c.HighestSection;
+								var otherSection =  c.Sections[above ? c.HighestSection : c.LowestSection];
+								biomeData[i] = (int)otherSection.GetPredominantBiomeAt4x4(x, above ? 3 : 0, z);
+							}
+							else
+							{
+								//Write the default biome
+								biomeData[i] = (int)(section.containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void);
+							}
 						}
 					}
 				}

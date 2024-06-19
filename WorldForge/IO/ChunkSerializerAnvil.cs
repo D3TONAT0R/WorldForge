@@ -10,6 +10,18 @@ namespace WorldForge.IO
 {
 	public class ChunkSerializerAnvil : ChunkSerializer
 	{
+
+		public virtual string SectionsCompName => "Sections";
+		public virtual string TileEntitiesCompName => "TileEntities";
+		public virtual string EntitiesCompName => "Entities";
+		public virtual string BiomesCompName => "Biomes";
+
+		public virtual string BlocksCompName => "Blocks";
+		public virtual string BlockDataCompName => "Data";
+		public virtual string BlockPaletteCompName => "Palette";
+		public virtual string BlockLightCompName => "BlockLight";
+		public virtual string SkyLightCompName => "SkyLight";
+
 		public ChunkSerializerAnvil(GameVersion version) : base(version) { }
 
 		public int GetIndex(int x, int y, int z)
@@ -24,7 +36,7 @@ namespace WorldForge.IO
 			foreach(var o in sectionsList.listContent)
 			{
 				var sectionComp = (NBTCompound)o;
-				if(!HasBlocks(sectionComp)) continue;
+				if(!SectionHasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 				ParseNumericIDBlocks(c, sectionComp, secY);
 			}
@@ -32,10 +44,12 @@ namespace WorldForge.IO
 
 		protected void ParseNumericIDBlocks(ChunkData c, NBTCompound nbtCompound, sbyte sectionY)
 		{
-			byte[] blocks = nbtCompound.Get<byte[]>("Blocks");
+			byte[] blocks = nbtCompound.Get<byte[]>(BlocksCompName);
+
 			byte[] add; //TODO: include "Add" bits in ID (from modded worlds)
 			if(nbtCompound.Contains("Add")) add = nbtCompound.Get<byte[]>("Add");
-			byte[] meta = BitUtils.ExtractNibblesFromByteArray(nbtCompound.Get<byte[]>("Data"));
+
+			byte[] meta = BitUtils.ExtractNibblesFromByteArray(nbtCompound.Get<byte[]>(BlockDataCompName));
 			for(int x = 0; x < 16; x++)
 			{
 				for(int z = 0; z < 16; z++)
@@ -53,9 +67,9 @@ namespace WorldForge.IO
 			}
 		}
 
-		protected virtual NBTList GetSectionsList(NBTCompound chunkNBT)
+		protected NBTList GetSectionsList(NBTCompound chunkNBT)
 		{
-			return chunkNBT.GetAsList("Sections");
+			return chunkNBT.GetAsList(SectionsCompName);
 		}
 
 		protected virtual sbyte ParseSectionYIndex(NBTCompound sectionNBT)
@@ -66,9 +80,9 @@ namespace WorldForge.IO
 			}
 		}
 
-		protected virtual bool HasBlocks(NBTCompound sectionNBT)
+		protected virtual bool SectionHasBlocks(NBTCompound sectionNBT)
 		{
-			return sectionNBT.Contains("Blocks");
+			return sectionNBT.Contains(BlocksCompName);
 		}
 
 		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
@@ -96,7 +110,7 @@ namespace WorldForge.IO
 
 		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
 		{
-			var sectionList = chunkNBT.Add("Sections", new NBTList(NBTTag.TAG_Compound));
+			var sectionList = chunkNBT.Add(SectionsCompName, new NBTList(NBTTag.TAG_Compound));
 			for(sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
 			{
 				if(c.Sections.TryGetValue(secY, out var section))
@@ -188,7 +202,12 @@ namespace WorldForge.IO
 
 		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
 		{
-			chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
+			var list = chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
+			foreach(var e in c.Entities)
+			{
+				//TODO: serialize entities
+				//list.Add(e.ToNBT(TargetVersion));
+			}
 		}
 
 		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)

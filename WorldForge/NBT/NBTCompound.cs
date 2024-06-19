@@ -17,6 +17,11 @@ namespace WorldForge.NBT
 
 		public Dictionary<string, object> contents = new Dictionary<string, object>();
 
+		public static bool IsNullOrEmpty(NBTCompound c)
+		{
+			return c == null || c.ItemCount == 0;
+		}
+
 		public NBTCompound() : base()
 		{
 

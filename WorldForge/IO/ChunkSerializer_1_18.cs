@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.NBT;
@@ -8,19 +9,18 @@ namespace WorldForge.IO
 	public class ChunkSerializer_1_18 : ChunkSerializer_1_16
 	{
 		public override bool AddRootLevelCompound => false;
+		public override string SectionsCompName => "sections";
+		public override string BlocksCompName => "block_states";
+		public override string BlockDataCompName => "data";
+		public override string BiomesCompName => "biomes";
 
 		public ChunkSerializer_1_18(GameVersion version) : base(version) { }
 
 		public override NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents;
 
-		protected override bool HasBlocks(NBTCompound sectionNBT)
+		protected override bool SectionHasBlocks(NBTCompound sectionNBT)
 		{
 			return sectionNBT.Contains("block_states");
-		}
-
-		protected override NBTList GetSectionsList(NBTCompound chunkNBT)
-		{
-			return chunkNBT.GetAsList("sections");
 		}
 
 		protected override NBTList GetBlockPalette(NBTCompound sectionNBT)
@@ -35,13 +35,13 @@ namespace WorldForge.IO
 
 		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			var sectionsList = chunkNBT.GetAsList("sections");
+			var sectionsList = chunkNBT.GetAsList(SectionsCompName);
 			foreach(var s in sectionsList.listContent)
 			{
 				var sectionNBT = (NBTCompound)s;
-				if(sectionNBT.TryGet<NBTCompound>("biomes", out var biomesComp))
+				if(sectionNBT.TryGet<NBTCompound>(BiomesCompName, out var biomesComp))
 				{
-					var paletteNBT = biomesComp.GetAsList("palette");
+					var paletteNBT = biomesComp.GetAsList(BlockPaletteCompName);
 					BiomeID[] palette = new BiomeID[paletteNBT.Length];
 					for(int i = 0; i < paletteNBT.Length; i++)
 					{
@@ -66,7 +66,7 @@ namespace WorldForge.IO
 
 					if(palette.Length > 1)
 					{
-						var biomeData = biomesComp.Get<long[]>("data");
+						var biomeData = biomesComp.Get<long[]>(BlockDataCompName);
 						var indexBitLength = BitUtils.GetMaxBitCount((uint)palette.Length - 1);
 						var indices = BitUtils.ExtractCompressedInts(biomeData, indexBitLength, 64, false);
 
@@ -104,6 +104,82 @@ namespace WorldForge.IO
 						}
 					}
 				}
+			}
+		}
+
+		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
+		{
+			base.WriteCommonData(c, chunkNBT);
+			chunkNBT.Add("yPos", (sbyte)-4);
+		}
+
+		public override void WriteSection(ChunkSection section, NBTCompound comp, sbyte sectionY)
+		{
+			WriteSectionBlocks(section, comp);
+			WriteSectionBiomes(section, comp);
+			if(section.lightmap != null)
+			{
+				//TODO: write light information and find a way to omit sky or block light
+				//WriteSectionLightmaps(section, comp);
+			}
+		}
+
+		private void WriteSectionBlocks(ChunkSection section, NBTCompound comp)
+		{
+			var blockStates = comp.AddCompound("block_states");
+			var blockPalette = blockStates.AddList("palette", NBTTag.TAG_Compound);
+			foreach(var b in section.palette)
+			{
+				blockPalette.Add(b.ToPaletteNBT());
+			}
+			var blockData = GetBlockIndexArray(section);
+			int bitsPerBlock = Math.Max(4, BitUtils.GetMaxBitCount((uint)blockPalette.Length - 1));
+			blockStates.Add("data", BitUtils.PackBits(blockData, bitsPerBlock, false));
+		}
+
+		private void WriteSectionBiomes(ChunkSection section, NBTCompound comp)
+		{
+			var biomes = comp.AddCompound("biomes");
+			var biomePalette = biomes.AddList("palette", NBTTag.TAG_String);
+			if(section.HasBiomesDefined)
+			{
+				List<BiomeID> biomePaletteList = new List<BiomeID>();
+				ushort[] biomeIndexData = new ushort[4 * 4 * 4];
+				for(int y = 0; y < 4; y++)
+				{
+					for(int z = 0; z < 4; z++)
+					{
+						for(int x = 0; x < 4; x++)
+						{
+							int i = y * 16 + z * 4 + x;
+							var biome = section.GetPredominantBiomeAt4x4(x, y, z);
+							if(!biomePaletteList.Contains(biome))
+							{
+								biomePaletteList.Add(biome);
+							}
+							biomeIndexData[i] = (byte)biomePaletteList.IndexOf(biome);
+						}
+					}
+				}
+				if(biomePaletteList.Count == 1)
+				{
+					//No need to save the data if there's only one biome in the palette
+					biomePalette.Add(BiomeIDResolver.GetIDForVersion(biomePaletteList[0], TargetVersion));
+				}
+				else
+				{
+					foreach(var b in biomePaletteList)
+					{
+						biomePalette.Add(BiomeIDResolver.GetIDForVersion(b, TargetVersion));
+					}
+					biomes.Add("data", BitUtils.PackBits(biomeIndexData, BitUtils.GetMaxBitCount((uint)biomePaletteList.Count - 1), false));
+				}
+			}
+			else
+			{
+				//Write default biome
+				var defaultBiome = section.containingChunk?.ParentDimension?.defaultBiome ?? BiomeID.plains;
+				biomePalette.Add(BiomeIDResolver.GetIDForVersion(defaultBiome, TargetVersion));
 			}
 		}
 	}

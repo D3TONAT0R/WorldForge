@@ -50,7 +50,7 @@ namespace WorldForge
 		{
 			var world = new World(version, LevelData.CreateNew());
 			world.LevelData.worldName = worldName;
-			world.Overworld = Dimension.CreateNew(world, DimensionID.Overworld, regionLowerX, regionLowerZ, regionUpperX, regionUpperZ);
+			world.Overworld = Dimension.CreateOverworld(world);
 			return world;
 		}
 

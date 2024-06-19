@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using WorldForge.NBT;
 
@@ -6,23 +7,6 @@ namespace WorldForge
 {
 	public class BlockState
 	{
-
-		public struct Property
-		{
-			public string id;
-			public string state;
-
-			public Property(string id, string state)
-			{
-				this.id = id;
-				this.state = state;
-			}
-
-			public static implicit operator Property((string, string) tuple)
-			{
-				return new Property(tuple.Item1, tuple.Item2);
-			}
-		}
 
 		public static BlockState Air
 		{
@@ -45,9 +29,7 @@ namespace WorldForge
 		private static BlockState unknown;
 
 		public ProtoBlock block;
-		//TODO: Don't auto-generate an empty compound, generates excessive amounts of garbage.
-		//Add methods for SetProperty / GetProperty / RemoveProperty ... instead.
-		public NBTCompound properties = new NBTCompound();
+		private NBTCompound properties;
 
 		private BlockState() { }
 
@@ -61,12 +43,51 @@ namespace WorldForge
 			AddDefaultBlockProperties();
 		}
 
-		public BlockState(string blockType, params Property[] properties) : this(BlockList.Find(blockType))
+		public BlockState(string blockType, params (string, string)[] properties) : this(BlockList.Find(blockType))
 		{
 			foreach(var prop in properties)
 			{
-				this.properties.Set(prop.id, prop.state);
+				this.properties.Set(prop.Item1, prop.Item2);
 			}
+		}
+
+		public BlockState(NBTCompound paletteNBT) : this(BlockList.Find(paletteNBT.Get<string>("Name")))
+		{
+			paletteNBT.TryGet("Properties", out properties);
+		}
+
+		public bool HasProperty(string key)
+		{
+			if(properties == null) return false;
+			return properties.Contains(key);
+		}
+
+		public string GetProperty(string key)
+		{
+			if(properties == null) return null;
+			if(properties.TryGet(key, out string v))
+			{
+				return v;
+			}
+			else return null;
+		}
+
+		public bool TryGetProperty(string key, out string value)
+		{
+			value = GetProperty(key);
+			return value != null;
+		}
+
+		public void SetProperty(string key, string value)
+		{
+			if(properties == null) properties = new NBTCompound();
+			properties.Set(key, value);
+		}
+
+		public bool RemoveProperty(string key)
+		{
+			if(properties == null) return false;
+			return properties.Remove(key);
 		}
 
 		void AddDefaultBlockProperties()
@@ -93,6 +114,17 @@ namespace WorldForge
 				if(!NBTCompound.AreEqual(properties, other.properties)) return false;
 			}
 			return block == other.block;
+		}
+
+		public NBTCompound ToPaletteNBT()
+		{
+			var nbt = new NBTCompound();
+			nbt.Add("Name", block.ID);
+			if(!NBTCompound.IsNullOrEmpty(properties))
+			{
+				nbt.Add("Properties", properties);
+			}
+			return nbt;
 		}
 
 		public override string ToString()

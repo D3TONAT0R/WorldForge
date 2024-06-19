@@ -21,37 +21,48 @@ namespace WorldForge
 
 		public DimensionID dimensionID;
 
+		public BiomeID defaultBiome = BiomeID.the_void;
+
 		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
 
-		public static Dimension CreateNew(World parentWorld, DimensionID id)
+		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
-			return new Dimension(parentWorld, id);
+			return new Dimension(parentWorld, id, defaultBiome);
 		}
 
-		public static Dimension CreateNew(World parentWorld, DimensionID id, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
+		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
-			var dim = CreateNew(parentWorld, id);
-			for(int x = regionLowerX; x <= regionUpperX; x++)
-			{
-				for(int z = regionLowerZ; z <= regionUpperZ; z++)
-				{
-					var loc = new RegionLocation(x, z);
-					dim.regions.Add(loc, new Region(loc, dim));
-				}
-			}
+			var dim = CreateNew(parentWorld, id, defaultBiome);
+
 			return dim;
 		}
 
-		private Dimension(World parentWorld, DimensionID dimensionID)
+		public static Dimension CreateOverworld(World parentWorld, BiomeID defaultBiome = BiomeID.plains)
+		{
+			return CreateNew(parentWorld, DimensionID.Overworld, defaultBiome);
+		}
+
+		public static Dimension CreateNether(World parentWorld, BiomeID defaultBiome = BiomeID.nether_wastes)
+		{
+			return CreateNew(parentWorld, DimensionID.Nether, defaultBiome);
+		}
+
+		public static Dimension CreateTheEnd(World parentWorld, BiomeID defaultBiome = BiomeID.the_end)
+		{
+			return CreateNew(parentWorld, DimensionID.TheEnd, defaultBiome);
+		}
+
+		private Dimension(World parentWorld, DimensionID dimensionID, BiomeID defaultBiome)
 		{
 			ParentWorld = parentWorld;
 			this.dimensionID = dimensionID;
+			this.defaultBiome = defaultBiome;
 		}
 
 		//TODO: Danger, loads entire dimension at once
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
-			var dim = new Dimension(world, id);
+			var dim = new Dimension(world, id, BiomeID.the_void);
 			dim.regions = new Dictionary<RegionLocation, Region>();
 			bool isAlphaFormat = world.GameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
@@ -148,14 +159,15 @@ namespace WorldForge
 			regions = regionList.ToArray();
 		}
 
-		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed</summary>
-		public void InitializeArea(int x1, int z1, int x2, int z2)
+		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed.</summary>
+		public void InitializeArea(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
-			for(int x = x1.RegionCoord(); x <= x2.RegionCoord(); x++)
+			for(int x = regionLowerX; x <= regionUpperX; x++)
 			{
-				for(int z = z1.RegionCoord(); z <= z2.RegionCoord(); z++)
+				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
-					AddRegion(x, z);
+					var loc = new RegionLocation(x, z);
+					regions.Add(loc, new Region(loc, this));
 				}
 			}
 		}

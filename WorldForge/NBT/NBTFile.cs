@@ -492,7 +492,9 @@ namespace WorldForge.NBT
 		{
 			if(tag == NBTTag.TAG_Byte)
 			{
-				bytes.Add(Convert.ToByte(o));
+				if(o is byte b) bytes.Add(b);
+				else if(o is sbyte s) unchecked { bytes.Add((byte)s); }
+				else bytes.Add(Convert.ToByte(o));
 			}
 			else if(tag == NBTTag.TAG_Short)
 			{

@@ -94,8 +94,9 @@ namespace WorldForge.Chunks
 			return allSame;
 		}
 
-		public void InitializeBiomes(BiomeID fallback = BiomeID.plains)
+		public void InitializeBiomes()
 		{
+			BiomeID fallback = containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void;
 			var lowest = containingChunk.LowestSection;
 			sbyte secY = containingChunk.Sections.First(kv => kv.Value == this).Key;
 			ChunkSection belowSection = null;
@@ -128,7 +129,7 @@ namespace WorldForge.Chunks
 		public void SetBiomeAt(int x, int y, int z, BiomeID biome)
 		{
 			//NOTE: biomes have a vertical resolution of 4 blocks
-			if (biomes == null) InitializeBiomes(biome);
+			if (biomes == null) InitializeBiomes();
 			x = x.Mod(16);
 			z = z.Mod(16);
 			y = y.Mod(16);
@@ -166,10 +167,10 @@ namespace WorldForge.Chunks
 		}
 
 
-		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
+		public BiomeID? GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
 			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
-			if (!HasBiomesDefined) return BiomeID.plains;
+			if (!HasBiomesDefined) return null;
 			for (int x1 = 0; x1 < 4; x1++)
 			{
 				for (int z1 = 0; z1 < 4; z1++)

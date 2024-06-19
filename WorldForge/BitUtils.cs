@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using static System.Collections.Specialized.BitVector32;
+using WorldForge.Chunks;
 
 namespace WorldForge
 {
@@ -129,6 +131,70 @@ namespace WorldForge
 				array[i] = Converter.BitsToValue(bits, i * bitsPerInt, bitsPerInt);
 			}
 			return array;
+		}
+
+		public static long[] PackBits(ushort[] values, int bitsPerValue, bool tightPacking)
+		{
+			int arraySize;
+			if(tightPacking)
+			{
+				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
+			}
+			else
+			{
+				int valuesPerLong = 64 / bitsPerValue;
+				arraySize = (int)Math.Ceiling((double)values.Length / valuesPerLong);
+			}
+
+			long[] longs = new long[arraySize];
+			string[] longsBinary = new string[longs.Length];
+			for(int j = 0; j < longsBinary.Length; j++)
+			{
+				longsBinary[j] = "";
+			}
+			int i = 0;
+			for(int j = 0; j < values.Length; j++)
+			{
+				string bin = NumToBits(values[j], bitsPerValue);
+				bin = Converter.ReverseString(bin);
+				if(!tightPacking)
+				{
+					if(longsBinary[i].Length + bitsPerValue > 64)
+					{
+						//The full value doesn't fit, start on the next long
+						i++;
+						longsBinary[i] += bin;
+					}
+					else
+					{
+						for(int k = 0; k < bitsPerValue; k++)
+						{
+							if(longsBinary[i].Length >= 64) i++;
+							longsBinary[i] += bin[k];
+						}
+					}
+				}
+			}
+
+			for(int j = 0; j < longs.Length; j++)
+			{
+				string s = longsBinary[j];
+				s = s.PadRight(64, '0');
+				s = Converter.ReverseString(s);
+				longs[j] = Convert.ToInt64(s, 2);
+			}
+
+			return longs;
+		}
+
+		private static string NumToBits(ushort num, int length)
+		{
+			string s = Convert.ToString(num, 2);
+			if(s.Length > length)
+			{
+				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
+			}
+			return s.PadLeft(length, '0');
 		}
 	}
 }

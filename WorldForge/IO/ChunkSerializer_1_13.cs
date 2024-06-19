@@ -2,6 +2,7 @@
 using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.NBT;
+using static System.Collections.Specialized.BitVector32;
 
 namespace WorldForge.IO
 {
@@ -35,70 +36,12 @@ namespace WorldForge.IO
 			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
 			foreach(var block in section.palette)
 			{
-				NBTCompound paletteBlock = new NBTCompound();
-				paletteBlock.Add(PaletteBlockNameKey, block.block.ID);
-				if(block.properties != null)
-				{
-					NBTCompound properties = new NBTCompound();
-					foreach(var prop in block.properties.contents.Keys)
-					{
-						var value = block.properties.Get(prop);
-						if(value is bool b) value = b.ToString().ToLower();
-						properties.Add(prop, value.ToString());
-					}
-					paletteBlock.Add(PaletteBlockPropertiesKey, properties);
-				}
-				paletteList.Add(paletteBlock);
+				paletteList.Add(block.ToPaletteNBT());
 			}
 			comp.Add(PaletteKey, paletteList);
-			//Encode block indices to bits and longs
-			int indexLength = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
-			//How many block indices fit inside a long?
-			//TODO: 1.13 and 1.16 should use different amounts
-			int indicesPerLong = (int)Math.Floor(64f / indexLength);
-			long[] longs = new long[(int)Math.Ceiling(4096f / indicesPerLong)];
-			string[] longsBinary = new string[longs.Length];
-			for(int j = 0; j < longsBinary.Length; j++)
-			{
-				longsBinary[j] = "";
-			}
-			int i = 0;
-			for(int y = 0; y < 16; y++)
-			{
-				for(int z = 0; z < 16; z++)
-				{
-					for(int x = 0; x < 16; x++)
-					{
-						string bin = NumToBits(section.blocks[ChunkSection.GetIndex(x, y, z)], indexLength);
-						bin = Converter.ReverseString(bin);
-						if(!UseFull64BitRange)
-						{
-							if(longsBinary[i].Length + indexLength > 64)
-							{
-								//The full value doesn't fit, start on the next long
-								i++;
-								longsBinary[i] += bin;
-							}
-							else
-							{
-								for(int j = 0; j < indexLength; j++)
-								{
-									if(longsBinary[i].Length >= 64) i++;
-									longsBinary[i] += bin[j];
-								}
-							}
-						}
-					}
-				}
-			}
-			for(int j = 0; j < longs.Length; j++)
-			{
-				string s = longsBinary[j];
-				s = s.PadRight(64, '0');
-				s = Converter.ReverseString(s);
-				longs[j] = Convert.ToInt64(s, 2);
-			}
-			comp.Add(BlockStatesKey, longs);
+
+			int bitsPerBlock = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
+			comp.Add(BlockStatesKey, BitUtils.PackBits(GetBlockIndexArray(section), bitsPerBlock, UseFull64BitRange));
 		}
 
 		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
@@ -128,14 +71,14 @@ namespace WorldForge.IO
 				var section = new ChunkSection(c, null);
 
 				var sectionComp = (NBTCompound)o;
-				if(!HasBlocks(sectionComp)) continue;
+				if(!SectionHasBlocks(sectionComp)) continue;
 				sbyte secY = ParseSectionYIndex(sectionComp);
 
 				section.palette.Clear();
 				foreach(var cont in GetBlockPalette(sectionComp).listContent)
 				{
 					var paletteItem = (NBTCompound)cont;
-					section.palette.Add(ParseBlockState(paletteItem));
+					section.palette.Add(new BlockState(paletteItem));
 				}
 
 				if(section.palette.Count == 1)
@@ -165,29 +108,9 @@ namespace WorldForge.IO
 			}
 		}
 
-		protected override bool HasBlocks(NBTCompound sectionNBT)
-		{
-			return sectionNBT.Contains("Palette");
-		}
-
 		protected virtual NBTList GetBlockPalette(NBTCompound sectionNBT)
 		{
 			return sectionNBT.GetAsList("Palette");
-		}
-
-		protected virtual BlockState ParseBlockState(NBTCompound paletteItemNBT)
-		{
-			var proto = BlockList.Find((string)paletteItemNBT.Get("Name"));
-			if(proto != null)
-			{
-				var blockState = new BlockState(proto);
-				if(paletteItemNBT.Contains("Properties")) blockState.properties = paletteItemNBT.GetAsCompound("Properties");
-				return blockState;
-			}
-			else
-			{
-				return BlockState.Unknown;
-			}
 		}
 
 		protected virtual long[] GetBlockDataArray(NBTCompound sectionNBT)
@@ -244,14 +167,20 @@ namespace WorldForge.IO
 			}
 		}
 
-		private static string NumToBits(ushort num, int length)
+		protected ushort[] GetBlockIndexArray(ChunkSection section)
 		{
-			string s = Convert.ToString(num, 2);
-			if(s.Length > length)
+			ushort[] blockData = new ushort[16 * 16 * 16];
+			for(int y = 0; y < 16; y++)
 			{
-				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
+				for(int z = 0; z < 16; z++)
+				{
+					for(int x = 0; x < 16; x++)
+					{
+						blockData[y * 256 + z * 16 + x] = section.blocks[ChunkSection.GetIndex(x, y, z)];
+					}
+				}
 			}
-			return s.PadLeft(length, '0');
+			return blockData;
 		}
 	}
 }
