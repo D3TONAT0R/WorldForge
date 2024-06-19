@@ -354,6 +354,97 @@ namespace WorldForge
 			}
 		}
 
+		/// <summary>
+		/// Data defining a custom bossbar.
+		/// </summary>
+		public class CustomBossEvent : INBTConverter
+		{
+			/// <summary>
+			/// A list of players that can see the bossbar.
+			/// </summary>
+			[NBT("Players")]
+			public List<int[]> playerUUIDs = new List<int[]>();
+			/// <summary>
+			/// ID of the color of the bossbar. Also sets the color of the display text of the bossbar, provided that the display text does not explicitly define a color for itself.
+			/// </summary>
+			[NBT("Color")]
+			public string color = "white";
+			/// <summary>
+			/// If true, the bossbar creates fog.
+			/// </summary>
+			[NBT("CreateWorldFog")]
+			public bool createWorldFog = false;
+			/// <summary>
+			/// If true, the bossbar darkens the sky.
+			/// </summary>
+			[NBT("DarkenScreen")]
+			public bool darkenScreen = false;
+			/// <summary>
+			/// The maximum value of the bossbar.
+			/// </summary>
+			[NBT("Max")]
+			public int maxValue = 100;
+			/// <summary>
+			/// The current value of the bossbar.
+			/// </summary>
+			[NBT("Value")]
+			public int value = 100;
+			/// <summary>
+			/// The display name of the bossbar as a JSON text component.
+			/// </summary>
+			[NBT("Name")]
+			public string nameJson = "";
+			/// <summary>
+			/// The ID of the overlay to be shown over the health bar. Accepted values are: progress, notched_6, notched_10, notched_12, and notched_20.
+			/// </summary>
+			[NBT("Overlay")]
+			public string overlayType = "progress";
+			/// <summary>
+			/// If true, the bossbar should initiate boss music.
+			/// </summary>
+			[NBT("PlayBossMusic")]
+			public bool playBossMusic = false;
+			/// <summary>
+			/// If true, the bossbar will be visible to the listed players.
+			/// </summary>
+			[NBT("Visible")]
+			public bool visible = true;
+
+			public static Dictionary<string, CustomBossEvent> LoadEventsFromNBT(NBTCompound dat)
+			{
+				var dict = new Dictionary<string, CustomBossEvent>();
+				if(dat.TryGet("CustomBossEvents", out NBTCompound collection))
+				{
+					foreach(var key in collection.GetContentKeys())
+					{
+						var bossEvent = new CustomBossEvent(collection.GetAsCompound(key));
+						dict.Add(key, bossEvent);
+					}
+				}
+				return dict;
+			}
+
+			public CustomBossEvent()
+			{
+
+			}
+
+			public CustomBossEvent(NBTCompound nbt)
+			{
+				FromNBT(nbt);
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
 		[NBT("DataVersion")]
 		public int dataVersion;
 
@@ -432,6 +523,11 @@ namespace WorldForge
 		/// </summary>
 		public DataPacks dataPacks = new DataPacks();
 
+		/// <summary>
+		/// List of custom boss events in the world.
+		/// </summary>
+		public Dictionary<string, CustomBossEvent> customBossEvents = new Dictionary<string, CustomBossEvent>();
+
 		private LevelData() { }
 
 		public static LevelData CreateNew()
@@ -461,6 +557,7 @@ namespace WorldForge
 			}
 			d.worldBorder = new WorldBorder(levelNBT);
 			d.wanderingTraderInfo = new WanderingTraderInfo(levelNBT);
+			d.customBossEvents = CustomBossEvent.LoadEventsFromNBT(levelNBT);
 			if(levelNBT.TryGet<NBTCompound>("DataPacks", out var dp))
 			{
 				d.dataPacks = new DataPacks(dp);

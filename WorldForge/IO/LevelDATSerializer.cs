@@ -1,4 +1,5 @@
-﻿using WorldForge.NBT;
+﻿using System.Collections.Generic;
+using WorldForge.NBT;
 
 namespace WorldForge.IO
 {
@@ -46,6 +47,7 @@ namespace WorldForge.IO
 			WriteWorldGenAndSeed(nbt, dat.worldGen, version);
 			WriteWorldBorder(nbt, dat.worldBorder, version);
 			WriteWanderingTraderInfo(nbt, dat.wanderingTraderInfo, version);
+			WriteCustomBossEvents(nbt, dat.customBossEvents, version);
 			WriteDataPackInfo(nbt, dat.dataPacks, version);
 		}
 
@@ -68,6 +70,18 @@ namespace WorldForge.IO
 			if(version >= GameVersion.Release_1(14))
 			{
 				NBTConverter.WriteToNBT(wanderingTraderInfo, nbt, version);
+			}
+		}
+
+		private void WriteCustomBossEvents(NBTCompound nbt, Dictionary<string, LevelData.CustomBossEvent> customBossEvents, GameVersion version)
+		{
+			if(version >= GameVersion.Release_1(13))
+			{
+				var comp = nbt.AddCompound("CustomBossEvents");
+				foreach(var kv in customBossEvents)
+				{
+					comp.Add(kv.Key, kv.Value.ToNBT(version));
+				}
 			}
 		}
 
