@@ -57,7 +57,10 @@ namespace WorldForge
 				var genComp = comp.Get<NBTCompound>("generator");
 				string type = genComp.Get<string>("type");
 				DimensionGeneratorBase gen;
-				if(type == "minecraft:noise") gen = new DimensionGenerator(dim);
+				if(type == "minecraft:noise")
+				{
+					gen = new DimensionGenerator(dim, null);
+				}
 				else if(type == "minecraft:flat") gen = new SuperflatDimensionGenerator(dim);
 				else if(type == "minecraft:debug") gen = new DebugDimensionGenerator(dim);
 				else throw new NotImplementedException("Unknown dimension generator type: " + type);
@@ -115,28 +118,28 @@ namespace WorldForge
 
 			public static DimensionGenerator CreateDefaultOverworldGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(DimensionID.Overworld);
+				var gen = new DimensionGenerator(DimensionID.Overworld, "minecraft:overworld");
 				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:overworld");
 				return gen;
 			}
 
 			public static DimensionGenerator CreateDefaultNetherGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(DimensionID.Nether);
+				var gen = new DimensionGenerator(DimensionID.Nether, "minecraft:nether");
 				gen.biomeSource = new MultiNoiseBiomeSource("minecraft:nether");
 				return gen;
 			}
 
 			public static DimensionGenerator CreateDefaultEndGenerator(long? customSeed = null)
 			{
-				var gen = new DimensionGenerator(DimensionID.TheEnd);
+				var gen = new DimensionGenerator(DimensionID.TheEnd, "minecraft:end");
 				gen.biomeSource = new TheEndBiomeSource();
 				return gen;
 			}
 
-			public DimensionGenerator(DimensionID dim) : base(dim)
+			public DimensionGenerator(DimensionID dim, string settingsPreset) : base(dim)
 			{
-
+				this.settingsPreset = settingsPreset;
 			}
 
 			protected override void ReadSettings(NBTCompound nbt)
@@ -195,7 +198,12 @@ namespace WorldForge
 
 			public static SuperflatDimensionGenerator CreateSuperflatOverworldGenerator(BiomeID biome, params SuperflatLayer[] layers)
 			{
-				var gen = new SuperflatDimensionGenerator(DimensionID.Overworld, layers);
+				return CreateSuperflatGenerator(DimensionID.Overworld, biome, layers);
+			}
+
+			public static SuperflatDimensionGenerator CreateSuperflatGenerator(DimensionID dimension, BiomeID biome, params SuperflatLayer[] layers)
+			{
+				var gen = new SuperflatDimensionGenerator(dimension, layers);
 				gen.biome = biome;
 				return gen;
 			}
@@ -345,11 +353,7 @@ namespace WorldForge
 
 			public void WriteToNBT(NBTCompound nbt, GameVersion version)
 			{
-				//TODO: WorldGenSettings added in 1.13?
-				nbt.Add("RandomSeed", WorldSeed);
-				nbt.Add("MapFeatures", mapFeatures);
-
-				if(version >= GameVersion.Release_1(15))
+				if(version >= GameVersion.Release_1(16))
 				{
 					var worldGenComp = nbt.AddCompound("WorldGenSettings");
 					NBTConverter.WriteToNBT(this, worldGenComp, version);
@@ -361,6 +365,9 @@ namespace WorldForge
 				}
 				else
 				{
+					nbt.Add("RandomSeed", WorldSeed);
+					nbt.Add("MapFeatures", mapFeatures);
+
 					var overworldGen = OverworldGenerator;
 					//TODO: find out when customizable generators were added
 					if(overworldGen != null && version >= GameVersion.Release_1(0))

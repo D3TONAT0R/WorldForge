@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using WorldForge.Items;
 using WorldForge.NBT;
 
@@ -45,6 +46,160 @@ namespace WorldForge
 			}
 		}
 
+		public class Attribute : INBTConverter
+		{
+			[NBT("Name")]
+			public string name;
+			[NBT("Base")]
+			public double baseValue;
+
+			public Attribute(string name, double baseValue)
+			{
+				this.name = name;
+				this.baseValue = baseValue;
+			}
+
+			public Attribute(NBTCompound nbt)
+			{
+				FromNBT(nbt);
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
+		public class Attributes : INBTConverter
+		{
+			public List<Attribute> list;
+
+			public Attributes()
+			{
+				list = new List<Attribute>();
+			}
+
+			/*
+			public static Attributes CreateDefaultAttributes()
+			{
+				var attributes = new Attributes();
+				attributes.Add("generic.maxHealth", 20);
+				attributes.Add("generic.knockbackResistance", 0);
+				attributes.Add("generic.movementSpeed", 0.1d);
+				attributes.Add("generic.attackDamage", 1);
+				attributes.Add("generic.armor", 0);
+				attributes.Add("generic.attackSpeed", 4);
+				attributes.Add("generic.luck", 0);
+				return attributes;
+			}
+			*/
+
+			public void Add(string name, double baseValue)
+			{
+				list.Add(new Attribute(name, baseValue));
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				var list = (NBTList)nbtData;
+				foreach(var comp in list)
+				{
+					this.list.Add(new Attribute((NBTCompound)comp));
+				}
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				var nbtList = new NBTList(NBTTag.TAG_Compound);
+				foreach(var a in list)
+				{
+					nbtList.Add(a.ToNBT(version));
+				}
+				return nbtList;
+			}
+		}
+
+		public class RecipeBook : INBTConverter
+		{
+			[NBT("recipes")]
+			public List<string> recipes = new List<string>();
+			[NBT("toBeDisplayed")]
+			public List<string> toBeDisplayed = new List<string>();
+
+			[NBT("isFilteringCraftable")]
+			public bool isFilteringCraftable = false;
+			[NBT("isBlastingFurnaceFilteringCraftable")]
+			public bool isBlastingFurnaceFilteringCraftable = false;
+			[NBT("isFurnaceFilteringCraftable")]
+			public bool isFurnaceFilteringCraftable = false;
+			[NBT("isSmokerFilteringCraftable")]
+			public bool isSmokerFilteringCraftable = false;
+
+			[NBT("isGuiOpen")]
+			public bool isGuiOpen = false;
+			[NBT("isFurnaceGuiOpen")]
+			public bool isFurnaceGuiOpen = false;
+			[NBT("isBlastingFurnaceGuiOpen")]
+			public bool isBlastingFurnaceGuiOpen = false;
+			[NBT("isSmokerGuiOpen")]
+			public bool isSmokerGuiOpen = false;
+
+			public RecipeBook()
+			{
+
+			}
+
+			public RecipeBook(NBTCompound nbt)
+			{
+				NBTConverter.LoadFromNBT(nbt, this);
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
+		public class WardenSpawnTracker : INBTConverter
+		{
+			[NBT("cooldown_ticks")]
+			public int cooldownTicks = 0;
+			[NBT("ticks_since_last_warning")]
+			public int ticksSinceLastWarning = 0;
+			[NBT("warning_level")]
+			public int warningLevel = 0;
+
+			public WardenSpawnTracker()
+			{
+
+			}
+
+			public WardenSpawnTracker(NBTCompound nbt)
+			{
+				NBTConverter.LoadFromNBT(nbt, this);
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+			}
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+		}
+
 		//TODO: find out when this was added
 		[NBT("UUID", "1.0.0")]
 		public int[] uuid = new int[4];
@@ -65,11 +220,19 @@ namespace WorldForge
 		[NBT("Fire")]
 		public short fire = -20;
 
+		[NBT("Brain", "1.14")]
+		public NBTCompound brain = new NBTCompound();
 		[NBT("abilities", "1.0.0")]
 		public Abilities abilities = new Abilities();
+		[NBT("Attributes", "1.0.0")]
+		public Attributes attributes = new Attributes();
 		//TODO: find out when this was added
 		[NBT("playerGameType", "1.0.0")]
 		public GameMode playerGameType = GameMode.Survival;
+		[NBT("recipeBook", "1.12")]
+		public RecipeBook recipeBook = new RecipeBook();
+		[NBT("WardenSpawnTracker", "1.19")]
+		public WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker();
 
 		[NBT("AttackTime")]
 		public short attackTime = 0;

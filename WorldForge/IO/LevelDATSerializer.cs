@@ -71,7 +71,7 @@ namespace WorldForge.IO
 			//TODO: check version
 			if(version >= GameVersion.Release_1(0))
 			{
-				NBTConverter.WriteToNBT(dragonFight, nbt, version);
+				nbt.Add("DragonFight", dragonFight.ToNBT(version));
 			}
 		}
 

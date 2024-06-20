@@ -85,7 +85,11 @@ namespace WorldForge
 			{Release_1(20,1), 3465},
 			{Release_1(20,2), 3578},
 			{Release_1(20,3), 3698},
-			{Release_1(20,4), 3700}
+			{Release_1(20,4), 3700},
+			{Release_1(20,5), 3837},
+			{Release_1(20,6), 3839},
+
+			{Release_1(21,0), 3953}
 		};
 
 		public GameVersion(Stage stage, byte major, byte minor, byte patch)
