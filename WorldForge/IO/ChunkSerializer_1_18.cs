@@ -41,7 +41,7 @@ namespace WorldForge.IO
 				var sectionNBT = (NBTCompound)s;
 				if(sectionNBT.TryGet<NBTCompound>(BiomesCompName, out var biomesComp))
 				{
-					var paletteNBT = biomesComp.GetAsList(BlockPaletteCompName);
+					var paletteNBT = biomesComp.GetAsList("palette");
 					BiomeID[] palette = new BiomeID[paletteNBT.Length];
 					for(int i = 0; i < paletteNBT.Length; i++)
 					{

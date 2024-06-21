@@ -47,7 +47,7 @@ namespace WorldForge
 		{
 			foreach(var prop in properties)
 			{
-				this.properties.Set(prop.Item1, prop.Item2);
+				SetProperty(prop.Item1, prop.Item2);
 			}
 		}
 
@@ -84,6 +84,16 @@ namespace WorldForge
 			properties.Set(key, value);
 		}
 
+		public void SetProperty(string key, int value)
+		{
+			SetProperty(key, value.ToString());
+		}
+
+		public void SetProperty(string key, bool value)
+		{
+			SetProperty(key, value.ToString());
+		}
+
 		public bool RemoveProperty(string key)
 		{
 			if(properties == null) return false;
@@ -102,7 +112,7 @@ namespace WorldForge
 				case "acacia_leaves":
 				case "dark_oak_leaves":
 					//TODO: proper distance
-					properties.Add("distance", 1);
+					SetProperty("distance", 1);
 					break;
 			}
 		}

@@ -57,14 +57,11 @@ namespace WorldForge
 				var genComp = comp.Get<NBTCompound>("generator");
 				string type = genComp.Get<string>("type");
 				DimensionGeneratorBase gen;
-				if(type == "minecraft:noise")
-				{
-					gen = new DimensionGenerator(dim, null);
-				}
+				if(type == "minecraft:noise") gen = new DimensionGenerator(dim, null);
 				else if(type == "minecraft:flat") gen = new SuperflatDimensionGenerator(dim);
 				else if(type == "minecraft:debug") gen = new DebugDimensionGenerator(dim);
 				else throw new NotImplementedException("Unknown dimension generator type: " + type);
-				gen.FromNBT(genComp);
+				gen.FromNBT(comp);
 				return gen;
 			}
 
@@ -73,7 +70,7 @@ namespace WorldForge
 				var comp = (NBTCompound)nbtData;
 				dimensionType = new DimensionID(comp.Get<string>("type"));
 				var generator = comp.Get<NBTCompound>("generator");
-				ReadSettings(generator);
+				ReadGeneratorSettings(generator);
 			}
 
 			public virtual object ToNBT(GameVersion version)
@@ -88,7 +85,7 @@ namespace WorldForge
 				return comp;
 			}
 
-			protected abstract void ReadSettings(NBTCompound nbt);
+			protected abstract void ReadGeneratorSettings(NBTCompound nbt);
 
 			protected abstract void WriteSettings(NBTCompound nbt, GameVersion version);
 
@@ -142,7 +139,7 @@ namespace WorldForge
 				this.settingsPreset = settingsPreset;
 			}
 
-			protected override void ReadSettings(NBTCompound nbt)
+			protected override void ReadGeneratorSettings(NBTCompound nbt)
 			{
 				if(nbt.TryGet<NBTCompound>("biome_source", out var biomeSourceNBT))
 				{
@@ -212,7 +209,7 @@ namespace WorldForge
 
 			public override string LegacyGeneratorTypeName => "flat";
 
-			protected override void ReadSettings(NBTCompound nbt)
+			protected override void ReadGeneratorSettings(NBTCompound nbt)
 			{
 				var settings = nbt.GetAsCompound("settings");
 				layers = new List<SuperflatLayer>();
@@ -254,7 +251,7 @@ namespace WorldForge
 
 			public override string LegacyGeneratorTypeName => "debug_all_block_states";
 
-			protected override void ReadSettings(NBTCompound nbt)
+			protected override void ReadGeneratorSettings(NBTCompound nbt)
 			{
 				//no settings
 			}

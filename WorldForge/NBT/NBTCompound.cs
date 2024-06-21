@@ -114,7 +114,7 @@ namespace WorldForge.NBT
 		public T Get<T>(string key)
 		{
 			var v = Get(key);
-			if(v is NBTList list)
+			if(v is NBTList list && typeof(T) != typeof(NBTList))
 			{
 				return (T)list.ToList(typeof(T).GetGenericArguments()[0]);
 			}
