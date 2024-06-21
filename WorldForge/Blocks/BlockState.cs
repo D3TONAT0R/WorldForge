@@ -116,7 +116,7 @@ namespace WorldForge
 			return block == other.block;
 		}
 
-		public NBTCompound ToPaletteNBT()
+		public NBTCompound ToNBT()
 		{
 			var nbt = new NBTCompound();
 			nbt.Add("Name", block.ID);

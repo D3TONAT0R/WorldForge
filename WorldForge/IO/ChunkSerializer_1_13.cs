@@ -36,7 +36,7 @@ namespace WorldForge.IO
 			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
 			foreach(var block in section.palette)
 			{
-				paletteList.Add(block.ToPaletteNBT());
+				paletteList.Add(block.ToNBT());
 			}
 			comp.Add(PaletteKey, paletteList);
 

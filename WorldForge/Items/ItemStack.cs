@@ -2,7 +2,7 @@
 
 namespace WorldForge.Items
 {
-	public struct ItemStack
+	public class ItemStack : INBTConverter
 	{
 		public Item item;
 		public sbyte count;
@@ -22,12 +22,20 @@ namespace WorldForge.Items
 
 		public ItemStack(NBTCompound nbt, out sbyte slotIndex)
 		{
-			item = new Item(nbt);
-			count = nbt.Get<sbyte>("Count");
-			if (!nbt.TryGet("Slot", out slotIndex))
+			item = null;
+			count = 0;
+			FromNBT(nbt);
+			if(!nbt.TryGet("Slot", out slotIndex))
 			{
 				slotIndex = -1;
 			}
+		}
+
+		public void FromNBT(object nbtData)
+		{
+			var nbt = (NBTCompound)nbtData;
+			item = new Item(nbt);
+			count = nbt.Get<sbyte>("Count");
 		}
 
 		public NBTCompound ToNBT(sbyte? slotIndex, GameVersion version)
@@ -40,6 +48,11 @@ namespace WorldForge.Items
 			nbt.Add("Count", count);
 			item.WriteToNBT(nbt, version);
 			return nbt;
+		}
+
+		public object ToNBT(GameVersion version)
+		{
+			return ToNBT(null, version);
 		}
 	}
 }

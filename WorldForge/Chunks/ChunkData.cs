@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
+using WorldForge.Entities;
 using WorldForge.IO;
 using WorldForge.NBT;
 using WorldForge.Regions;
@@ -9,7 +10,7 @@ using WorldForge.TileEntities;
 
 namespace WorldForge.Chunks
 {
-	public class ChunkData
+    public class ChunkData
 	{
 		public ChunkCoord WorldSpaceCoord { get; set; }
 		public Region ParentRegion { get; set; }

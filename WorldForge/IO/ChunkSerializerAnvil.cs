@@ -2,6 +2,7 @@
 using System.Linq;
 using WorldForge.Biomes;
 using WorldForge.Chunks;
+using WorldForge.Entities;
 using WorldForge.NBT;
 using WorldForge.Regions;
 using WorldForge.TileEntities;
@@ -194,7 +195,7 @@ namespace WorldForge.IO
 				{
 					for(int i = 0; i < entList.Length; i++)
 					{
-						c.Entities.Add(new Entity(entList.Get<NBTCompound>(i)));
+						c.Entities.Add(Entity.CreateFromNBT(entList.Get<NBTCompound>(i)));
 					}
 				}
 			}
