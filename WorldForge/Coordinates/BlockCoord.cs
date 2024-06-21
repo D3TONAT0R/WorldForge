@@ -77,6 +77,11 @@ namespace WorldForge.Coordinates
 			return this + chunk.WorldSpaceCoord.BlockCoord;
 		}
 
+		public int[] ToIntArray()
+		{
+			return new int[] { x, y, z };
+		}
+
 		public static float Distance(BlockCoord a, BlockCoord b)
 		{
 			int dx = b.x - a.x;

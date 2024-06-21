@@ -9,7 +9,7 @@ namespace WorldForge.Entities
 
 		}
 
-		public MobCow(Vector3 position) : base("minecraft:pig", position)
+		public MobCow(Vector3 position) : base("minecraft:cow", position)
 		{
 
 		}
