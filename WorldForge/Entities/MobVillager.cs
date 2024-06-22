@@ -4,7 +4,7 @@ using WorldForge.NBT;
 
 namespace WorldForge.Entities
 {
-	public abstract class MobVillager : MobBreedable
+	public class MobVillager : MobBreedable
 	{
 		[NBT("Inventory")]
 		public List<ItemStack> inventory = new List<ItemStack>();
@@ -22,7 +22,7 @@ namespace WorldForge.Entities
 
 		}
 
-		public MobVillager(Vector3 position) : base("minecraft:villager", position)
+		public MobVillager(string id, Vector3 position) : base(id, position)
 		{
 
 		}

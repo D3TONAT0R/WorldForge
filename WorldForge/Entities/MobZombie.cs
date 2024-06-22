@@ -2,18 +2,8 @@
 
 namespace WorldForge.Entities
 {
-	public class MobZombie : Mob
+	public class MobZombie : MobZombieBase
 	{
-		[NBT("CanBreakDoors")]
-		public bool canBreakDoors = false;
-		[NBT("IsBaby")]
-		public bool isBaby = false;
-
-		[NBT("DrownedConversionTime", "1.13")]
-		public int drownedConversionTime = -1;
-		[NBT("InWaterTime", "1.13")]
-		public int inWaterTime = -1;
-
 		public MobZombie(NBTCompound compound) : base(compound)
 		{
 

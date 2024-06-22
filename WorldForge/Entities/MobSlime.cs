@@ -14,14 +14,17 @@ namespace WorldForge.Entities
 		[NBT("wasOnGround")]
 		public bool wasOnGround = false;
 
-		protected virtual string ID => "minecraft:slime";
-
 		public MobSlime(NBTCompound compound) : base(compound)
 		{
 
 		}
 
-		public MobSlime(Vector3 position, int size) : base(ID, position)
+		public MobSlime(Vector3 position, int size) : base("minecraft:slime", position)
+		{
+			this.size = size;
+		}
+
+		protected MobSlime(string id, Vector3 position, int size) : base(id, position)
 		{
 			this.size = size;
 		}

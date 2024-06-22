@@ -1,9 +1,10 @@
 ﻿using System;
 using WorldForge.Chunks;
+using WorldForge.NBT;
 
 namespace WorldForge.Coordinates
 {
-	public struct BlockCoord
+	public struct BlockCoord : INBTConverter
 	{
 		public int x;
 		public int y;
@@ -95,6 +96,25 @@ namespace WorldForge.Coordinates
 			int dx = b.x - a.x;
 			int dz = b.z - a.z;
 			return (float)Math.Sqrt(dx * dx + dz * dz);
+		}
+
+		public object ToNBT(GameVersion version)
+		{
+			return new int[] { x, y, z };
+		}
+
+		public void FromNBT(object nbtData)
+		{
+			if(nbtData is int[] data)
+			{
+				x = data[0];
+				y = data[1];
+				z = data[2];
+			}
+			else
+			{
+				throw new ArgumentException("Invalid NBT data for BlockCoord: " + nbtData);
+			}
 		}
 	}
 }

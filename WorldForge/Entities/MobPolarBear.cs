@@ -2,7 +2,7 @@
 
 namespace WorldForge.Entities
 {
-	public class MobZombiePigman : MobZombieBase
+	public class MobPolarBear : MobBreedable
 	{
 		//Angerable data
 		[NBT("AngerTime")]
@@ -10,12 +10,12 @@ namespace WorldForge.Entities
 		[NBT("AngryAt")]
 		public UUID angryAt = null;
 
-		public MobZombiePigman(NBTCompound compound) : base(compound)
+		public MobPolarBear(NBTCompound compound) : base(compound)
 		{
 
 		}
 
-		public MobZombiePigman(Vector3 position) : base("minecraft:zombie_pigman", position)
+		public MobPolarBear(Vector3 position) : base("minecraft:polar_bear", position)
 		{
 
 		}
