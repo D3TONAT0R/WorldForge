@@ -6,17 +6,17 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityComparator : TileEntity
 	{
+		[NBT("OutputSignal")]
+		public int outputSignal = 0;
+
 		public TileEntityComparator() : base("comparator")
 		{
+
 		}
 
 		public TileEntityComparator(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
-		}
 
-		protected override void Serialize(NBTCompound nbt, GameVersion version)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

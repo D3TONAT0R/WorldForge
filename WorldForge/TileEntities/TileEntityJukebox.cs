@@ -28,7 +28,7 @@ namespace WorldForge.TileEntities
 			}
 		}
 
-		protected override void Serialize(NBTCompound nbt, GameVersion version)
+		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
 			if(!recordItem.IsNull)
 			{

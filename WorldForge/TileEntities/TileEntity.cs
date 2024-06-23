@@ -28,11 +28,11 @@ namespace WorldForge.TileEntities
 			string id = nbt.Get<string>("id");
 			switch(id)
 			{
-				//Non-matching tile entities (block names differ from tile entity ID
+				//Non-matching tile entities (block names differ from tile entity ID)
 				case "shulker_box":
 					return new TileEntityContainer(nbt, 27, out blockPos);
 				case "banner":
-					return new TileEntityBeacon(nbt, out blockPos);
+					return new TileEntityBanner(nbt, out blockPos);
 				case "command_block":
 					return new TileEntityCommandBlock(nbt, out blockPos);
 				case "skull":
@@ -189,12 +189,15 @@ namespace WorldForge.TileEntities
 				{ "z", blockPos.z }
 			};
 			NBTConverter.WriteToNBT(this, nbt, version);
-			Serialize(nbt, version);
+			OnWriteToNBT(nbt, version);
 			otherNBTData.Merge(nbt, false);
 			return nbt;
 		}
 
-		protected abstract void Serialize(NBTCompound nbt, GameVersion version);
+		protected virtual void OnWriteToNBT(NBTCompound nbt, GameVersion version)
+		{
+
+		}
 
 		protected virtual string ResolveEntityID(GameVersion version)
 		{

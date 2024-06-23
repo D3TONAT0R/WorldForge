@@ -22,11 +22,18 @@ namespace WorldForge.Items
 
 		public Item(NBTCompound nbt)
 		{
-			NBTConverter.LoadFromNBT(nbt, this);
+			var itemId = nbt.Get("id");
+			if(itemId is string s) id = s;
+			else if(itemId is int i)
+			{
+				id = "minecraft:air"; //TODO: Get item by id
+			}
+			nbt.TryGet<NBTCompound>("tag", out tag);
 		}
 
 		public void WriteToNBT(NBTCompound nbt, GameVersion version)
 		{
+			//TODO
 			NBTConverter.WriteToNBT(this, nbt, version);
 		}
 	}

@@ -15,7 +15,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override void Serialize(NBTCompound nbt, GameVersion version)
+		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
 
 		}
@@ -30,10 +30,6 @@ namespace WorldForge.TileEntities
 			{
 				switch(id)
 				{
-					case "daylight_detector": return "DLDetector";
-					case "enchanting_table": return "EnchantTable";
-					case "end_portal": return "AirPortal";
-					case "ender_chest": return "EnderChest";
 					case "flower_pot": return "FlowerPot";
 					case "note_block": return "Music";
 				}

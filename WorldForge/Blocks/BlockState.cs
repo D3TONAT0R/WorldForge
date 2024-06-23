@@ -5,7 +5,7 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public class BlockState
+	public class BlockState : INBTConverter
 	{
 
 		public static BlockState Air
@@ -126,17 +126,6 @@ namespace WorldForge
 			return block == other.block;
 		}
 
-		public NBTCompound ToNBT()
-		{
-			var nbt = new NBTCompound();
-			nbt.Add("Name", block.ID);
-			if(!NBTCompound.IsNullOrEmpty(properties))
-			{
-				nbt.Add("Properties", properties);
-			}
-			return nbt;
-		}
-
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder(block?.ID);
@@ -153,6 +142,24 @@ namespace WorldForge
 				sb.Append("]");
 			}
 			return sb.ToString();
+		}
+
+		public object ToNBT(GameVersion version)
+		{
+			var nbt = new NBTCompound();
+			nbt.Add("Name", block.ID);
+			if(!NBTCompound.IsNullOrEmpty(properties))
+			{
+				nbt.Add("Properties", properties);
+			}
+			return nbt;
+		}
+
+		public void FromNBT(object nbtData)
+		{
+			var comp = (NBTCompound)nbtData;
+			block = BlockList.Find(comp.Get<string>("Name"));
+			comp.TryGet("Properties", out properties);
 		}
 	}
 }

@@ -9,19 +9,19 @@ namespace WorldForge.TileEntities
 		public ItemStack FurnaceInputSlot
 		{
 			get => items[0];
-			set => SetItem(0, value);
+			set => items[0] = value;
 		}
 
 		public ItemStack FurnaceFuelSlot
 		{
 			get => items[1];
-			set => SetItem(1, value);
+			set => items[1] = value;
 		}
 
 		public ItemStack FurnaceOutputSlot
 		{
 			get => items[2];
-			set => SetItem(2, value);
+			set => items[2] = value;
 		}
 
 		[NBT("BurnTime")]
@@ -30,6 +30,9 @@ namespace WorldForge.TileEntities
 		public short cookTime = 0;
 		[NBT("CookTimeTotal")]
 		public short cookTimeTotal = 200;
+
+		[NBT("RecipesUsed")]
+		public NBTCompound recipesUsed = null;
 
 		public TileEntityFurnace(string id) : base(id, 3)
 		{

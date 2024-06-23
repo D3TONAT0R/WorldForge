@@ -95,7 +95,7 @@ namespace WorldForge.NBT
 				{
 					if(!typeof(INBTCollection).IsAssignableFrom(fi.FieldType)) throw new InvalidOperationException("Fields marked with NBTCollection must implement INBTCollection.");
 					var inst = (INBTCollection)fi.GetValue(source);
-					inst.WriteToNBT(targetNBT, targetVersion);
+					inst?.WriteToNBT(targetNBT, targetVersion);
 				}
 			}
 			return targetNBT;

@@ -7,44 +7,86 @@ namespace WorldForge.Items
 {
 	public class Inventory : INBTConverter
 	{
-		public struct ItemStack
+		public Dictionary<sbyte, ItemStack> items = new Dictionary<sbyte, ItemStack>();
+
+		public sbyte? maxSlotCount = null;
+
+		public ItemStack this[sbyte index]
 		{
-			public string itemID;
-			public byte count;
-
-			public ItemStack(string id, byte amount)
-			{
-				itemID = id;
-				count = amount;
-			}
-
-			public NBTCompound CreateNBT(byte slot)
-			{
-				var comp = new NBTCompound
-				{
-					{ "Slot", slot },
-					{ "id", itemID },
-					{ "Count", count }
-				};
-				return comp;
-			}
+			get => GetItem(index);
+			set => SetItem(index, value);
 		}
-
-		public Dictionary<byte, ItemStack> content = new Dictionary<byte, ItemStack>();
 
 		public Inventory()
 		{
 
 		}
 
+		public ItemStack GetItem(sbyte slotIndex)
+		{
+			if(items.TryGetValue(slotIndex, out var item))
+			{
+				return item;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public bool SetItem(sbyte slotIndex, ItemStack item)
+		{
+			if(maxSlotCount.HasValue && slotIndex >= maxSlotCount)
+			{
+				throw new IndexOutOfRangeException();
+			}
+			if(item.IsNull && items.ContainsKey(slotIndex))
+			{
+				items.Remove(slotIndex);
+				return false;
+			}
+			items[slotIndex] = item;
+			return true;
+		}
+
+		public bool HasItem(sbyte slotIndex)
+		{
+			if(items == null) return false;
+			return items.ContainsKey(slotIndex) && !items[slotIndex].IsNull;
+		}
+
+		public bool RemoveItem(sbyte slotIndex)
+		{
+			if(maxSlotCount.HasValue && slotIndex >= maxSlotCount)
+			{
+				throw new IndexOutOfRangeException();
+			}
+			return items.Remove(slotIndex);
+		}
+
+		public ItemStack TakeItem(sbyte slotIndex)
+		{
+			if(maxSlotCount.HasValue && slotIndex >= maxSlotCount)
+			{
+				throw new IndexOutOfRangeException();
+			}
+			if(!HasItem(slotIndex))
+			{
+				throw new InvalidOperationException($"No item was present in slot {slotIndex}.");
+			}
+			var stack = items[slotIndex];
+			items.Remove(slotIndex);
+			return stack;
+		}
+
 		public object ToNBT(GameVersion version)
 		{
 			var list = new NBTList(NBTTag.TAG_Compound);
-			var indices = content.Keys.ToList();
+			var indices = items.Keys.ToList();
 			indices.Sort();
 			foreach (var index in indices)
 			{
-				list.Add(content[index].CreateNBT(index));
+				list.Add(items[index].ToNBT(index, version));
 			}
 			return list;
 		}
@@ -52,19 +94,10 @@ namespace WorldForge.Items
 		public void FromNBT(object nbtData)
 		{
 			var inventoryNBT = (NBTList)nbtData;
-			for (int i = 0; i < inventoryNBT.Length; i++)
+			foreach(var itemNBT in inventoryNBT)
 			{
-				try
-				{
-					var stackNBT = inventoryNBT.Get<NBTCompound>(i);
-					var slot = stackNBT.Get<byte>("Slot");
-					var stack = new ItemStack(stackNBT.Get<string>("id"), stackNBT.Get<byte>("Count"));
-					content.Add(slot, stack);
-				}
-				catch (Exception e)
-				{
-					throw new ArgumentException($"Failed to parse inventory item at index {i}: {e.Message}");
-				}
+				var item = new ItemStack((NBTCompound)itemNBT, out var slot);
+				items.Add(slot, item);
 			}
 		}
 	}

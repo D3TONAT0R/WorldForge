@@ -9,40 +9,40 @@ namespace WorldForge.TileEntities
 		public ItemStack LeftPotionSlot
 		{
 			get => items[0];
-			set => SetItem(0, value);
+			set => items[0] = value;
 		}
 
 		public ItemStack MiddlePotionSlot
 		{
 			get => items[1];
-			set => SetItem(1, value);
+			set => items[1] = value;
 		}
 
 		public ItemStack RightPotionSlot
 		{
 			get => items[2];
-			set => SetItem(2, value);
+			set => items[2] = value;
 		}
 
 		public ItemStack IngredientSlot
 		{
 			get => items[3];
-			set => SetItem(3, value);
+			set => items[3] = value;
 		}
 
 		//Added in 1.9
 		public ItemStack FuelSlot
 		{
 			get => items[4];
-			set => SetItem(4, value);
+			set => items[4] = value;
 		}
 
 		//20 = Full
 		[NBT("Fuel", "1.9")]
-		public byte fuelLevel;
+		public byte fuelLevel = 0;
 
 		[NBT("BrewTime")]
-		public short brewTime;
+		public short brewTime = 0;
 
 		public TileEntityBrewingStand() : base("brewing_stand", 5)
 		{
@@ -53,7 +53,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override void Serialize(NBTCompound nbt, GameVersion version)
+		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
 
 		}

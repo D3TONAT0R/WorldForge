@@ -2,10 +2,11 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Text;
+using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public class JSONTextComponent
+	public class JSONTextComponent : INBTConverter
 	{
 		public static Dictionary<string, string> legacyFormattingColorCodes = new Dictionary<string, string>()
 		{
@@ -144,6 +145,17 @@ namespace WorldForge
 				currentState = b;
 			}
 			return reset;
+		}
+
+		public object ToNBT(GameVersion version)
+		{
+			return ToJSON();
+		}
+
+		public void FromNBT(object nbtData)
+		{
+			var text = (string)nbtData;
+			data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
 		}
 	}
 }
