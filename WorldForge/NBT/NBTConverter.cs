@@ -1,40 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace WorldForge.NBT
 {
-	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-	public class NBTAttribute : Attribute
-	{
-
-		public string tagName = null;
-		public GameVersion addedIn = GameVersion.FirstVersion;
-		public GameVersion removedIn = new GameVersion(GameVersion.Stage.Release, 9, 9, 9);
-
-		public NBTAttribute()
-		{
-
-		}
-
-		public NBTAttribute(string name)
-		{
-			tagName = name;
-		}
-
-		public NBTAttribute(string name, string addedInVersion) : this(name)
-		{
-			addedIn = GameVersion.Parse(addedInVersion);
-		}
-
-		public NBTAttribute(string name, string addedInVersion, string removedInVersion) : this(name)
-		{
-			addedIn = GameVersion.Parse(addedInVersion);
-			removedIn = GameVersion.Parse(removedInVersion);
-		}
-	}
-
 	public class NBTConverter
 	{
 		public static void LoadFromNBT(NBTCompound sourceNBT, object target, bool removeFromCompound = false)
@@ -43,6 +15,7 @@ namespace WorldForge.NBT
 			foreach(var (fi, attr) in GetFields(target))
 			{
 				var name = !string.IsNullOrEmpty(attr.tagName) ? attr.tagName : fi.Name;
+
 				if(sourceNBT.Contains(name))
 				{
 					try
@@ -89,6 +62,13 @@ namespace WorldForge.NBT
 					}
 				}
 			}
+			foreach(var (fi, attr) in GetCollections(target))
+			{
+				if(!typeof(INBTCollection).IsAssignableFrom(fi.FieldType)) throw new InvalidOperationException("Fields marked with NBTCollection must implement INBTCollection.");
+				var inst = (INBTCollection)Activator.CreateInstance(fi.FieldType);
+				inst.LoadFromNBT(sourceNBT, removeFromCompound);
+				fi.SetValue(target, inst);
+			}
 		}
 
 		public static NBTCompound WriteToNBT(object source, NBTCompound targetNBT, GameVersion targetVersion)
@@ -109,12 +89,21 @@ namespace WorldForge.NBT
 					}
 				}
 			}
+			foreach(var (fi, attr) in GetCollections(source))
+			{
+				if(targetVersion >= attr.addedIn && targetVersion < attr.removedIn)
+				{
+					if(!typeof(INBTCollection).IsAssignableFrom(fi.FieldType)) throw new InvalidOperationException("Fields marked with NBTCollection must implement INBTCollection.");
+					var inst = (INBTCollection)fi.GetValue(source);
+					inst.WriteToNBT(targetNBT, targetVersion);
+				}
+			}
 			return targetNBT;
 		}
 
-		private static (FieldInfo fi, NBTAttribute attr)[] GetFields(object obj)
+		private static List<(FieldInfo fi, NBTAttribute attr)> GetFields(object obj)
 		{
-			List<(FieldInfo fi, NBTAttribute attr)> list = new List<(FieldInfo fi, NBTAttribute attr)>();
+			var list = new List<(FieldInfo fi, NBTAttribute attr)>();
 			foreach(var fi in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
 			{
 				var attr = fi.GetCustomAttribute<NBTAttribute>();
@@ -123,7 +112,21 @@ namespace WorldForge.NBT
 					list.Add((fi, attr));
 				}
 			}
-			return list.ToArray();
+			return list;
+		}
+
+		private static List<(FieldInfo fi, NBTCollectionAttribute attr)> GetCollections(object obj)
+		{
+			var list = new List<(FieldInfo fi, NBTCollectionAttribute attr)>();
+			foreach(var fi in obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+			{
+				var attr = fi.GetCustomAttribute<NBTCollectionAttribute>();
+				if(attr != null)
+				{
+					list.Add((fi, attr));
+				}
+			}
+			return list;
 		}
 	}
 }
