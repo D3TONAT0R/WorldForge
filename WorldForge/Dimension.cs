@@ -216,7 +216,7 @@ namespace WorldForge
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public ProtoBlock GetBlock(BlockCoord pos)
+		public BlockID GetBlock(BlockCoord pos)
 		{
 			return GetRegion(pos.x, pos.z)?.GetBlock(pos.LocalRegionCoords);
 		}

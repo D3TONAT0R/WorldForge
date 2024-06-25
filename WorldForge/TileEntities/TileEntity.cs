@@ -89,7 +89,7 @@ namespace WorldForge.TileEntities
 			}
 		}
 
-		public static TileEntity CreateFor(ProtoBlock blockType)
+		public static TileEntity CreateFor(BlockID blockType)
 		{
 			if(blockType.IsVanillaBlock)
 			{

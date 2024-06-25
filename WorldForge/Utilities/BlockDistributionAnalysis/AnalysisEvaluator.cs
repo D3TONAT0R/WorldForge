@@ -67,9 +67,9 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 		public class BlockGroup
 		{
 			public string name;
-			public ProtoBlock[] blocks;
+			public BlockID[] blocks;
 
-			public BlockGroup(string name, params ProtoBlock[] blocks)
+			public BlockGroup(string name, params BlockID[] blocks)
 			{
 				this.name = name;
 				this.blocks = blocks;
@@ -78,7 +78,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			public static BlockGroup Parse(string s)
 			{
 				var split = s.Split(';');
-				var blocks = new List<ProtoBlock>(split[1].Split(',').Select(s1 => BlockList.Find(s1)));
+				var blocks = new List<BlockID>(split[1].Split(',').Select(s1 => BlockList.Find(s1)));
 				blocks.RemoveAll(b => b == null);
 				return new BlockGroup(split[0], blocks.ToArray());
 			}

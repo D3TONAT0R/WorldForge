@@ -591,21 +591,21 @@ namespace WorldForge
 			"warped_door"
 		};
 
-		public static Dictionary<string, ProtoBlock> allBlocks;
+		public static Dictionary<string, BlockID> allBlocks;
 
-		public static Dictionary<ProtoBlock, NumericID> numerics;
-		public static Dictionary<ushort, ProtoBlock> protoByNumerics;
-		public static Dictionary<ProtoBlock, string> preFlatteningIDs;
+		public static Dictionary<BlockID, NumericID> numerics;
+		public static Dictionary<ushort, BlockID> protoByNumerics;
+		public static Dictionary<BlockID, string> preFlatteningIDs;
 
 		public static void Initialize(string blockData)
 		{
-			allBlocks = new Dictionary<string, ProtoBlock>();
-			numerics = new Dictionary<ProtoBlock, NumericID>();
-			protoByNumerics = new Dictionary<ushort, ProtoBlock>();
-			preFlatteningIDs = new Dictionary<ProtoBlock, string>();
+			allBlocks = new Dictionary<string, BlockID>();
+			numerics = new Dictionary<BlockID, NumericID>();
+			protoByNumerics = new Dictionary<ushort, BlockID>();
+			preFlatteningIDs = new Dictionary<BlockID, string>();
 			var lines = blockData.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
-			List<(ProtoBlock, string)> fallbacks = new List<(ProtoBlock, string)>();
+			List<(BlockID, string)> fallbacks = new List<(BlockID, string)>();
 			for(int i = 2; i < lines.Length; i++)
 			{
 				var split = lines[i].Split(';');
@@ -621,7 +621,7 @@ namespace WorldForge
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
 					GameVersion version = split[4].Length > 1 ? GameVersion.Parse(split[4]) : GameVersion.FirstVersion;
-					var newBlocks = ProtoBlock.RegisterNewVanillaBlock(id, version);
+					var newBlocks = BlockID.RegisterNewVanillaBlock(id, version);
 					foreach(var newBlock in newBlocks)
 					{
 						if(split[5].Length > 1)
@@ -663,7 +663,7 @@ namespace WorldForge
 			return null;
 		}
 
-		public static ProtoBlock Find(string blockTypeName, bool throwErrorIfNotFound = false)
+		public static BlockID Find(string blockTypeName, bool throwErrorIfNotFound = false)
 		{
 			if(!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
 			if(blockTypeName.StartsWith("minecraft:"))
@@ -688,13 +688,13 @@ namespace WorldForge
 				else
 				{
 					var split = blockTypeName.Split(':');
-					return ProtoBlock.RegisterNewModBlock(split[0], split[1])[0];
+					return BlockID.RegisterNewModBlock(split[0], split[1])[0];
 				}
 			}
 		}
 
 		//TODO: return proper BlockState by metadata
-		public static ProtoBlock FindByNumeric(NumericID numeric)
+		public static BlockID FindByNumeric(NumericID numeric)
 		{
 			if(protoByNumerics.TryGetValue(numeric.HashNoMeta, out var block))
 			{

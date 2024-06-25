@@ -127,7 +127,7 @@ namespace WorldForge.Lighting
 			}
 		}
 
-		public byte GetOcclusionLevel(ProtoBlock block)
+		public byte GetOcclusionLevel(BlockID block)
 		{
 			if(block == null || block.IsAir) return 0;
 			else if(block.IsLiquid) return 1;

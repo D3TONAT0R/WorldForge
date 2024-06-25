@@ -54,7 +54,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-		public void IncreaseCounter(ProtoBlock block, short y)
+		public void IncreaseCounter(BlockID block, short y)
 		{
 			if(block != null) IncreaseCounter(block.ID, y);
 		}

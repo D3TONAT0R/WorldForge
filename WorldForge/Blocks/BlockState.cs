@@ -28,12 +28,12 @@ namespace WorldForge
 		}
 		private static BlockState unknown;
 
-		public ProtoBlock block;
+		public BlockID block;
 		private NBTCompound properties;
 
 		private BlockState() { }
 
-		public BlockState(ProtoBlock blockType)
+		public BlockState(BlockID blockType)
 		{
 			if(blockType == null)
 			{

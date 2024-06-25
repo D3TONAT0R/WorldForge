@@ -65,7 +65,7 @@ namespace WorldForge.Regions
 		}
 
 		///<summary>Gets the block type at the given location.</summary>
-		public ProtoBlock GetBlock(BlockCoord pos)
+		public BlockID GetBlock(BlockCoord pos)
 		{
 			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)

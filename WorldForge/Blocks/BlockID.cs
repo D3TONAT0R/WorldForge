@@ -1,6 +1,6 @@
 ﻿namespace WorldForge
 {
-	public class ProtoBlock
+	public class BlockID
 	{
 		public string ID => (customNamespace ?? "minecraft") + ":" + shortID;
 
@@ -8,7 +8,7 @@
 		public readonly string shortID;
 
 		public readonly GameVersion addedInVersion;
-		public ProtoBlock substitute;
+		public BlockID substitute;
 
 		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
 		public bool IsAir => ID == "minecraft:air";
@@ -19,7 +19,7 @@
 		/// <summary>
 		/// Registers a new vanilla block type.
 		/// </summary>
-		public static ProtoBlock[] RegisterNewVanillaBlock(string shortID, GameVersion versionAdded, ProtoBlock substitute = null)
+		public static BlockID[] RegisterNewVanillaBlock(string shortID, GameVersion versionAdded, BlockID substitute = null)
 		{
 			return RegisterNewBlock(null, shortID, versionAdded, substitute);
 		}
@@ -27,23 +27,23 @@
 		/// <summary>
 		/// Registers a new modded block type (does not check for game versions).
 		/// </summary>
-		public static ProtoBlock[] RegisterNewModBlock(string modNamespace, string shortID)
+		public static BlockID[] RegisterNewModBlock(string modNamespace, string shortID)
 		{
 			return RegisterNewBlock(modNamespace, shortID, null, null);
 		}
 
-		static ProtoBlock[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, ProtoBlock substitute)
+		static BlockID[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, BlockID substitute)
 		{
 			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
 			if(shortID.Contains("*"))
 			{
 				//Multicolored blocks
-				ProtoBlock[] blocks = new ProtoBlock[Blocks.commonColors.Length];
+				BlockID[] blocks = new BlockID[Blocks.commonColors.Length];
 				for(int i = 0; i < Blocks.commonColors.Length; i++)
 				{
 					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
 					//TODO: how to substitute color block with another color block?
-					var b = new ProtoBlock(modNamespace, colorBlockID, versionAdded.Value, substitute);
+					var b = new BlockID(modNamespace, colorBlockID, versionAdded.Value, substitute);
 					BlockList.allBlocks.Add(b.ID, b);
 					blocks[i] = b;
 				}
@@ -51,13 +51,13 @@
 			}
 			else
 			{
-				var b = new ProtoBlock(modNamespace, shortID, versionAdded.Value, substitute);
+				var b = new BlockID(modNamespace, shortID, versionAdded.Value, substitute);
 				BlockList.allBlocks.Add(b.ID, b);
-				return new ProtoBlock[] { b };
+				return new BlockID[] { b };
 			}
 		}
 
-		private ProtoBlock(string ns, string id, GameVersion v, ProtoBlock sub)
+		private BlockID(string ns, string id, GameVersion v, BlockID sub)
 		{
 			customNamespace = ns;
 			shortID = id;
@@ -68,7 +68,7 @@
 		/// <summary>
 		/// Returns the most appropriate block by game version. If this block does not yet exist in the given version, it will recursively search for a replacement. If there is none available, null (air) is returned.
 		/// </summary>
-		public ProtoBlock FindAppropriateBlock(GameVersion gameVersion)
+		public BlockID FindAppropriateBlock(GameVersion gameVersion)
 		{
 			if(gameVersion >= addedInVersion)
 			{
@@ -104,7 +104,7 @@
 
 		public override bool Equals(object obj)
 		{
-			if(obj is ProtoBlock pb)
+			if(obj is BlockID pb)
 			{
 				return this == pb;
 			}
@@ -118,14 +118,14 @@
 			}
 		}
 
-		public static bool operator ==(ProtoBlock l, ProtoBlock r)
+		public static bool operator ==(BlockID l, BlockID r)
 		{
 			if(l is null && r is null) return true;
 			else if(l is null || r is null) return false;
 			else return l.ID == r.ID;
 		}
 
-		public static bool operator !=(ProtoBlock l, ProtoBlock r)
+		public static bool operator !=(BlockID l, BlockID r)
 		{
 			return !(l == r);
 		}

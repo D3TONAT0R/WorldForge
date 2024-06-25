@@ -6,7 +6,8 @@ namespace WorldForge
 	public static class Blocks
 	{
 
-		public static readonly string[] commonTerrainBlocks = new string[] {
+		public static readonly string[] commonTerrainBlocks = new string[]
+		{
 			"minecraft:bedrock",
 			"minecraft:stone",
 			"minecraft:grass_block",
@@ -42,7 +43,8 @@ namespace WorldForge
 		public static readonly string waterBlock = "minecraft:water";
 		public static readonly string lavaBlock = "minecraft:lava";
 
-		public static readonly Dictionary<string, int> colorMapIndices = new Dictionary<string, int> {
+		public static readonly Dictionary<string, int> colorMapIndices = new Dictionary<string, int>
+		{
 			{"minecraft:grass_block", 0 },
 			{"minecraft:dirt", 1 },
 			{"minecraft:coarse_dirt", 1 },
@@ -108,7 +110,7 @@ namespace WorldForge
 			return commonColors[r.Next(commonColors.Length)];
 		}
 
-		public static bool IsBlockForMap(ProtoBlock b, HeightmapType type)
+		public static bool IsBlockForMap(BlockID b, HeightmapType type)
 		{
 			if(b == null || IsAir(b)) return false;
 			if(type == HeightmapType.AllBlocks)
@@ -137,7 +139,7 @@ namespace WorldForge
 			}
 		}
 
-		public static BitmapColor GetMapColor(ProtoBlock block, int shade)
+		public static BitmapColor GetMapColor(BlockID block, int shade)
 		{
 			if(block != null)
 			{
@@ -167,25 +169,25 @@ namespace WorldForge
 			}
 		}
 
-		public static bool IsAir(ProtoBlock b)
+		public static bool IsAir(BlockID b)
 		{
 			if(b == null) return false;
 			return b.CompareMultiple("minecraft:air", "minecraft:cave_air");
 		}
 
-		public static bool IsLiquid(ProtoBlock b)
+		public static bool IsLiquid(BlockID b)
 		{
 			if(b == null) return false;
 			return b.CompareMultiple(waterBlock, lavaBlock);
 		}
 
-		public static bool IsPlantSustaining(ProtoBlock b)
+		public static bool IsPlantSustaining(BlockID b)
 		{
 			if(b == null) return false;
 			return b.CompareMultiple(plantSustainingBlocks);
 		}
 
-		public static bool IsTransparentBlock(ProtoBlock b)
+		public static bool IsTransparentBlock(BlockID b)
 		{
 			string id = b.ID;
 			if(id == null) return true;
