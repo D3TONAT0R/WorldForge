@@ -1,4 +1,4 @@
-sep=;;;;;;
+sep=;
 ID;Properties;Numeric ID;Pre-flattening ID;Added in Version;Fallback;Light Em/Oc
 air;;0;air;;;00
 stone;;1;stone;;;
