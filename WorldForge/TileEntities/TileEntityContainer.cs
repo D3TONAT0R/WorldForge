@@ -34,7 +34,7 @@ namespace WorldForge.TileEntities
 			this.maxSlotCount = maxSlotCount;
 		}
 
-		protected override string ResolveEntityID(GameVersion version)
+		protected override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{
@@ -42,6 +42,7 @@ namespace WorldForge.TileEntities
 			}
 			else
 			{
+				if(id == "chest") return "Chest";
 				if(id == "dispenser") return "Trap";
 				return id;
 			}

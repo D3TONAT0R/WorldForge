@@ -38,8 +38,10 @@ namespace WorldForge.TileEntities
 				var itemsList = new NBTList(NBTTag.TAG_Compound);
 				foreach(var item in items)
 				{
-					var itemNBT = item.Value.ToNBT(item.Key, version);
-					itemsList.Add(itemNBT);
+					if(item.Value.ToNBT(item.Key, version, out var itemNBT))
+					{
+						itemsList.Add(itemNBT);
+					}
 				}
 				nbt.Add("Items", itemsList);
 			}

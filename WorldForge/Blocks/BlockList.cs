@@ -593,14 +593,12 @@ namespace WorldForge
 
 		public static Dictionary<string, BlockID> allBlocks;
 
-		public static Dictionary<BlockID, NumericID> numerics;
 		public static Dictionary<NumericID, BlockID> blockIdByNumerics;
 		public static Dictionary<BlockID, string> preFlatteningIDs;
 
 		public static void Initialize(string blockData)
 		{
 			allBlocks = new Dictionary<string, BlockID>();
-			numerics = new Dictionary<BlockID, NumericID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();
 			var lines = blockData.Replace("\r", "").Split('\n');
@@ -621,7 +619,7 @@ namespace WorldForge
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
 					GameVersion version = split[4].Length > 1 ? GameVersion.Parse(split[4]) : GameVersion.FirstVersion;
-					var newBlocks = BlockID.RegisterNewVanillaBlock(id, version);
+					var newBlocks = BlockID.RegisterNewVanillaBlock(id, version, null, numeric);
 					foreach(var newBlock in newBlocks)
 					{
 						if(split[5].Length > 1)
@@ -630,7 +628,6 @@ namespace WorldForge
 						}
 						if(numeric.HasValue)
 						{
-							numerics.Add(newBlock, numeric.Value);
 							if(!blockIdByNumerics.ContainsKey(numeric.Value))
 							{
 								blockIdByNumerics.Add(numeric.Value, newBlock);

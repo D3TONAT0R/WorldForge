@@ -15,20 +15,20 @@ namespace WorldForge
 		/// <summary>
 		/// Registers a new vanilla block type.
 		/// </summary>
-		public static BlockID[] RegisterNewVanillaBlock(string shortID, GameVersion versionAdded, BlockID substitute = null)
+		public static BlockID[] RegisterNewVanillaBlock(string shortID, GameVersion versionAdded, BlockID substitute = null, NumericID? numID = null)
 		{
-			return RegisterNewBlock(null, shortID, versionAdded, substitute);
+			return RegisterNewBlock(null, shortID, versionAdded, substitute, numID);
 		}
 
 		/// <summary>
 		/// Registers a new modded block type (does not check for game versions).
 		/// </summary>
-		public static BlockID[] RegisterNewModBlock(string modNamespace, string shortID)
+		public static BlockID[] RegisterNewModBlock(string modNamespace, string shortID, NumericID? numID = null)
 		{
-			return RegisterNewBlock(modNamespace, shortID, null, null);
+			return RegisterNewBlock(modNamespace, shortID, null, null, numID);
 		}
 
-		static BlockID[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, BlockID substitute)
+		static BlockID[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, BlockID substitute, NumericID? numericId)
 		{
 			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
 			if(shortID.Contains("*"))
@@ -39,7 +39,7 @@ namespace WorldForge
 				{
 					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
 					//TODO: how to substitute color block with another color block?
-					var b = new BlockID(modNamespace, colorBlockID, versionAdded.Value, substitute);
+					var b = new BlockID(modNamespace, colorBlockID, versionAdded.Value, substitute, numericId);
 					BlockList.allBlocks.Add(b.ID, b);
 					blocks[i] = b;
 				}
@@ -47,13 +47,13 @@ namespace WorldForge
 			}
 			else
 			{
-				var b = new BlockID(modNamespace, shortID, versionAdded.Value, substitute);
+				var b = new BlockID(modNamespace, shortID, versionAdded.Value, substitute, numericId);
 				BlockList.allBlocks.Add(b.ID, b);
 				return new BlockID[] { b };
 			}
 		}
 
-		public BlockID(string ns, string id, GameVersion v, BlockID sub) : base(ns, id, v, sub)
+		public BlockID(string ns, string id, GameVersion v, BlockID sub, NumericID? num) : base(ns, id, v, sub, num)
 		{
 
 		}

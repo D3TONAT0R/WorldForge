@@ -15,7 +15,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveEntityID(GameVersion version)
+		protected override string ResolveTileEntityID(GameVersion version)
 		{
 			return version >= GameVersion.Release_1(11) ? id : "EnderChest";
 		}

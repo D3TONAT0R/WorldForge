@@ -46,7 +46,7 @@ namespace WorldForge
 
 		public bool HasTheEnd => TheEnd != null;
 
-		public static World CreateNew(GameVersion version, string worldName, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
+		public static World CreateNew(GameVersion version, string worldName)
 		{
 			var world = new World(version, LevelData.CreateNew());
 			world.LevelData.worldName = worldName;

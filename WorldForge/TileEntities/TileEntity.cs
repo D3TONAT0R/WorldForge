@@ -183,7 +183,7 @@ namespace WorldForge.TileEntities
 		{
 			NBTCompound nbt = new NBTCompound
 			{
-				{ "id", ResolveEntityID(version) },
+				{ "id", ResolveTileEntityID(version) },
 				{ "x", blockPos.x },
 				{ "y", blockPos.y },
 				{ "z", blockPos.z }
@@ -199,7 +199,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected virtual string ResolveEntityID(GameVersion version)
+		protected virtual string ResolveTileEntityID(GameVersion version)
 		{
 			return id;
 		}

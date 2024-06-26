@@ -30,13 +30,13 @@ namespace WorldForge.TileEntities
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			if(!recordItem.IsNull)
+			if(!recordItem.IsNull && recordItem.ToNBT(null, version, out var itemNbt))
 			{
-				nbt.Add("RecordItem", recordItem.ToNBT(null, version));
+				nbt.Add("RecordItem", itemNbt);
 			}
 		}
 
-		protected override string ResolveEntityID(GameVersion version)
+		protected override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

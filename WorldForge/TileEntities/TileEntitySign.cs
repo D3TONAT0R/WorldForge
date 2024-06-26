@@ -164,5 +164,17 @@ namespace WorldForge.TileEntities
 				nbt.Add("back_text", backNBT);
 			}
 		}
+
+		protected override string ResolveTileEntityID(GameVersion version)
+		{
+			if(version >= GameVersion.Release_1(11))
+			{
+				return id;
+			}
+			else
+			{
+				return "Sign";
+			}
+		}
 	}
 }

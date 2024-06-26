@@ -26,6 +26,7 @@ namespace WorldForge
 
 		public static readonly GameVersion FirstMCRVersion = Beta_1(3);
 		public static readonly GameVersion FirstAnvilVersion = Release_1(2, 1);
+		public static readonly GameVersion FirstFlatteningVersion = Release_1(1, 13);
 
 		public static readonly Dictionary<GameVersion, int> dataVersionAssociations = new Dictionary<GameVersion, int>()
 		{

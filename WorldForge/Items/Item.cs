@@ -41,10 +41,43 @@ namespace WorldForge.Items
 			nbt.TryGet<NBTCompound>("tag", out metadata);
 		}
 
-		public void WriteToNBT(NBTCompound nbt, GameVersion version)
+		public bool WriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			//TODO
-			NBTConverter.WriteToNBT(this, nbt, version);
+			NBTCompound dataToWrite = metadata;
+			var resolvedId = id;
+			ItemID.ResolveItemID(version, ref id);
+			if(id == null) return false;
+
+			if(version >= GameVersion.FirstFlatteningVersion)
+			{
+				nbt.Add("id", resolvedId.ID);
+				if(metadata != null) nbt.Add("tag", metadata);
+			}
+			else
+			{
+				var num = resolvedId.numericID.Value;
+				nbt.Add("id", num.id);
+				if(dataToWrite != null)
+				{
+					if(dataToWrite.Contains("Damage"))
+					{
+						dataToWrite = dataToWrite.Clone();
+						object damage = dataToWrite.Get("Damage");
+						nbt.Add("Damage", Convert.ToInt16(damage));
+						dataToWrite.Remove("Damage");
+					}
+					else
+					{
+						nbt.Add("Damage", num.damage);
+					}
+				}
+				else
+				{
+					nbt.Add("Damage", num.damage);
+				}
+				if(metadata != null) nbt.Add("tag", metadata);
+			}
+			return true;
 		}
 	}
 }

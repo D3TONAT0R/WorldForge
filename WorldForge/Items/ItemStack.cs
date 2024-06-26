@@ -38,21 +38,36 @@ namespace WorldForge.Items
 			count = nbt.Get<sbyte>("Count");
 		}
 
-		public NBTCompound ToNBT(sbyte? slotIndex, GameVersion version)
+		public bool ToNBT(sbyte? slotIndex, GameVersion version, out NBTCompound nbt)
 		{
-			NBTCompound nbt = new NBTCompound();
+			nbt = new NBTCompound();
+			//This returns false if the item was resolved to air because of an older version
+			bool exists = item.WriteToNBT(nbt, version);
+			if(!exists)
+			{
+				nbt = null;
+				return false;
+			}
+
 			if (slotIndex.HasValue)
 			{
 				nbt.Add("Slot", slotIndex.Value);
 			}
 			nbt.Add("Count", count);
-			item.WriteToNBT(nbt, version);
-			return nbt;
+
+			return true;
 		}
 
 		public object ToNBT(GameVersion version)
 		{
-			return ToNBT(null, version);
+			if(ToNBT(null, version, out var nbt))
+			{
+				return nbt;
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
 }

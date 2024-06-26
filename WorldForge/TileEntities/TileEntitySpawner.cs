@@ -19,7 +19,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveEntityID(GameVersion version)
+		protected override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

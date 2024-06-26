@@ -271,5 +271,10 @@ namespace WorldForge.NBT
 		{
 			return contents.GetEnumerator();
 		}
+
+		public NBTCompound Clone()
+		{
+			return new NBTCompound(contents);
+		}
 	}
 }

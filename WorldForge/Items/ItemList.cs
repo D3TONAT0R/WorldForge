@@ -26,7 +26,7 @@ namespace WorldForge.Items
 				var version = !string.IsNullOrEmpty(row[3]) ? GameVersion.Parse(row[3]) : GameVersion.FirstVersion;
 				ItemID fallback = !string.IsNullOrEmpty(row[4]) ? Find(row[4], true) : null;
 
-				var item = new ItemID(customNamespace, itemId, version, fallback);
+				var item = new ItemID(customNamespace, itemId, version, fallback, numeric);
 				allItems.Add(item.ID, item);
 				if(numeric.HasValue)
 				{

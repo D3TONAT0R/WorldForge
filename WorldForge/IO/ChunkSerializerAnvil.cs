@@ -139,8 +139,10 @@ namespace WorldForge.IO
 					for(int x = 0; x < 16; x++)
 					{
 						int i = GetIndex(x, y, z);
-						if(BlockList.numerics.TryGetValue(c.GetBlockAt(x, y, z).block, out var numID))
+						var block = c.GetBlockAt(x, y, z).block;
+						if(block.numericID.HasValue)
 						{
+							var numID = block.numericID.Value;
 							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
 							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
 							ids[i] = (byte)numID.id;
@@ -255,7 +257,8 @@ namespace WorldForge.IO
 			foreach(var t in c.PostProcessTicks)
 			{
 				NBTCompound tick = new NBTCompound();
-				tick.Add("i", BlockList.numerics[c.GetBlockAt(t).block]);
+				var numID = c.GetBlockAt(t).block.numericID;
+				tick.Add("i", numID.HasValue ? (byte)numID.Value.id : 0);
 				tick.Add("p", 0);
 				tick.Add("t", 0);
 				tick.Add("x", t.x);

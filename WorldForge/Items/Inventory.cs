@@ -86,7 +86,10 @@ namespace WorldForge.Items
 			indices.Sort();
 			foreach (var index in indices)
 			{
-				list.Add(items[index].ToNBT(index, version));
+				if(items[index].ToNBT(index, version, out var nbt))
+				{
+					list.Add(nbt);
+				}
 			}
 			return list;
 		}

@@ -25,9 +25,9 @@ namespace WorldForge.TileEntities
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			if(book != null)
+			if(book != null && book.ToNBT(null, version, out var bookNBT))
 			{
-				nbt.Add("Book", book.ToNBT(null, version));
+				nbt.Add("Book", bookNBT);
 				nbt.Add("Page", page);
 			}
 		}
