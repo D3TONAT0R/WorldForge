@@ -594,14 +594,14 @@ namespace WorldForge
 		public static Dictionary<string, BlockID> allBlocks;
 
 		public static Dictionary<BlockID, NumericID> numerics;
-		public static Dictionary<ushort, BlockID> protoByNumerics;
+		public static Dictionary<NumericID, BlockID> blockIdByNumerics;
 		public static Dictionary<BlockID, string> preFlatteningIDs;
 
 		public static void Initialize(string blockData)
 		{
 			allBlocks = new Dictionary<string, BlockID>();
 			numerics = new Dictionary<BlockID, NumericID>();
-			protoByNumerics = new Dictionary<ushort, BlockID>();
+			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();
 			var lines = blockData.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
@@ -631,10 +631,9 @@ namespace WorldForge
 						if(numeric.HasValue)
 						{
 							numerics.Add(newBlock, numeric.Value);
-							var hash = numeric.Value.Hash;
-							if(!protoByNumerics.ContainsKey(hash))
+							if(!blockIdByNumerics.ContainsKey(numeric.Value))
 							{
-								protoByNumerics.Add(hash, newBlock);
+								blockIdByNumerics.Add(numeric.Value, newBlock);
 							}
 						}
 						if(preFlattening.Length > 1) preFlatteningIDs.Add(newBlock, "minecraft:" + preFlattening);
@@ -694,14 +693,19 @@ namespace WorldForge
 		}
 
 		//TODO: return proper BlockState by metadata
-		public static BlockID FindByNumeric(NumericID numeric)
+		public static BlockID FindByNumeric(NumericID numeric, bool throwErrorIfNotFound = false)
 		{
-			if(protoByNumerics.TryGetValue(numeric.HashNoMeta, out var block))
+			if(blockIdByNumerics.TryGetValue(numeric, out var block))
+			{
+				return block;
+			}
+			else if(blockIdByNumerics.TryGetValue(numeric.WithoutDamage, out block))
 			{
 				return block;
 			}
 			else
 			{
+				if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find block definition with numeric ID '{numeric}'.");
 				return null;
 			}
 		}

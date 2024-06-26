@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using WorldForge.Biomes;
 using WorldForge.Chunks;
@@ -139,8 +141,10 @@ namespace WorldForge.IO
 						int i = GetIndex(x, y, z);
 						if(BlockList.numerics.TryGetValue(c.GetBlockAt(x, y, z).block, out var numID))
 						{
-							ids[i] = numID.id;
-							metaNibbles[i] = numID.meta;
+							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
+							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
+							ids[i] = (byte)numID.id;
+							metaNibbles[i] = (byte)numID.damage;
 						}
 					}
 				}

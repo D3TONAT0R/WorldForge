@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using WorldForge.Items;
 
 namespace WorldForge
 {
@@ -13,12 +14,20 @@ namespace WorldForge
 		public static void Initialize(string resourcePath, IBitmapFactory bitmapFactory)
 		{
 			if(resourcePath == null) resourcePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources");
+
 			string blockListPath = Path.Combine(resourcePath, "blocks.csv");
 			if(!File.Exists(blockListPath))
 			{
 				throw new FileNotFoundException("Could not find blocks.csv at " + blockListPath);
 			}
 			BlockList.Initialize(File.ReadAllText(blockListPath));
+
+			string itemListPath = Path.Combine(resourcePath, "items.csv");
+			if(!File.Exists(itemListPath))
+			{
+				throw new FileNotFoundException("Could not find items.csv at " + itemListPath);
+			}
+			ItemList.Initialize(File.ReadAllText(itemListPath));
 
 			if(bitmapFactory != null)
 			{

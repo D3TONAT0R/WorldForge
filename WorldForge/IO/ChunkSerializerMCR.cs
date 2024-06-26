@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using WorldForge.Chunks;
 using WorldForge.Entities;
 using WorldForge.NBT;
@@ -76,8 +77,10 @@ namespace WorldForge.IO
 						if(blockState != null && BlockList.numerics.TryGetValue(blockState.block, out var numID))
 						{
 							var i = GetArrayIndex(x, y, z);
-							blocks[i] = numID.id;
-							metaNibbles[i] = numID.meta;
+							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
+							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
+							blocks[i] = (byte)numID.id;
+							metaNibbles[i] = (byte)numID.damage;
 						}
 					}
 				}

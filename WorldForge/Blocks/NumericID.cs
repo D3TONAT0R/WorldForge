@@ -2,13 +2,15 @@
 {
 	public struct NumericID
 	{
-		public byte id;
-		public byte meta;
+		public short id;
+		public short damage;
 
-		public NumericID(byte id, byte meta = 0)
+		public NumericID WithoutDamage => new NumericID(id, 0);
+
+		public NumericID(short id, short damage = 0)
 		{
 			this.id = id;
-			this.meta = meta;
+			this.damage = damage;
 		}
 
 		public static NumericID? TryParse(string s)
@@ -17,10 +19,10 @@
 			{
 				if(string.IsNullOrWhiteSpace(s)) return null;
 				var split = s.Split(':');
-				byte id = byte.Parse(split[0]);
-				byte meta = 0;
-				if(split.Length > 1) byte.TryParse(split[1], out meta);
-				return new NumericID(id, meta);
+				short id = short.Parse(split[0]);
+				short dmg = 0;
+				if(split.Length > 1) short.TryParse(split[1], out dmg);
+				return new NumericID(id, dmg);
 			}
 			catch
 			{
@@ -28,13 +30,13 @@
 			}
 		}
 
-		public ushort Hash => (ushort)((id << 8) + meta);
+		public uint Hash => (uint)((id << 16) + damage);
 
-		public ushort HashNoMeta => (ushort)(id << 8);
+		public uint HashNoDamage => (uint)(id << 16);
 
 		public override string ToString()
 		{
-			return id + ":" + meta;
+			return id + ":" + damage;
 		}
 	}
 }

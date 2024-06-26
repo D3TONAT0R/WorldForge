@@ -98,7 +98,7 @@ glowstone_dust;348;;a1.2.0;
 cod;349;fish;a1.2.0;
 salmon;349:1;fish;1.7.2;cod
 clownfish;349:2;fish;1.7.2;cod
-pufferfish;349_3;fish;1.7.2;cod
+pufferfish;349:3;fish;1.7.2;cod
 cooked_cod;350;cooked_fish;a1.2.0;
 cooked_salmon;350:1;cooked_fish;1.7.2;cooked_cod
 ink_sac;351;dye;b1.2;
@@ -257,7 +257,7 @@ sweet_berries;;;1.14;
 leather_horse_armor;;;1.14;iron_horse_armor
 globe_banner_pattern;;;1.14;paper
 honey_bottle;;;1.15;glass_bottle
-honeycomb;;;1.15;slimeball
+honeycomb;;;1.15;slime_ball
 netherite_ingot;;;1.16;diamond
 netherite_scrap;;;1.16;diamond
 netherite_helmet;;;1.16;diamond_helmet
@@ -289,7 +289,8 @@ tadpole_bucket;;;1.19;water_bucket
 mangrove_boat;;;1.19;dark_oak_boat
 oak_chest_boat;;;1.19;oak_boat
 spruce_chest_boat;;;1.19;spruce_boat
-birch_chest_boat;;;1.19;birch_chest_boat
+birch_chest_boat;;;1.19;birch_boat
+jungle_chest_boat;;;1.19;jungle_boat
 acacia_chest_boat;;;1.19;acacia_boat
 dark_oak_chest_boat;;;1.19;dark_oak_boat
 mangrove_chest_boat;;;1.19;dark_oak_boat

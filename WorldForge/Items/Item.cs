@@ -1,21 +1,22 @@
-﻿using WorldForge.NBT;
+﻿using System;
+using WorldForge.NBT;
 
 namespace WorldForge.Items
 {
 	public class Item
 	{
 		[NBT]
-		public string id;
+		public ItemID id;
 		[NBT]
-		public NBTCompound tag;
+		public NBTCompound metadata;
 
-		public Item(string id, NBTCompound tag)
+		public Item(ItemID id, NBTCompound metadata = null)
 		{
-			if (!id.Contains(":")) id = "minecraft:" + id;
 			this.id = id;
+			this.metadata = metadata;
 		}
 
-		public Item(string id) : this(id, null)
+		public Item(string id, NBTCompound metadata = null) : this(ItemList.Find(id), null)
 		{
 
 		}
@@ -23,12 +24,21 @@ namespace WorldForge.Items
 		public Item(NBTCompound nbt)
 		{
 			var itemId = nbt.Get("id");
-			if(itemId is string s) id = s;
-			else if(itemId is int i)
+			if(itemId is string s)
 			{
-				id = "minecraft:air"; //TODO: Get item by id
+				id = ItemID.Get(s);
 			}
-			nbt.TryGet<NBTCompound>("tag", out tag);
+			else if(itemId is short i)
+			{
+				nbt.TryGet("Damage", out short damage);
+				var num = new NumericID(i, damage);
+				id = ItemList.FindByNumeric(num);
+			}
+			else
+			{
+				throw new NotSupportedException();
+			}
+			nbt.TryGet<NBTCompound>("tag", out metadata);
 		}
 
 		public void WriteToNBT(NBTCompound nbt, GameVersion version)

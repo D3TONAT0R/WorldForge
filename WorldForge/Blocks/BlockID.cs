@@ -1,14 +1,10 @@
-﻿namespace WorldForge
+﻿using WorldForge.Items;
+
+namespace WorldForge
 {
-	public class BlockID
+	public class BlockID : ItemID
 	{
-		public string ID => (customNamespace ?? "minecraft") + ":" + shortID;
-
-		public readonly string customNamespace = null;
-		public readonly string shortID;
-
 		public readonly GameVersion addedInVersion;
-		public BlockID substitute;
 
 		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
 		public bool IsAir => ID == "minecraft:air";
@@ -57,12 +53,9 @@
 			}
 		}
 
-		private BlockID(string ns, string id, GameVersion v, BlockID sub)
+		public BlockID(string ns, string id, GameVersion v, BlockID sub) : base(ns, id, v, sub)
 		{
-			customNamespace = ns;
-			shortID = id;
-			addedInVersion = v;
-			substitute = sub;
+
 		}
 
 		/// <summary>
@@ -78,7 +71,7 @@
 			{
 				if(substitute != null)
 				{
-					return substitute.FindAppropriateBlock(gameVersion);
+					return ((BlockID)substitute).FindAppropriateBlock(gameVersion);
 				}
 				else
 				{

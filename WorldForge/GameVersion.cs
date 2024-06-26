@@ -121,11 +121,32 @@ namespace WorldForge
 			Stage stage;
 			if(char.IsLetter(s[0]))
 			{
-				if(s[0] == 'a') stage = Stage.Alpha;
-				else if(s[0] == 'b') stage = Stage.Beta;
-				else if(s[0] == 'r') stage = Stage.Release;
+				if(s.StartsWith("inf"))
+				{
+					stage = Stage.Infdev;
+					s = s.Substring(3);
+				}
+				else if(s.StartsWith("in"))
+				{
+					stage = Stage.Indev;
+					s = s.Substring(2);
+				}
+				else if(s[0] == 'a')
+				{
+					stage = Stage.Alpha;
+					s = s.Substring(1);
+				}
+				else if(s[0] == 'b')
+				{
+					stage = Stage.Beta;
+					s = s.Substring(1);
+				}
+				else if(s[0] == 'r')
+				{
+					s = s.Substring(1);
+					stage = Stage.Release;
+				}
 				else throw new System.FormatException("Unrecognized stage character: " + s[0]);
-				s = s.Substring(1);
 			}
 			else
 			{
@@ -164,6 +185,8 @@ namespace WorldForge
 			StringBuilder sb = new StringBuilder();
 			if(stage == Stage.Alpha) sb.Append("a");
 			else if(stage == Stage.Beta) sb.Append("b");
+			else if(stage == Stage.Indev) sb.Append("in");
+			else if(stage == Stage.Infdev) sb.Append("inf");
 			sb.Append($"{major}.{minor}");
 			if(patch != 0) sb.Append($".{patch}");
 			return sb.ToString();
