@@ -42,6 +42,24 @@ namespace WorldForge.Regions
 
 		}
 
+		/// <summary>
+		/// Loads all chunks that were previously unloaded.
+		/// </summary>
+		public void LoadAllChunks()
+		{
+			for(int x = 0; x < 32; x++)
+			{
+				for(int z = 0; z < 32; z++)
+				{
+					var c = chunks[x, z];
+					if(c != null && !c.IsLoaded)
+					{
+						c.Load();
+					}
+				}
+			}
+		}
+
 		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
 		public bool IsAir(BlockCoord pos)
 		{

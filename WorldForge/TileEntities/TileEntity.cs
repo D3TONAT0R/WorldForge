@@ -28,27 +28,20 @@ namespace WorldForge.TileEntities
 			string id = nbt.Get<string>("id");
 			switch(id)
 			{
-				//Non-matching tile entities (block names differ from tile entity ID)
-				case "shulker_box":
-					return new TileEntityContainer(nbt, 27, out blockPos);
-				case "banner":
-					return new TileEntityBanner(nbt, out blockPos);
-				case "command_block":
-					return new TileEntityCommandBlock(nbt, out blockPos);
-				case "skull":
-					return new TileEntitySkull(nbt, out blockPos);
-
-				//Matching tile entities
 				case "chest":
 				case "trapped_chest":
 				case "barrel":
+				case "shulker_box":
+				case "Chest":
 					return new TileEntityContainer(nbt, 27, out blockPos);
 				case "dispenser":
 				case "dropper":
+				case "Trap":
 					return new TileEntityContainer(nbt, 9, out blockPos);
 				case "hopper":
 					return new TileEntityContainer(nbt, 5, out blockPos);
 				case "sign":
+				case "Sign":
 					return new TileEntitySign(nbt, version, out blockPos);
 				case "beacon":
 					return new TileEntityBeacon(nbt, out blockPos);
@@ -58,6 +51,7 @@ namespace WorldForge.TileEntities
 				case "furnace":
 				case "blast_furnace":
 				case "smoker":
+				case "Furnace":
 					return new TileEntityFurnace(nbt, out blockPos);
 				case "campfire":
 				case "soul_campfire":
@@ -71,18 +65,48 @@ namespace WorldForge.TileEntities
 				case "jigsaw":
 					return new TileEntityJigsaw(nbt, out blockPos);
 				case "jukebox":
+				case "RecordPlayer":
 					return new TileEntityJukebox(nbt, out blockPos);
 				case "lectern":
 					return new TileEntityLectern(nbt, out blockPos);
 				case "mob_spawner":
+				case "MobSpawner":
 					return new TileEntitySpawner(nbt, out blockPos);
 				case "moving_piston":
 					//TODO: check if this is the correct block id for this.
 					return new TileEntityPiston(nbt, out blockPos);
+				case "banner":
+					return new TileEntityBanner(nbt, out blockPos);
+				case "command_block":
+				case "Control":
+					return new TileEntityCommandBlock(nbt, out blockPos);
+				case "skull":
+					return new TileEntitySkull(nbt, out blockPos);
 				case "structure_block":
 					return new TileEntityStructureBlock(nbt, out blockPos);
 				case "chiseled_bookshelf":
 					return new TileEntityChiseledBookshelf(nbt, out blockPos);
+				case "decorated_pot":
+					return new TileEntityDecoratedPot(nbt, out blockPos);
+				case "trial_spawner":
+					return new TileEntityTrialSpawner(nbt, out blockPos);
+				case "vault":
+					return new TileEntityVault(nbt, out blockPos);
+
+				case "end_portal":
+				case "EndPortal":
+					return new TileEntityEndPortal(nbt, out blockPos);
+				case "ender_chest":
+				case "EnderChest":
+					return new TileEntityEnderChest(nbt, out blockPos);
+				case "enchanting_table":
+				case "EnchantTable":
+					return new TileEntityEnchantingTable(nbt, out blockPos);
+				case "bell":
+					return new TileEntityBell(nbt, out blockPos);
+				case "bed":
+				case "Bed":
+					return new TileEntityBed(nbt, out blockPos);
 
 				default:
 					return new TileEntityGeneric(nbt, out blockPos);

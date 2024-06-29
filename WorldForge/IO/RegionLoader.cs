@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -96,13 +97,17 @@ namespace WorldForge
 				rd = new RegionData(stream, filepath);
 			}
 			Region region = new Region(rd.regionX, rd.regionZ, null);
-			Parallel.For(0, 1024, i =>
+			//TODO: temporary max parallelisim of 1 for debugging
+			var options = new ParallelOptions() { MaxDegreeOfParallelism = 1 };
+			Parallel.For(0, 1024, options, i =>
 			{
 				if(rd.compressedChunks[i] != null)
 				{
 					using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[i].compressedChunk))
 					{
 						var coord = new ChunkCoord(i % 32, i / 32);
+						int x = i % 32;
+						int z = i / 32;
 						region.chunks[i % 32, i / 32] = ChunkData.CreateFromNBT(region, coord, new NBTFile(chunkStream), worldSaveVersion, loadChunks);
 					}
 				}

@@ -117,7 +117,7 @@ namespace WorldForge
 			foreach(var f in Directory.GetFiles(regionRootDir, "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
-				if(Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)"))
+				if(Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)$"))
 				{
 					try
 					{

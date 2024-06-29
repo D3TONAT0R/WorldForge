@@ -8,6 +8,20 @@ namespace WorldForge
 	public class BlockState : INBTConverter
 	{
 
+		//Facing metadata:
+
+		//Furnace
+		//north -> 5
+		//south -> 4
+		//west -> 3
+		//east -> 2
+
+		//Torch
+		//north -> 1
+		//south -> 2
+		//west -> 3
+		//east -> 4
+
 		public static BlockState Air
 		{
 			get
