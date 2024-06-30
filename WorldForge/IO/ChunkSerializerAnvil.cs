@@ -141,9 +141,9 @@ namespace WorldForge.IO
 						int i = GetIndex(x, y, z);
 						var blockState = c.GetBlockAt(x, y, z);
 						BlockState.ResolveBlockState(TargetVersion, ref blockState);
-						if(blockState != null && blockState.block.numericID.HasValue)
+						if(blockState != null)
 						{
-							var numID = blockState.block.numericID.Value;
+							var numID = blockState.ToNumericID(TargetVersion) ?? NumericID.Air;
 							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
 							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
 							ids[i] = (byte)numID.id;

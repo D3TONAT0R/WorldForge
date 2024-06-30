@@ -193,7 +193,7 @@ namespace WorldForge
 			}
 		}
 
-		public NumericID ToNumericID(GameVersion version)
+		public NumericID? ToNumericID(GameVersion version)
 		{
 			if(block == null) return new NumericID(0, 0);
 			if(block.customNamespace == null)
@@ -219,7 +219,7 @@ namespace WorldForge
 						return new NumericID(54, meta);
 				}
 			}
-            return block.numericID ?? NumericID.Air;
+            return block.numericID;
         }
 
 		public static BlockState FromNumericID(NumericID numericID)
