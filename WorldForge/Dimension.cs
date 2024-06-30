@@ -102,7 +102,7 @@ namespace WorldForge
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
-					var chunk = ChunkData.CreateFromNBT(region, chunkPos, nbt);
+					var chunk = ChunkData.CreateFromNBT(region, new ChunkCoord(chunkPos.x.Mod(32), chunkPos.z.Mod(32)), nbt);
 					cs.ReadChunkNBT(chunk, version);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
@@ -117,7 +117,7 @@ namespace WorldForge
 			foreach(var f in Directory.GetFiles(regionRootDir, "*.mc*"))
 			{
 				var filename = Path.GetFileName(f);
-				if(Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)$"))
+				if(Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
 				{
 					try
 					{

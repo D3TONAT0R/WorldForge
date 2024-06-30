@@ -12,12 +12,25 @@ namespace WorldForge.Chunks
 {
     public class ChunkData
 	{
-		public ChunkCoord WorldSpaceCoord { get; set; }
+		public ChunkCoord WorldSpaceCoord
+		{
+			get
+			{
+				if(ParentRegion != null)
+				{
+					return new ChunkCoord(ParentRegion.regionPos.x * 32 + RegionSpaceCoord.x, ParentRegion.regionPos.z * 32 + RegionSpaceCoord.z);
+				}
+				else
+				{
+					return RegionSpaceCoord;
+				}
+			}
+		}
 		public Region ParentRegion { get; set; }
 		public Dimension ParentDimension => ParentRegion?.ParentDimension;
 		public World ParentWorld => ParentRegion?.ParentDimension?.ParentWorld;
 
-		public ChunkCoord RegionSpaceCoord => new ChunkCoord(WorldSpaceCoord.x.Mod(32), WorldSpaceCoord.z.Mod(32));
+		public ChunkCoord RegionSpaceCoord { get; set; }
 
 		public ChunkStatus Status { get; set; } = ChunkStatus.light;
 
@@ -40,16 +53,16 @@ namespace WorldForge.Chunks
 
 		private readonly object lockObj = new object();
 
-		public static ChunkData CreateNew(Region region, ChunkCoord pos)
+		public static ChunkData CreateNew(Region region, ChunkCoord regionSpacePos)
 		{
-			var c = new ChunkData(region, pos);
+			var c = new ChunkData(region, regionSpacePos);
 			c.InitializeNewChunk();
 			return c;
 		}
 
-		public static ChunkData CreateFromNBT(Region region, ChunkCoord chunkCoord, NBTFile nbt, GameVersion? chunkGameVersion = null, bool loadContent = false)
+		public static ChunkData CreateFromNBT(Region region, ChunkCoord regionSpacePos, NBTFile nbt, GameVersion? chunkGameVersion = null, bool loadContent = false)
 		{
-			var c = new ChunkData(region, chunkCoord)
+			var c = new ChunkData(region, regionSpacePos)
 			{
 				sourceNBT = nbt,
 				ChunkGameVersion = chunkGameVersion
@@ -58,10 +71,10 @@ namespace WorldForge.Chunks
 			return c;
 		}
 
-		private ChunkData(Region containingRegion, ChunkCoord pos)
+		private ChunkData(Region containingRegion, ChunkCoord localPos)
 		{
 			ParentRegion = containingRegion;
-			WorldSpaceCoord = pos;
+			RegionSpaceCoord = localPos;
 		}
 
 		public void InitializeNewChunk()

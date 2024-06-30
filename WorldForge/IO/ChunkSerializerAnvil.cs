@@ -60,10 +60,10 @@ namespace WorldForge.IO
 					for(int y = 0; y < 16; y++)
 					{
 						int i = GetIndex(x, y, z);
-						var block = BlockList.FindByNumeric(new NumericID(blocks[i], meta[i]));
+						var block = BlockState.FromNumericID(new NumericID(blocks[i], meta[i]));
 						if(block != null)
 						{
-							c.SetBlockAt((x, y + sectionY * 16, z), new BlockState(block));
+							c.SetBlockAt((x, y + sectionY * 16, z), block);
 						}
 					}
 				}

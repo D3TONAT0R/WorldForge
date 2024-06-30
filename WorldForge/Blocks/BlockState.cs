@@ -8,20 +8,6 @@ namespace WorldForge
 	public class BlockState : INBTConverter
 	{
 
-		//Facing metadata:
-
-		//Furnace
-		//north -> 5
-		//south -> 4
-		//west -> 3
-		//east -> 2
-
-		//Torch
-		//north -> 1
-		//south -> 2
-		//west -> 3
-		//east -> 4
-
 		public static BlockState Air
 		{
 			get
@@ -174,6 +160,173 @@ namespace WorldForge
 			var comp = (NBTCompound)nbtData;
 			block = BlockList.Find(comp.Get<string>("Name"));
 			comp.TryGet("Properties", out properties);
+		}
+
+		public NumericID ToNumericID(GameVersion version)
+		{
+			if(block == null) return new NumericID(0, 0);
+			if(block.customNamespace == null)
+			{
+				if(block.shortID.EndsWith("_stairs"))
+				{
+					return new NumericID(block.numericID.Value.id, GetFacingMetaStairs(this));
+				}
+				switch(block.shortID)
+				{
+					case "torch":
+					case "wall_torch":
+						return new NumericID(block.numericID.Value.id, GetFacingMetaWallTorch(this));
+					case "redstone_torch":
+					case "redstone_wall_torch":
+						short id = (short)(GetProperty("lit") == "true" ? 76 : 75);
+						return new NumericID(id, GetFacingMetaWallTorch(this));
+					case "furnace":
+						id = (short)(GetProperty("lit") == "true" ? 62 : 61);
+						return new NumericID(id, GetFacingMetaFurnace(this));
+					case "chest":
+						short meta = version >= GameVersion.Beta_1(8) ? GetFacingMetaFurnace(this) : (short)0;
+						return new NumericID(54, meta);
+				}
+			}
+            return block.numericID ?? NumericID.Air;
+        }
+
+		public static BlockState FromNumericID(NumericID numericID)
+		{
+
+			//Facing metadata:
+
+			//Furnace
+			//north -> 5	2
+			//south -> 4	3
+			//west -> 3		4
+			//east -> 2		5
+
+			//Torch
+			//north -> 1	4
+			//south -> 2	3
+			//west -> 3		2
+			//east -> 4		1
+
+			//Chest
+			//north -> 2
+			//east -> 5
+			//south -> 3
+			//west -> 4
+
+			//standing -> 5
+
+			var id = numericID.id;
+			var meta = numericID.damage;
+			BlockState state;
+			//Special cases
+			switch(id)
+			{
+				case 50: //Torch
+					return CreateTorchState("torch", meta);
+				case 75: //Unlit Redstone Torch
+				case 76: //Lit Redstone Torch
+					state = CreateTorchState("redstone_torch", meta);
+					state.SetProperty("lit", id == 76);
+					return state;
+				case 61: //Furnace
+				case 62: //Lit Furnace
+					state = new BlockState(BlockList.Find("furnace"));
+					state.SetProperty("lit", id == 62);
+					SetFacingPropertyFurnace(state, meta);
+					return state;
+				case 54: //Chest
+					state = new BlockState(BlockList.Find("chest"));
+					SetFacingPropertyFurnace(state, meta);
+					return state;
+				default:
+					return new BlockState(BlockList.FindByNumeric(numericID));
+			}
+		}
+
+		private static BlockState CreateTorchState(string name, int meta)
+		{
+			if(meta > 0 && meta <= 4)
+			{
+				//Wall torch
+				var state = new BlockState(BlockList.Find("wall_"+name));
+				SetFacingPropertyWallTorch(state, meta);
+				return state;
+			}
+			else
+			{
+				//standing torch
+				return new BlockState(BlockList.Find(name));
+			}
+		}
+
+		private static void SetFacingPropertyFurnace(BlockState state, int meta)
+		{
+			switch(meta)
+			{
+				case 2: state.SetProperty("facing", "north"); break;
+				case 3: state.SetProperty("facing", "south"); break;
+				case 4: state.SetProperty("facing", "west"); break;
+				case 5: state.SetProperty("facing", "east"); break;
+			}
+		}
+
+		private static byte GetFacingMetaFurnace(BlockState state)
+		{
+			switch(state.GetProperty("facing"))
+			{
+				case "north": return 2;
+				case "south": return 3;
+				case "west": return 4;
+				case "east": return 5;
+				default: return 0;
+			}
+		}
+
+		private static void SetFacingPropertyStairs(BlockState state, int meta)
+		{
+			switch(meta)
+			{
+				case 0: state.SetProperty("facing", "east"); break;
+				case 1: state.SetProperty("facing", "west"); break;
+				case 2: state.SetProperty("facing", "south"); break;
+				case 3: state.SetProperty("facing", "north"); break;
+			}
+		}
+
+		private static byte GetFacingMetaStairs(BlockState state)
+		{
+			switch(state.GetProperty("facing"))
+			{
+				case "east": return 0;
+				case "west": return 1;
+				case "south": return 2;
+				case "north": return 3;
+				default: return 0;
+			}
+		}
+
+		private static void SetFacingPropertyWallTorch(BlockState state, int meta)
+		{
+			switch(meta)
+			{
+				case 1: state.SetProperty("facing", "east"); break;
+				case 2: state.SetProperty("facing", "west"); break;
+				case 3: state.SetProperty("facing", "south"); break;
+				case 4: state.SetProperty("facing", "north"); break;
+			}
+		}
+
+		private static byte GetFacingMetaWallTorch(BlockState state)
+		{
+			switch(state.GetProperty("facing"))
+			{
+				case "east": return 1;
+				case "west": return 2;
+				case "south": return 3;
+				case "north": return 4;
+				default: return 0;
+			}
 		}
 	}
 }

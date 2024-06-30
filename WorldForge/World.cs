@@ -106,7 +106,7 @@ namespace WorldForge
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
-					var chunk = ChunkData.CreateFromNBT(region, chunkPos, nbt);
+					var chunk = ChunkData.CreateFromNBT(region, chunkPos.LocalRegionPos, nbt);
 					cs.ReadChunkNBT(chunk, version);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)

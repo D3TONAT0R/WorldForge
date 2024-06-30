@@ -2,6 +2,8 @@
 {
 	public struct NumericID
 	{
+		public static readonly NumericID Air = new NumericID(0);
+
 		public short id;
 		public short damage;
 
