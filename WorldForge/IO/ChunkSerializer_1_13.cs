@@ -34,9 +34,11 @@ namespace WorldForge.IO
 		public override void WriteSection(ChunkSection section, NBTCompound comp, sbyte sectionY)
 		{
 			NBTList paletteList = new NBTList(NBTTag.TAG_Compound);
-			foreach(var block in section.palette)
+			foreach(var b in section.palette)
 			{
-				paletteList.Add(block.ToNBT(TargetVersion));
+				var b1 = b;
+				BlockState.ResolveBlockState(TargetVersion, ref b1);
+				paletteList.Add(b1.ToNBT(TargetVersion));
 			}
 			comp.Add(PaletteKey, paletteList);
 

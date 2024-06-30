@@ -38,7 +38,6 @@ namespace WorldForge
 				for(int i = 0; i < Blocks.commonColors.Length; i++)
 				{
 					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
-					//TODO: how to substitute color block with another color block?
 					var b = new BlockID(modNamespace, colorBlockID, versionAdded.Value, substitute, numericId);
 					BlockList.allBlocks.Add(b.ID, b);
 					blocks[i] = b;

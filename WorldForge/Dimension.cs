@@ -317,6 +317,11 @@ namespace WorldForge
 			}
 		}
 
+		public bool HasRegion(int rx, int rz)
+		{
+			return regions.ContainsKey(new RegionLocation(rx, rz));
+		}
+
 		public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
 		{
 			//TODO

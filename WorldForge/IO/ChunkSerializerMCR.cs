@@ -74,6 +74,7 @@ namespace WorldForge.IO
 					for(int x = 0; x < 16; x++)
 					{
 						var blockState = c.GetBlockAt((x, y, z));
+						BlockState.ResolveBlockState(TargetVersion, ref blockState); //Resolve block state (substitute blocks if necessary)
 						if(blockState != null && blockState.block.numericID.HasValue)
 						{
 							var i = GetArrayIndex(x, y, z);

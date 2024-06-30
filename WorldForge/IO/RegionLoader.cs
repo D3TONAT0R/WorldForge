@@ -97,8 +97,7 @@ namespace WorldForge
 				rd = new RegionData(stream, filepath);
 			}
 			Region region = new Region(rd.regionX, rd.regionZ, null);
-			//TODO: temporary max parallelisim of 1 for debugging
-			var options = new ParallelOptions() { MaxDegreeOfParallelism = 1 };
+			var options = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount - 1 };
 			Parallel.For(0, 1024, options, i =>
 			{
 				if(rd.compressedChunks[i] != null)

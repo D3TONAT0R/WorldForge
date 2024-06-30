@@ -56,6 +56,12 @@ namespace WorldForge
 			paletteNBT.TryGet("Properties", out properties);
 		}
 
+		public BlockState(BlockState original)
+		{
+			block = original.block;
+			properties = original.properties?.Clone();
+		}
+
 		public bool HasProperty(string key)
 		{
 			if(properties == null) return false;
@@ -160,6 +166,31 @@ namespace WorldForge
 			var comp = (NBTCompound)nbtData;
 			block = BlockList.Find(comp.Get<string>("Name"));
 			comp.TryGet("Properties", out properties);
+		}
+
+		public static void ResolveBlockState(GameVersion version, ref BlockState state)
+		{
+			if(state == null) return;
+			if (state.block == null)
+			{
+				state = Air;
+			}
+			else
+			{
+				if(version < state.block.AddedInVersion)
+				{
+					if(state.block.substitute != null)
+					{
+						state = new BlockState(state);
+						state.block = (BlockID)state.block.substitute;
+						ResolveBlockState(version, ref state);
+					}
+					else
+					{
+						state = Air;
+					}
+				}
+			}
 		}
 
 		public NumericID ToNumericID(GameVersion version)

@@ -130,7 +130,9 @@ namespace WorldForge.IO
 			var blockPalette = blockStates.AddList("palette", NBTTag.TAG_Compound);
 			foreach(var b in section.palette)
 			{
-				blockPalette.Add(b.ToNBT(TargetVersion));
+				var b1 = b;
+				BlockState.ResolveBlockState(TargetVersion, ref b1);
+				blockPalette.Add(b1.ToNBT(TargetVersion));
 			}
 			var blockData = GetBlockIndexArray(section);
 			int bitsPerBlock = Math.Max(4, BitUtils.GetMaxBitCount((uint)blockPalette.Length - 1));

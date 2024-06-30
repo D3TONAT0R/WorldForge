@@ -453,8 +453,8 @@ namespace WorldForge
 			public bool needsStateScanning = true;
 			[NBT("PreviouslyKilled")]
 			public bool previouslyKilled = false;
-			[NBT("Gateways")]
-			public int[] gateways = new int[] { 18, 8, 10, 13, 14, 5, 15, 1, 0, 7, 11, 17, 3, 19, 6, 2, 9, 12, 4, 16 };
+			//[NBT("Gateways")]
+			public List<int> gateways = new List<int> { 18, 8, 10, 13, 14, 5, 15, 1, 0, 7, 11, 17, 3, 19, 6, 2, 9, 12, 4, 16 };
 
 			public DragonFight()
 			{
@@ -471,12 +471,43 @@ namespace WorldForge
 
 			public void FromNBT(object nbtData)
 			{
-				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+				var nbt = (NBTCompound)nbtData;
+				NBTConverter.LoadFromNBT(nbt, this);
+				if(nbt.Contains("Gateways"))
+				{
+					var gw = nbt.Get("Gateways");
+					if(gw is NBTList gwList)
+					{
+						gateways = gwList.ToList<int>();
+					}
+					else if(gw is int[] gwArray)
+					{
+						gateways = new List<int>(gwArray);
+					}
+					else
+					{
+						throw new ArgumentException("Invalid gateway data type: " + gw.GetType().Name);
+					}
+				}
 			}
 
 			public object ToNBT(GameVersion version)
 			{
-				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+				var nbt = NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+				if(version >= GameVersion.Release_1(20))
+				{
+					nbt.Add("Gateways", gateways.ToArray());
+				}
+				else
+				{
+					var gatewayList = new NBTList(NBTTag.TAG_Int);
+					foreach(var g in gateways)
+					{
+						gatewayList.Add(g);
+					}
+					nbt.Add("Gateways", new NBTList(NBTTag.TAG_Int, gatewayList));
+				}
+				return nbt;
 			}
 		}
 
