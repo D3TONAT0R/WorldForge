@@ -512,7 +512,7 @@ namespace WorldForge
 		}
 
 		[NBT("DataVersion")]
-		public int dataVersion;
+		public int dataVersion = -1;
 
 		//TODO: find out when this was added
 		/// <summary>
@@ -606,14 +606,22 @@ namespace WorldForge
 			return new LevelData();
 		}
 
-		public static LevelData Load(NBTFile levelDat)
+		public static LevelData Load(NBTFile levelDat, GameVersion? versionHint, out GameVersion? gameVersion)
 		{
 			var levelNBT = levelDat.contents.Get<NBTCompound>("Data");
 			var d = new LevelData();
 			NBTConverter.LoadFromNBT(levelNBT, d);
+			if(d.dataVersion > 0)
+			{
+				gameVersion = GameVersion.FromDataVersion(d.dataVersion) ?? versionHint ?? GameVersion.FirstVersion;
+			}
+			else
+			{
+				gameVersion = versionHint;
+			}
 			if(levelNBT.TryGet<NBTCompound>("Player", out var playerComp))
 			{
-				d.player = new Player(playerComp);
+				d.player = new Player(playerComp, gameVersion ?? versionHint ?? GameVersion.FirstVersion);
 			}
 			d.spawnpoint = new Spawnpoint(levelNBT);
 			d.gameTypeAndDifficulty = new GameTypeAndDifficulty(levelNBT);

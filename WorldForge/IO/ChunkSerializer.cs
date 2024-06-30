@@ -9,7 +9,7 @@ namespace WorldForge.IO
 {
 	public abstract class ChunkSerializer
 	{
-		private readonly static List<ChunkSerializer> serializerCache = new List<ChunkSerializer>();
+		private static readonly List<ChunkSerializer> serializerCache = new List<ChunkSerializer>();
 
 		public static ChunkSerializer GetOrCreateSerializer<T>(GameVersion version) where T : ChunkSerializer
 		{
@@ -46,8 +46,7 @@ namespace WorldForge.IO
 			}
 			else
 			{
-				throw new NotImplementedException();
-				//TODO: add alpha (separate chunk files) format support
+				return GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
 			}
 		}
 
@@ -98,7 +97,7 @@ namespace WorldForge.IO
 
 		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
-		public virtual NBTFile CreateChunkNBT(ChunkData c, Region parentRegion)
+		public virtual NBTFile CreateChunkNBT(ChunkData c)
 		{
 			var chunkRootNBT = new NBTFile();
 			NBTCompound chunkNBT;
@@ -116,7 +115,7 @@ namespace WorldForge.IO
 			WriteBiomes(c, chunkNBT);
 			WriteTileEntities(c, chunkNBT);
 			WriteTileTicks(c, chunkNBT);
-			WriteEntities(c, chunkNBT, parentRegion);
+			WriteEntities(c, chunkNBT);
 			PostWrite(c, chunkNBT);
 
 			return chunkRootNBT;
@@ -128,7 +127,7 @@ namespace WorldForge.IO
 
 		public abstract void WriteTileEntities(ChunkData c, NBTCompound chunkNBT);
 
-		public abstract void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion);
+		public abstract void WriteEntities(ChunkData c, NBTCompound chunkNBT);
 
 		public abstract void WriteBiomes(ChunkData c, NBTCompound chunkNBT);
 

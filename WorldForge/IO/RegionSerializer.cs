@@ -30,7 +30,7 @@ namespace WorldForge.IO
 					{
 						locations[i] = (int)(stream.Position / 4096);
 
-						var chunkData = chunkSerializer.CreateChunkNBT(chunk, region);
+						var chunkData = chunkSerializer.CreateChunkNBT(chunk);
 
 						var dv = version.GetDataVersion();
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);

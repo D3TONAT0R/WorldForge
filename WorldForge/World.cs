@@ -65,22 +65,21 @@ namespace WorldForge
 
 		}
 
-		//TODO: Danger, loads entire world at once
-		public static World Load(string worldSaveDir, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		public static World Load(string worldSaveDir, GameVersion? versionHint = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
-			world.LevelData = LevelData.Load(new NBTFile(Path.Combine(worldSaveDir, "level.dat")));
-			world.GameVersion = GameVersion.FromDataVersion(world.LevelData.dataVersion) ?? gameVersion ?? GameVersion.FirstVersion;
+			world.LevelData = LevelData.Load(new NBTFile(Path.Combine(worldSaveDir, "level.dat")), versionHint, out var actualGameVersion);
+			world.GameVersion = actualGameVersion ?? versionHint ?? GameVersion.FirstVersion;
 
 			//Load the dimensions
-			world.Overworld = Dimension.Load(world, worldSaveDir, null, DimensionID.Overworld, gameVersion, throwOnRegionLoadFail);
+			world.Overworld = Dimension.Load(world, worldSaveDir, null, DimensionID.Overworld, versionHint, throwOnRegionLoadFail);
 			if(Directory.Exists(Path.Combine(worldSaveDir, "DIM-1")))
 			{
-				world.Nether = Dimension.Load(world, worldSaveDir, "DIM-1", DimensionID.Nether, gameVersion, throwOnRegionLoadFail);
+				world.Nether = Dimension.Load(world, worldSaveDir, "DIM-1", DimensionID.Nether, versionHint, throwOnRegionLoadFail);
 			}
 			if(Directory.Exists(Path.Combine(worldSaveDir, "DIM1")))
 			{
-				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.TheEnd, gameVersion, throwOnRegionLoadFail);
+				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.TheEnd, versionHint, throwOnRegionLoadFail);
 			}
 
 			return world;

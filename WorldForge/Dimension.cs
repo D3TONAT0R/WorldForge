@@ -481,26 +481,45 @@ namespace WorldForge
 			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
 		}
 
-		//TODO: add support to write alpha chunks
 		public void WriteData(string rootDir, GameVersion gameVersion, bool createRegionCopyDir = false)
 		{
 			Directory.CreateDirectory(rootDir);
-			Directory.CreateDirectory(Path.Combine(rootDir, "region"));
+			var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+			if(gameVersion >= GameVersion.FirstMCRVersion)
+			{
+				Directory.CreateDirectory(Path.Combine(rootDir, "region"));
 
-			var options = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
-			string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
-			Parallel.ForEach(regions, options, (KeyValuePair<RegionLocation, Region> region) =>
-			{
-				string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
-				region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
-			});
-			if(createRegionCopyDir)
-			{
-				Directory.CreateDirectory(Path.Combine(rootDir, "region_original"));
-				foreach(var f in Directory.GetFiles(Path.Combine(rootDir, "region")))
+				string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
+				Parallel.ForEach(regions, parallelOptions, (KeyValuePair<RegionLocation, Region> region) =>
 				{
-					File.Copy(f, Path.Combine(rootDir, "region_original", Path.GetFileName(f)));
+					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
+					region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
+				});
+				if(createRegionCopyDir)
+				{
+					Directory.CreateDirectory(Path.Combine(rootDir, "region_original"));
+					foreach(var f in Directory.GetFiles(Path.Combine(rootDir, "region")))
+					{
+						File.Copy(f, Path.Combine(rootDir, "region_original", Path.GetFileName(f)));
+					}
 				}
+			}
+			else
+			{
+				var alphaSerializer = (ChunkSerializerAlpha)ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
+				Parallel.ForEach(regions, parallelOptions, (KeyValuePair<RegionLocation, Region> region) =>
+				{
+					foreach(var c in region.Value.chunks)
+					{
+						if(c != null)
+						{
+							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
+							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
+							var file = alphaSerializer.CreateChunkNBT(c);
+							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), file.WriteBytesGZip());
+						}
+					}
+				});
 			}
 		}
 	}

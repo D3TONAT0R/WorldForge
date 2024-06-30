@@ -208,7 +208,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
+		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var list = chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 			foreach(var e in c.Entities)

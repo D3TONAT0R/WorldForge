@@ -149,7 +149,7 @@ namespace WorldForge.IO
 			chunkNBT.Add("HeightMap", hm);
 		}
 
-		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion)
+		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("Entities", new NBTList(NBTTag.TAG_Compound));
 			//TODO
