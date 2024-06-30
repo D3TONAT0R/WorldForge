@@ -221,9 +221,14 @@ namespace WorldForge
 			this.position = position;
 		}
 
-		public Player(NBTCompound nbt)
+		public Player(NBTCompound nbt, GameVersion version)
 		{
 			NBTConverter.LoadFromNBT(nbt, this);
+			//Versions prior to 1.3 used the head position as the player position
+			if(version < GameVersion.Release_1(3))
+			{
+				position.y -= 1.62f;
+			}
 			object dim = nbt.Get("Dimension");
 			if(dim != null)
 			{
@@ -241,7 +246,15 @@ namespace WorldForge
 		public NBTCompound ToNBT(GameVersion version)
 		{
 			NBTCompound nbt = new NBTCompound();
+			if(version < GameVersion.Release_1(3))
+			{
+				position.y += 1.62f;
+			}
 			NBTConverter.WriteToNBT(this, nbt, version);
+			if(version < GameVersion.Release_1(3))
+			{
+				position.y -= 1.62f;
+			}
 			return nbt;
 		}
 
