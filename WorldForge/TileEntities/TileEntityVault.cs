@@ -14,8 +14,6 @@ namespace WorldForge.TileEntities
 		[NBT("shared_data")]
 		public NBTCompound sharedData;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(21);
-
 		public TileEntityVault() : base("vault")
 		{
 

@@ -5,7 +5,6 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityBed : TileEntity
 	{
-		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
 
 		public TileEntityBed() : base("bed")
 		{
@@ -17,7 +16,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11, 0))
 			{

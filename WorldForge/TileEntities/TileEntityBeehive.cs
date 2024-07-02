@@ -43,8 +43,6 @@ namespace WorldForge.TileEntities
 		[NBT("flower_pos")]
 		public BlockCoord flowerPos = default;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(15);
-
 		public TileEntityBeehive(string id) : base(id)
 		{
 		}

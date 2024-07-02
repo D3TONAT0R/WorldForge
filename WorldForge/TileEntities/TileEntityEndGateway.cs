@@ -45,8 +45,6 @@ namespace WorldForge.TileEntities
 		[NBT("ExitPortal")]
 		public ExitLocation exitPortal = new ExitLocation();
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(9);
-
 		public TileEntityEndGateway() : base("end_gateway")
 		{
 
@@ -57,7 +55,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

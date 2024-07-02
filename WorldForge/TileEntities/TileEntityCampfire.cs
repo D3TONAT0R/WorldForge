@@ -15,8 +15,6 @@ namespace WorldForge.TileEntities
 		//[NBT("Items")]
 		public Dictionary<sbyte, ItemStack> items = new Dictionary<sbyte, ItemStack>();
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(14);
-
 		public TileEntityCampfire(string id) : base(id)
 		{
 		}

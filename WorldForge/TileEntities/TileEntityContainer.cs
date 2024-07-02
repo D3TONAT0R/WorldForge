@@ -20,28 +20,6 @@ namespace WorldForge.TileEntities
 
 		public readonly int maxSlotCount;
 
-		public override GameVersion AddedInVersion {
-			get
-			{
-				var shortId = id.Replace("minecraft:", "");
-				switch(shortId)
-				{
-					case "chest":
-					case "Chest":
-						return GameVersion.FirstVersion;
-					case "dispenser":
-					case "Trap":
-						return GameVersion.Beta_1(2);
-					case "dropper":
-					case "Dropper":
-						return GameVersion.Release_1(5);
-					default:
-						return GameVersion.FirstVersion;
-				}
-			}
-		
-		}
-
 		public TileEntityContainer(string id, int maxSlotCount, params (sbyte, ItemStack)[] content) : base(id)
 		{
 			this.maxSlotCount = maxSlotCount;
@@ -56,7 +34,7 @@ namespace WorldForge.TileEntities
 			this.maxSlotCount = maxSlotCount;
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

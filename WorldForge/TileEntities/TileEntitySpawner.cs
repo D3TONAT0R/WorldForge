@@ -9,8 +9,6 @@ namespace WorldForge.TileEntities
 		[NBTCollection]
 		public MobSpawnerData mobSpawnerData = new MobSpawnerData();
 
-		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
-
 		public TileEntitySpawner() : base("mob_spawner")
 		{
 
@@ -21,7 +19,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

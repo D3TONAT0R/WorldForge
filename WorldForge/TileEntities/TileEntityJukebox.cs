@@ -15,8 +15,6 @@ namespace WorldForge.TileEntities
 		[NBT("TickCount", "1.19.1")]
 		public long tickCount;
 
-		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
-
 		public TileEntityJukebox() : base("jukebox")
 		{
 
@@ -38,7 +36,7 @@ namespace WorldForge.TileEntities
 			}
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

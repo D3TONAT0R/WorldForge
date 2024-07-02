@@ -5,8 +5,6 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityEnderChest : TileEntity
 	{
-		public override GameVersion AddedInVersion => GameVersion.Release_1(3, 1);
-
 		public TileEntityEnderChest() : base("ender_chest")
 		{
 
@@ -17,7 +15,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			return version >= GameVersion.Release_1(11) ? id : "EnderChest";
 		}

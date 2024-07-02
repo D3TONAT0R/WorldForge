@@ -11,8 +11,6 @@ namespace WorldForge.TileEntities
 		[NBT("item")]
 		public ItemStack item = null;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(19, 4);
-
 		public TileEntitySuspiciousBlock(string id) : base(id)
 		{
 			

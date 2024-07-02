@@ -17,8 +17,6 @@ namespace WorldForge.TileEntities
 		[NBT("Lock")]
 		public string lockItemName = null;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(4, 2);
-
 		public TileEntityBeacon() : base("beacon")
 		{
 

@@ -12,8 +12,6 @@ namespace WorldForge.TileEntities
 		[NBT("last_interacted_slot")]
 		public int lastInteractedSlot = -1;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(19, 3);
-
 		public TileEntityChiseledBookshelf() : base("chiseled_bookshelf")
 		{
 

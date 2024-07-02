@@ -185,11 +185,13 @@ namespace WorldForge.IO
 		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList(TileEntitiesCompName, NBTTag.TAG_Compound);
-			foreach(var kv in c.TileEntities)
+			foreach(var k in c.TileEntities.Keys)
 			{
-				if(TargetVersion >= kv.Value.AddedInVersion)
+				var tileEntity = c.TileEntities[k];
+				var nbt = tileEntity.ToNBT(TargetVersion, k);
+				if(nbt != null)
 				{
-					comp.Add(kv.Value.ToNBT(TargetVersion, kv.Key));
+					comp.Add(nbt);
 				}
 			}
 		}

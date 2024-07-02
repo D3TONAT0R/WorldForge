@@ -9,8 +9,6 @@ namespace WorldForge.TileEntities
 		[NBT("CustomName")]
 		public JSONTextComponent customName = null;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(0);
-
 		public TileEntityEnchantingTable() : base("enchanting_table")
 		{
 
@@ -21,7 +19,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			return version >= GameVersion.Release_1(11) ? id : "EnchantTable";
 		}

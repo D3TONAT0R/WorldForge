@@ -8,8 +8,6 @@ namespace WorldForge.TileEntities
 		[NBT("VibrationListener")]
 		public NBTCompound vibrationListener;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(17);
-
 		public TileEntitySkulkShrieker() : base("sculk_shrieker")
 		{
 

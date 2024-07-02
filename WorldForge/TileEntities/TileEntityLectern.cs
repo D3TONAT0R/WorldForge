@@ -10,8 +10,6 @@ namespace WorldForge.TileEntities
 		public ItemStack book = null;
 		public int page = 0;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(14);
-
 		public TileEntityLectern() : base("lectern")
 		{
 

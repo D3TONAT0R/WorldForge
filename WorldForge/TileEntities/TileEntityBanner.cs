@@ -79,8 +79,6 @@ namespace WorldForge.TileEntities
 		[NBT("patterns")]
 		public List<Pattern> patterns = new List<Pattern>();
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(8);
-
 		public TileEntityBanner() : base("banner")
 		{
 

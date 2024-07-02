@@ -150,7 +150,10 @@ namespace WorldForge
 			bool reset = false;
 			if(d.TryGetValue(key, out var obj))
 			{
-				bool b = ((string)obj) == "true";
+				bool b;
+				if(obj is bool b1) b = b1;
+				else if(obj is string s) b = s == "true";
+				else b = false;
 				if(b) queue.Add(legacyFormatKey);
 				else if(currentState) reset = true;
 				currentState = b;

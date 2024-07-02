@@ -44,8 +44,6 @@ namespace WorldForge.TileEntities
 		[NBT("BrewTime")]
 		public short brewTime = 0;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(0);
-
 		public TileEntityBrewingStand() : base("brewing_stand", 5)
 		{
 		}
@@ -60,7 +58,7 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

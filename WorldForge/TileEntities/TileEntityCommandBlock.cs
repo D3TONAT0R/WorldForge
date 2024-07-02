@@ -26,8 +26,6 @@ namespace WorldForge.TileEntities
 		[NBT("CustomName")]
 		public JSONTextComponent customName = null;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(4, 2);
-
 		public TileEntityCommandBlock() : base("command_block")
 		{
 
@@ -39,7 +37,7 @@ namespace WorldForge.TileEntities
 		}
 
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{

@@ -27,19 +27,19 @@ namespace WorldForge.TileEntities
 		[NBT("source")]
 		public bool source = false;
 
-		public override GameVersion AddedInVersion => GameVersion.Beta_1(7);
-
 		public TileEntityPiston() : base("piston")
 		{
+
 		}
 
 		public TileEntityPiston(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
+
 		}
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			throw new NotImplementedException();
+			
 		}
 	}
 }

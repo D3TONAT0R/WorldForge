@@ -16,8 +16,6 @@ namespace WorldForge.TileEntities
 		[NBTCollection]
 		public LootTableOptions LootTableOptions = new LootTableOptions();
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(19, 4);
-
 		public TileEntityDecoratedPot() : base("decorated_pot")
 		{
 

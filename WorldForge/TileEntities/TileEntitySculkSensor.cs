@@ -11,8 +11,6 @@ namespace WorldForge.TileEntities
 		[NBT("listener")]
 		public NBTCompound listener = null;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(17);
-
 		public TileEntitySkulkSensor() : base("sculk_sensor")
 		{
 		}

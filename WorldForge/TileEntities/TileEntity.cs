@@ -1,4 +1,5 @@
-﻿using WorldForge.Coordinates;
+﻿using System;
+using WorldForge.Coordinates;
 using WorldForge.Items;
 using WorldForge.NBT;
 
@@ -8,8 +9,6 @@ namespace WorldForge.TileEntities
 	{
 		public string id;
 		public NBTCompound otherNBTData;
-
-		public abstract GameVersion AddedInVersion { get; }
 
 		protected TileEntity(string id)
 		{
@@ -208,9 +207,12 @@ namespace WorldForge.TileEntities
 
 		public NBTCompound ToNBT(GameVersion version, BlockCoord blockPos)
 		{
+			string resolvedId = ResolveTileEntityID(version);
+			if(resolvedId == null) return null;
+			if(version < GetAddedVersion(resolvedId)) return null;
 			NBTCompound nbt = new NBTCompound
 			{
-				{ "id", ResolveTileEntityID(version) },
+				{ "id", resolvedId },
 				{ "x", blockPos.x },
 				{ "y", blockPos.y },
 				{ "z", blockPos.z }
@@ -226,9 +228,121 @@ namespace WorldForge.TileEntities
 
 		}
 
-		protected virtual string ResolveTileEntityID(GameVersion version)
+		public virtual string ResolveTileEntityID(GameVersion version)
 		{
 			return id;
+		}
+
+		public static GameVersion GetAddedVersion(string id)
+		{
+			var shortId = id.Replace("minecraft:", "");
+			switch(shortId)
+			{
+				case "chest":
+				case "Chest":
+					return GameVersion.FirstVersion;
+				case "shulker_box":
+					return GameVersion.Release_1(11);
+				case "barrel":
+					return GameVersion.Release_1(14);
+				case "trapped_chest":
+					return GameVersion.Release_1(5);
+				case "dispenser":
+				case "Trap":
+					return GameVersion.Beta_1(2);
+				case "dropper":
+					return GameVersion.Release_1(5);
+				case "banner":
+					return GameVersion.Release_1(8);
+				case "beacon":
+					return GameVersion.Release_1(4, 2);
+				case "bee_nest":
+				case "beehive":
+					return GameVersion.Release_1(15);
+				case "bell":
+					return GameVersion.Release_1(14);
+				case "bed":
+				case "Bed":
+					return GameVersion.FirstVersion;
+				case "brewing_stand":
+				case "Cauldron":
+					return GameVersion.Release_1(0);
+				case "campfire":
+				case "soul_campfire":
+					return GameVersion.Release_1(14);
+				case "chiseled_bookshelf":
+					return GameVersion.Release_1(19, 3);
+				case "command_block":
+				case "Control":
+					return GameVersion.Release_1(4, 2);
+				case "comparator":
+					return GameVersion.Release_1(5);
+				case "conduit":
+					return GameVersion.Release_1(13);
+				case "crafter":
+					return GameVersion.Release_1(21);
+				case "daylight_detector":
+				case "DLDetector":
+					return GameVersion.Release_1(5);
+				case "decorated_pot":
+					return GameVersion.Release_1(19, 4);
+				case "enchanting_table":
+				case "EnchantTable":
+					return GameVersion.Release_1(0);
+				case "ender_chest":
+				case "EnderChest":
+					return GameVersion.Release_1(3, 1);
+				case "end_gateway":
+				case "EndGateway":
+					return GameVersion.Release_1(9);
+				case "end_portal":
+				case "AirPortal":
+					return GameVersion.Release_1(0);
+				case "furnace":
+				case "Furnace":
+					return GameVersion.FirstVersion;
+				case "blast_furnace":
+					return GameVersion.Release_1(14);
+				case "smoker":
+					return GameVersion.Release_1(14);
+				case "jigsaw":
+					return GameVersion.Release_1(14);
+				case "jukebox":
+				case "RecordPlayer":
+					return GameVersion.FirstVersion;
+				case "lectern":
+					return GameVersion.Release_1(14);
+				case "piston":
+				case "Piston":
+					return GameVersion.Beta_1(7);
+				case "skulk_catalyst":
+					return GameVersion.Release_1(19);
+				case "skulk_sensor":
+					return GameVersion.Release_1(17);
+				case "skulk_shrieker":
+					return GameVersion.Release_1(17);
+				case "sign":
+				case "Sign":
+					return GameVersion.FirstVersion;
+				case "skull":
+					return GameVersion.Release_1(4, 2);
+				case "mob_spawner":
+				case "MobSpawner":
+					return GameVersion.FirstVersion;
+				case "structure_block":
+				case "Structure":
+					return GameVersion.Release_1(9);
+				case "suspicious_gravel":
+					return GameVersion.Release_1(20);
+				case "suspicious_sand":
+					return GameVersion.Release_1(19, 4);
+				case "trial_spawner":
+					return GameVersion.Release_1(21);
+				case "vault":
+					return GameVersion.Release_1(21);
+				default:
+					return GameVersion.FirstVersion;
+			}
 		}
 	}
 }

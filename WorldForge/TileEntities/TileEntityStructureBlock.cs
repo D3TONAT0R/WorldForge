@@ -39,8 +39,6 @@ namespace WorldForge.TileEntities
 		[NBT("sizeZ")]
 		public int sizeZ = 0;
 
-		public override GameVersion AddedInVersion => GameVersion.Release_1(9);
-
 		public TileEntityStructureBlock() : base("structure_block")
 		{
 
@@ -56,7 +54,7 @@ namespace WorldForge.TileEntities
 			throw new NotImplementedException();
 		}
 
-		protected override string ResolveTileEntityID(GameVersion version)
+		public override string ResolveTileEntityID(GameVersion version)
 		{
 			if(version >= GameVersion.Release_1(11))
 			{
