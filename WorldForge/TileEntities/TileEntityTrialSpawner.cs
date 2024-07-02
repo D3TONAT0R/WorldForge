@@ -65,6 +65,8 @@ namespace WorldForge.TileEntities
 		[NBT("ejecting_loot_table")]
 		public string ejectingLootTable = null;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(21);
+
 		public TileEntityTrialSpawner() : base("trial_spawner")
 		{
 

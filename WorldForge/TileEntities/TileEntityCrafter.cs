@@ -21,6 +21,8 @@ namespace WorldForge.TileEntities
 		[NBTCollection]
 		public LootTableOptions lootTableOptions = new LootTableOptions();
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(21);
+
 		public TileEntityCrafter() : base("crafter")
 		{
 

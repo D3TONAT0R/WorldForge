@@ -5,6 +5,8 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityDaylightDetector : TileEntity
 	{
+		public override GameVersion AddedInVersion => GameVersion.Release_1(5);
+
 		public TileEntityDaylightDetector() : base("daylight_detector")
 		{
 

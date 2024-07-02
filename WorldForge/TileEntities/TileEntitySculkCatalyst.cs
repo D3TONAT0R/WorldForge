@@ -10,12 +10,16 @@ namespace WorldForge.TileEntities
 		[NBT("cursors")]
 		public List<NBTCompound> cursors = new List<NBTCompound>();
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(19);
+
 		public TileEntitySkulkCatalyst() : base("sculk_catalyst")
 		{
+			
 		}
 
 		public TileEntitySkulkCatalyst(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
+
 		}
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)

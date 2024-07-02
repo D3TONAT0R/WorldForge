@@ -31,7 +31,14 @@ namespace WorldForge.NBT
 			}
 			else
 			{
-				throw new NotSupportedException($"Type '{t}' is not supported.");
+				if(typeof(INBTConverter).IsAssignableFrom(t))
+				{
+					return NBTTag.TAG_Compound;
+				}
+				else
+				{
+					throw new NotSupportedException($"Type '{t}' is not supported.");
+				}
 			}
 		}
 

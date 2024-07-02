@@ -15,6 +15,8 @@ namespace WorldForge.TileEntities
 		[NBT("TickCount", "1.19.1")]
 		public long tickCount;
 
+		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
+
 		public TileEntityJukebox() : base("jukebox")
 		{
 
@@ -30,7 +32,7 @@ namespace WorldForge.TileEntities
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			if(!recordItem.IsNull && recordItem.ToNBT(null, version, out var itemNbt))
+			if(recordItem != null && !recordItem.IsNull && recordItem.ToNBT(null, version, out var itemNbt))
 			{
 				nbt.Add("RecordItem", itemNbt);
 			}

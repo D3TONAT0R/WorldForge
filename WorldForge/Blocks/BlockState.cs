@@ -198,22 +198,54 @@ namespace WorldForge
 			if(block == null) return new NumericID(0, 0);
 			if(block.customNamespace == null)
 			{
-				if(block.shortID.EndsWith("_stairs"))
+				var id = block.shortID;
+				if(id.EndsWith("_stairs"))
 				{
 					return new NumericID(block.numericID.Value.id, GetFacingMetaStairs(this));
 				}
-				switch(block.shortID)
+				else if(id.EndsWith("_wall_sign"))
+				{
+					byte meta = 0;
+					if(TryGetProperty("facing", out var f))
+					{
+						switch(f)
+						{
+							case "north": meta = 2; break;
+							case "south": meta = 3; break;
+							case "west": meta = 4; break;
+							case "east": meta = 5; break;
+						}
+					}
+					return new NumericID(block.numericID.Value.id, meta);
+				}
+				else if(id.EndsWith("_sign"))
+				{
+					byte meta = 0;
+					if(TryGetProperty("rotation", out var r)) meta = byte.Parse(r);
+					return new NumericID(block.numericID.Value.id, meta);
+				}
+				else if(id.EndsWith("_slab"))
+				{
+					bool doubleSlab = GetProperty("double") == "true";
+					var numId = block.numericID.Value;
+					if(doubleSlab)
+					{
+						if(numId.id == 44) numId.id = 43;
+					}
+					return numId;
+                }
+				switch(id)
 				{
 					case "torch":
 					case "wall_torch":
 						return new NumericID(block.numericID.Value.id, GetFacingMetaWallTorch(this));
 					case "redstone_torch":
 					case "redstone_wall_torch":
-						short id = (short)(GetProperty("lit") == "true" ? 76 : 75);
-						return new NumericID(id, GetFacingMetaWallTorch(this));
+						short blockId = (short)(GetProperty("lit") == "true" ? 76 : 75);
+						return new NumericID(blockId, GetFacingMetaWallTorch(this));
 					case "furnace":
-						id = (short)(GetProperty("lit") == "true" ? 62 : 61);
-						return new NumericID(id, GetFacingMetaFurnace(this));
+						blockId = (short)(GetProperty("lit") == "true" ? 62 : 61);
+						return new NumericID(blockId, GetFacingMetaFurnace(this));
 					case "chest":
 						short meta = version >= GameVersion.Beta_1(8) ? GetFacingMetaFurnace(this) : (short)0;
 						return new NumericID(54, meta);

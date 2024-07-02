@@ -57,6 +57,8 @@ namespace WorldForge.TileEntities
 		[NBT("profile")]
 		public Profile profile = null;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(4, 2);
+
 		public TileEntitySkull() : base("skull")
 		{
 

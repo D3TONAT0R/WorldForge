@@ -45,8 +45,8 @@ namespace WorldForge.Items
 		{
 			NBTCompound dataToWrite = metadata;
 			var resolvedId = id;
-			ItemID.ResolveItemID(version, ref id);
-			if(id == null) return false;
+			ItemID.ResolveItemID(version, ref resolvedId);
+			if(resolvedId == null) return false;
 
 			if(version >= GameVersion.FirstFlatteningVersion)
 			{

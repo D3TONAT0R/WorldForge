@@ -5,6 +5,8 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityGeneric : TileEntity
 	{
+		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
+
 		public TileEntityGeneric(string id) : base(id)
 		{
 
@@ -28,7 +30,8 @@ namespace WorldForge.TileEntities
 			}
 			else
 			{
-				switch(id)
+				var shortId = id.Replace("minecraft:", "");
+				switch(shortId)
 				{
 					case "flower_pot": return "FlowerPot";
 					case "note_block": return "Music";

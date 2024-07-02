@@ -5,6 +5,8 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityEndPortal : TileEntity
 	{
+		public override GameVersion AddedInVersion => GameVersion.Release_1(0);
+
 		public TileEntityEndPortal() : base("end_portal")
 		{
 

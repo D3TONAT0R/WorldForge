@@ -76,10 +76,10 @@ namespace WorldForge.TileEntities
 					//1.20+ format
 					if(nbt.TryGet("messages", out string[] linesJson))
 					{
-						if(linesJson.Length >= 1) line1 = JSONTextComponent.Parse(linesJson[0]);
-						if(linesJson.Length >= 2) line1 = JSONTextComponent.Parse(linesJson[1]);
-						if(linesJson.Length >= 3) line1 = JSONTextComponent.Parse(linesJson[2]);
-						if(linesJson.Length >= 4) line1 = JSONTextComponent.Parse(linesJson[3]);
+						if(linesJson.Length >= 1) line1 = JSONTextComponent.ParseSingle(linesJson[0]);
+						if(linesJson.Length >= 2) line2 = JSONTextComponent.ParseSingle(linesJson[1]);
+						if(linesJson.Length >= 3) line3 = JSONTextComponent.ParseSingle(linesJson[2]);
+						if(linesJson.Length >= 4) line4 = JSONTextComponent.ParseSingle(linesJson[3]);
 					}
 					nbt.TryGet("color", out color);
 					nbt.TryGet("has_glowing_text", out glowingText);
@@ -90,10 +90,10 @@ namespace WorldForge.TileEntities
 					//TODO: how to determine pre-1.8 versions? 'version' becomes null prior to 1.9 (due to DataVersion).
 					if(version.HasValue && version >= GameVersion.Release_1(8))
 					{
-						line1 = JSONTextComponent.Parse("Text1");
-						line2 = JSONTextComponent.Parse("Text2");
-						line3 = JSONTextComponent.Parse("Text3");
-						line4 = JSONTextComponent.Parse("Text4");
+						line1 = JSONTextComponent.ParseSingle("Text1");
+						line2 = JSONTextComponent.ParseSingle("Text2");
+						line3 = JSONTextComponent.ParseSingle("Text3");
+						line4 = JSONTextComponent.ParseSingle("Text4");
 					}
 					else
 					{
@@ -114,6 +114,8 @@ namespace WorldForge.TileEntities
 		public SignData back = new SignData();
 		//Added in 1.20
 		public bool isWaxed;
+
+		public override GameVersion AddedInVersion => GameVersion.FirstVersion;
 
 		public TileEntitySign() : base("sign")
 		{

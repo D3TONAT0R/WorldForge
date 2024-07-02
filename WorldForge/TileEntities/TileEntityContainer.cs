@@ -6,7 +6,7 @@ using WorldForge.NBT;
 
 namespace WorldForge.TileEntities
 {
-	public partial class TileEntityContainer : TileEntity
+	public class TileEntityContainer : TileEntity
 	{
 		[NBT("Items")]
 		public Inventory items = new Inventory();
@@ -19,6 +19,28 @@ namespace WorldForge.TileEntities
 		public LootTableOptions lootTableOptions = new LootTableOptions();
 
 		public readonly int maxSlotCount;
+
+		public override GameVersion AddedInVersion {
+			get
+			{
+				var shortId = id.Replace("minecraft:", "");
+				switch(shortId)
+				{
+					case "chest":
+					case "Chest":
+						return GameVersion.FirstVersion;
+					case "dispenser":
+					case "Trap":
+						return GameVersion.Beta_1(2);
+					case "dropper":
+					case "Dropper":
+						return GameVersion.Release_1(5);
+					default:
+						return GameVersion.FirstVersion;
+				}
+			}
+		
+		}
 
 		public TileEntityContainer(string id, int maxSlotCount, params (sbyte, ItemStack)[] content) : base(id)
 		{
@@ -42,9 +64,10 @@ namespace WorldForge.TileEntities
 			}
 			else
 			{
-				if(id == "chest") return "Chest";
-				if(id == "dispenser") return "Trap";
-				return id;
+				var shortId = id.Replace("minecraft:", "");
+				if(shortId == "chest") return "Chest";
+				if(shortId == "dispenser") return "Trap";
+				return shortId;
 			}
 		}
 	}

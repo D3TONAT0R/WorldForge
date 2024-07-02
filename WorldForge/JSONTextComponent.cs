@@ -68,6 +68,17 @@ namespace WorldForge
 			};
 		}
 
+		public static JSONTextComponent ParseSingle(string json)
+		{
+			return new JSONTextComponent
+			{
+				data = new List<Dictionary<string, object>>()
+				{
+					JsonConvert.DeserializeObject<Dictionary<string, object>>(json)
+				}
+			};
+		}
+
 		public string ToJSON()
 		{
 			if(data.Count == 1 && data[0].Count == 1 && data[0].ContainsKey("text"))
@@ -139,7 +150,7 @@ namespace WorldForge
 			bool reset = false;
 			if(d.TryGetValue(key, out var obj))
 			{
-				bool b = (string)obj == "true";
+				bool b = ((string)obj) == "true";
 				if(b) queue.Add(legacyFormatKey);
 				else if(currentState) reset = true;
 				currentState = b;
@@ -155,7 +166,16 @@ namespace WorldForge
 		public void FromNBT(object nbtData)
 		{
 			var text = (string)nbtData;
-			data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
+			try
+			{
+				data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
+			}
+			catch(JsonSerializationException)
+			{
+				data = new List<Dictionary<string, object>>() {
+					JsonConvert.DeserializeObject<Dictionary<string, object>>(text)
+				};
+			}
 		}
 	}
 }

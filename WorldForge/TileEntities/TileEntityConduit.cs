@@ -9,6 +9,8 @@ namespace WorldForge.TileEntities
 		[NBT("Target")]
 		public UUID target = null;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(13);
+
 		public TileEntityConduit() : base("conduit")
 		{
 			

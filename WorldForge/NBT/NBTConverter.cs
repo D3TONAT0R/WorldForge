@@ -28,7 +28,7 @@ namespace WorldForge.NBT
 						}
 						else if(typeof(INBTConverter).IsAssignableFrom(fi.FieldType))
 						{
-							var inst = Activator.CreateInstance(fi.FieldType);
+							var inst = Activator.CreateInstance(fi.FieldType, true);
 							object data;
 							if(removeFromCompound) data = sourceNBT.Take(name);
 							else data = sourceNBT.Get(name);
@@ -37,7 +37,7 @@ namespace WorldForge.NBT
 						}
 						else if(fi.FieldType.IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(List<>))
 						{
-							var list = Activator.CreateInstance(fi.FieldType);
+							var list = Activator.CreateInstance(fi.FieldType, true);
 							var addMethod = fi.FieldType.GetMethod("Add");
 
 							NBTList nbtList;

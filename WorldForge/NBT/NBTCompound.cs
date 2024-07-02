@@ -116,7 +116,21 @@ namespace WorldForge.NBT
 			var v = Get(key);
 			if(v is NBTList list && typeof(T) != typeof(NBTList))
 			{
-				return (T)list.ToList(typeof(T).GetGenericArguments()[0]);
+				if(typeof(T) == typeof(List<T>))
+				{
+					return (T)list.ToList(typeof(T).GetGenericArguments()[0]);
+				}
+				else if(typeof(T).IsArray)
+				{
+					var array = Array.CreateInstance(typeof(T).GetElementType(), list.Length);
+					var ilist = list.ToList(typeof(T).GetElementType());
+					ilist.CopyTo(array, 0);
+					return (T)Convert.ChangeType(array, typeof(T));
+				}
+				else
+				{
+					throw new InvalidOperationException("Invalid type given: "+typeof(T));
+				}
 			}
 			else
 			{
@@ -130,7 +144,7 @@ namespace WorldForge.NBT
 			{
 				try
 				{
-					value = (T)Convert.ChangeType(Get(key), typeof(T));
+					value = Get<T>(key);
 					return true;
 				}
 				catch

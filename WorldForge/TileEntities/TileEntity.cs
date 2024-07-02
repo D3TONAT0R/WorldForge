@@ -9,6 +9,8 @@ namespace WorldForge.TileEntities
 		public string id;
 		public NBTCompound otherNBTData;
 
+		public abstract GameVersion AddedInVersion { get; }
+
 		protected TileEntity(string id)
 		{
 			this.id = id;
@@ -26,7 +28,8 @@ namespace WorldForge.TileEntities
 		public static TileEntity CreateFromNBT(NBTCompound nbt, GameVersion? version, out BlockCoord blockPos)
 		{
 			string id = nbt.Get<string>("id");
-			switch(id)
+			var shortId = id.Replace("minecraft:", "");
+			switch(shortId)
 			{
 				case "chest":
 				case "trapped_chest":

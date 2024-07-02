@@ -44,6 +44,8 @@ namespace WorldForge.TileEntities
 		[NBT("BrewTime")]
 		public short brewTime = 0;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(0);
+
 		public TileEntityBrewingStand() : base("brewing_stand", 5)
 		{
 		}

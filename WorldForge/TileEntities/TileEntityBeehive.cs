@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using WorldForge.Coordinates;
 using WorldForge.Entities;
 using WorldForge.NBT;
@@ -37,10 +38,12 @@ namespace WorldForge.TileEntities
 			}
 		}
 
-		[NBT("bees")]
+		//[NBT("bees")]
 		public List<HiveBee> bees = new List<HiveBee>();
 		[NBT("flower_pos")]
 		public BlockCoord flowerPos = default;
+
+		public override GameVersion AddedInVersion => GameVersion.Release_1(15);
 
 		public TileEntityBeehive(string id) : base(id)
 		{
@@ -48,11 +51,29 @@ namespace WorldForge.TileEntities
 
 		public TileEntityBeehive(NBTCompound compound, out BlockCoord blockPos) : base(compound, out blockPos)
 		{
+			if(compound.TryGet<NBTList>("bees", out var list))
+			{
+				bees = new List<HiveBee>();
+				foreach(var bee in list)
+				{
+					var hiveBee = new HiveBee();
+					hiveBee.FromNBT(bee);
+					bees.Add(hiveBee);
+				}
+			}
 		}
 
 		protected override void OnWriteToNBT(NBTCompound nbt, GameVersion version)
 		{
-			
+			if(bees != null)
+			{
+				var list = new NBTList(NBTTag.TAG_Compound);
+				foreach(var bee in bees)
+				{
+					list.Add(bee.ToNBT(version));
+				}
+				nbt.Add("bees", list);
+			}
 		}
 	}
 }

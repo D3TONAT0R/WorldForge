@@ -5,6 +5,8 @@ namespace WorldForge.TileEntities
 {
 	public class TileEntityBell : TileEntity
 	{
+		public override GameVersion AddedInVersion => GameVersion.Release_1(14);
+
 		public TileEntityBell() : base("bell")
 		{
 			

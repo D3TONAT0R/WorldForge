@@ -39,6 +39,8 @@ namespace WorldForge.TileEntities
 		[NBT("sizeZ")]
 		public int sizeZ = 0;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(9);
+
 		public TileEntityStructureBlock() : base("structure_block")
 		{
 

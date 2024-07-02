@@ -13,6 +13,7 @@ namespace WorldForge.IO
 		public override string BlocksCompName => "block_states";
 		public override string BlockDataCompName => "data";
 		public override string BiomesCompName => "biomes";
+		public override string TileEntitiesCompName => "block_entities";
 
 		public ChunkSerializer_1_18(GameVersion version) : base(version) { }
 

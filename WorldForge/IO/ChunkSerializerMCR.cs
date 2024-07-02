@@ -111,13 +111,15 @@ namespace WorldForge.IO
 			}
 		}
 
-		//TODO: which game version is this for?
 		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
 			foreach(var kv in c.TileEntities)
 			{
-				comp.Add(kv.Value.ToNBT(TargetVersion, kv.Key));
+				if(TargetVersion >= kv.Value.AddedInVersion)
+				{
+					comp.Add(kv.Value.ToNBT(TargetVersion, kv.Key));
+				}
 			}
 		}
 

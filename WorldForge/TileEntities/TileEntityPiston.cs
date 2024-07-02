@@ -27,6 +27,8 @@ namespace WorldForge.TileEntities
 		[NBT("source")]
 		public bool source = false;
 
+		public override GameVersion AddedInVersion => GameVersion.Beta_1(7);
+
 		public TileEntityPiston() : base("piston")
 		{
 		}

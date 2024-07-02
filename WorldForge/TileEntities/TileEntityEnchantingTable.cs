@@ -9,6 +9,8 @@ namespace WorldForge.TileEntities
 		[NBT("CustomName")]
 		public JSONTextComponent customName = null;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(0);
+
 		public TileEntityEnchantingTable() : base("enchanting_table")
 		{
 

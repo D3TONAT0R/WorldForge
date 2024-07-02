@@ -9,6 +9,8 @@ namespace WorldForge.TileEntities
 		[NBT("OutputSignal")]
 		public int outputSignal = 0;
 
+		public override GameVersion AddedInVersion => GameVersion.Release_1(5);
+
 		public TileEntityComparator() : base("comparator")
 		{
 
