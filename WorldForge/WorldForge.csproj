@@ -1,11 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId></PackageId>
-    <StartupObject>WorldForge.WorldForgeConsole</StartupObject>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>World Forge</Title>
+    <Authors>D3TONAT0R</Authors>
+    <Company />
+    <Description>An API for working with Minecraft Region Files and NBT data.</Description>
+    <RepositoryUrl>https://github.com/D3TONAT0R/WorldForge</RepositoryUrl>
+    <PackageTags>minecraft;world;nbt;worldedit;mc</PackageTags>
+    <AssemblyVersion></AssemblyVersion>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.13.8" />

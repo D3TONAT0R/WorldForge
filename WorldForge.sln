@@ -5,16 +5,9 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForge", "WorldForge\WorldForge.csproj", "{10615802-892F-4571-9C93-E9EFFE735F67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MCUtilsApp", "..\MCUtilsApp\MCUtilsApp.csproj", "{1C85AE00-BED2-4E50-AFEF-ED487CDF050A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{10615802-892F-4571-9C93-E9EFFE735F67} = {10615802-892F-4571-9C93-E9EFFE735F67}
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeOreAnalyzer", "..\WorldForgeOreAnalyzer\WorldForgeOreAnalyzer.csproj", "{B2582E70-9F34-4179-90A1-611960113B42}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeOreAnalyzer", "..\MCUtilsOreAnalyzer\WorldForgeOreAnalyzer.csproj", "{587A1F9D-A2E9-4D04-8F12-60182AE89A1F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GregtechOreLocator", "..\GregtechOreLocator\GregtechOreLocator.csproj", "{1616E17E-44BE-447F-AE3D-53B6FB5F2443}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeTests", "WorldForgeTests\WorldForgeTests.csproj", "{1EB6F0C8-90D7-4451-8388-429194C5DCD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeTests", "..\WorldForgeTests\WorldForgeTests.csproj", "{35BC2546-BCEF-40F8-92C0-87372DA6E440}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,22 +19,14 @@ Global
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C85AE00-BED2-4E50-AFEF-ED487CDF050A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C85AE00-BED2-4E50-AFEF-ED487CDF050A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C85AE00-BED2-4E50-AFEF-ED487CDF050A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C85AE00-BED2-4E50-AFEF-ED487CDF050A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{587A1F9D-A2E9-4D04-8F12-60182AE89A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{587A1F9D-A2E9-4D04-8F12-60182AE89A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{587A1F9D-A2E9-4D04-8F12-60182AE89A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{587A1F9D-A2E9-4D04-8F12-60182AE89A1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1616E17E-44BE-447F-AE3D-53B6FB5F2443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1616E17E-44BE-447F-AE3D-53B6FB5F2443}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1616E17E-44BE-447F-AE3D-53B6FB5F2443}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1616E17E-44BE-447F-AE3D-53B6FB5F2443}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EB6F0C8-90D7-4451-8388-429194C5DCD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EB6F0C8-90D7-4451-8388-429194C5DCD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EB6F0C8-90D7-4451-8388-429194C5DCD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EB6F0C8-90D7-4451-8388-429194C5DCD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2582E70-9F34-4179-90A1-611960113B42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2582E70-9F34-4179-90A1-611960113B42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2582E70-9F34-4179-90A1-611960113B42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2582E70-9F34-4179-90A1-611960113B42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

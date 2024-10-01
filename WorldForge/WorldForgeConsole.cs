@@ -9,7 +9,7 @@ namespace WorldForge
 
 		static string progressString;
 
-		public static void Main(string[] args)
+		public static void Start(string[] args)
 		{
 			Console.ResetColor();
 			Console.Clear();
