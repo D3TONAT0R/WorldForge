@@ -525,7 +525,7 @@ namespace WorldForge
 		/// The name of the world.
 		/// </summary>
 		[NBT("LevelName")]
-		public string worldName = "MCUtils generated world " + new Random().Next(10000);
+		public string worldName = "WorldForge generated world " + new Random().Next(10000);
 		/// <summary>
 		/// The time the world was last played, in Unix timestamp format.
 		/// </summary>
