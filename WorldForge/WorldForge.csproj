@@ -11,8 +11,9 @@
     <Description>An API for working with Minecraft Region Files and NBT data.</Description>
     <RepositoryUrl>https://github.com/D3TONAT0R/WorldForge</RepositoryUrl>
     <PackageTags>minecraft;world;nbt;worldedit;mc</PackageTags>
-    <AssemblyVersion></AssemblyVersion>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <FileVersion>0.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
