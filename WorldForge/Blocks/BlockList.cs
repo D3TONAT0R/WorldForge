@@ -5,6 +5,20 @@ namespace WorldForge
 	public static class BlockList
 	{
 
+		public class Remapping
+		{
+			public BlockID oldID;
+			public BlockID newID;
+			public GameVersion version;
+
+			public Remapping(BlockID oldID, BlockID newID, GameVersion version)
+			{
+				this.oldID = oldID;
+				this.newID = newID;
+				this.version = version;
+			}
+		}
+
 		public static string[] blocks = new string[] {
 			"stone",
 			"granite",
@@ -596,7 +610,10 @@ namespace WorldForge
 		public static Dictionary<NumericID, BlockID> blockIdByNumerics;
 		public static Dictionary<BlockID, string> preFlatteningIDs;
 
-		public static void Initialize(string blockData)
+		public static Dictionary<string, Remapping> oldRemappings;
+		public static Dictionary<BlockID, Remapping> newRemappings;
+
+		public static void Initialize(string blockData, string remappingsData)
 		{
 			allBlocks = new Dictionary<string, BlockID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
@@ -637,6 +654,25 @@ namespace WorldForge
 					}
 				}
 			}
+
+			//Set remappings
+			oldRemappings = new Dictionary<string, Remapping>();
+			newRemappings = new Dictionary<BlockID, Remapping>();
+			if(remappingsData != null)
+			{
+				lines = remappingsData.Replace("\r", "").Split('\n');
+				for(int i = 2; i < lines.Length; i++)
+				{
+					string[] line = lines[i].Split(';');
+					var newID = Find("minecraft:"+line[1], true);
+					var oldID = new BlockID("minecraft", line[0], newID.AddedInVersion, (BlockID)newID.substitute, newID.numericID); 
+					GameVersion version = GameVersion.Parse(line[2]);
+					var remap = new Remapping(oldID, newID, version);
+					oldRemappings.Add(oldID.ID, remap);
+					newRemappings.Add(newID, remap);
+				}
+			}
+
 			//Find & set substitute blocks
 			foreach(var f in fallbacks)
 			{
@@ -664,6 +700,10 @@ namespace WorldForge
 			if(!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
 			if(blockTypeName.StartsWith("minecraft:"))
 			{
+				if(oldRemappings.TryGetValue(blockTypeName, out var remap))
+				{
+					return remap.newID;
+				}
 				if(allBlocks.TryGetValue(blockTypeName, out var b))
 				{
 					return b;
@@ -687,6 +727,20 @@ namespace WorldForge
 					return BlockID.RegisterNewModBlock(split[0], split[1])[0];
 				}
 			}
+		}
+
+		public static bool TryGetPreviousID(BlockID id, GameVersion targetVersion, out BlockID previous)
+		{
+			if(newRemappings.TryGetValue(id, out var remap))
+			{
+				if(targetVersion < remap.version)
+				{
+					previous = remap.oldID;
+					return true;
+				}
+			}
+			previous = null;
+			return false;
 		}
 
 		//TODO: return proper BlockState by metadata

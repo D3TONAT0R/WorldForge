@@ -11,40 +11,37 @@ namespace WorldForge
 	{
 		public static bool Initialized { get; private set; }
 
-		public static void Initialize(string resourcePath, IBitmapFactory bitmapFactory)
+		public static void Initialize(IBitmapFactory bitmapFactory)
 		{
-			if(resourcePath == null) resourcePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources");
-
-			string blockListPath = Path.Combine(resourcePath, "blocks.csv");
-			if(!File.Exists(blockListPath))
-			{
-				throw new FileNotFoundException("Could not find blocks.csv at " + blockListPath);
-			}
-			BlockList.Initialize(File.ReadAllText(blockListPath));
-
-			string itemListPath = Path.Combine(resourcePath, "items.csv");
-			if(!File.Exists(itemListPath))
-			{
-				throw new FileNotFoundException("Could not find items.csv at " + itemListPath);
-			}
-			ItemList.Initialize(File.ReadAllText(itemListPath));
+			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
+			ItemList.Initialize(GetResourceAsText("items.csv"));
 
 			if(bitmapFactory != null)
 			{
 				Bitmaps.BitmapFactory = bitmapFactory;
-				string colorMapPath = Path.Combine(resourcePath, "colormap.png");
-				if(!File.Exists(colorMapPath))
-				{
-					throw new FileNotFoundException("Could not find colormap.png at " + colorMapPath);
-				}
-				Blocks.InitializeColorMap(Path.Combine(resourcePath, "colormap.png"));
+				Blocks.InitializeColorMap(GetResource("colormap.png"));
 			}
 			else
 			{
 				Console.WriteLine("WorldForge initialized without a bitmap factory. All bitmap related functions will not be available.");
 			}
-
 			Initialized = true;
+		}
+
+		private static Stream GetResource(string fileName)
+		{
+			return Assembly.GetExecutingAssembly().GetManifestResourceStream("WorldForge.Resources." + fileName);
+		}
+
+		private static string GetResourceAsText(string fileName)
+		{
+			using(Stream stream = GetResource(fileName))
+			{
+				using(StreamReader reader = new StreamReader(stream))
+				{
+					return reader.ReadToEnd();
+				}
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace WorldForge
 {
@@ -156,9 +157,9 @@ namespace WorldForge
 			}
 		}
 
-		public static void InitializeColorMap(string filePath)
+		public static void InitializeColorMap(Stream colorBitmapStream)
 		{
-			var bmp = Bitmaps.Load(filePath);
+			var bmp = Bitmaps.LoadFromStream(colorBitmapStream);
 			colormap = new BitmapColor[bmp.Width, 3];
 			for(int x = 0; x < bmp.Width; x++)
 			{

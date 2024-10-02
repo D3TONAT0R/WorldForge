@@ -2,12 +2,19 @@
 
 namespace WorldForge.Items
 {
+	//TODO: add support for 1.20.5's new component structure
 	public class ItemStack : INBTConverter
 	{
 		public Item item;
 		public sbyte count;
 
 		public bool IsNull => item == null || count <= 0;
+
+		//Required by Activator.CreateInstance. Do not remove.
+		private ItemStack()
+		{
+
+		}
 
 		public ItemStack(Item item, sbyte count)
 		{
@@ -35,7 +42,10 @@ namespace WorldForge.Items
 		{
 			var nbt = (NBTCompound)nbtData;
 			item = new Item(nbt);
-			count = nbt.Get<sbyte>("Count");
+			if(!nbt.TryGet<sbyte>("count", out count))
+			{
+				count = nbt.Get<sbyte>("Count");
+			}
 		}
 
 		public bool ToNBT(sbyte? slotIndex, GameVersion version, out NBTCompound nbt)
@@ -53,7 +63,8 @@ namespace WorldForge.Items
 			{
 				nbt.Add("Slot", slotIndex.Value);
 			}
-			nbt.Add("Count", count);
+
+			nbt.Add(version >= GameVersion.Release_1(20, 5) ? "count" : "Count", count);
 
 			return true;
 		}

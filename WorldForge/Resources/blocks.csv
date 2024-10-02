@@ -73,7 +73,7 @@ detector_rail;;28;detector_rail;b1.5;rail;00
 sticky_piston;PISTON;29;sticky_piston;b1.7;piston;00
 cobweb;;30;web;b1.5;;00
 ! shrub;;31;tallgrass;b1.6;;00
-grass;;31:1;tallgrass;b1.6;;00
+short_grass;;31:1;tallgrass;b1.6;;00
 fern;;31:2;tallgrass;b1.6;;00
 dead_bush;;32;deadbush;b1.6;;00
 piston;;33;piston;b1.7;;00

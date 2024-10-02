@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -92,18 +93,17 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 		private MemoryStream Save()
 		{
 			var stream = new MemoryStream();
-			var bf = new BinaryFormatter();
-			bf.Serialize(stream, this);
+			using(var bf = new BinaryWriter(stream))
+			{
+				bf.Write(JsonConvert.SerializeObject(this));
+			}
 			return stream;
 		}
 
 		public static AnalysisData Load(string path)
 		{
-			using(var stream = new FileStream(path, FileMode.Open))
-			{
-				var bf = new BinaryFormatter();
-				return (AnalysisData)bf.Deserialize(stream);
-			}
+			string text = File.ReadAllText(path);
+			return JsonConvert.DeserializeObject<AnalysisData>(text);
 		}
 
 		public void SaveToWorldFolder(string worldFolder)

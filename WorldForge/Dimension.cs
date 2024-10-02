@@ -33,7 +33,7 @@ namespace WorldForge
 		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
 			var dim = CreateNew(parentWorld, id, defaultBiome);
-
+			dim.InitializeArea(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ);
 			return dim;
 		}
 

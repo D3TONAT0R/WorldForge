@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
@@ -37,15 +38,24 @@ namespace WorldForge.NBT
 						}
 						else if(fi.FieldType.IsGenericType && fi.FieldType.GetGenericTypeDefinition() == typeof(List<>))
 						{
-							var list = Activator.CreateInstance(fi.FieldType, true);
-							var addMethod = fi.FieldType.GetMethod("Add");
+							var list = (IList)Activator.CreateInstance(fi.FieldType, true);
+							var elementType = fi.FieldType.GetGenericArguments()[0];
+							//var addMethod = fi.FieldType.GetMethod("Add");
 
 							NBTList nbtList;
 							if(removeFromCompound) nbtList = sourceNBT.Take<NBTList>(name);
 							else nbtList = sourceNBT.Get<NBTList>(name);
 							foreach(var item in nbtList)
 							{
-								addMethod.Invoke(list, new object[] { item });
+								//addMethod.Invoke(list, new object[] { item });
+								if(typeof(INBTConverter).IsAssignableFrom(elementType))
+								{
+									list.Add(Cast((NBTCompound)item, elementType));
+								}
+								else
+								{
+									list.Add(item);
+								}
 							}
 							value = list;
 						}
@@ -127,6 +137,14 @@ namespace WorldForge.NBT
 				}
 			}
 			return list;
+		}
+
+		private static INBTConverter Cast(NBTCompound comp, Type type)
+		{
+			if(!typeof(INBTConverter).IsAssignableFrom(type)) throw new InvalidOperationException("Target type does not implement INBTConverter");
+			var instance = (INBTConverter)Activator.CreateInstance(type, true);
+			LoadFromNBT(comp, instance);
+			return instance;
 		}
 	}
 }

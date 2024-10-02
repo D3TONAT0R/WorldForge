@@ -28,6 +28,8 @@ namespace WorldForge
 		public static readonly GameVersion FirstAnvilVersion = Release_1(2, 1);
 		public static readonly GameVersion FirstFlatteningVersion = Release_1(1, 13);
 
+		public static readonly GameVersion LastSupportedVersion = Release_1(21, 1);
+
 		public static readonly Dictionary<GameVersion, int> dataVersionAssociations = new Dictionary<GameVersion, int>()
 		{
 			{Release_1(9,0), 169},
@@ -90,7 +92,8 @@ namespace WorldForge
 			{Release_1(20,5), 3837},
 			{Release_1(20,6), 3839},
 
-			{Release_1(21,0), 3953}
+			{Release_1(21,0), 3953},
+			{Release_1(21,1), 3955}
 		};
 
 		public GameVersion(Stage stage, byte major, byte minor, byte patch)
@@ -177,6 +180,7 @@ namespace WorldForge
 						return kv.Key;
 					}
 				}
+				return LastSupportedVersion;
 			}
 			return null;
 		}

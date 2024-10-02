@@ -4,8 +4,6 @@ namespace WorldForge
 {
 	public class BlockID : ItemID
 	{
-		public readonly GameVersion addedInVersion;
-
 		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
 		public bool IsAir => ID == "minecraft:air";
 		public bool IsWater => ID == "minecraft:water";
@@ -62,7 +60,7 @@ namespace WorldForge
 		/// </summary>
 		public BlockID FindAppropriateBlock(GameVersion gameVersion)
 		{
-			if(gameVersion >= addedInVersion)
+			if(gameVersion >= AddedInVersion)
 			{
 				return this;
 			}

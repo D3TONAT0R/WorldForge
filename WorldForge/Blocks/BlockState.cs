@@ -37,7 +37,7 @@ namespace WorldForge
 		{
 			if(blockType == null)
 			{
-				throw new NullReferenceException("Attempted to create a BlockState with a null ProtoBlock.");
+				throw new NullReferenceException("Attempted to create a BlockState with a null BlockID.");
 			}
 			block = blockType;
 			AddDefaultBlockProperties();
@@ -190,6 +190,10 @@ namespace WorldForge
 						state = Air;
 					}
 				}
+			}
+			if(BlockList.TryGetPreviousID(state.block, version, out var newID))
+			{
+				state.block = newID;
 			}
 		}
 

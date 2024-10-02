@@ -11,11 +11,35 @@
     <Description>An API for working with Minecraft Region Files and NBT data.</Description>
     <RepositoryUrl>https://github.com/D3TONAT0R/WorldForge</RepositoryUrl>
     <PackageTags>minecraft;world;nbt;worldedit;mc</PackageTags>
-    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <AssemblyVersion></AssemblyVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <FileVersion>0.1.0</FileVersion>
-    <Version>0.1.0</Version>
+    <FileVersion></FileVersion>
+    <Version>0.2.1</Version>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\blocks.csv" />
+    <None Remove="Resources\block_remappings.csv" />
+    <None Remove="Resources\colormap.png" />
+    <None Remove="Resources\items.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\block_remappings.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\blocks.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\colormap.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\items.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\LICENSE">
@@ -27,24 +51,6 @@
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.13.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Resources\items.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\blocks.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\colormap.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\items.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\map_background.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using WorldForge.ConsoleTools;
+using WorldForge.Utilities.BlockDistributionAnalysis;
 
 namespace WorldForge
 {
@@ -15,11 +16,11 @@ namespace WorldForge
 			Console.Clear();
 			if(!WorldForgeManager.Initialized)
 			{
-				WorldForgeManager.Initialize(null, null);
+				WorldForgeManager.Initialize(null);
 			}
-			WriteLine("--------------");
-			WriteLine("MinecraftUtils");
-			WriteLine("--------------");
+			WriteLine("----------");
+			WriteLine("WorldForge");
+			WriteLine("----------");
 			string fname = null;
 			if(args.Length > 0)
 			{
@@ -64,12 +65,10 @@ namespace WorldForge
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
 					v.Run(args);
 				}
-				/*
-				if(input.StartsWith("analyzedist ")) {
+				if(input.StartsWith("analyzedist")) {
 					var v = new BlockDistributionConsoleTool();
 					v.Run(args);
 				}
-				*/
 			}
 		}
 
