@@ -11,15 +11,20 @@ namespace WorldForge.IO
 	{
 		private static readonly List<ChunkSerializer> serializerCache = new List<ChunkSerializer>();
 
+		private static object lockObj = new object();
+
 		public static ChunkSerializer GetOrCreateSerializer<T>(GameVersion version) where T : ChunkSerializer
 		{
-			foreach(var s in serializerCache)
+			lock(lockObj)
 			{
-				if(s.GetType() == typeof(T)) return s;
+				foreach(var s in serializerCache)
+				{
+					if(s.GetType() == typeof(T)) return s;
+				}
+				var newSerializer = (T)Activator.CreateInstance(typeof(T), version);
+				serializerCache.Add(newSerializer);
+				return newSerializer;
 			}
-			var newSerializer = (T)Activator.CreateInstance(typeof(T), version);
-			serializerCache.Add(newSerializer);
-			return newSerializer;
 		}
 
 		public static ChunkSerializer GetForVersion(GameVersion gameVersion)

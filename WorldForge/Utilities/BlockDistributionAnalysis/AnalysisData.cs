@@ -87,17 +87,8 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 
 		public void SaveToFile(string path)
 		{
-			File.WriteAllBytes(path, Save().ToArray());
-		}
-
-		private MemoryStream Save()
-		{
-			var stream = new MemoryStream();
-			using(var bf = new BinaryWriter(stream))
-			{
-				bf.Write(JsonConvert.SerializeObject(this));
-			}
-			return stream;
+			string json = JsonConvert.SerializeObject(this);
+			File.WriteAllText(path, json);
 		}
 
 		public static AnalysisData Load(string path)
