@@ -14,7 +14,7 @@
     <AssemblyVersion></AssemblyVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <FileVersion></FileVersion>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
