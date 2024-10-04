@@ -96,7 +96,7 @@ namespace WorldForge.Chunks
 
 		public void InitializeBiomes()
 		{
-			BiomeID fallback = containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void;
+			BiomeID fallback = containingChunk.ParentDimension?.defaultBiome ?? BiomeID.TheVoid;
 			var lowest = containingChunk.LowestSection;
 			sbyte secY = containingChunk.Sections.First(kv => kv.Value == this).Key;
 			ChunkSection belowSection = null;
@@ -155,13 +155,13 @@ namespace WorldForge.Chunks
 			}
 		}
 
-		public BiomeID? GetBiomeAt(int x, int y, int z)
+		public BiomeID GetBiomeAt(int x, int y, int z)
 		{
 			if (biomes == null) return null;
 			return biomes[x.Mod(16), (y / 4).Mod(4), z.Mod(16)];
 		}
 
-		public BiomeID? GetBiomeAt(int x, int z)
+		public BiomeID GetBiomeAt(int x, int z)
 		{
 			return GetBiomeAt(x, 15, z);
 		}
@@ -170,7 +170,7 @@ namespace WorldForge.Chunks
 		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
 			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
-			if (!HasBiomesDefined) return containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void;
+			if (!HasBiomesDefined) return containingChunk.ParentDimension?.defaultBiome ?? BiomeID.TheVoid;
 			for (int x1 = 0; x1 < 4; x1++)
 			{
 				for (int z1 = 0; z1 < 4; z1++)
@@ -183,7 +183,7 @@ namespace WorldForge.Chunks
 					occurences[b]++;
 				}
 			}
-			BiomeID predominantBiome = 0;
+			BiomeID predominantBiome = BiomeID.Ocean;
 			int predominantCells = 0;
 			foreach (var k in occurences.Keys)
 			{

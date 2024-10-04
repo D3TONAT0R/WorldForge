@@ -131,7 +131,7 @@ namespace WorldForge.IO
 						for(int z = 0; z < 4; z++)
 						{
 							int i = y * 16 + z * 4 + x;
-							var biome = (BiomeID)biomeData[i];
+							var biome = BiomeIDs.GetFromNumeric((byte)biomeData[i]);
 							var section = c.GetChunkSectionForYCoord(y * 4, false);
 							if(section != null)
 							{

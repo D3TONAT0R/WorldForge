@@ -23,7 +23,7 @@ namespace WorldForge.IO
 						var section = c.GetChunkSectionForYCoord(y * 4, false);
 						if(section != null)
 						{
-							biomeData[i] = (int)section.GetPredominantBiomeAt4x4(x, y.Mod(4), z);
+							biomeData[i] = (int)section.GetPredominantBiomeAt4x4(x, y.Mod(4), z).numericId;
 						}
 						else
 						{
@@ -33,12 +33,12 @@ namespace WorldForge.IO
 								int sy = (sbyte)Math.Floor(y * 4 / 16f);
 								bool above = sy > c.HighestSection;
 								var otherSection =  c.Sections[above ? c.HighestSection : c.LowestSection];
-								biomeData[i] = (int)otherSection.GetPredominantBiomeAt4x4(x, above ? 3 : 0, z);
+								biomeData[i] = (int)otherSection.GetPredominantBiomeAt4x4(x, above ? 3 : 0, z).numericId;
 							}
 							else
 							{
 								//Write the default biome
-								biomeData[i] = (int)(section.containingChunk.ParentDimension?.defaultBiome ?? BiomeID.the_void);
+								biomeData[i] = (int)(section.containingChunk.ParentDimension?.defaultBiome.numericId ?? BiomeID.TheVoid.numericId);
 							}
 						}
 					}

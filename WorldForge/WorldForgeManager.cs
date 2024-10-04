@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using WorldForge.Biomes;
 using WorldForge.Items;
 
 namespace WorldForge
@@ -15,6 +16,7 @@ namespace WorldForge
 		{
 			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
 			ItemList.Initialize(GetResourceAsText("items.csv"));
+			BiomeIDs.Initialize(GetResourceAsText("biomes.csv"));
 
 			if(bitmapFactory != null)
 			{

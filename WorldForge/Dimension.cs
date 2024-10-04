@@ -21,7 +21,7 @@ namespace WorldForge
 
 		public DimensionID dimensionID;
 
-		public BiomeID defaultBiome = BiomeID.the_void;
+		public BiomeID defaultBiome = BiomeID.TheVoid;
 
 		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
 
@@ -37,19 +37,34 @@ namespace WorldForge
 			return dim;
 		}
 
-		public static Dimension CreateOverworld(World parentWorld, BiomeID defaultBiome = BiomeID.plains)
+		public static Dimension CreateOverworld(World parentWorld, BiomeID defaultBiome)
 		{
 			return CreateNew(parentWorld, DimensionID.Overworld, defaultBiome);
 		}
 
-		public static Dimension CreateNether(World parentWorld, BiomeID defaultBiome = BiomeID.nether_wastes)
+		public static Dimension CreateOverworld(World parentWorld)
+		{
+			return CreateNew(parentWorld, DimensionID.Overworld, BiomeID.Plains);
+		}
+
+		public static Dimension CreateNether(World parentWorld, BiomeID defaultBiome)
 		{
 			return CreateNew(parentWorld, DimensionID.Nether, defaultBiome);
 		}
 
-		public static Dimension CreateTheEnd(World parentWorld, BiomeID defaultBiome = BiomeID.the_end)
+		public static Dimension CreateNether(World parentWorld)
+		{
+			return CreateNew(parentWorld, DimensionID.Nether, BiomeID.NetherWastes);
+		}
+
+		public static Dimension CreateTheEnd(World parentWorld, BiomeID defaultBiome)
 		{
 			return CreateNew(parentWorld, DimensionID.TheEnd, defaultBiome);
+		}
+
+		public static Dimension CreateTheEnd(World parentWorld)
+		{
+			return CreateNew(parentWorld, DimensionID.TheEnd, BiomeID.TheEnd);
 		}
 
 		private Dimension(World parentWorld, DimensionID dimensionID, BiomeID defaultBiome)
@@ -62,7 +77,7 @@ namespace WorldForge
 		//TODO: Danger, loads entire dimension at once
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
-			var dim = new Dimension(world, id, BiomeID.the_void);
+			var dim = new Dimension(world, id, BiomeID.TheVoid);
 			dim.regions = new Dictionary<RegionLocation, Region>();
 			bool isAlphaFormat = world.GameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
@@ -234,13 +249,13 @@ namespace WorldForge
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiome(int x, int z)
+		public BiomeID GetBiome(int x, int z)
 		{
 			return GetRegion(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiome(BlockCoord pos)
+		public BiomeID GetBiome(BlockCoord pos)
 		{
 			return GetRegion(pos.x, pos.z)?.GetBiomeAt(pos.LocalRegionCoords);
 		}

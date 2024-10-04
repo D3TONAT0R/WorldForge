@@ -11,32 +11,53 @@ namespace WorldForge.Biomes
 		{
 			biomeRegistry = new List<BiomeID>();
 			//TODO: load biomes from file
+			throw new NotImplementedException();
 		}
 
-		public BiomeID Get(string id)
+		public static BiomeID Get(string id, bool throwError = false)
 		{
-
+			foreach(var biome in biomeRegistry)
+			{
+				if(biome.CheckID(id))
+				{
+					return biome;
+				}
+			}
+			if(throwError) throw new ArgumentException($"Unrecognized biome ID: '{id}'");
+			return null;
 		}
 
-		public static BiomeID ParseBiome(string biomeID)
+		public static BiomeID GetFromNumeric(byte id, bool throwError = false)
 		{
-			if (TryParseBiome(biomeID, out var biome))
+			foreach(var biome in biomeRegistry)
 			{
-				return biome;
+				if(biome.numericId == id)
+				{
+					return biome;
+				}
 			}
-			else
-			{
-				throw new ArgumentException($"Unrecognized biome ID: '{biomeID}'");
-			}
+			if(throwError) throw new ArgumentException($"Unrecognized biome numeric ID: '{id}'");
+			return null;
 		}
 
-		public static bool TryParseBiome(string biomeID, out BiomeID biome)
+		public static bool TryGet(string id, out BiomeID biome)
 		{
-			switch (biomeID)
+			biome = Get(id, false);
+			return biome != null;
+		}
+
+		public static BiomeID GetOrCreate(string id)
+		{
+			foreach(var biome in biomeRegistry)
 			{
-				default:
-					return Enum.TryParse(biomeID, true, out biome);
+				if(biome.CheckID(id))
+				{
+					return biome;
+				}
 			}
+			var newBiome = new BiomeID(id);
+			biomeRegistry.Add(newBiome);
+			return newBiome;
 		}
 	}
 }

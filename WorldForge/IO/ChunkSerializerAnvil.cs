@@ -226,7 +226,7 @@ namespace WorldForge.IO
 		{
 			if(chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
-				byte defaultBiomeID = (byte)BiomeID.plains;
+				byte defaultBiomeID = (byte)BiomeID.Plains.numericId;
 				if(biomeData.All(b => b == defaultBiomeID))
 				{
 					//Do nothing, as all biomes are plains biomes anyway (the default biome)
@@ -235,7 +235,7 @@ namespace WorldForge.IO
 				{
 					for(int i = 0; i < 256; i++)
 					{
-						c.SetBiomeAt(i % 16, i / 16, (BiomeID)biomeData[i]);
+						c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric(biomeData[i]));
 					}
 				}
 			}
@@ -246,7 +246,7 @@ namespace WorldForge.IO
 			byte[] biomeData = new byte[256];
 			for(int i = 0; i < 256; i++)
 			{
-				biomeData[i] = (byte)(c.GetBiomeAt(i % 16, i / 16) ?? BiomeID.plains);
+				biomeData[i] = (byte)(c.GetBiomeAt(i % 16, i / 16).numericId ?? BiomeID.Plains.numericId);
 			}
 			chunkNBT.Add("Biomes", biomeData);
 		}

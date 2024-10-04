@@ -159,7 +159,7 @@ namespace WorldForge.Regions
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiomeAt(int x, int z)
+		public BiomeID GetBiomeAt(int x, int z)
 		{
 			var chunk = GetChunk(x, z, false);
 			if (chunk != null)
@@ -176,7 +176,7 @@ namespace WorldForge.Regions
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
-		public BiomeID? GetBiomeAt(BlockCoord pos)
+		public BiomeID GetBiomeAt(BlockCoord pos)
 		{
 			var chunk = GetChunk(pos.x, pos.z, false);
 			if (chunk != null)

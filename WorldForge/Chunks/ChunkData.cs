@@ -236,7 +236,7 @@ namespace WorldForge.Chunks
 		}
 
 		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID? GetBiomeAt(BlockCoord pos)
+		public BiomeID GetBiomeAt(BlockCoord pos)
 		{
 			if(!IsLoaded) Load();
 			var section = GetChunkSectionForYCoord(pos.y, false);
@@ -251,7 +251,7 @@ namespace WorldForge.Chunks
 		}
 
 		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID? GetBiomeAt(int x, int z)
+		public BiomeID GetBiomeAt(int x, int z)
 		{
 			if(!IsLoaded) Load();
 			sbyte highestSectionWithBiomeData = HighestSection;
