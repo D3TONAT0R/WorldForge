@@ -221,7 +221,7 @@ namespace WorldForge
 					}
 				}
 				structureOverrides = settings.Get<List<string>>("structure_overrides");
-				biome = BiomeIDResolver.ParseBiome(nbt.Get<string>("biome"));
+				biome = BiomeIDs.ParseBiome(nbt.Get<string>("biome"));
 			}
 
 			protected override void WriteSettings(NBTCompound nbt, GameVersion version)
@@ -234,7 +234,7 @@ namespace WorldForge
 				}
 				settings.Add("layers", list);
 				settings.Add("structure_overrides", structureOverrides);
-				settings.Add("biome", BiomeIDResolver.GetIDForVersion(biome, version));
+				settings.Add("biome", BiomeIDs.GetIDForVersion(biome, version));
 				settings.Add("features", features);
 				settings.Add("lakes", lakes);
 			}

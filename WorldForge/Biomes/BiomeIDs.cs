@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WorldForge.Biomes
 {
-	public static class BiomeIDResolver
+	public static class BiomeIDs
 	{
-		public static string GetIDForVersion(BiomeID biome, GameVersion gameVersion)
+		private static List<BiomeID> biomeRegistry;
+
+		public static void Initialize(string biomeData)
 		{
-			switch (biome)
-			{
-				case BiomeID.mountains:
-					if (gameVersion < GameVersion.Release_1(13)) return "extreme_hills";
-					else if (gameVersion < GameVersion.Release_1(18)) return "mountains";
-					else return "windswept_hills";
-				default:
-					return biome.ToString();
-			}
+			biomeRegistry = new List<BiomeID>();
+			//TODO: load biomes from file
+		}
+
+		public BiomeID Get(string id)
+		{
+
 		}
 
 		public static BiomeID ParseBiome(string biomeID)

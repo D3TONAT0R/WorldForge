@@ -108,11 +108,41 @@
 
 		public readonly string id;
 		public readonly byte? numericId;
+		public readonly string preFlatteningId;
+		public readonly string pre118Id;
+		public readonly GameVersion addedInVersion;
+		public BiomeID substitute;
 
 		public BiomeID(string id, byte? numericId = null)
 		{
 			this.id = id;
 			this.numericId = numericId;
+		}
+
+		internal BiomeID(string id, byte? numericId, string preFlatteningId, string pre118Id, BiomeID substitute, GameVersion addedInVersion)
+		{
+			this.id = id;
+			this.numericId = numericId;
+			this.preFlatteningId = preFlatteningId;
+			this.pre118Id = pre118Id;
+			this.addedInVersion = addedInVersion;
+			this.substitute = substitute;
+		}
+
+		public static void Resolve(GameVersion version, ref BiomeID biome)
+		{
+			if(version < biome.addedInVersion)
+			{
+				if(biome.substitute != null)
+				{
+					biome = biome.substitute;
+					Resolve(version, ref biome);
+				}
+				else
+				{
+					biome = null;
+				}
+			}
 		}
 
 		public override string ToString()

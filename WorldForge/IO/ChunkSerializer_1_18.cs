@@ -47,7 +47,7 @@ namespace WorldForge.IO
 					for(int i = 0; i < paletteNBT.Length; i++)
 					{
 						var id = paletteNBT.Get<string>(i).Replace("minecraft:", "");
-						if(BiomeIDResolver.TryParseBiome(id, out var b))
+						if(BiomeIDs.TryParseBiome(id, out var b))
 						{
 							palette[i] = b;
 						}
@@ -167,13 +167,13 @@ namespace WorldForge.IO
 				if(biomePaletteList.Count == 1)
 				{
 					//No need to save the data if there's only one biome in the palette
-					biomePalette.Add(BiomeIDResolver.GetIDForVersion(biomePaletteList[0], TargetVersion));
+					biomePalette.Add(BiomeIDs.GetIDForVersion(biomePaletteList[0], TargetVersion));
 				}
 				else
 				{
 					foreach(var b in biomePaletteList)
 					{
-						biomePalette.Add(BiomeIDResolver.GetIDForVersion(b, TargetVersion));
+						biomePalette.Add(BiomeIDs.GetIDForVersion(b, TargetVersion));
 					}
 					biomes.Add("data", BitUtils.PackBits(biomeIndexData, BitUtils.GetMaxBitCount((uint)biomePaletteList.Count - 1), false));
 				}
@@ -182,7 +182,7 @@ namespace WorldForge.IO
 			{
 				//Write default biome
 				var defaultBiome = section.containingChunk?.ParentDimension?.defaultBiome ?? BiomeID.plains;
-				biomePalette.Add(BiomeIDResolver.GetIDForVersion(defaultBiome, TargetVersion));
+				biomePalette.Add(BiomeIDs.GetIDForVersion(defaultBiome, TargetVersion));
 			}
 		}
 	}
