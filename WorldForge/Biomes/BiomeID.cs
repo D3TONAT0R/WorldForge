@@ -129,6 +129,19 @@
 			this.substitute = substitute;
 		}
 
+		public string GetIDForVersion(GameVersion version)
+		{
+			if(version < GameVersion.FirstFlatteningVersion && !string.IsNullOrEmpty(preFlatteningId))
+			{
+				return preFlatteningId;
+			}
+			else if(version < GameVersion.Release_1(18) && !string.IsNullOrEmpty(pre118Id))
+			{
+				return pre118Id;
+			}
+			else return id;
+		}
+
 		public static void Resolve(GameVersion version, ref BiomeID biome)
 		{
 			if(version < biome.addedInVersion)
