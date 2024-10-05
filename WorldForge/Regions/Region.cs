@@ -108,17 +108,23 @@ namespace WorldForge.Regions
 			return GetChunk(pos.x, pos.z, true)?.GetTileEntity(pos.LocalChunkCoords);
 		}
 
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
-		}
-
 		///<summary>Sets the block state at the given location.</summary>
 		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
 		{
 			GetChunk(pos.x, pos.z, allowNewChunks)?.SetBlockAt(pos.LocalChunkCoords, block);
 			return true;
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
+		{
+			return SetBlock(pos, new BlockState(block), allowNewChunks);
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
+		{
+			return SetBlock(pos, BlockList.Find(block), allowNewChunks);
 		}
 
 		///<summary>Sets the tile entity at the given location.</summary>

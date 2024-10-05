@@ -4,9 +4,9 @@ namespace WorldForge
 {
 	public class BlockID : ItemID
 	{
-		private static NamespacedID air = "air";
-		private static NamespacedID water = "water";
-		private static NamespacedID lava = "lava";
+		private static NamespacedID air = new NamespacedID("air", false);
+		private static NamespacedID water = new NamespacedID("water", false);
+		private static NamespacedID lava = new NamespacedID("lava", false);
 
 		public bool IsVanillaBlock => !ID.HasCustomNamespace;
 		public bool IsAir => ID == air;
@@ -30,7 +30,7 @@ namespace WorldForge
 			return RegisterNewBlock(modNamespace, shortID, null, null, numID);
 		}
 
-		static BlockID[] RegisterNewBlock(string modNamespace, string id, GameVersion? versionAdded, BlockID substitute, NumericID? numericId)
+		private static BlockID[] RegisterNewBlock(string modNamespace, string id, GameVersion? versionAdded, BlockID substitute, NumericID? numericId)
 		{
 			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
 			if(id.Contains("*"))
@@ -81,19 +81,23 @@ namespace WorldForge
 			}
 		}
 
-		public bool CompareMultiple(params string[] ids)
+		public bool CompareMultiple(string[] ids)
 		{
-			bool b = false;
 			for(int i = 0; i < ids.Length; i++)
 			{
-				b |= Compare(ids[i]);
+				if(Compare(ids[i])) return true;
 			}
-			return b;
+			return false;
+		}
+
+		public bool CompareMultiple(string b0, string b1)
+		{
+			return Compare(b0) || Compare(b1);
 		}
 
 		public bool Compare(string block)
 		{
-			return block == ID;
+			return ID.Matches(block);
 		}
 
 		public override bool Equals(object obj)
@@ -104,7 +108,7 @@ namespace WorldForge
 			}
 			else if(obj is string s)
 			{
-				return ID == s;
+				return ID.Matches(s);
 			}
 			else
 			{

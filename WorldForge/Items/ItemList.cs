@@ -24,7 +24,8 @@ namespace WorldForge.Items
 				var numeric = NumericID.TryParse(row[1]);
 				var preFlatteningId = row[2];
 				var version = !string.IsNullOrEmpty(row[3]) ? GameVersion.Parse(row[3]) : GameVersion.FirstVersion;
-				ItemID fallback = !string.IsNullOrEmpty(row[4]) ? Find(row[4], true) : null;
+				var fallbackID = new NamespacedID(row[4]);
+				ItemID fallback = !string.IsNullOrEmpty(row[4]) ? Find(fallbackID, true) : null;
 
 				var item = new ItemID(id, version, fallback, numeric);
 				allItems.Add(item.ID, item);
@@ -40,26 +41,25 @@ namespace WorldForge.Items
 			}
 		}
 
-		public static ItemID Find(string itemID, bool throwErrorIfNotFound = false)
+		public static ItemID Find(NamespacedID id, bool throwErrorIfNotFound = false)
 		{
-			if(!itemID.Contains(":")) itemID = "minecraft:" + itemID;
-			if(itemID.StartsWith("minecraft:"))
+			if(!id.HasCustomNamespace)
 			{
-				if(allItems.TryGetValue(itemID, out var item))
+				if(allItems.TryGetValue(id, out var item))
 				{
 					return item;
 				}
 				else
 				{
 					//Try to find block item
-					var block = BlockList.Find(itemID, false);
+					var block = BlockList.Find(id, false);
 					if(block != null)
 					{
 						return block;
 					}
 					else
 					{
-						if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find an item with name '{itemID}'.");
+						if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find an item with id '{id}'.");
 						return null;
 					}
 				}
@@ -67,22 +67,21 @@ namespace WorldForge.Items
 			else
 			{
 				//Modded block, add it to the list if we haven't done so already.
-				if(allItems.TryGetValue(itemID, out var pb))
+				if(allItems.TryGetValue(id, out var pb))
 				{
 					return pb;
 				}
 				else
 				{
 					//Try to find block item
-					var block = BlockList.Find(itemID, false);
+					var block = BlockList.Find(id, false);
 					if(block != null)
 					{
 						return block;
 					}
 					else
 					{
-						var split = itemID.Split(':');
-						return ItemID.RegisterModdedItem(split[0], split[1]);
+						return ItemID.RegisterModdedItem(id.customNamespace, id.id);
 					}
 				}
 			}

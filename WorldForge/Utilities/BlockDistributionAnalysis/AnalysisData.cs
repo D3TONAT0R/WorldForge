@@ -60,7 +60,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			if(block != null) IncreaseCounter(block.ID, y);
 		}
 
-		public long GetTotalAtY(string blockID, short y)
+		public long GetTotalAtY(NamespacedID blockID, short y)
 		{
 			if(data.TryGetValue(blockID, out var c))
 			{
@@ -72,7 +72,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-		public double GetRateAtY(string blockID, short y)
+		public double GetRateAtY(NamespacedID blockID, short y)
 		{
 			if(data.TryGetValue(blockID, out var c))
 			{

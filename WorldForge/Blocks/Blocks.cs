@@ -46,42 +46,42 @@ namespace WorldForge
 
 		public static readonly Dictionary<NamespacedID, int> colorMapIndices = new Dictionary<NamespacedID, int>
 		{
-			{"minecraft:grass_block", 0 },
-			{"minecraft:dirt", 1 },
-			{"minecraft:coarse_dirt", 1 },
-			{"minecraft:podzol", 1 },
-			{"minecraft:water", 2 },
-			{"minecraft:oak_leaves",3 },
-			{"minecraft:birch_leaves", 3 },
-			{"minecraft:spruce_leaves", 3 },
-			{"minecraft:jungle_leaves",3 },
-			{"minecraft:acacia_leaves", 3 },
-			{"minecraft:dark_oak_leaves",3 },
-			{"minecraft:azalea_leaves",3 },
-			{"minecraft:stone",4 },
-			{"minecraft:diorite",4 },
-			{"minecraft:granite",4 },
-			{"minecraft:andesite",4 },
-			{"minecraft:gravel",4 },
-			{"minecraft:oak_log",5 },
-			{"minecraft:birch_log",5 },
-			{"minecraft:spruce_log",5 },
-			{"minecraft:jungle_log",5 },
-			{"minecraft:acacia_log",5 },
-			{"minecraft:dark_oak_log",5 },
-			{"minecraft:snow",6 },
-			{"minecraft:snow_block",6 },
-			{"minecraft:sand",7 },
-			{"minecraft:sandstone",7 },
-			{"minecraft:cobblestone",8 },
-			{"minecraft:bedrock",8 },
-			{"minecraft:obsidian", 8 },
-			{"minecraft:lava",9 },
-			{"minecraft:magma_block",9 },
-			{"minecraft:ice",10 },
-			{"minecraft:packed_ice",10 },
-			{"minecraft:blue_ice",10 },
-			{"minecraft:frosted_ice",10 }
+			{new NamespacedID("minecraft:grass_block"), 0 },
+			{new NamespacedID("minecraft:dirt"), 1 },
+			{new NamespacedID("minecraft:coarse_dirt"), 1 },
+			{new NamespacedID("minecraft:podzol"), 1 },
+			{new NamespacedID("minecraft:water"), 2 },
+			{new NamespacedID("minecraft:oak_leaves"),3 },
+			{new NamespacedID("minecraft:birch_leaves"), 3 },
+			{new NamespacedID("minecraft:spruce_leaves"), 3 },
+			{new NamespacedID("minecraft:jungle_leaves"),3 },
+			{new NamespacedID("minecraft:acacia_leaves"), 3 },
+			{new NamespacedID("minecraft:dark_oak_leaves"),3 },
+			{new NamespacedID("minecraft:azalea_leaves"),3 },
+			{new NamespacedID("minecraft:stone"),4 },
+			{new NamespacedID("minecraft:diorite"),4 },
+			{new NamespacedID("minecraft:granite"),4 },
+			{new NamespacedID("minecraft:andesite"),4 },
+			{new NamespacedID("minecraft:gravel"),4 },
+			{new NamespacedID("minecraft:oak_log"),5 },
+			{new NamespacedID("minecraft:birch_log"),5 },
+			{new NamespacedID("minecraft:spruce_log"),5 },
+			{new NamespacedID("minecraft:jungle_log"),5 },
+			{new NamespacedID("minecraft:acacia_log"),5 },
+			{new NamespacedID("minecraft:dark_oak_log"),5 },
+			{new NamespacedID("minecraft:snow"),6 },
+			{new NamespacedID("minecraft:snow_block"),6 },
+			{new NamespacedID("minecraft:sand"),7 },
+			{new NamespacedID("minecraft:sandstone"),7 },
+			{new NamespacedID("minecraft:cobblestone"),8 },
+			{new NamespacedID("minecraft:bedrock"),8 },
+			{new NamespacedID("minecraft:obsidian"), 8 },
+			{new NamespacedID("minecraft:lava"),9 },
+			{new NamespacedID("minecraft:magma_block"),9 },
+			{new NamespacedID("minecraft:ice"),10 },
+			{new NamespacedID("minecraft:packed_ice"),10 },
+			{new NamespacedID("minecraft:blue_ice"),10 },
+			{new NamespacedID("minecraft:frosted_ice"),10 }
 		};
 
 		public static readonly string[] commonColors = new string[]
@@ -173,6 +173,7 @@ namespace WorldForge
 		public static bool IsAir(BlockID b)
 		{
 			if(b == null) return false;
+
 			return b.CompareMultiple("minecraft:air", "minecraft:cave_air");
 		}
 

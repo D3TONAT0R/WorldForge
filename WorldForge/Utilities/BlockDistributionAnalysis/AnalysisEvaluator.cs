@@ -94,7 +94,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			return groups;
 		}
 
-		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, bool relativeToStone, params string[] blockIDs)
+		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, bool relativeToStone, params NamespacedID[] blockIDs)
 		{
 			Dictionary<short, long> combined = new Dictionary<short, long>();
 			foreach(var block in blockIDs)
@@ -134,24 +134,24 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 		private static long CountTerrainBlocksAtY(AnalysisData analysis, short y)
 		{
 			return
-				analysis.GetTotalAtY("minecraft:stone", y) +
-				analysis.GetTotalAtY("minecraft:deepslate", y) +
-				analysis.GetTotalAtY("minecraft:andesite", y) +
-				analysis.GetTotalAtY("minecraft:diorite", y) +
-				analysis.GetTotalAtY("minecraft:granite", y) +
-				analysis.GetTotalAtY("minecraft:tuff", y) +
-				analysis.GetTotalAtY("minecraft:gravel", y) +
-				analysis.GetTotalAtY("minecraft:dirt", y) +
-				analysis.GetTotalAtY("minecraft:grass_block", y) +
-				analysis.GetTotalAtY("minecraft:podzol", y) +
-				analysis.GetTotalAtY("minecraft:clay", y) +
-				analysis.GetTotalAtY("minecraft:mud", y) +
-				analysis.GetTotalAtY("minecraft:sand", y);
+				analysis.GetTotalAtY(new NamespacedID("stone"), y) +
+				analysis.GetTotalAtY(new NamespacedID("deepslate"), y) +
+				analysis.GetTotalAtY(new NamespacedID("andesite"), y) +
+				analysis.GetTotalAtY(new NamespacedID("diorite"), y) +
+				analysis.GetTotalAtY(new NamespacedID("granite"), y) +
+				analysis.GetTotalAtY(new NamespacedID("tuff"), y) +
+				analysis.GetTotalAtY(new NamespacedID("gravel"), y) +
+				analysis.GetTotalAtY(new NamespacedID("dirt"), y) +
+				analysis.GetTotalAtY(new NamespacedID("grass_block"), y) +
+				analysis.GetTotalAtY(new NamespacedID("podzol"), y) +
+				analysis.GetTotalAtY(new NamespacedID("clay"), y) +
+				analysis.GetTotalAtY(new NamespacedID("mud"), y) +
+				analysis.GetTotalAtY(new NamespacedID("sand"), y);
 		}
 
 		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, BlockGroup group, bool relativeToStone)
 		{
-			return Evaluate(analysis, relativeToStone, group.blocks.Select(b => b.ID.FullID).ToArray());
+			return Evaluate(analysis, relativeToStone, group.blocks.Select(b => b.ID).ToArray());
 		}
 
 		private static void JoinDictionaries(Dictionary<short, long> src, Dictionary<short, long> target)

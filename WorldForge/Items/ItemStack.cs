@@ -22,7 +22,12 @@ namespace WorldForge.Items
 			this.count = count;
 		}
 
-		public ItemStack(string itemID, sbyte count) : this(new Item(itemID), count)
+		public ItemStack(NamespacedID itemID, sbyte count) : this(new Item(itemID), count)
+		{
+
+		}
+
+		public ItemStack(string itemID, sbyte count) : this(new Item(new NamespacedID(itemID)), count)
 		{
 
 		}

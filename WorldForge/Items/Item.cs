@@ -16,7 +16,7 @@ namespace WorldForge.Items
 			this.metadata = metadata;
 		}
 
-		public Item(string id, NBTCompound metadata = null) : this(ItemList.Find(id), null)
+		public Item(NamespacedID id, NBTCompound metadata = null) : this(ItemList.Find(id), metadata)
 		{
 
 		}
@@ -26,7 +26,7 @@ namespace WorldForge.Items
 			var itemId = nbt.Get("id");
 			if(itemId is string s)
 			{
-				id = ItemID.Get(s);
+				id = ItemID.Get(new NamespacedID(s));
 			}
 			else if(itemId is short i)
 			{

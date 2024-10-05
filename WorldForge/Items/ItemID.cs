@@ -2,15 +2,14 @@
 {
 	public class ItemID
 	{
-		public readonly NamespacedID ID;
+		public NamespacedID ID;
 		public readonly NumericID? numericID = null;
 
 		public GameVersion AddedInVersion { get; private set; } = GameVersion.FirstVersion;
 		public ItemID substitute;
 
-		public static ItemID Get(string id)
+		public static ItemID Get(NamespacedID id)
 		{
-			if(!id.Contains(":")) id = "minecraft:" + id;
 			if(ItemList.allItems.TryGetValue(id, out var b)) return b;
 			else return null;
 		}

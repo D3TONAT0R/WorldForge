@@ -346,12 +346,7 @@ namespace WorldForge
 		public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
 		{
 			//TODO
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
+			throw new NotImplementedException();
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
@@ -368,6 +363,18 @@ namespace WorldForge
 			{
 				return false;
 			}
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
+		{
+			return SetBlock(pos, new BlockState(block), allowNewChunks);
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
+		{
+			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
@@ -474,7 +481,7 @@ namespace WorldForge
 						}
 					}
 					var aboveBlock = GetBlock((x, y + 1, z));
-					if(aboveBlock != null && aboveBlock.ID == "minecraft:snow") block = aboveBlock;
+					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
 				}
 			}

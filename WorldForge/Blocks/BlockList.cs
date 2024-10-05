@@ -626,8 +626,8 @@ namespace WorldForge
 				var split = lines[i].Split(';');
 				if(split[0].Length > 0)
 				{
-					string id = split[0];
-					if(allBlocks.ContainsKey("minecraft:" + id))
+					var id = new NamespacedID(split[0]);
+					if(allBlocks.ContainsKey(id))
 					{
 						//TODO: how to handle multiple equal ids (such as different facing logs) ?
 						continue;
@@ -636,7 +636,7 @@ namespace WorldForge
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
 					GameVersion version = split[4].Length > 1 ? GameVersion.Parse(split[4]) : GameVersion.FirstVersion;
-					var newBlocks = BlockID.RegisterNewVanillaBlock(id, version, null, numeric);
+					var newBlocks = BlockID.RegisterNewVanillaBlock(id.id, version, null, numeric);
 					foreach(var newBlock in newBlocks)
 					{
 						if(split[5].Length > 1)
@@ -660,12 +660,11 @@ namespace WorldForge
 			newRemappings = new Dictionary<BlockID, Remapping>();
 			if(remappingsData != null)
 			{
-				lines = remappingsData.Replace("\r", "").Split('\n');
-				for(int i = 2; i < lines.Length; i++)
+				CSV remappingsCSV = new CSV(remappingsData);
+				foreach(var line in remappingsCSV.data)
 				{
-					string[] line = lines[i].Split(';');
-					var newID = Find(line[1], true);
-					var oldID = new BlockID(new NamespacedID(line[0]), newID.AddedInVersion, (BlockID)newID.substitute, newID.numericID); 
+					var newID = Find(new NamespacedID(line[1]), true);
+					var oldID = new BlockID(new NamespacedID(line[0]), newID.AddedInVersion, (BlockID)newID.substitute, newID.numericID);
 					GameVersion version = GameVersion.Parse(line[2]);
 					var remap = new Remapping(oldID, newID, version);
 					oldRemappings.Add(oldID.ID, remap);
@@ -683,7 +682,16 @@ namespace WorldForge
 				{
 					subst.Replace("*", GetColorFromBlockID(f.Item1.ID.id));
 				}
-				f.Item1.substitute = Find(subst);
+				BlockID subsituteBlock;
+				if(!char.IsDigit(subst[0]))
+				{
+					subsituteBlock = Find(new NamespacedID(subst));
+				}
+				else
+				{
+					subsituteBlock = FindByNumeric(NumericID.Parse(subst));
+				}
+				f.Item1.substitute = subsituteBlock;
 			}
 		}
 
@@ -696,38 +704,41 @@ namespace WorldForge
 			return null;
 		}
 
-		public static BlockID Find(string blockTypeName, bool throwErrorIfNotFound = false)
+		public static BlockID Find(NamespacedID id, bool throwErrorIfNotFound = false)
 		{
-			if(!blockTypeName.Contains(":")) blockTypeName = "minecraft:" + blockTypeName;
-			if(blockTypeName.StartsWith("minecraft:"))
+			if(!id.HasCustomNamespace)
 			{
-				if(oldRemappings.TryGetValue(blockTypeName, out var remap))
+				if(oldRemappings.TryGetValue(id, out var remap))
 				{
 					return remap.newID;
 				}
-				if(allBlocks.TryGetValue(blockTypeName, out var b))
+				if(allBlocks.TryGetValue(id, out var b))
 				{
 					return b;
 				}
 				else
 				{
-					if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with name '{blockTypeName}'.");
+					if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with id '{id}'.");
 					return null;
 				}
 			}
 			else
 			{
 				//Modded block, add it to the list if we haven't done so already.
-				if(allBlocks.TryGetValue(blockTypeName, out var pb))
+				if(allBlocks.TryGetValue(id, out var b))
 				{
-					return pb;
+					return b;
 				}
 				else
 				{
-					var split = blockTypeName.Split(':');
-					return BlockID.RegisterNewModBlock(split[0], split[1])[0];
+					return BlockID.RegisterNewModBlock(id.customNamespace, id.id)[0];
 				}
 			}
+		}
+
+		public static BlockID Find(string id, bool throwErrorIfNotFound = false)
+		{
+			return Find(new NamespacedID(id), throwErrorIfNotFound);
 		}
 
 		public static bool TryGetPreviousID(BlockID id, GameVersion targetVersion, out BlockID previous)

@@ -22,16 +22,21 @@ namespace WorldForge
 			try
 			{
 				if(string.IsNullOrWhiteSpace(s)) return null;
-				var split = s.Split(':');
-				short id = short.Parse(split[0]);
-				short dmg = 0;
-				if(split.Length > 1) short.TryParse(split[1], out dmg);
-				return new NumericID(id, dmg);
+				return Parse(s);
 			}
 			catch
 			{
 				return null;
 			}
+		}
+
+		public static NumericID Parse(string s)
+		{
+			var split = s.Split(':');
+			short id = short.Parse(split[0]);
+			short dmg = 0;
+			if(split.Length > 1) short.TryParse(split[1], out dmg);
+			return new NumericID(id, dmg);
 		}
 
 		public uint Hash => (uint)((id << 16) + damage);
