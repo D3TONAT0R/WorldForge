@@ -151,7 +151,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 
 		public static Dictionary<short, double?> Evaluate(AnalysisData analysis, BlockGroup group, bool relativeToStone)
 		{
-			return Evaluate(analysis, relativeToStone, group.blocks.Select(b => b.ID).ToArray());
+			return Evaluate(analysis, relativeToStone, group.blocks.Select(b => b.ID.FullID).ToArray());
 		}
 
 		private static void JoinDictionaries(Dictionary<short, long> src, Dictionary<short, long> target)

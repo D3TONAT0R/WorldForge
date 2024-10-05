@@ -4,10 +4,14 @@ namespace WorldForge
 {
 	public class BlockID : ItemID
 	{
-		public bool IsVanillaBlock => customNamespace == null || customNamespace == "minecraft";
-		public bool IsAir => ID == "minecraft:air";
-		public bool IsWater => ID == "minecraft:water";
-		public bool IsLava => ID == "minecraft:lava";
+		private static NamespacedID air = "air";
+		private static NamespacedID water = "water";
+		private static NamespacedID lava = "lava";
+
+		public bool IsVanillaBlock => !ID.HasCustomNamespace;
+		public bool IsAir => ID == air;
+		public bool IsWater => ID == water;
+		public bool IsLava => ID == lava;
 		public bool IsLiquid => IsWater || IsLava;
 
 		/// <summary>
@@ -26,17 +30,17 @@ namespace WorldForge
 			return RegisterNewBlock(modNamespace, shortID, null, null, numID);
 		}
 
-		static BlockID[] RegisterNewBlock(string modNamespace, string shortID, GameVersion? versionAdded, BlockID substitute, NumericID? numericId)
+		static BlockID[] RegisterNewBlock(string modNamespace, string id, GameVersion? versionAdded, BlockID substitute, NumericID? numericId)
 		{
 			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
-			if(shortID.Contains("*"))
+			if(id.Contains("*"))
 			{
 				//Multicolored blocks
 				BlockID[] blocks = new BlockID[Blocks.commonColors.Length];
 				for(int i = 0; i < Blocks.commonColors.Length; i++)
 				{
-					string colorBlockID = shortID.Replace("*", Blocks.commonColors[i]);
-					var b = new BlockID(modNamespace, colorBlockID, versionAdded.Value, substitute, numericId);
+					string colorBlockID = id.Replace("*", Blocks.commonColors[i]);
+					var b = new BlockID(new NamespacedID(modNamespace, id), versionAdded.Value, substitute, numericId);
 					BlockList.allBlocks.Add(b.ID, b);
 					blocks[i] = b;
 				}
@@ -44,13 +48,13 @@ namespace WorldForge
 			}
 			else
 			{
-				var b = new BlockID(modNamespace, shortID, versionAdded.Value, substitute, numericId);
+				var b = new BlockID(new NamespacedID(modNamespace, id), versionAdded.Value, substitute, numericId);
 				BlockList.allBlocks.Add(b.ID, b);
 				return new BlockID[] { b };
 			}
 		}
 
-		public BlockID(string ns, string id, GameVersion v, BlockID sub, NumericID? num) : base(ns, id, v, sub, num)
+		public BlockID(NamespacedID id, GameVersion v, BlockID sub, NumericID? num) : base(id, v, sub, num)
 		{
 
 		}
@@ -120,22 +124,9 @@ namespace WorldForge
 			return !(l == r);
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hash = shortID.GetHashCode();
-				if(customNamespace != null)
-				{
-					hash += customNamespace.GetHashCode();
-				}
-				return hash;
-			}
-		}
-
 		public override string ToString()
 		{
-			return ID;
+			return ID.ToString();
 		}
 	}
 }

@@ -1,6 +1,8 @@
-﻿namespace WorldForge
+﻿using System;
+
+namespace WorldForge
 {
-	public struct NumericID
+	public struct NumericID : IEquatable<NumericID>
 	{
 		public static readonly NumericID Air = new NumericID(0);
 
@@ -39,6 +41,24 @@
 		public override string ToString()
 		{
 			return id + ":" + damage;
+		}
+
+		public bool Equals(NumericID other)
+		{
+			return id == other.id && damage == other.damage;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is NumericID other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				return (id.GetHashCode() * 397) ^ damage.GetHashCode();
+			}
 		}
 	}
 }

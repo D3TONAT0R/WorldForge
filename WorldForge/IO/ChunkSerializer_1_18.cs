@@ -102,7 +102,7 @@ namespace WorldForge.IO
 						}
 						else
 						{
-							//Do nothing, as the entire chunk is the default (plains) biome
+							//Do nothing, as the entire chunk is the default biome
 						}
 					}
 				}

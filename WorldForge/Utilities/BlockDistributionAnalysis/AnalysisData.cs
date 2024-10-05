@@ -38,12 +38,12 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-		public Dictionary<string, BlockCount> data = new Dictionary<string, BlockCount>();
+		public Dictionary<NamespacedID, BlockCount> data = new Dictionary<NamespacedID, BlockCount>();
 		public int chunkCounter;
 
 		private readonly object lockObj = new object();
 
-		public void IncreaseCounter(string blockID, short y)
+		public void IncreaseCounter(NamespacedID blockID, short y)
 		{
 			lock(lockObj)
 			{

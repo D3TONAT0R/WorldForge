@@ -1,3 +1,4 @@
 sep=;
 Old ID;New ID;Version
 grass;short_grass;1.20.3
+dirt_path;grass_path;1.17

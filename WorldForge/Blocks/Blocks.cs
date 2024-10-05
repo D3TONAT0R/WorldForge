@@ -44,7 +44,7 @@ namespace WorldForge
 		public static readonly string waterBlock = "minecraft:water";
 		public static readonly string lavaBlock = "minecraft:lava";
 
-		public static readonly Dictionary<string, int> colorMapIndices = new Dictionary<string, int>
+		public static readonly Dictionary<NamespacedID, int> colorMapIndices = new Dictionary<NamespacedID, int>
 		{
 			{"minecraft:grass_block", 0 },
 			{"minecraft:dirt", 1 },
@@ -190,21 +190,20 @@ namespace WorldForge
 
 		public static bool IsTransparentBlock(BlockID b)
 		{
-			string id = b.ID;
-			if(id == null) return true;
-			if(id.Contains("minecraft:glass")) return true;
-			if(id.Contains("minecraft:bars")) return true;
-			if(id.Contains("minecraft:sapling")) return true;
-			if(id.Contains("minecraft:rail")) return true;
-			if(id.Contains("minecraft:tulip")) return true;
-			if(id.Contains("minecraft:mushroom")) return true;
-			if(id.Contains("minecraft:pressure_plate")) return true;
-			if(id.Contains("minecraft:button")) return true;
-			if(id.Contains("minecraft:torch")) return true;
-			if(id.Contains("minecraft:fence")) return true;
-			if(id.Contains("minecraft:door")) return true;
-			if(id.Contains("minecraft:carpet")) return true;
-			switch(id)
+			string shortID = b.ID.id;
+			if(shortID.Contains("glass")) return true;
+			if(shortID.Contains("bars")) return true;
+			if(shortID.Contains("sapling")) return true;
+			if(shortID.Contains("rail")) return true;
+			if(shortID.Contains("tulip")) return true;
+			if(shortID.Contains("mushroom")) return true;
+			if(shortID.Contains("pressure_plate")) return true;
+			if(shortID.Contains("button")) return true;
+			if(shortID.Contains("torch")) return true;
+			if(shortID.Contains("fence")) return true;
+			if(shortID.Contains("door")) return true;
+			if(shortID.Contains("carpet")) return true;
+			switch(b.ID.FullID)
 			{
 				case "minecraft:air":
 				case "minecraft:cave_air":

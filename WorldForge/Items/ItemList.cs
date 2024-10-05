@@ -4,14 +4,14 @@ namespace WorldForge.Items
 {
 	public static class ItemList
 	{
-		public static Dictionary<string, ItemID> allItems;
+		public static Dictionary<NamespacedID, ItemID> allItems;
 		public static Dictionary<ItemID, NumericID> numerics;
 		public static Dictionary<NumericID, ItemID> itemByNumerics;
 		public static Dictionary<ItemID, string> preFlatteningIDs;
 
 		public static void Initialize(string blockData)
 		{
-			allItems = new Dictionary<string, ItemID>();
+			allItems = new Dictionary<NamespacedID, ItemID>();
 			numerics = new Dictionary<ItemID, NumericID>();
 			itemByNumerics = new Dictionary<NumericID, ItemID>();
 			preFlatteningIDs = new Dictionary<ItemID, string>();
@@ -20,13 +20,13 @@ namespace WorldForge.Items
 			foreach(var row in csv.data)
 			{
 				//ID;Numeric ID;Pre-flattening ID;Added in Version;Fallback
-				SplitItemID(row[0], out var customNamespace, out var itemId);
+				var id = new NamespacedID(row[0]);
 				var numeric = NumericID.TryParse(row[1]);
 				var preFlatteningId = row[2];
 				var version = !string.IsNullOrEmpty(row[3]) ? GameVersion.Parse(row[3]) : GameVersion.FirstVersion;
 				ItemID fallback = !string.IsNullOrEmpty(row[4]) ? Find(row[4], true) : null;
 
-				var item = new ItemID(customNamespace, itemId, version, fallback, numeric);
+				var item = new ItemID(id, version, fallback, numeric);
 				allItems.Add(item.ID, item);
 				if(numeric.HasValue)
 				{
@@ -102,22 +102,6 @@ namespace WorldForge.Items
 			{
 				if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find item definition with numeric ID '{numeric}'.");
 				return null;
-			}
-		}
-
-		private static void SplitItemID(string fullId, out string customNamespaceName, out string itemID)
-		{
-			var split = fullId.Split(':');
-			if(split.Length > 1)
-			{
-				customNamespaceName = split[0];
-				if(customNamespaceName == "minecraft") customNamespaceName = null;
-				itemID = split[1];
-			}
-			else
-			{
-				customNamespaceName = null;
-				itemID = split[0];
 			}
 		}
 	}

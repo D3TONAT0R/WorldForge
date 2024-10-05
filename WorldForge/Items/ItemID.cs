@@ -1,64 +1,43 @@
-﻿using System.Collections.Generic;
-
-namespace WorldForge.Items
+﻿namespace WorldForge.Items
 {
 	public class ItemID
 	{
-		public string ID => (customNamespace ?? "minecraft") + ":" + shortID;
-
-		public GameVersion AddedInVersion { get; private set; } = GameVersion.FirstVersion;
-
-		public readonly string customNamespace = null;
-		public readonly string shortID;
-
+		public readonly NamespacedID ID;
 		public readonly NumericID? numericID = null;
 
+		public GameVersion AddedInVersion { get; private set; } = GameVersion.FirstVersion;
 		public ItemID substitute;
 
-		public static void ParseID(string fullID, out string namespaceName, out string shortID)
-		{
-			var split = fullID.Split(':');
-			if(split.Length == 1)
-			{
-				namespaceName = "minecraft";
-				shortID = split[0];
-			}
-			else
-			{
-				namespaceName = split[0];
-				shortID = split[1];
-			}
-		}
-
-		internal static ItemID Get(string id)
+		public static ItemID Get(string id)
 		{
 			if(!id.Contains(":")) id = "minecraft:" + id;
 			if(ItemList.allItems.TryGetValue(id, out var b)) return b;
 			else return null;
 		}
 
-		public static ItemID RegisterVanillaItem(string shortID, GameVersion? versionAdded = null, ItemID substitute = null, NumericID? numericID = null)
+		public static ItemID RegisterVanillaItem(NamespacedID id, GameVersion? versionAdded = null, ItemID substitute = null, NumericID? numericID = null)
 		{
-			return RegisterNewItem(null, shortID, versionAdded, substitute, numericID);
+			return RegisterNewItem(id, versionAdded, substitute, numericID);
 		}
 
-		public static ItemID RegisterModdedItem(string modNamespace, string shortID)
+		public static ItemID RegisterModdedItem(string modNamespace, string id)
 		{
-			return RegisterNewItem(modNamespace, shortID, null, null);
+			if(modNamespace == null) throw new System.Exception("Modded items must have a namespace.");
+			if(modNamespace == "minecraft") throw new System.Exception("Modded items cannot be in the minecraft namespace.");
+			return RegisterNewItem(new NamespacedID(modNamespace, id), null, null);
 		}
 
-		private static ItemID RegisterNewItem(string customNamespace, string shortID, GameVersion? versionAdded, ItemID substitute, NumericID? numericID = null)
+		private static ItemID RegisterNewItem(NamespacedID id, GameVersion? versionAdded, ItemID substitute, NumericID? numericID = null)
 		{
 			if(!versionAdded.HasValue) versionAdded = GameVersion.FirstVersion;
-			var b = new ItemID(customNamespace, shortID, versionAdded.Value, substitute, numericID);
+			var b = new ItemID(id, versionAdded.Value, substitute, numericID);
 			ItemList.allItems.Add(b.ID, b);
 			return b;
 		}
 
-		public ItemID(string ns, string id, GameVersion v, ItemID sub, NumericID? num)
+		public ItemID(NamespacedID id, GameVersion v, ItemID sub, NumericID? num)
 		{
-			customNamespace = ns;
-			shortID = id;
+			ID = id;
 			AddedInVersion = v;
 			substitute = sub;
 			numericID = num;
@@ -74,5 +53,7 @@ namespace WorldForge.Items
 				i++;
 			}
 		}
+
+		public override int GetHashCode() => ID.GetHashCode();
 	}
 }

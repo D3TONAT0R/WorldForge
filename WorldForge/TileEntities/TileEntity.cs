@@ -119,23 +119,23 @@ namespace WorldForge.TileEntities
 		{
 			if(blockType.IsVanillaBlock)
 			{
-				if(blockType.shortID.EndsWith("shulker_box"))
+				if(blockType.ID.id.EndsWith("shulker_box"))
 				{
 					return CreateShulkerBox();
 				}
-				if(blockType.shortID.EndsWith("banner"))
+				if(blockType.ID.id.EndsWith("banner"))
 				{
 					return new TileEntityBanner();
 				}
-				if(blockType.shortID.EndsWith("command_block"))
+				if(blockType.ID.id.EndsWith("command_block"))
 				{
 					return new TileEntityCommandBlock();
 				}
-				if(blockType.shortID.EndsWith("head") || blockType.shortID.EndsWith("skull"))
+				if(blockType.ID.id.EndsWith("head") || blockType.ID.id.EndsWith("skull"))
 				{
 					return new TileEntitySkull();
 				}
-				switch(blockType.shortID)
+				switch(blockType.ID.id)
 				{
 					case "chest":
 						return CreateChest();
@@ -155,14 +155,14 @@ namespace WorldForge.TileEntities
 						return new TileEntityBeacon();
 					case "bee_nest":
 					case "beehive":
-						return new TileEntityBeehive(blockType.shortID);
+						return new TileEntityBeehive(blockType.ID.id);
 					case "furnace":
 					case "blast_furnace":
 					case "smoker":
-						return new TileEntityFurnace(blockType.shortID);
+						return new TileEntityFurnace(blockType.ID.id);
 					case "campfire":
 					case "soul_campfire":
-						return new TileEntityCampfire(blockType.shortID);
+						return new TileEntityCampfire(blockType.ID.id);
 					case "comparator":
 						return new TileEntityComparator();
 					case "conduit":
@@ -185,11 +185,11 @@ namespace WorldForge.TileEntities
 					case "chiseled_bookshelf":
 						return new TileEntityChiseledBookshelf();
 				}
-				return new TileEntityGeneric(blockType.shortID);
+				return new TileEntityGeneric(blockType.ID.id);
 			}
 			else
 			{
-				return new TileEntityGeneric(blockType.ID);
+				return new TileEntityGeneric(blockType.ID.id);
 			}
 		}
 
@@ -235,8 +235,8 @@ namespace WorldForge.TileEntities
 
 		public static GameVersion GetAddedVersion(string id)
 		{
-			var shortId = id.Replace("minecraft:", "");
-			switch(shortId)
+			var shortID = id.Replace("minecraft:", "");
+			switch(shortID)
 			{
 				case "chest":
 				case "Chest":

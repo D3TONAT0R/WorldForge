@@ -72,7 +72,7 @@ powered_rail;;27;golden_rail;b1.5;rail;00
 detector_rail;;28;detector_rail;b1.5;rail;00
 sticky_piston;PISTON;29;sticky_piston;b1.7;piston;00
 cobweb;;30;web;b1.5;;00
-! shrub;;31;tallgrass;b1.6;;00
+shrub;;31;tallgrass;b1.6;;00
 short_grass;;31:1;tallgrass;b1.6;;00
 fern;;31:2;tallgrass;b1.6;;00
 dead_bush;;32;deadbush;b1.6;;00
@@ -111,7 +111,6 @@ gold_block;;41;gold_block;;;
 iron_block;;42;iron_block;;;
 stone_slab;SLAB;43;double_stone_slab;;;
 smooth_stone;;;;;stone;
-#double slabs;;;;;
 smooth_stone_slab;SLAB;44;stone_slab;;;00
 sandstone_slab;SLAB;44:1;stone_slab;b1.3;smooth_stone_slab;00
 petrified_oak_slab;SLAB;44:2;stone_slab;b1.3;smooth_stone_slab;00
@@ -451,7 +450,6 @@ purpur_slab;SLAB_SINGLE;205;purpur_slab;1.9;stone_brick_slab;00
 end_stone_bricks;;206;end_bricks;1.9;stone_bricks;
 beetroots;CROP2;207;beetroots;1.9;potatoes;00
 grass_path;;208;grass_path;1.9;grass_block;
-dirt_path;"(""grass_path"" prior to 1.17!)";;grass_path;1.17;grass_path;
 end_gateway;;209;end_gateway;1.9;;F1
 repeating_command_block;CMDBLOCK;210;repeating_command_block;1.9;command_block;
 chain_command_block;CMDBLOCK;211;chain_command_block;1.9;command_block;

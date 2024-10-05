@@ -605,17 +605,17 @@ namespace WorldForge
 			"warped_door"
 		};
 
-		public static Dictionary<string, BlockID> allBlocks;
+		public static Dictionary<NamespacedID, BlockID> allBlocks;
 
 		public static Dictionary<NumericID, BlockID> blockIdByNumerics;
 		public static Dictionary<BlockID, string> preFlatteningIDs;
 
-		public static Dictionary<string, Remapping> oldRemappings;
+		public static Dictionary<NamespacedID, Remapping> oldRemappings;
 		public static Dictionary<BlockID, Remapping> newRemappings;
 
 		public static void Initialize(string blockData, string remappingsData)
 		{
-			allBlocks = new Dictionary<string, BlockID>();
+			allBlocks = new Dictionary<NamespacedID, BlockID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();
 			var lines = blockData.Replace("\r", "").Split('\n');
@@ -656,7 +656,7 @@ namespace WorldForge
 			}
 
 			//Set remappings
-			oldRemappings = new Dictionary<string, Remapping>();
+			oldRemappings = new Dictionary<NamespacedID, Remapping>();
 			newRemappings = new Dictionary<BlockID, Remapping>();
 			if(remappingsData != null)
 			{
@@ -664,8 +664,8 @@ namespace WorldForge
 				for(int i = 2; i < lines.Length; i++)
 				{
 					string[] line = lines[i].Split(';');
-					var newID = Find("minecraft:"+line[1], true);
-					var oldID = new BlockID("minecraft", line[0], newID.AddedInVersion, (BlockID)newID.substitute, newID.numericID); 
+					var newID = Find(line[1], true);
+					var oldID = new BlockID(new NamespacedID(line[0]), newID.AddedInVersion, (BlockID)newID.substitute, newID.numericID); 
 					GameVersion version = GameVersion.Parse(line[2]);
 					var remap = new Remapping(oldID, newID, version);
 					oldRemappings.Add(oldID.ID, remap);
@@ -676,13 +676,14 @@ namespace WorldForge
 			//Find & set substitute blocks
 			foreach(var f in fallbacks)
 			{
-				//HACK: exception supressed, property parsing not yet implemented.
+				//HACK: property parsing not yet implemented.
 				string subst = f.Item2;
+				subst = subst.Split('[')[0];
 				if(subst.Contains("*"))
 				{
-					subst.Replace("*", GetColorFromBlockID(f.Item1.shortID));
+					subst.Replace("*", GetColorFromBlockID(f.Item1.ID.id));
 				}
-				f.Item1.substitute = Find(subst, false);
+				f.Item1.substitute = Find(subst);
 			}
 		}
 

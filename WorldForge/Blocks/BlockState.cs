@@ -109,7 +109,7 @@ namespace WorldForge
 		void AddDefaultBlockProperties()
 		{
 			if(block == null) return;
-			switch(block.shortID)
+			switch(block.ID.id)
 			{
 				case "oak_leaves":
 				case "spruce_leaves":
@@ -134,7 +134,7 @@ namespace WorldForge
 
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder(block?.ID);
+			StringBuilder sb = new StringBuilder(block?.ID.FullID);
 			if(properties.contents.Count > 0)
 			{
 				sb.Append("[");
@@ -153,7 +153,7 @@ namespace WorldForge
 		public object ToNBT(GameVersion version)
 		{
 			var nbt = new NBTCompound();
-			nbt.Add("Name", block.ID);
+			nbt.Add("Name", block.ID.FullID);
 			if(!NBTCompound.IsNullOrEmpty(properties))
 			{
 				nbt.Add("Properties", properties);
@@ -171,7 +171,16 @@ namespace WorldForge
 		public static void ResolveBlockState(GameVersion version, ref BlockState state)
 		{
 			if(state == null) return;
-			if (state.block == null)
+			ResolveBlockState(version, ref state, 1);
+		}
+
+		private static void ResolveBlockState(GameVersion version, ref BlockState state, int iteration)
+		{
+			if(iteration > 10)
+			{
+				throw new Exception($"BlockState resolution loop detected. Block: {state}");
+			}
+			if(state.block == null)
 			{
 				state = Air;
 			}
@@ -183,7 +192,7 @@ namespace WorldForge
 					{
 						state = new BlockState(state);
 						state.block = (BlockID)state.block.substitute;
-						ResolveBlockState(version, ref state);
+						ResolveBlockState(version, ref state, iteration + 1);
 					}
 					else
 					{
@@ -200,12 +209,16 @@ namespace WorldForge
 		public NumericID? ToNumericID(GameVersion version)
 		{
 			if(block == null) return new NumericID(0, 0);
-			if(block.customNamespace == null)
+			if(!block.ID.HasCustomNamespace)
 			{
-				var id = block.shortID;
+				var id = block.ID.id;
 				if(id.EndsWith("_stairs"))
 				{
-					return new NumericID(block.numericID.Value.id, GetFacingMetaStairs(this));
+					if(block.numericID.HasValue)
+					{
+						return new NumericID(block.numericID.Value.id, GetFacingMetaStairs(this));
+					}
+					return null;
 				}
 				else if(id.EndsWith("_wall_sign"))
 				{
@@ -226,11 +239,16 @@ namespace WorldForge
 				{
 					byte meta = 0;
 					if(TryGetProperty("rotation", out var r)) meta = byte.Parse(r);
-					return new NumericID(block.numericID.Value.id, meta);
+					if(block.numericID.HasValue)
+					{
+						return new NumericID(block.numericID.Value.id, meta);
+					}
+					return null;
 				}
 				else if(id.EndsWith("_slab"))
 				{
 					bool doubleSlab = GetProperty("double") == "true";
+					if(!block.numericID.HasValue) return null;
 					var numId = block.numericID.Value;
 					if(doubleSlab)
 					{
@@ -242,6 +260,7 @@ namespace WorldForge
 				{
 					case "torch":
 					case "wall_torch":
+						if(!block.numericID.HasValue) return null;
 						return new NumericID(block.numericID.Value.id, GetFacingMetaWallTorch(this));
 					case "redstone_torch":
 					case "redstone_wall_torch":
