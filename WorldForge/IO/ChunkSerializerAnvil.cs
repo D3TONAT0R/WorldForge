@@ -246,7 +246,8 @@ namespace WorldForge.IO
 			byte[] biomeData = new byte[256];
 			for(int i = 0; i < 256; i++)
 			{
-				biomeData[i] = (byte)(c.GetBiomeAt(i % 16, i / 16).numericId ?? BiomeID.Plains.numericId);
+				var biome = c.GetBiomeAt(i % 16, i / 16) ?? c.ParentDimension?.DefaultBiome ?? BiomeID.Plains;
+				biomeData[i] = biome.ResolveNumericIDForVersion(TargetVersion);
 			}
 			chunkNBT.Add("Biomes", biomeData);
 		}

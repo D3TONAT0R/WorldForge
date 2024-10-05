@@ -23,7 +23,10 @@ namespace WorldForge.IO
 						var section = c.GetChunkSectionForYCoord(y * 4, false);
 						if(section != null)
 						{
-							biomeData[i] = (int)section.GetPredominantBiomeAt4x4(x, y.Mod(4), z).numericId;
+							var biome = section.GetPredominantBiomeAt4x4(x, y.Mod(4), z);
+							BiomeID.Resolve(TargetVersion, ref biome);
+							if(biome == null) biome = BiomeID.Plains;
+							biomeData[i] = (int)biome.numericId;
 						}
 						else
 						{
@@ -38,7 +41,7 @@ namespace WorldForge.IO
 							else
 							{
 								//Write the default biome
-								biomeData[i] = (int)(section.containingChunk.ParentDimension?.defaultBiome.numericId ?? BiomeID.TheVoid.numericId);
+								biomeData[i] = (int)(section.containingChunk.ParentDimension?.DefaultBiome.numericId ?? BiomeID.TheVoid.numericId);
 							}
 						}
 					}

@@ -90,10 +90,10 @@ namespace WorldForge.TileEntities
 					//TODO: how to determine pre-1.8 versions? 'version' becomes null prior to 1.9 (due to DataVersion).
 					if(version.HasValue && version >= GameVersion.Release_1(8))
 					{
-						line1 = JSONTextComponent.ParseSingle("Text1");
-						line2 = JSONTextComponent.ParseSingle("Text2");
-						line3 = JSONTextComponent.ParseSingle("Text3");
-						line4 = JSONTextComponent.ParseSingle("Text4");
+						line1 = JSONTextComponent.ParseSingle(nbt.Get<string>("Text1"));
+						line2 = JSONTextComponent.ParseSingle(nbt.Get<string>("Text2"));
+						line3 = JSONTextComponent.ParseSingle(nbt.Get<string>("Text3"));
+						line4 = JSONTextComponent.ParseSingle(nbt.Get<string>("Text4"));
 					}
 					else
 					{

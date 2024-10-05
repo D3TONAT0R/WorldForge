@@ -12,7 +12,7 @@
 		public readonly byte? numericId;
 		public readonly string preFlatteningId;
 		public readonly string pre118Id;
-		public readonly GameVersion addedInVersion;
+		public readonly GameVersion? addedInVersion;
 		public BiomeID substitute;
 
 		internal BiomeID(string id, byte? numericId = null)
@@ -21,7 +21,7 @@
 			this.numericId = numericId;
 		}
 
-		internal BiomeID(string id, byte? numericId, string preFlatteningId, string pre118Id, BiomeID substitute, GameVersion addedInVersion)
+		internal BiomeID(string id, byte? numericId, string preFlatteningId, string pre118Id, BiomeID substitute, GameVersion? addedInVersion)
 		{
 			this.id = id;
 			this.numericId = numericId;
@@ -50,6 +50,14 @@
 			Resolve(version, ref b);
 			if(b == null) b = Plains;
 			return b.GetIDForVersion(version);
+		}
+
+		public byte ResolveNumericIDForVersion(GameVersion version)
+		{
+			BiomeID b = this;
+			Resolve(version, ref b);
+			if(b == null) b = Plains;
+			return (byte)b.numericId;
 		}
 
 		public static void Resolve(GameVersion version, ref BiomeID biome)

@@ -21,7 +21,13 @@ namespace WorldForge
 
 		public DimensionID dimensionID;
 
-		public BiomeID defaultBiome = BiomeID.TheVoid;
+		public BiomeID DefaultBiome
+		{
+			get => defaultBiome;
+			set => defaultBiome = value ?? throw new NullReferenceException("Default biome cannot be null.");
+		}
+
+		private BiomeID defaultBiome;
 
 		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
 
@@ -71,7 +77,7 @@ namespace WorldForge
 		{
 			ParentWorld = parentWorld;
 			this.dimensionID = dimensionID;
-			this.defaultBiome = defaultBiome;
+			DefaultBiome = defaultBiome;
 		}
 
 		//TODO: Danger, loads entire dimension at once

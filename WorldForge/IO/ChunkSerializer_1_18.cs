@@ -182,7 +182,7 @@ namespace WorldForge.IO
 			else
 			{
 				//Write default biome
-				var defaultBiome = section.containingChunk?.ParentDimension?.defaultBiome ?? BiomeID.Plains;
+				var defaultBiome = section.containingChunk?.ParentDimension?.DefaultBiome ?? BiomeID.Plains;
 				biomePalette.Add(defaultBiome.ResolveIDForVersion(TargetVersion));
 			}
 		}

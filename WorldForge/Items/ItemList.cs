@@ -16,7 +16,7 @@ namespace WorldForge.Items
 			itemByNumerics = new Dictionary<NumericID, ItemID>();
 			preFlatteningIDs = new Dictionary<ItemID, string>();
 			
-			var csv = new CSV(blockData.Replace("\r","").Split('\n'));
+			var csv = new CSV(blockData);
 			foreach(var row in csv.data)
 			{
 				//ID;Numeric ID;Pre-flattening ID;Added in Version;Fallback

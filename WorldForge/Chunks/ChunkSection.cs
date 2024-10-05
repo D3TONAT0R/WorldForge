@@ -96,7 +96,7 @@ namespace WorldForge.Chunks
 
 		public void InitializeBiomes()
 		{
-			BiomeID fallback = containingChunk.ParentDimension?.defaultBiome ?? BiomeID.TheVoid;
+			BiomeID fallback = containingChunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
 			var lowest = containingChunk.LowestSection;
 			sbyte secY = containingChunk.Sections.First(kv => kv.Value == this).Key;
 			ChunkSection belowSection = null;
@@ -170,7 +170,7 @@ namespace WorldForge.Chunks
 		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
 			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
-			if (!HasBiomesDefined) return containingChunk.ParentDimension?.defaultBiome ?? BiomeID.TheVoid;
+			if (!HasBiomesDefined) return containingChunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
 			for (int x1 = 0; x1 < 4; x1++)
 			{
 				for (int z1 = 0; z1 < 4; z1++)
