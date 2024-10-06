@@ -85,5 +85,11 @@ namespace WorldForge.Items
 				return null;
 			}
 		}
+
+		public override string ToString()
+		{
+			return $"{count}x {item.id}";
+			return base.ToString();
+		}
 	}
 }

@@ -54,5 +54,10 @@
 		}
 
 		public override int GetHashCode() => ID.GetHashCode();
+
+		public override string ToString()
+		{
+			return ID.FullID;
+		}
 	}
 }
