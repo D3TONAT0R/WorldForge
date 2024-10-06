@@ -84,12 +84,10 @@ namespace WorldForge
 			return obj is NamespacedID other && Equals(other);
 		}
 
-		/*
 		public static implicit operator NamespacedID(string id)
 		{
 			return new NamespacedID(id);
 		}
-		*/
 
 		public static bool CheckValidity(string id, bool forceNoNamespace, out char illegalChar)
 		{
