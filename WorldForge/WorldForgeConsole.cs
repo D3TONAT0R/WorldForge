@@ -60,9 +60,18 @@ namespace WorldForge
 					var g = new RandomBlockRegionGen();
 					g.Run(args);
 				}
-				if(input.StartsWith("view "))
+				if(input.StartsWith("view"))
 				{
 					var v = new NBTViewer(input.Substring(5).Replace("\"", ""));
+					v.Run(args);
+				}
+				if(input.StartsWith("readchunk"))
+				{
+					string path = Console.ReadLine();
+					int x = int.Parse(Console.ReadLine());
+					int z = int.Parse(Console.ReadLine());
+					var r = RegionLoader.LoadRegion(path);
+					var v = new NBTViewer(r.chunks[x, z].sourceNBT);
 					v.Run(args);
 				}
 				if(input.StartsWith("analyzedist")) {
