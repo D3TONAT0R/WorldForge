@@ -24,34 +24,38 @@ namespace WorldForge.IO
 			MemoryStream[] serializedChunks = new MemoryStream[1024];
 			for(int z = 0; z < 32; z++)
 			{
-				Parallel.For(0, 32, (int x) =>
+				Parallel.For(0, 32, WorldForgeManager.ParallelOptions, x =>
 				{
 					int i = z * 32 + x;
 					var chunk = region.chunks[x, z];
 					if(chunk != null)
 					{
-						var memStream = new MemoryStream(4096);
-						var chunkData = chunkSerializer.CreateChunkNBT(chunk);
+						var memoryStream = new MemoryStream(4096);
+						serializedChunks[i] = memoryStream;
 
+						var chunkData = chunkSerializer.CreateChunkNBT(chunk);
 						var dv = version.GetDataVersion();
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
 						byte[] compressed = chunkData.WriteBytesZlib();
 						var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
-						memStream.Write(cLength, 0, cLength.Length);
-						memStream.WriteByte(2);
-						memStream.Write(compressed, 0, compressed.Length);
+						memoryStream.Write(cLength, 0, cLength.Length);
+						memoryStream.WriteByte(2);
+						memoryStream.Write(compressed, 0, compressed.Length);
 					}
 				});
 				if(writeProgressBar) WorldForgeConsole.WriteProgress($"Writing chunks to stream [{z * 32}/{1024}]", (z * 32f) / 1024f);
 			}
 
+			stream.Position = 8192;
 			for(int i = 0; i < 1024; i++)
 			{
 				if (serializedChunks[i] == null) continue;
 
 				var serialized = serializedChunks[i];
-				var padding = stream.Length % 4096;
+				serialized.Position = 0;
+				serialized.CopyTo(stream);
+				var padding = serialized.Length % 4096;
 				//Pad the data to the next 4096 byte mark
 				if(padding > 0)
 				{
@@ -60,7 +64,7 @@ namespace WorldForge.IO
 				}
 
 				byte size = (byte)Math.Ceiling(serialized.Length / 4096d);
-				if(sizes[i] == 0) throw new InvalidOperationException("0 byte sized chunk detected.");
+				if(size == 0) throw new InvalidOperationException("Blank serialized chunk data detected.");
 				locations[i] = (int)(stream.Position / 4096);
 				//sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
 				sizes[i] = size;

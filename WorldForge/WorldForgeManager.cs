@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using WorldForge.Biomes;
 using WorldForge.Items;
 
@@ -11,6 +12,17 @@ namespace WorldForge
 	public static class WorldForgeManager
 	{
 		public static bool Initialized { get; private set; }
+
+		public static int MaxDegreeOfParallelism
+		{
+			get => ParallelOptions.MaxDegreeOfParallelism;
+			set => ParallelOptions.MaxDegreeOfParallelism = value;
+		}
+
+		public static ParallelOptions ParallelOptions { get; private set; } = new ParallelOptions
+		{
+			MaxDegreeOfParallelism = Environment.ProcessorCount
+		};
 
 		public static void Initialize(IBitmapFactory bitmapFactory)
 		{
