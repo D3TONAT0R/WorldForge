@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using WorldForge.Regions;
 
 namespace WorldForge.IO
@@ -20,16 +21,16 @@ namespace WorldForge.IO
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(version);
 
+			MemoryStream[] serializedChunks = new MemoryStream[1024];
 			for(int z = 0; z < 32; z++)
 			{
-				for(int x = 0; x < 32; x++)
+				Parallel.For(0, 32, (int x) =>
 				{
 					int i = z * 32 + x;
 					var chunk = region.chunks[x, z];
 					if(chunk != null)
 					{
-						locations[i] = (int)(stream.Position / 4096);
-
+						var memStream = new MemoryStream(4096);
 						var chunkData = chunkSerializer.CreateChunkNBT(chunk);
 
 						var dv = version.GetDataVersion();
@@ -37,27 +38,34 @@ namespace WorldForge.IO
 
 						byte[] compressed = chunkData.WriteBytesZlib();
 						var cLength = Converter.ReverseEndianness(BitConverter.GetBytes(compressed.Length));
-						stream.Write(cLength, 0, cLength.Length);
-						stream.WriteByte(2);
-						stream.Write(compressed, 0, compressed.Length);
-						var padding = stream.Length % 4096;
-						//Pad the data to the next 4096 byte mark
-						if(padding > 0)
-						{
-							byte[] paddingBytes = new byte[4096 - padding];
-							stream.Write(paddingBytes, 0, paddingBytes.Length);
-						}
-						sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
-						if(sizes[i] == 0) throw new InvalidOperationException("0 byte sized chunk detected.");
+						memStream.Write(cLength, 0, cLength.Length);
+						memStream.WriteByte(2);
+						memStream.Write(compressed, 0, compressed.Length);
 					}
-					else
-					{
-						locations[i] = 0;
-						sizes[i] = 0;
-					}
-				}
-				if(writeProgressBar) WorldForgeConsole.WriteProgress(string.Format("Writing chunks to stream [{0}/{1}]", z * 32, 1024), (z * 32f) / 1024f);
+				});
+				if(writeProgressBar) WorldForgeConsole.WriteProgress($"Writing chunks to stream [{z * 32}/{1024}]", (z * 32f) / 1024f);
 			}
+
+			for(int i = 0; i < 1024; i++)
+			{
+				if (serializedChunks[i] == null) continue;
+
+				var serialized = serializedChunks[i];
+				var padding = stream.Length % 4096;
+				//Pad the data to the next 4096 byte mark
+				if(padding > 0)
+				{
+					byte[] paddingBytes = new byte[4096 - padding];
+					stream.Write(paddingBytes, 0, paddingBytes.Length);
+				}
+
+				byte size = (byte)Math.Ceiling(serialized.Length / 4096d);
+				if(sizes[i] == 0) throw new InvalidOperationException("0 byte sized chunk detected.");
+				locations[i] = (int)(stream.Position / 4096);
+				//sizes[i] = (byte)((int)(stream.Position / 4096) - locations[i]);
+				sizes[i] = size;
+			}
+
 			stream.Position = 0;
 			for(int i = 0; i < 1024; i++)
 			{
