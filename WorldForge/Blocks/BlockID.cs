@@ -4,10 +4,6 @@ namespace WorldForge
 {
 	public class BlockID : ItemID
 	{
-		public override int GetHashCode()
-		{
-			throw new System.NotImplementedException();
-		}
 
 		private static NamespacedID air = new NamespacedID("air", false);
 		private static NamespacedID water = new NamespacedID("water", false);
@@ -137,5 +133,7 @@ namespace WorldForge
 		{
 			return this == other;
 		}
+
+		public override int GetHashCode() => ID.GetHashCode();
 	}
 }
