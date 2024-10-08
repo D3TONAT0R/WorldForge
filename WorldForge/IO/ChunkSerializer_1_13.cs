@@ -2,7 +2,6 @@
 using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.NBT;
-using static System.Collections.Specialized.BitVector32;
 
 namespace WorldForge.IO
 {

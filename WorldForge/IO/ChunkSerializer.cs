@@ -47,7 +47,7 @@ namespace WorldForge.IO
 			}
 			else if(gameVersion >= GameVersion.Beta_1(3))
 			{
-				return GetOrCreateSerializer<ChunkSerializerMCR>(gameVersion);
+				return GetOrCreateSerializer<ChunkSerializerBeta>(gameVersion);
 			}
 			else
 			{

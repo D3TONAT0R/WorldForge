@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using WorldForge.Chunks;
 using WorldForge.Entities;
 using WorldForge.NBT;
@@ -8,9 +7,9 @@ using WorldForge.TileEntities;
 
 namespace WorldForge.IO
 {
-	public class ChunkSerializerMCR : ChunkSerializer
+	public class ChunkSerializerBeta : ChunkSerializer
 	{
-		public ChunkSerializerMCR(GameVersion version) : base(version) { }
+		public ChunkSerializerBeta(GameVersion version) : base(version) { }
 
 		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{

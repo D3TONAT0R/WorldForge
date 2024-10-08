@@ -4,7 +4,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.IO
 {
-	public class ChunkSerializerAlpha : ChunkSerializerMCR
+	public class ChunkSerializerAlpha : ChunkSerializerBeta
 	{
 		public ChunkSerializerAlpha(GameVersion version) : base(version) { }
 
