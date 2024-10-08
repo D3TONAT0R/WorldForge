@@ -70,7 +70,7 @@ namespace WorldForge
 					string path = Console.ReadLine();
 					int x = int.Parse(Console.ReadLine());
 					int z = int.Parse(Console.ReadLine());
-					var r = RegionLoader.LoadRegion(path);
+					var r = RegionDeserializer.LoadRegion(path);
 					var v = new NBTViewer(r.chunks[x, z].sourceNBT);
 					v.Run(args);
 				}

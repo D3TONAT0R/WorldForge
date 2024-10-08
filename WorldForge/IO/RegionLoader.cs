@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -8,13 +7,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
-using WorldForge.IO;
 using WorldForge.NBT;
 using WorldForge.Regions;
 
-namespace WorldForge
+namespace WorldForge.IO
 {
-	public static class RegionLoader
+	public static class RegionDeserializer
 	{
 		private class RegionData
 		{
@@ -53,7 +51,7 @@ namespace WorldForge
 					sizes[i] = ReadNext(stream);
 				}
 
-				//Ingore timestamps between 4096 and 8192
+				//Ignore timestamps between 4096 and 8192
 
 				expectedEOF = 8192;
 				for(int i = 0; i < 1024; i++)
@@ -70,10 +68,10 @@ namespace WorldForge
 								compressedChunk = ReadNext(stream, sizes[i] * 4096 - 5)
 							};
 						}
-						catch(Exception e)
+						catch
 						{
 							//A partially generated region may contain a chunk whose stream position is out of range.
-							//Can it be safely ignored? NBTExplorer doesn't read that chunk eiter and it often
+							//Can it be safely ignored? NBTExplorer doesn't read that chunk either and it often
 							//seems to be located in non-generated areas of the region.
 
 							//Console.WriteLine($"Fail at chunk [{i % 32},{i / 32}]: {e.Message}");
@@ -87,18 +85,13 @@ namespace WorldForge
 
 		public static Region LoadRegion(string filepath, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
 		{
-			bool isAnvilFormat;
-			if(filepath.EndsWith(".mcr")) isAnvilFormat = false;
-			else if(filepath.EndsWith(".mca")) isAnvilFormat = true;
-			else throw new InvalidOperationException("Unknown or unsupported file extension");
 			RegionData rd;
 			using(var stream = File.Open(filepath, FileMode.Open))
 			{
 				rd = new RegionData(stream, filepath);
 			}
 			Region region = new Region(rd.regionX, rd.regionZ, null);
-			var options = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount - 1 };
-			Parallel.For(0, 1024, options, i =>
+			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
 				if(rd.compressedChunks[i] != null)
 				{
@@ -190,12 +183,12 @@ namespace WorldForge
 		{
 			List<byte> bytes = new List<byte>(ReadNext(stream, 3));
 			bytes.Insert(0, 0);
-			return BitConverter.ToUInt32(Converter.ReverseEndianness(bytes.ToArray()), 0);
+			return BitConverter.ToUInt32(Converter.ToBigEndian(bytes.ToArray()), 0);
 		}
 
 		private static uint ReadInt(Stream stream)
 		{
-			return (uint)BitConverter.ToInt32(Converter.ReverseEndianness(ReadNext(stream, 4)), 0);
+			return (uint)BitConverter.ToInt32(Converter.ToBigEndian(ReadNext(stream, 4)), 0);
 
 		}
 		private static byte ReadNext(Stream stream)

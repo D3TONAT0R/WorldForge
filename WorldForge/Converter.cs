@@ -49,7 +49,7 @@ namespace WorldForge
 		}
 
 		///<summary>Reverses the endianness of the given byte array.</summary>
-		public static byte[] ReverseEndianness(byte[] input)
+		public static byte[] ToBigEndian(byte[] input)
 		{
 			if(BitConverter.IsLittleEndian) Array.Reverse(input);
 			return input;

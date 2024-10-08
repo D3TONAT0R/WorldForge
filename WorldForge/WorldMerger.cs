@@ -113,8 +113,8 @@ namespace WorldForge.ConsoleTools
 				IBitmap section = worldMergeMap.CloneArea(localX * scale, localZ * scale, scale, scale);
 
 				WorldForgeConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
-				var region1 = RegionLoader.LoadRegion(Path.Combine(world1Path, r.filename));
-				var region2 = RegionLoader.LoadRegion(Path.Combine(world2Path, r.filename));
+				var region1 = RegionDeserializer.LoadRegion(Path.Combine(world1Path, r.filename));
+				var region2 = RegionDeserializer.LoadRegion(Path.Combine(world2Path, r.filename));
 				var merger = new RegionMerger(region1, region2, section);
 				var mergedRegion = merger.Merge();
 

@@ -265,7 +265,7 @@ namespace WorldForge.NBT
 				string name = "";
 				if(predef == NBTTag.UNSPECIFIED)
 				{
-					short nameLength = BitConverter.ToInt16(Converter.ReverseEndianness(ReadNext(stream, 2)), 0);
+					short nameLength = BitConverter.ToInt16(Converter.ToBigEndian(ReadNext(stream, 2)), 0);
 					if(nameLength > 64)
 					{
 						Console.WriteLine("NL=" + nameLength + "! Something is going wrong");
@@ -371,23 +371,23 @@ namespace WorldForge.NBT
 			}
 			else if(typeof(T) == typeof(short))
 			{
-				ret = BitConverter.ToInt16(Converter.ReverseEndianness(ReadNext(stream, 2)), 0);
+				ret = BitConverter.ToInt16(Converter.ToBigEndian(ReadNext(stream, 2)), 0);
 			}
 			else if(typeof(T) == typeof(int))
 			{
-				ret = BitConverter.ToInt32(Converter.ReverseEndianness(ReadNext(stream, 4)), 0);
+				ret = BitConverter.ToInt32(Converter.ToBigEndian(ReadNext(stream, 4)), 0);
 			}
 			else if(typeof(T) == typeof(long))
 			{
-				ret = BitConverter.ToInt64(Converter.ReverseEndianness(ReadNext(stream, 8)), 0);
+				ret = BitConverter.ToInt64(Converter.ToBigEndian(ReadNext(stream, 8)), 0);
 			}
 			else if(typeof(T) == typeof(float))
 			{
-				ret = BitConverter.ToSingle(Converter.ReverseEndianness(ReadNext(stream, 4)), 0);
+				ret = BitConverter.ToSingle(Converter.ToBigEndian(ReadNext(stream, 4)), 0);
 			}
 			else if(typeof(T) == typeof(double))
 			{
-				ret = BitConverter.ToDouble(Converter.ReverseEndianness(ReadNext(stream, 8)), 0);
+				ret = BitConverter.ToDouble(Converter.ToBigEndian(ReadNext(stream, 8)), 0);
 			}
 			else if(typeof(T) == typeof(byte[]))
 			{
@@ -463,7 +463,7 @@ namespace WorldForge.NBT
 			var tag = NBTMappings.GetTag(o.GetType());
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-			byte[] lengthBytes = Converter.ReverseEndianness(BitConverter.GetBytes((short)nameBytes.Length));
+			byte[] lengthBytes = Converter.ToBigEndian(BitConverter.GetBytes((short)nameBytes.Length));
 			bytes.AddRange(lengthBytes);
 			bytes.AddRange(nameBytes);
 			WriteValue(bytes, tag, o);
@@ -498,23 +498,23 @@ namespace WorldForge.NBT
 			}
 			else if(tag == NBTTag.TAG_Short)
 			{
-				bytes.AddRange(Converter.ReverseEndianness(BitConverter.GetBytes((short)o)));
+				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((short)o)));
 			}
 			else if(tag == NBTTag.TAG_Int)
 			{
-				bytes.AddRange(Converter.ReverseEndianness(BitConverter.GetBytes((int)o)));
+				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((int)o)));
 			}
 			else if(tag == NBTTag.TAG_Long)
 			{
-				bytes.AddRange(Converter.ReverseEndianness(BitConverter.GetBytes((long)o)));
+				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((long)o)));
 			}
 			else if(tag == NBTTag.TAG_Float)
 			{
-				bytes.AddRange(Converter.ReverseEndianness(BitConverter.GetBytes((float)o)));
+				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((float)o)));
 			}
 			else if(tag == NBTTag.TAG_Double)
 			{
-				bytes.AddRange(Converter.ReverseEndianness(BitConverter.GetBytes((double)o)));
+				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((double)o)));
 			}
 			else if(tag == NBTTag.TAG_Byte_Array)
 			{

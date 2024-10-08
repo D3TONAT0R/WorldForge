@@ -124,7 +124,7 @@ namespace WorldForge
 				{
 					try
 					{
-						Region region = RegionLoader.LoadRegion(f, gameVersion);
+						Region region = RegionDeserializer.LoadRegion(f, gameVersion);
 						region.ParentDimension = dim;
 						dim.regions.Add(region.regionPos, region);
 					}

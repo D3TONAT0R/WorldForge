@@ -93,7 +93,7 @@ namespace WorldForge.ConsoleTools
 					Console.WriteLine($"Analyzing region {regions[ri].ToFileName()} [{ri + 1}/{regions.Length}]");
 					try
 					{
-						var region = RegionLoader.LoadRegion(Path.Combine(worldRoot, "region", regions[ri].ToFileName()));
+						var region = RegionDeserializer.LoadRegion(Path.Combine(worldRoot, "region", regions[ri].ToFileName()));
 						analyzer.AnalyzeRegion(region);
 					}
 					catch(Exception e)
