@@ -4,6 +4,11 @@ namespace WorldForge
 {
 	public class BlockID : ItemID
 	{
+		public override int GetHashCode()
+		{
+			throw new System.NotImplementedException();
+		}
+
 		private static NamespacedID air = new NamespacedID("air", false);
 		private static NamespacedID water = new NamespacedID("water", false);
 		private static NamespacedID lava = new NamespacedID("lava", false);
@@ -128,9 +133,9 @@ namespace WorldForge
 			return !(l == r);
 		}
 
-		public override string ToString()
+		protected bool Equals(BlockID other)
 		{
-			return ID.ToString();
+			return this == other;
 		}
 	}
 }

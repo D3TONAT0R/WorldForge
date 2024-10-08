@@ -47,7 +47,7 @@ namespace WorldForge.IO
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
 						byte[] compressed = chunkData.WriteBytesZlib();
-						var cLength = Converter.ToBigEndian(BitConverter.GetBytes(compressed.Length));
+						var cLength = BitUtils.ToBigEndian(BitConverter.GetBytes(compressed.Length));
 						memoryStream.Write(cLength, 0, cLength.Length);
 						memoryStream.WriteByte(2);
 						memoryStream.Write(compressed, 0, compressed.Length);
@@ -83,14 +83,14 @@ namespace WorldForge.IO
 			//TODO: remember and keep previous timestamp if nothing was changed in the chunk
 			DateTime currentTime = DateTime.UtcNow;
 			int unixTime32 = (int)((DateTimeOffset)currentTime).ToUnixTimeSeconds();
-			byte[] timestampBytes = Converter.ToBigEndian(BitConverter.GetBytes(unixTime32));
+			byte[] timestampBytes = BitUtils.ToBigEndian(BitConverter.GetBytes(unixTime32));
 
 			stream.Position = 0;
 
 			for(int i = 0; i < 1024; i++)
 			{
 				//3 byte offset, 1 byte size
-				byte[] offsetBytes = Converter.ToBigEndian(BitConverter.GetBytes(locations[i]));
+				byte[] offsetBytes = BitUtils.ToBigEndian(BitConverter.GetBytes(locations[i]));
 				stream.Write(offsetBytes, 1, 3);
 				stream.WriteByte(sizes[i]);
 			}

@@ -89,7 +89,6 @@ namespace WorldForge.Items
 		public override string ToString()
 		{
 			return $"{count}x {item.id}";
-			return base.ToString();
 		}
 	}
 }

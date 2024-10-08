@@ -175,7 +175,7 @@ namespace WorldForge.NBT
 						string s = "";
 						for(int j = 0; j < 8; j++)
 						{
-							s += Converter.ByteToBinary(bytes[j], true);
+							s += BitUtils.ByteToBinary(bytes[j], true);
 						}
 						hmbits += s.Substring(0, 63); //Remove the last unused bit
 					}
@@ -188,18 +188,18 @@ namespace WorldForge.NBT
 						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
 						for(int j = 0; j < 8; j++)
 						{
-							hmbits += Converter.ByteToBinary(bytes[j], true);
+							hmbits += BitUtils.ByteToBinary(bytes[j], true);
 						}
 					}
 				}
 				short[] hmap = new short[256];
 				for(int i = 0; i < 256; i++)
 				{
-					hmap[i] = (short)Converter.Read9BitValue(hmbits, i);
+					hmap[i] = (short)BitUtils.Read9BitValue(hmbits, i);
 				}
 
 				/*for(int i = 0; i < 256; i++) {
-					hmap[i] = (short)Converter.Read9BitValue(hmbits, i);
+					hmap[i] = (short)BitUtils.Read9BitValue(hmbits, i);
 				}*/
 				if(hmbits != null)
 				{
@@ -265,7 +265,7 @@ namespace WorldForge.NBT
 				string name = "";
 				if(predef == NBTTag.UNSPECIFIED)
 				{
-					short nameLength = BitConverter.ToInt16(Converter.ToBigEndian(ReadNext(stream, 2)), 0);
+					short nameLength = BitConverter.ToInt16(BitUtils.ToBigEndian(ReadNext(stream, 2)), 0);
 					if(nameLength > 64)
 					{
 						Console.WriteLine("NL=" + nameLength + "! Something is going wrong");
@@ -371,23 +371,23 @@ namespace WorldForge.NBT
 			}
 			else if(typeof(T) == typeof(short))
 			{
-				ret = BitConverter.ToInt16(Converter.ToBigEndian(ReadNext(stream, 2)), 0);
+				ret = BitConverter.ToInt16(BitUtils.ToBigEndian(ReadNext(stream, 2)), 0);
 			}
 			else if(typeof(T) == typeof(int))
 			{
-				ret = BitConverter.ToInt32(Converter.ToBigEndian(ReadNext(stream, 4)), 0);
+				ret = BitConverter.ToInt32(BitUtils.ToBigEndian(ReadNext(stream, 4)), 0);
 			}
 			else if(typeof(T) == typeof(long))
 			{
-				ret = BitConverter.ToInt64(Converter.ToBigEndian(ReadNext(stream, 8)), 0);
+				ret = BitConverter.ToInt64(BitUtils.ToBigEndian(ReadNext(stream, 8)), 0);
 			}
 			else if(typeof(T) == typeof(float))
 			{
-				ret = BitConverter.ToSingle(Converter.ToBigEndian(ReadNext(stream, 4)), 0);
+				ret = BitConverter.ToSingle(BitUtils.ToBigEndian(ReadNext(stream, 4)), 0);
 			}
 			else if(typeof(T) == typeof(double))
 			{
-				ret = BitConverter.ToDouble(Converter.ToBigEndian(ReadNext(stream, 8)), 0);
+				ret = BitConverter.ToDouble(BitUtils.ToBigEndian(ReadNext(stream, 8)), 0);
 			}
 			else if(typeof(T) == typeof(byte[]))
 			{
@@ -463,7 +463,7 @@ namespace WorldForge.NBT
 			var tag = NBTMappings.GetTag(o.GetType());
 			bytes.Add((byte)tag);
 			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-			byte[] lengthBytes = Converter.ToBigEndian(BitConverter.GetBytes((short)nameBytes.Length));
+			byte[] lengthBytes = BitUtils.ToBigEndian(BitConverter.GetBytes((short)nameBytes.Length));
 			bytes.AddRange(lengthBytes);
 			bytes.AddRange(nameBytes);
 			WriteValue(bytes, tag, o);
@@ -498,23 +498,23 @@ namespace WorldForge.NBT
 			}
 			else if(tag == NBTTag.TAG_Short)
 			{
-				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((short)o)));
+				bytes.AddRange(BitUtils.ToBigEndian(BitConverter.GetBytes((short)o)));
 			}
 			else if(tag == NBTTag.TAG_Int)
 			{
-				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((int)o)));
+				bytes.AddRange(BitUtils.ToBigEndian(BitConverter.GetBytes((int)o)));
 			}
 			else if(tag == NBTTag.TAG_Long)
 			{
-				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((long)o)));
+				bytes.AddRange(BitUtils.ToBigEndian(BitConverter.GetBytes((long)o)));
 			}
 			else if(tag == NBTTag.TAG_Float)
 			{
-				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((float)o)));
+				bytes.AddRange(BitUtils.ToBigEndian(BitConverter.GetBytes((float)o)));
 			}
 			else if(tag == NBTTag.TAG_Double)
 			{
-				bytes.AddRange(Converter.ToBigEndian(BitConverter.GetBytes((double)o)));
+				bytes.AddRange(BitUtils.ToBigEndian(BitConverter.GetBytes((double)o)));
 			}
 			else if(tag == NBTTag.TAG_Byte_Array)
 			{

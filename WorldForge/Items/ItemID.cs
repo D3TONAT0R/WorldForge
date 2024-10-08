@@ -59,5 +59,10 @@
 		{
 			return ID.FullID;
 		}
+
+		protected bool Equals(ItemID other)
+		{
+			return this == other;
+		}
 	}
 }

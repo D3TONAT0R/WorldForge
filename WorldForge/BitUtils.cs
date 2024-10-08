@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using static System.Collections.Specialized.BitVector32;
 using WorldForge.Chunks;
+using System.Linq;
+using System.Numerics;
 
 namespace WorldForge
 {
@@ -72,9 +74,8 @@ namespace WorldForge
 
 			for(int i = 0; i < mid; i++)
 			{
-				bool bit = array[i];
-				array[i] = array[length - i - 1];
-				array[length - i - 1] = bit;
+				int i1 = length - i - 1;
+				(array[i], array[i1]) = (array[i1], array[i]);
 			}
 		}
 
@@ -114,7 +115,7 @@ namespace WorldForge
 				byte[] bytes = BitConverter.GetBytes(compressedData[i]);
 				for(int j = 0; j < 8; j++)
 				{
-					newBits += Converter.ByteToBinary(bytes[j], true);
+					newBits += ByteToBinary(bytes[j], true);
 				}
 				if(useFull64BitRange)
 				{
@@ -128,7 +129,7 @@ namespace WorldForge
 			ushort[] array = new ushort[intArrayLength];
 			for(int i = 0; i < array.Length; i++)
 			{
-				array[i] = Converter.BitsToValue(bits, i * bitsPerInt, bitsPerInt);
+				array[i] = BitsToValue(bits, i * bitsPerInt, bitsPerInt);
 			}
 			return array;
 		}
@@ -156,7 +157,7 @@ namespace WorldForge
 			for(int j = 0; j < values.Length; j++)
 			{
 				string bin = NumToBits(values[j], bitsPerValue);
-				bin = Converter.ReverseString(bin);
+				bin = ReverseString(bin);
 				if(!tightPacking)
 				{
 					if(longsBinary[i].Length + bitsPerValue > 64)
@@ -180,7 +181,7 @@ namespace WorldForge
 			{
 				string s = longsBinary[j];
 				s = s.PadRight(64, '0');
-				s = Converter.ReverseString(s);
+				s = ReverseString(s);
 				longs[j] = Convert.ToInt64(s, 2);
 			}
 
@@ -195,6 +196,96 @@ namespace WorldForge
 				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
 			}
 			return s.PadLeft(length, '0');
+		}
+
+
+		//Base 36 encoding / decoding taken from https://github.com/bogdanbujdea/csharpbase36
+
+		private const string base36Digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+		public static string EncodeBase36(long value)
+		{
+			if(value == long.MinValue)
+			{
+				//hard coded value due to error when getting absolute value below: "Negating the minimum value of a twos complement number is invalid.".
+				return "-1Y2P0IJ32E8E8";
+			}
+			bool negative = value < 0;
+			value = Math.Abs(value);
+			string encoded = string.Empty;
+			do
+				encoded = base36Digits[(int)(value % base36Digits.Length)] + encoded;
+			while((value /= base36Digits.Length) != 0);
+			return negative ? "-" + encoded : encoded;
+		}
+
+		public static long DecodeBase36(string value)
+		{
+			if(string.IsNullOrWhiteSpace(value))
+				throw new ArgumentException("Empty value.");
+			value = value.ToUpper();
+			bool negative = false;
+			if(value[0] == '-')
+			{
+				negative = true;
+				value = value.Substring(1, value.Length - 1);
+			}
+			if(value.Any(c => !base36Digits.Contains(c)))
+				throw new ArgumentException("Invalid value: \"" + value + "\".");
+			var decoded = 0L;
+			for(var i = 0; i < value.Length; ++i)
+				decoded += base36Digits.IndexOf(value[i]) * (long)BigInteger.Pow(base36Digits.Length, value.Length - i - 1);
+			return negative ? decoded * -1 : decoded;
+		}
+
+		///<summary>Reads a 9-bit value from a binary string, used for storing heightmaps.</summary>
+		public static ushort Read9BitValue(string bitString, int index)
+		{
+			string bits = ReverseString(bitString.Substring(index * 9, 9));
+			bits = "0000000" + bits;
+			bool[] bitArr = new bool[16];
+			for(int i = 0; i < 16; i++)
+			{
+				bitArr[i] = bits[i] == '1';
+			}
+			return Convert.ToUInt16(bits, 2);
+		}
+
+		///<summary>Reverses the given string. Useful for converting endianness of bit strings.</summary>
+		public static string ReverseString(string input)
+		{
+			char[] chrs = input.ToCharArray();
+			Array.Reverse(chrs);
+			return new string(chrs);
+		}
+
+		///<summary>Converts the byte to a bit string.</summary>
+		public static string ByteToBinary(byte b, bool bigendian)
+		{
+			string s = Convert.ToString((int)b, 2);
+			s = s.PadLeft(8, '0');
+			if(bigendian) s = ReverseString(s);
+			return s;
+		}
+
+		///<summary>Converts the given bit string at index to a UInt16 value.</summary>
+		public static ushort BitsToValue(string bitString, int index, int length)
+		{
+			string bits = ReverseString(bitString.Substring(index, length));
+			bits = bits.PadLeft(16, '0');
+			bool[] bitArr = new bool[16];
+			for(int i = 0; i < 16; i++)
+			{
+				bitArr[i] = bits[i] == '1';
+			}
+			return Convert.ToUInt16(bits, 2);
+		}
+
+		///<summary>Reverses the endianness of the given byte array.</summary>
+		public static byte[] ToBigEndian(byte[] input)
+		{
+			if(BitConverter.IsLittleEndian) Array.Reverse(input);
+			return input;
 		}
 	}
 }
