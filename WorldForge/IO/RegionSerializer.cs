@@ -61,8 +61,13 @@ namespace WorldForge.IO
 			for(int i = 0; i < 1024; i++)
 			{
 				if (serializedChunks[i] == null) continue;
-
 				var serialized = serializedChunks[i];
+
+				locations[i] = (int)(stream.Position / 4096);
+				byte size = (byte)Math.Ceiling(serialized.Length / 4096d);
+				if(size == 0) throw new InvalidOperationException("Blank serialized chunk data detected.");
+				sizes[i] = size;
+
 				serialized.Position = 0;
 				serialized.CopyTo(stream);
 				var padding = serialized.Length % 4096;
@@ -72,11 +77,6 @@ namespace WorldForge.IO
 					byte[] paddingBytes = new byte[4096 - padding];
 					stream.Write(paddingBytes, 0, paddingBytes.Length);
 				}
-
-				byte size = (byte)Math.Ceiling(serialized.Length / 4096d);
-				if(size == 0) throw new InvalidOperationException("Blank serialized chunk data detected.");
-				locations[i] = (int)(stream.Position / 4096);
-				sizes[i] = size;
 			}
 
 			//Last modified timestamp

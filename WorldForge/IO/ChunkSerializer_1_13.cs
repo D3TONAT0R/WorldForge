@@ -25,10 +25,11 @@ namespace WorldForge.IO
 			chunkNBT.Add("Structures", new NBTCompound());
 		}
 
+		public override string BlocksCompName => "BlockStates";
+
 		protected virtual string PaletteBlockNameKey => "Name";
 		protected virtual string PaletteBlockPropertiesKey => "Properties";
 		protected virtual string PaletteKey => "Palette";
-		protected virtual string BlockStatesKey => "BlockStates";
 
 		public override void WriteSection(ChunkSection section, NBTCompound comp, sbyte sectionY)
 		{
@@ -42,7 +43,7 @@ namespace WorldForge.IO
 			comp.Add(PaletteKey, paletteList);
 
 			int bitsPerBlock = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
-			comp.Add(BlockStatesKey, BitUtils.PackBits(GetBlockIndexArray(section), bitsPerBlock, UseFull64BitRange));
+			comp.Add(BlocksCompName, BitUtils.PackBits(GetBlockIndexArray(section), bitsPerBlock, UseFull64BitRange));
 		}
 
 		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
