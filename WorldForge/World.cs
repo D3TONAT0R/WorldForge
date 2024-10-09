@@ -54,17 +54,6 @@ namespace WorldForge
 			return world;
 		}
 
-		private World(GameVersion targetVersion, LevelData levelData)
-		{
-			GameVersion = targetVersion;
-			this.LevelData = levelData;
-		}
-
-		private World()
-		{
-
-		}
-
 		public static World Load(string worldSaveDir, GameVersion? versionHint = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
@@ -85,59 +74,15 @@ namespace WorldForge
 			return world;
 		}
 
-		private static void LoadAlphaChunkFiles(string worldSaveDir, GameVersion? version, bool throwOnRegionLoadFail, Dimension dim)
+		private World(GameVersion targetVersion, LevelData levelData)
 		{
-			var cs = ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
-			foreach(var f in Directory.GetFiles(worldSaveDir, "c.*.dat"))
-			{
-				string filename = Path.GetFileName(f);
-				try
-				{
-					var split = filename.Split('.');
-					string xBase36 = split[1];
-					string zBase36 = split[2];
-					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
-					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
-					if(!dim.TryGetRegion(regionPos.x, regionPos.z, out var region))
-					{
-						region = new Region(regionPos, dim);
-						dim.regions.Add(regionPos, region);
-					}
-					//TODO: find a way to enable late loading of alpha chunks
-					var nbt = new NBTFile(f);
-					var chunk = ChunkData.CreateFromNBT(region, chunkPos.LocalRegionPos, nbt);
-					cs.ReadChunkNBT(chunk, version);
-				}
-				catch(Exception e) when(!throwOnRegionLoadFail)
-				{
-					Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
-				}
-			}
+			GameVersion = targetVersion;
+			this.LevelData = levelData;
 		}
 
-		private static void LoadRegionFiles(string worldSaveDir, GameVersion? gameVersion, bool throwOnRegionLoadFail, Dimension dim)
+		private World()
 		{
-			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
-			{
-				var filename = Path.GetFileName(f);
-				if(Regex.IsMatch(filename, @"^r.-*\d.-*\d.mc(a|r)"))
-				{
-					try
-					{
-						Region region = RegionDeserializer.LoadRegion(f, gameVersion);
-						region.ParentDimension = dim;
-						dim.regions.Add(region.regionPos, region);
-					}
-					catch(Exception e) when(!throwOnRegionLoadFail)
-					{
-						Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
-					}
-				}
-				else
-				{
-					Console.WriteLine($"Invalid file '{filename}' in region folder.");
-				}
-			}
+
 		}
 
 		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out RegionLocation[] regions)
@@ -162,7 +107,7 @@ namespace WorldForge
 			regions = regionList.ToArray();
 		}
 
-		public void WriteWorldSave(string path, bool createRegionCopyDir = false)
+		public void WriteWorldSave(string path)
 		{
 			Directory.CreateDirectory(path);
 
@@ -172,15 +117,15 @@ namespace WorldForge
 
 			if(HasOverworld)
 			{
-				Overworld.WriteData(path, GameVersion, createRegionCopyDir);
+				Overworld.WriteData(path, GameVersion);
 			}
 			if(HasNether)
 			{
-				Nether.WriteData(Path.Combine(path, "DIM-1"), GameVersion, createRegionCopyDir);
+				Nether.WriteData(Path.Combine(path, "DIM-1"), GameVersion);
 			}
 			if(HasTheEnd)
 			{
-				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion, createRegionCopyDir);
+				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion);
 			}
 		}
 

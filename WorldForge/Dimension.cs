@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
@@ -193,8 +191,8 @@ namespace WorldForge
 			}
 		}
 
-		[Obsolete("Use TryGetRegion instead for better performance and direct access to the region", false)]
 		/// <summary>Is the location within the world's generated regions?</summary>
+		[Obsolete("Use TryGetRegion instead for better performance and direct access to the region", false)]
 		public bool IsWithinBoundaries(BlockCoord pos)
 		{
 			int x = (int)Math.Floor(pos.x / 512f);
@@ -509,7 +507,7 @@ namespace WorldForge
 			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
 		}
 
-		public void WriteData(string rootDir, GameVersion gameVersion, bool createRegionCopyDir = false)
+		public void WriteData(string rootDir, GameVersion gameVersion)
 		{
 			Directory.CreateDirectory(rootDir);
 			var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
@@ -523,14 +521,6 @@ namespace WorldForge
 					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
 					region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
 				});
-				if(createRegionCopyDir)
-				{
-					Directory.CreateDirectory(Path.Combine(rootDir, "region_original"));
-					foreach(var f in Directory.GetFiles(Path.Combine(rootDir, "region")))
-					{
-						File.Copy(f, Path.Combine(rootDir, "region_original", Path.GetFileName(f)));
-					}
-				}
 			}
 			else
 			{

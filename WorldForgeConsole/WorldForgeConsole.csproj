@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\WorldForgeOreAnalyzer\WorldForgeOreAnalyzer.csproj" />
+    <ProjectReference Include="..\WorldForgeOreAnalyzer\WorldForgeOreAnalyzer.csproj" />
     <ProjectReference Include="..\WorldForge\WorldForge.csproj" />
   </ItemGroup>
 

@@ -5,11 +5,11 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForge", "WorldForge\WorldForge.csproj", "{10615802-892F-4571-9C93-E9EFFE735F67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeOreAnalyzer", "..\WorldForgeOreAnalyzer\WorldForgeOreAnalyzer.csproj", "{B2582E70-9F34-4179-90A1-611960113B42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeConsole", "WorldForgeConsole\WorldForgeConsole.csproj", "{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeTests", "..\WorldForgeTests\WorldForgeTests.csproj", "{35BC2546-BCEF-40F8-92C0-87372DA6E440}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeTests", "WorldForgeTests\WorldForgeTests.csproj", "{DBC5AC11-27A1-487E-8E5B-9DBCFF073B81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorldForgeConsole", "WorldForgeConsole\WorldForgeConsole.csproj", "{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorldForgeOreAnalyzer", "WorldForgeOreAnalyzer\WorldForgeOreAnalyzer.csproj", "{D3A59F25-DD16-43C4-A600-8CF623623D70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,18 +21,18 @@ Global
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10615802-892F-4571-9C93-E9EFFE735F67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B2582E70-9F34-4179-90A1-611960113B42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B2582E70-9F34-4179-90A1-611960113B42}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B2582E70-9F34-4179-90A1-611960113B42}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B2582E70-9F34-4179-90A1-611960113B42}.Release|Any CPU.Build.0 = Release|Any CPU
-		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{35BC2546-BCEF-40F8-92C0-87372DA6E440}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C55C992-F0CF-4905-8803-DB5DB6D74DA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBC5AC11-27A1-487E-8E5B-9DBCFF073B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBC5AC11-27A1-487E-8E5B-9DBCFF073B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBC5AC11-27A1-487E-8E5B-9DBCFF073B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBC5AC11-27A1-487E-8E5B-9DBCFF073B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3A59F25-DD16-43C4-A600-8CF623623D70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3A59F25-DD16-43C4-A600-8CF623623D70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3A59F25-DD16-43C4-A600-8CF623623D70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3A59F25-DD16-43C4-A600-8CF623623D70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
