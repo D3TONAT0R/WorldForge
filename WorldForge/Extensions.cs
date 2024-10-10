@@ -7,12 +7,12 @@ namespace WorldForge
 
 		public static int ChunkCoord(this int i)
 		{
-			return (int)Math.Floor(i / 16f);
+			return (int)Math.Floor(i / 16d);
 		}
 
 		public static int RegionCoord(this int i)
 		{
-			return (int)Math.Floor(i / 512f);
+			return (int)Math.Floor(i / 512d);
 		}
 
 		public static int Mod(this int i, int m)

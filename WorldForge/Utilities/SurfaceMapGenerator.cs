@@ -7,6 +7,27 @@ namespace WorldForge.Utilities
 {
 	public static class SurfaceMapGenerator
 	{
+		public static IBitmap GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
+		{
+			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true);
+			if(Bitmaps.BitmapFactory == null)
+			{
+				throw new ArgumentNullException("No bitmap factory was provided.");
+			}
+			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
+			for(int z = zMin; z < zMax; z++)
+			{
+				for(int x = xMin; x < xMax; x++)
+				{
+					int y = heightmap[x - xMin, z - zMin];
+					if(y < 0) continue;
+					byte brt = (byte)Math.Max(Math.Min(y, 255), 0);
+					bmp.SetPixel(x - xMin, z - zMin, new BitmapColor(brt, brt, brt));
+				}
+			}
+			return bmp;
+		}
+
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>

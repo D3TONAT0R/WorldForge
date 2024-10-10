@@ -427,12 +427,10 @@ namespace WorldForge
 			{
 				for(int x = xMin; x <= xMax; x++)
 				{
-					var chunkCoord = new ChunkCoord(x / 16, z / 16);
+					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
 					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
 					{
-						var rx = x.Mod(512);
-						var rz = z.Mod(512);
-						var chunk = GetRegion(x, z)?.chunks[(int)Math.Floor(rx / 16d), (int)Math.Floor(rz / 16d)];
+						var chunk = GetRegion(x, z)?.chunks[chunkCoord.x.Mod(32), chunkCoord.z.Mod(32)];
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
 					}
