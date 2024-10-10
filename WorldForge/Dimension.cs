@@ -456,7 +456,8 @@ namespace WorldForge
 		/// </summary>
 		public IBitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
 		{
-			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType), shading);
+			//TODO: heightmap acquisition bypassed
+			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true), shading);
 		}
 
 		public IBitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap, bool shading)
@@ -487,7 +488,7 @@ namespace WorldForge
 							else shade = -1;
 							if(depth % 8 >= 4 && shade > -1)
 							{
-								if(x % 2 == z % 2) shade--;
+								if(x.Mod(2) == z.Mod(2)) shade--;
 							}
 						}
 						else

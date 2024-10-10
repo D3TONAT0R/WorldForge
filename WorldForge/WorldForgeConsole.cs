@@ -45,6 +45,7 @@ namespace WorldForge
 				WriteLine("- view               Shows the contents of an NBT file or region");
 				WriteLine("- readchunk          Loads chunk data at a specific byte offset in a region file");
 				WriteLine("- analyzedist        Analyzes a world's block/ore distribution and creates a CSV report");
+				WriteLine("- map                Generates an overview map of the given world");
 				input = GetInput();
 				if(input.StartsWith("mergeregions"))
 				{
@@ -78,6 +79,11 @@ namespace WorldForge
 				if(input.StartsWith("analyzedist")) {
 					var v = new BlockDistributionConsoleTool();
 					v.Run(args);
+				}
+				if(input.StartsWith("map"))
+				{
+					var mapper = new SurfaceMapTool();
+					mapper.Run(args);
 				}
 			}
 		}
