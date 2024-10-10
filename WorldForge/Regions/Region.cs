@@ -85,7 +85,7 @@ namespace WorldForge.Regions
 		///<summary>Gets the block type at the given location.</summary>
 		public BlockID GetBlock(BlockCoord pos)
 		{
-			var chunk = GetChunk(pos.x, pos.z, false);
+			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
 				return chunk.GetBlockAt(pos.LocalChunkCoords)?.block ?? BlockList.Find("minecraft:air");
@@ -99,19 +99,19 @@ namespace WorldForge.Regions
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(BlockCoord pos)
 		{
-			return GetChunk(pos.x, pos.z, false)?.GetBlockAt(pos.LocalChunkCoords);
+			return GetChunkAtBlock(pos, false)?.GetBlockAt(pos.LocalChunkCoords);
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			return GetChunk(pos.x, pos.z, true)?.GetTileEntity(pos.LocalChunkCoords);
+			return GetChunkAtBlock(pos, true)?.GetTileEntity(pos.LocalChunkCoords);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>
 		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
 		{
-			GetChunk(pos.x, pos.z, allowNewChunks)?.SetBlockAt(pos.LocalChunkCoords, block);
+			GetChunkAtBlock(pos, allowNewChunks)?.SetBlockAt(pos.LocalChunkCoords, block);
 			return true;
 		}
 
@@ -130,7 +130,7 @@ namespace WorldForge.Regions
 		///<summary>Sets the tile entity at the given location.</summary>
 		public bool SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			var chunk = GetChunk(pos.x, pos.z, true);
+			var chunk = GetChunkAtBlock(pos, true);
 			chunk?.SetTileEntity(pos.LocalChunkCoords, te);
 			return chunk != null;
 		}
@@ -138,16 +138,32 @@ namespace WorldForge.Regions
 		/// <summary>
 		/// Gets the chunk containing the block's position
 		/// </summary>
-		public ChunkData GetChunk(int localX, int localZ, bool allowNewChunks)
+		public ChunkData GetChunkAtBlock(BlockCoord coord, bool allowNewChunks)
 		{
-			int chunkX = (int)Math.Floor(localX / 16.0);
-			int chunkZ = (int)Math.Floor(localZ / 16.0);
-			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) throw new ArgumentOutOfRangeException();
-			if (allowNewChunks && chunks[chunkX, chunkZ] == null)
+			var chunk = coord.Chunk.LocalRegionPos;
+			if (allowNewChunks && chunks[chunk.x, chunk.z] == null)
 			{
-				chunks[chunkX, chunkZ] = ChunkData.CreateNew(this, new ChunkCoord(chunkX, chunkZ));
+				chunks[chunk.x, chunk.z] = ChunkData.CreateNew(this, new ChunkCoord(chunk.x, chunk.z));
 			}
-			return chunks[chunkX, chunkZ];
+			return chunks[chunk.x, chunk.z];
+		}
+
+		public bool TryGetChunkAtBlock(BlockCoord coord, out ChunkData chunk)
+		{
+			var c = coord.Chunk.LocalRegionPos;
+			chunk = chunks[c.x, c.z];
+			return chunk != null;
+		}
+
+		public ChunkData GetChunk(int x, int z)
+		{
+			return chunks[x, z];
+		}
+
+		public bool TryGetChunk(int x, int z, out ChunkData chunk)
+		{
+			chunk = chunks[x, z];
+			return chunk != null;
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
@@ -167,7 +183,7 @@ namespace WorldForge.Regions
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiomeAt(int x, int z)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunkAtBlock(new BlockCoord(x, 0, z), false);
 			if (chunk != null)
 			{
 				//for (int y = 0; y < 256; y++)
@@ -184,7 +200,7 @@ namespace WorldForge.Regions
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiomeAt(BlockCoord pos)
 		{
-			var chunk = GetChunk(pos.x, pos.z, false);
+			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
 				return chunk.GetBiomeAt(pos.LocalChunkCoords);
@@ -198,7 +214,7 @@ namespace WorldForge.Regions
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunkAtBlock(new BlockCoord(x, 0, z), false);
 			if (chunk != null)
 			{
 				chunk.SetBiomeAt(x.Mod(16), z.Mod(16), biome);
@@ -208,7 +224,7 @@ namespace WorldForge.Regions
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiomeAt(BlockCoord pos, BiomeID biome)
 		{
-			var chunk = GetChunk(pos.x, pos.z, false);
+			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
 				chunk.SetBiomeAt(pos.LocalChunkCoords, biome);
@@ -220,7 +236,7 @@ namespace WorldForge.Regions
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			var chunk = GetChunk(pos.x, pos.z, false);
+			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
 				chunk.MarkForTickUpdate(pos.LocalChunkCoords);
@@ -228,11 +244,11 @@ namespace WorldForge.Regions
 		}
 
 		/// <summary>
-		/// Unmarks a previously marked coordinate to be ticked when thie respective chunk is loaded.
+		/// Unmarks a previously marked coordinate to be ticked when this respective chunk is loaded.
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			var chunk = GetChunk(pos.x, pos.z, false);
+			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
 				chunk.UnmarkForTickUpdate(pos.LocalChunkCoords);
@@ -244,7 +260,7 @@ namespace WorldForge.Regions
 		/// </summary>
 		public short GetHighestBlock(int x, int z, HeightmapType heightmapType = HeightmapType.AllBlocks)
 		{
-			var chunk = GetChunk(x, z, false);
+			var chunk = GetChunkAtBlock(new BlockCoord(x, 0, z), false);
 			if (chunk != null)
 			{
 				return chunk.GetHighestBlock(x.Mod(16), z.Mod(16), heightmapType);

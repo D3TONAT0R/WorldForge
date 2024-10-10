@@ -114,7 +114,7 @@ namespace WorldForge
 					string zBase36 = split[2];
 					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
-					if(!dim.TryGetRegion(regionPos.x, regionPos.z, out var region))
+					if(!dim.TryGetRegionAtBlock(regionPos.x, regionPos.z, out var region))
 					{
 						region = new Region(regionPos, dim);
 						dim.regions.Add(regionPos, region);
@@ -191,23 +191,28 @@ namespace WorldForge
 			}
 		}
 
-		/// <summary>Is the location within the world's generated regions?</summary>
-		[Obsolete("Use TryGetRegion instead for better performance and direct access to the region", false)]
-		public bool IsWithinBoundaries(BlockCoord pos)
+		/// <summary>
+		/// Gets the region at the given location, if present.
+		/// </summary>
+		public Region GetRegion(RegionLocation location)
 		{
-			int x = (int)Math.Floor(pos.x / 512f);
-			int z = (int)Math.Floor(pos.z / 512f);
-			return regions.ContainsKey(new RegionLocation(x, z));
+			regions.TryGetValue(location, out var region);
+			return region;
+		}
+
+		public bool TryGetRegion(RegionLocation location, out Region region)
+		{
+			return regions.TryGetValue(location, out region);
 		}
 
 		/// <summary>Gets the region at the given block coordinates, if present</summary>
-		public Region GetRegion(int x, int z)
+		public Region GetRegionAtBlock(int x, int z)
 		{
 			regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out var region);
 			return region;
 		}
 
-		public bool TryGetRegion(int x, int z, out Region region)
+		public bool TryGetRegionAtBlock(int x, int z, out Region region)
 		{
 			return regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out region);
 		}
@@ -237,43 +242,43 @@ namespace WorldForge
 		///<summary>Gets the block type at the given location.</summary>
 		public BlockID GetBlock(BlockCoord pos)
 		{
-			return GetRegion(pos.x, pos.z)?.GetBlock(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos.x, pos.z)?.GetBlock(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(BlockCoord pos)
 		{
-			return GetRegion(pos.x, pos.z)?.GetBlockState(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos.x, pos.z)?.GetBlockState(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			return GetRegion(pos.x, pos.z)?.GetTileEntity(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos.x, pos.z)?.GetTileEntity(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(int x, int z)
 		{
-			return GetRegion(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
+			return GetRegionAtBlock(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(BlockCoord pos)
 		{
-			return GetRegion(pos.x, pos.z)?.GetBiomeAt(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos.x, pos.z)?.GetBiomeAt(pos.LocalRegionCoords);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			GetRegion(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
+			GetRegionAtBlock(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(BlockCoord pos, BiomeID biome)
 		{
-			GetRegion(pos.x, pos.z)?.SetBiomeAt(pos.LocalRegionCoords, biome);
+			GetRegionAtBlock(pos.x, pos.z)?.SetBiomeAt(pos.LocalRegionCoords, biome);
 		}
 
 		/// <summary>
@@ -281,7 +286,7 @@ namespace WorldForge
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			GetRegion(pos.x, pos.z)?.MarkForTickUpdate(pos.LocalRegionCoords);
+			GetRegionAtBlock(pos.x, pos.z)?.MarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		/// <summary>
@@ -289,14 +294,14 @@ namespace WorldForge
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			GetRegion(pos.x, pos.z)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
+			GetRegionAtBlock(pos.x, pos.z)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		//private readonly object lockObj = new object();
 
 		private Region GetRegionAt(int x, int z)
 		{
-			return GetRegion(x, z);
+			return GetRegionAtBlock(x, z);
 			/*lock (lockObj)
 			{
 				var region = TryGetRegion(x, z);
@@ -394,7 +399,7 @@ namespace WorldForge
 		///<summary>Sets the tile entity at the given location.</summary>
 		public bool SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			if(TryGetRegion(pos.x, pos.z, out var region))
+			if(TryGetRegionAtBlock(pos.x, pos.z, out var region))
 			{
 				return region.SetTileEntity(pos, te);
 			}
@@ -430,7 +435,7 @@ namespace WorldForge
 					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
 					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
 					{
-						var chunk = GetRegion(x, z)?.chunks[chunkCoord.x.Mod(32), chunkCoord.z.Mod(32)];
+						var chunk = GetRegionAtBlock(x, z)?.chunks[chunkCoord.x.Mod(32), chunkCoord.z.Mod(32)];
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
 					}
