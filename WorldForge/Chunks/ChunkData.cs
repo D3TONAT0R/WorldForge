@@ -299,6 +299,28 @@ namespace WorldForge.Chunks
 			return short.MinValue;
 		}
 
+		public short[,] GetHeightmap(HeightmapType type, bool forceManualCalculation = false)
+		{
+			short[,] hm = null;
+			if(!forceManualCalculation)
+			{
+				hm = sourceNBT?.GetHeightmapFromChunkNBT(type);
+			}
+			if(hm == null)
+			{
+				//Calculate heightmap manually
+				hm = new short[16, 16];
+				for(int z = 0; z < 16; z++)
+				{
+					for(int x = 0; x < 16; x++)
+					{
+						hm[x, z] = GetHighestBlock(x, z, type);
+					}
+				}
+			}
+			return hm;
+		}
+
 		///<summary>Writes the chunk's height data to a large heightmap at the given chunk coords</summary>
 		public void WriteToHeightmap(short[,] hm, int x, int z, HeightmapType type)
 		{

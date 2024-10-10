@@ -419,17 +419,36 @@ namespace WorldForge
 		/// <summary>
 		/// Generates a Heightmap from the specified area (With Z starting from top)
 		/// </summary>
-		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type)
+		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type, bool forceManualCalculation = false)
 		{
-			short[,] hm = new short[xMax - xMin + 1, zMax - zMin + 1];
+			short[,] heightmap = new short[xMax - xMin + 1, zMax - zMin + 1];
+			Dictionary<ChunkCoord, short[,]> chunkHeightmaps = new Dictionary<ChunkCoord, short[,]>();
 			for(int z = zMin; z <= zMax; z++)
 			{
 				for(int x = xMin; x <= xMax; x++)
 				{
-					hm[x - xMin, z - zMin] = GetRegionAt(x, z)?.GetChunk(x.Mod(512), z.Mod(512), false)?.GetHighestBlock(x.Mod(16), z.Mod(16), type) ?? short.MinValue;
+					var chunkCoord = new ChunkCoord(x / 16, z / 16);
+					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
+					{
+						var rx = x.Mod(512);
+						var rz = z.Mod(512);
+						var chunk = GetRegion(x, z)?.chunks[rx / 16, rz / 16];
+						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
+						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
+					}
+					short height;
+					if(chunkHeightmap != null)
+					{
+						height = chunkHeightmap[x.Mod(16), z.Mod(16)];
+					}
+					else
+					{
+						height = GetHighestBlock(x, z, type);
+					}
+					heightmap[x - xMin, z - zMin] = height;
 				}
 			}
-			return hm;
+			return heightmap;
 		}
 
 		/// <summary>
