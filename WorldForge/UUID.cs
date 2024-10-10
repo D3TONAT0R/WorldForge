@@ -36,6 +36,11 @@ namespace WorldForge
 			i3 = (int)leastSignificant;
 		}
 
+		private UUID()
+		{
+			//Needed for Activator.CreateInstance
+		}
+
 		public object ToNBT(GameVersion version)
 		{
 			//TODO: version differences

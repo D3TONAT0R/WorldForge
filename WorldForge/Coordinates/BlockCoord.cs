@@ -111,6 +111,12 @@ namespace WorldForge.Coordinates
 				y = data[1];
 				z = data[2];
 			}
+			else if(nbtData is NBTCompound comp)
+			{
+				comp.TryGet("X", out x);
+				comp.TryGet("Y", out y);
+				comp.TryGet("Z", out z);
+			}
 			else
 			{
 				throw new ArgumentException("Invalid NBT data for BlockCoord: " + nbtData);

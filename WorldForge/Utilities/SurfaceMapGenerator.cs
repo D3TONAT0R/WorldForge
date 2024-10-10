@@ -29,7 +29,7 @@ namespace WorldForge.Utilities
 
 					var block = dim.GetBlock(new BlockCoord(x, y, z));
 					int shade = 0;
-					if(shading)
+					if(block != null && shading)
 					{
 						shade = GetShade(dim, xMin, zMin, z, block, x, y, heightmap);
 					}

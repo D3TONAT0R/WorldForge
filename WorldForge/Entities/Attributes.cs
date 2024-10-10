@@ -26,6 +26,11 @@ namespace WorldForge.Entities
 			FromNBT(nbt);
 		}
 
+		public Attribute()
+		{
+			//Needed for Activator.CreateInstance
+		}
+
 		public void FromNBT(object nbtData)
 		{
 			NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
