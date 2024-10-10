@@ -432,7 +432,7 @@ namespace WorldForge
 					{
 						var rx = x.Mod(512);
 						var rz = z.Mod(512);
-						var chunk = GetRegion(x, z)?.chunks[rx / 16, rz / 16];
+						var chunk = GetRegion(x, z)?.chunks[(int)Math.Floor(rx / 16d), (int)Math.Floor(rz / 16d)];
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
 					}
@@ -449,61 +449,6 @@ namespace WorldForge
 				}
 			}
 			return heightmap;
-		}
-
-		/// <summary>
-		/// Generates a colored overview map from the specified area (With Z starting from top)
-		/// </summary>
-		public IBitmap GetSurfaceMap(int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
-		{
-			//TODO: heightmap acquisition bypassed
-			return GetSurfaceMap(xMin, zMin, GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true), shading);
-		}
-
-		public IBitmap GetSurfaceMap(int xMin, int zMin, short[,] heightmap, bool shading)
-		{
-			int xMax = xMin + heightmap.GetLength(0);
-			int zMax = zMin + heightmap.GetLength(1);
-			if(Bitmaps.BitmapFactory == null)
-			{
-				throw new ArgumentNullException("No bitmap factory was provided.");
-			}
-			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
-			for(int z = zMin; z < zMax; z++)
-			{
-				for(int x = xMin; x < xMax; x++)
-				{
-					int y = heightmap[x - xMin, z - zMin];
-					if(y < 0) continue;
-					var block = GetBlock((x, y, z));
-					int shade = 0;
-					if(shading && z - 1 >= zMin)
-					{
-						if(block.IsWater)
-						{
-							//Water dithering
-							var depth = GetWaterDepth((x, y, z));
-							if(depth < 8) shade = 1;
-							else if(depth < 16) shade = 0;
-							else shade = -1;
-							if(depth % 8 >= 4 && shade > -1)
-							{
-								if(x.Mod(2) == z.Mod(2)) shade--;
-							}
-						}
-						else
-						{
-							var above = heightmap[x - xMin, z - 1 - zMin];
-							if(above > y) shade = -1;
-							else if(above < y) shade = 1;
-						}
-					}
-					var aboveBlock = GetBlock((x, y + 1, z));
-					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
-					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
-				}
-			}
-			return bmp;
 		}
 
 		/// <summary>

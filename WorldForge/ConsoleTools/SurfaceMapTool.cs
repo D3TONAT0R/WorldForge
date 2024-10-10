@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using WorldForge.Utilities;
 
 namespace WorldForge.ConsoleTools
 {
@@ -21,7 +22,7 @@ namespace WorldForge.ConsoleTools
 			int zMax = int.Parse(Console.ReadLine());
 			World w = World.Load(path);
 			string mapPath = Path.Combine(path, "surface_map.png");
-			w.Overworld.GetSurfaceMap(xMin, zMin, xMax - 1, zMax - 1, HeightmapType.SolidBlocks, true).Save(mapPath);
+			SurfaceMapGenerator.GenerateSurfaceMap(w.Overworld, xMin, zMin, xMax - 1, zMax - 1, HeightmapType.SolidBlocks, true).Save(mapPath);
 			Console.WriteLine("Map written to " + mapPath);
 		}
 	}
