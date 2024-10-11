@@ -116,7 +116,7 @@ namespace WorldForge
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
 					if(!dim.TryGetRegionAtBlock(regionPos.x, regionPos.z, out var region))
 					{
-						region = new Region(regionPos, dim);
+						region = Region.CreateNew(regionPos, dim);
 						dim.regions.Add(regionPos, region);
 					}
 					//TODO: find a way to enable late loading of alpha chunks
@@ -140,13 +140,12 @@ namespace WorldForge
 				{
 					try
 					{
-						Region region = RegionDeserializer.LoadRegion(f, gameVersion);
-						region.ParentDimension = dim;
+						var region = RegionDeserializer.PreloadRegion(f, dim, gameVersion);
 						dim.regions.Add(region.regionPos, region);
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
-						Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
+						Console.WriteLine($"Failed to preload region '{filename}': {e.Message}");
 					}
 				}
 				else
@@ -156,26 +155,21 @@ namespace WorldForge
 			}
 		}
 
-		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out RegionLocation[] regions)
+		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out List<RegionLocation> regions)
 		{
 			NBTFile levelDat = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			var dataComp = levelDat.contents.GetAsCompound("Data");
 
 			gameVersion = GameVersion.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? GameVersion.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
-			var regionList = new List<RegionLocation>();
+			regions = new List<RegionLocation>();
 			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
-				try
+				if(RegionLocation.TryGetFromFileName(f, out var loc))
 				{
-					regionList.Add(RegionLocation.FromRegionFileName(f));
-				}
-				catch
-				{
-
+					regions.Add(loc);
 				}
 			}
-			regions = regionList.ToArray();
 		}
 
 		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed.</summary>
@@ -186,7 +180,7 @@ namespace WorldForge
 				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
 					var loc = new RegionLocation(x, z);
-					regions.Add(loc, new Region(loc, this));
+					regions.Add(loc, Region.CreateNew(loc, this));
 				}
 			}
 		}
@@ -331,7 +325,7 @@ namespace WorldForge
 			var rloc = new RegionLocation(rx, rz);
 			if(!regions.ContainsKey(rloc))
 			{
-				var r = new Region(rloc, this);
+				var r = Region.CreateNew(rloc, this);
 				regions.Add(rloc, r);
 				return true;
 			}
@@ -435,7 +429,7 @@ namespace WorldForge
 					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
 					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
 					{
-						var chunk = GetRegionAtBlock(x, z)?.chunks[chunkCoord.x.Mod(32), chunkCoord.z.Mod(32)];
+						var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x.Mod(32), chunkCoord.z.Mod(32));
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
 					}
@@ -484,7 +478,7 @@ namespace WorldForge
 				Directory.CreateDirectory(Path.Combine(rootDir, "region"));
 
 				string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
-				Parallel.ForEach(regions, parallelOptions, (KeyValuePair<RegionLocation, Region> region) =>
+				Parallel.ForEach(regions, parallelOptions, region =>
 				{
 					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
 					region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
@@ -493,8 +487,9 @@ namespace WorldForge
 			else
 			{
 				var alphaSerializer = (ChunkSerializerAlpha)ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
-				Parallel.ForEach(regions, parallelOptions, (KeyValuePair<RegionLocation, Region> region) =>
+				Parallel.ForEach(regions, parallelOptions, region =>
 				{
+					if(!region.Value.IsLoaded) region.Value.Load();
 					foreach(var c in region.Value.chunks)
 					{
 						if(c != null)

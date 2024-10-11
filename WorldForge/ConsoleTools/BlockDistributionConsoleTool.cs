@@ -67,7 +67,7 @@ namespace WorldForge.ConsoleTools
 			PerformAnalysis(targetFlags, path, regionLocations, -64, 320, logChoice, evalChoice == 1);
 		}
 
-		static void PerformAnalysis(AnalysisEvaluator.TargetBlockTypes targetFlags, string worldRoot, RegionLocation[] regions, short yMin, short yMax, int chartTypeFlags, bool relativeToStone)
+		static void PerformAnalysis(AnalysisEvaluator.TargetBlockTypes targetFlags, string worldRoot, List<RegionLocation> regions, short yMin, short yMax, int chartTypeFlags, bool relativeToStone)
 		{
 			Analyzer analyzer = new Analyzer(yMin, yMax);
 			bool useExisting = false;
@@ -89,12 +89,12 @@ namespace WorldForge.ConsoleTools
 			}
 			else
 			{
-				for(int ri = 0; ri < regions.Length; ri++)
+				for(int ri = 0; ri < regions.Count; ri++)
 				{
-					Console.WriteLine($"Analyzing region {regions[ri].ToFileName()} [{ri + 1}/{regions.Length}]");
+					Console.WriteLine($"Analyzing region {regions[ri].ToFileName()} [{ri + 1}/{regions.Count}]");
 					try
 					{
-						var region = RegionDeserializer.LoadRegion(Path.Combine(worldRoot, "region", regions[ri].ToFileName()));
+						var region = RegionDeserializer.LoadRegion(Path.Combine(worldRoot, "region", regions[ri].ToFileName()), null);
 						analyzer.AnalyzeRegion(region);
 					}
 					catch(Exception e)

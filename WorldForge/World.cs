@@ -85,26 +85,21 @@ namespace WorldForge
 
 		}
 
-		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out RegionLocation[] regions)
+		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out List<RegionLocation> regions)
 		{
 			NBTFile levelDat = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));
 			var dataComp = levelDat.contents.GetAsCompound("Data");
 
 			gameVersion = GameVersion.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? GameVersion.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
-			var regionList = new List<RegionLocation>();
+			regions = new List<RegionLocation>();
 			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
-				try
+				if(RegionLocation.TryGetFromFileName(f, out var loc))
 				{
-					regionList.Add(RegionLocation.FromRegionFileName(f));
-				}
-				catch
-				{
-
+					regions.Add(loc);
 				}
 			}
-			regions = regionList.ToArray();
 		}
 
 		public void WriteWorldSave(string path)

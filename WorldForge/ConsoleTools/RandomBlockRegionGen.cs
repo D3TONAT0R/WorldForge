@@ -19,7 +19,7 @@ namespace WorldForge.ConsoleTools
 			WorldForgeConsole.WriteLine("Enter path to output file:");
 			string savepath = GetFilePath(true);
 			WorldForgeConsole.WriteLine("Starting...");
-			region = new Region(0, 0, null);
+			region = Region.CreateNew(new RegionLocation(0, 0), null);
 			FillWithRandomBlocks();
 			WorldForgeConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
@@ -47,7 +47,7 @@ namespace WorldForge.ConsoleTools
 								for(int k = 0; k < size; k++)
 								{
 									var pos = new BlockCoord(x + i, y + j, z + k);
-									if(region.IsWithinBoundaries(pos))
+									if(region.ContainsPosition(pos.x, pos.z))
 									{
 										region.SetBlock(pos, block);
 									}

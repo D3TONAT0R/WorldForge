@@ -27,8 +27,8 @@ namespace WorldForge.Chunks
 			}
 		}
 		public Region ParentRegion { get; set; }
-		public Dimension ParentDimension => ParentRegion?.ParentDimension;
-		public World ParentWorld => ParentRegion?.ParentDimension?.ParentWorld;
+		public Dimension ParentDimension => ParentRegion?.Parent;
+		public World ParentWorld => ParentRegion?.Parent?.ParentWorld;
 
 		public ChunkCoord RegionSpaceCoord { get; set; }
 
@@ -60,12 +60,12 @@ namespace WorldForge.Chunks
 			return c;
 		}
 
-		public static ChunkData CreateFromNBT(Region region, ChunkCoord regionSpacePos, NBTFile nbt, GameVersion? chunkGameVersion = null, bool loadContent = false)
+		public static ChunkData CreateFromNBT(Region region, ChunkCoord regionSpacePos, NBTFile nbt, GameVersion? versionHint = null, bool loadContent = false)
 		{
 			var c = new ChunkData(region, regionSpacePos)
 			{
 				sourceNBT = nbt,
-				ChunkGameVersion = chunkGameVersion
+				ChunkGameVersion = versionHint
 			};
 			if(loadContent) c.Load();
 			return c;

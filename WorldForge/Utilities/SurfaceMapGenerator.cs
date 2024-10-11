@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using WorldForge.Coordinates;
 
-namespace WorldForge.Utilities
+namespace WorldForge
 {
 	public static class SurfaceMapGenerator
 	{
@@ -70,7 +70,7 @@ namespace WorldForge.Utilities
 			int shade = 0;
 			if(z - 1 >= zMin)
 			{
-				if(block.IsLiquid)
+				if(block != null && block.IsLiquid)
 				{
 					//Water dithering
 					var depth = dim.GetWaterDepth(new BlockCoord(x, y, z));

@@ -26,8 +26,8 @@ namespace WorldForge.ConsoleTools
 			Region region2;
 			try
 			{
-				region1 = RegionDeserializer.LoadRegion(r1);
-				region2 = RegionDeserializer.LoadRegion(r2);
+				region1 = RegionDeserializer.LoadRegion(r1, null);
+				region2 = RegionDeserializer.LoadRegion(r2, null);
 			}
 			catch(Exception e)
 			{

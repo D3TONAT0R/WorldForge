@@ -58,6 +58,12 @@ namespace WorldForge
 			{new NamespacedID("minecraft:acacia_leaves"), 3 },
 			{new NamespacedID("minecraft:dark_oak_leaves"),3 },
 			{new NamespacedID("minecraft:azalea_leaves"),3 },
+			{new NamespacedID("minecraft:mangrove_leaves"),3 },
+			{new NamespacedID("minecraft:cactus"),3 },
+			{new NamespacedID("minecraft:short_grass"),3 },
+			{new NamespacedID("minecraft:tall_grass"),3 },
+			{new NamespacedID("minecraft:dandelion"),3 },
+			{new NamespacedID("minecraft:poppy"),3 },
 			{new NamespacedID("minecraft:stone"),4 },
 			{new NamespacedID("minecraft:diorite"),4 },
 			{new NamespacedID("minecraft:granite"),4 },
@@ -209,7 +215,7 @@ namespace WorldForge
 				case "minecraft:air":
 				case "minecraft:cave_air":
 				case "minecraft:cobweb":
-				case "minecraft:grass":
+				case "minecraft:short_grass":
 				case "minecraft:fern":
 				case "minecraft:dead_bush":
 				case "minecraft:seagrass":

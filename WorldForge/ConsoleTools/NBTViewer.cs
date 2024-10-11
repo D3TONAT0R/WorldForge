@@ -59,7 +59,7 @@ namespace WorldForge.ConsoleTools
 			if(path.EndsWith(".mca"))
 			{
 				content = new NBTFile();
-				Region r = RegionDeserializer.LoadRegion(path);
+				Region r = RegionDeserializer.LoadRegion(path, null);
 				for(int z = 0; z < 32; z++)
 				{
 					for(int x = 0; x < 32; x++)

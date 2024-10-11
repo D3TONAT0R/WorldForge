@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 
 namespace WorldForge.Coordinates
 {
@@ -13,11 +14,18 @@ namespace WorldForge.Coordinates
 			z = regionZ;
 		}
 
-		public static RegionLocation FromRegionFileName(string regionFileName)
+		public static bool TryGetFromFileName(string filename, out RegionLocation location)
 		{
-			regionFileName = Path.GetFileName(regionFileName);
-			var split = regionFileName.Split('.');
-			return new RegionLocation(int.Parse(split[split.Length - 3]), int.Parse(split[split.Length - 2]));
+			string fname = Path.GetFileName(filename);
+			location = new RegionLocation();
+			if(Regex.IsMatch(fname, @".*\.-?[0-9]+\.-?[0-9]+\.mc.*"))
+			{
+				var split = fname.Split('.');
+				location.x = int.Parse(split[split.Length - 3]);
+				location.z = int.Parse(split[split.Length - 2]);
+				return true;
+			}
+			return false;
 		}
 
 		public ChunkCoord GetChunkCoord(int chunkOffsetX = 0, int chunkOffsetZ = 0)

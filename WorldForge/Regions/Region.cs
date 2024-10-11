@@ -15,31 +15,53 @@ namespace WorldForge.Regions
 		public readonly string sourceFilePath;
 
 		public RegionPOI poiStorage;
-		public RegionEntities entitiyStorage;
+		public RegionEntities entityStorage;
 
-		public byte[,] heightmap;
+		public GameVersion? versionHint;
 		public ChunkData[,] chunks;
-
 		public List<ChunkData> orphanChunks;
 
-		public int[,,] finalBiomeData;
+		public Dimension Parent { get; internal set; }
+		public World ParentWorld => Parent?.ParentWorld;
 
-		public Dimension ParentDimension { get; internal set; }
-		public World ParentWorld => ParentDimension?.ParentWorld;
+		public bool IsLoaded => chunks != null;
 
 		public RegionFileDataPositions RegionFileInfo { get; internal set; }
 
-		public Region(int x, int z, Dimension parentDimension, string sourceFilePath = null)
+		private Region(RegionLocation loc, Dimension parent, string sourcePath)
 		{
-			ParentDimension = parentDimension;
-			regionPos = new RegionLocation(x, z);
-			chunks = new ChunkData[32, 32];
-			this.sourceFilePath = sourceFilePath;
+			regionPos = loc;
+			Parent = parent;
+			sourceFilePath = sourcePath;
 		}
 
-		public Region(RegionLocation rloc, Dimension parentDimension, string sourceFilePath = null) : this(rloc.x, rloc.z, parentDimension)
+		public static Region CreateNew(RegionLocation loc, Dimension parent)
 		{
+			Region r = new Region(loc, parent, null);
+			r.InitializeChunks();
+			return r;
+		}
 
+		public static Region CreateExisting(RegionLocation loc, Dimension parent, string sourceFilePath)
+		{
+			Region r = new Region(loc, parent, sourceFilePath);
+			return r;
+		}
+
+		public void InitializeChunks()
+		{
+			chunks = new ChunkData[32, 32];
+		}
+
+		public void Load(bool loadChunks = false, bool loadOrphanChunks = false)
+		{
+			if(IsLoaded) throw new InvalidOperationException("Region is already loaded.");
+			RegionDeserializer.LoadRegionContent(this, loadChunks, loadOrphanChunks);
+		}
+
+		private void LoadIfRequired()
+		{
+			if(!IsLoaded) Load();
 		}
 
 		/// <summary>
@@ -47,6 +69,7 @@ namespace WorldForge.Regions
 		/// </summary>
 		public void LoadAllChunks()
 		{
+			LoadIfRequired();
 			for(int x = 0; x < 32; x++)
 			{
 				for(int z = 0; z < 32; z++)
@@ -60,18 +83,18 @@ namespace WorldForge.Regions
 			}
 		}
 
+		public bool ContainsPosition(int x, int z)
+		{
+			int localX = x - regionPos.x * 512;
+			int localZ = z - regionPos.z * 512;
+			return x >= 0 && x < 512 && z >= 0 && z < 512;
+		}
+
 		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
 		public bool IsAir(BlockCoord pos)
 		{
 			var b = GetBlock(pos);
 			return b == null || b.IsAir;
-		}
-
-		///<summary>Is the location within the region's bounds?</summary>
-		public bool IsWithinBoundaries(BlockCoord pos)
-		{
-			if (pos.x < 0 || pos.x >= 512 || pos.y < 0 || pos.y >= 256 || pos.z < 0 || pos.z >= 512) return false;
-			else return true;
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
@@ -140,6 +163,7 @@ namespace WorldForge.Regions
 		/// </summary>
 		public ChunkData GetChunkAtBlock(BlockCoord coord, bool allowNewChunks)
 		{
+			LoadIfRequired();
 			var chunk = coord.Chunk.LocalRegionPos;
 			if (allowNewChunks && chunks[chunk.x, chunk.z] == null)
 			{
@@ -150,6 +174,7 @@ namespace WorldForge.Regions
 
 		public bool TryGetChunkAtBlock(BlockCoord coord, out ChunkData chunk)
 		{
+			LoadIfRequired();
 			var c = coord.Chunk.LocalRegionPos;
 			chunk = chunks[c.x, c.z];
 			return chunk != null;
@@ -157,11 +182,13 @@ namespace WorldForge.Regions
 
 		public ChunkData GetChunk(int x, int z)
 		{
+			LoadIfRequired();
 			return chunks[x, z];
 		}
 
 		public bool TryGetChunk(int x, int z, out ChunkData chunk)
 		{
+			LoadIfRequired();
 			chunk = chunks[x, z];
 			return chunk != null;
 		}
@@ -169,6 +196,7 @@ namespace WorldForge.Regions
 		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
 		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
 		{
+			LoadIfRequired();
 			int chunkX = (int)Math.Floor(pos.x / 16.0);
 			int chunkZ = (int)Math.Floor(pos.z / 16.0);
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
@@ -274,6 +302,7 @@ namespace WorldForge.Regions
 		///<summary>Generates a heightmap by reading the chunk's heightmaps or calculating it from existing blocks.</summary>
 		public short[,] GetHeightmapFromNBT(HeightmapType type)
 		{
+			LoadIfRequired();
 			short[,] hm = new short[512, 512];
 			for (int x = 0; x < 32; x++)
 			{
@@ -307,6 +336,7 @@ namespace WorldForge.Regions
 
 		public IEnumerable<(BlockCoord, TileEntity)> EnumerateTileEntities()
 		{
+			LoadIfRequired();
 			foreach (var c in chunks)
 			{
 				if (c != null)
@@ -321,6 +351,7 @@ namespace WorldForge.Regions
 
 		public void WriteToFile(string destinationDirectory, GameVersion gameVersion, string name = null)
 		{
+			LoadIfRequired();
 			if (name == null) name = regionPos.ToFileName();
 			using (var stream = new FileStream(Path.Combine(destinationDirectory, name), FileMode.Create))
 			{
