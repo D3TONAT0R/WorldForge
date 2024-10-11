@@ -102,7 +102,7 @@ namespace WorldForge.NBT
 		}
 
 		///<summary>Finds and reads the heightmap data stored in a chunk NBT structure.</summary>
-		public short[,] GetHeightmapFromChunkNBT(HeightmapType type)
+		public short[,] GetHeightmapFromChunkNBT(HeightmapType type, GameVersion version, Dimension parent)
 		{
 			try
 			{
@@ -114,17 +114,17 @@ namespace WorldForge.NBT
 					if(type == HeightmapType.SolidBlocksNoLiquid && hmcomp.Contains("OCEAN_FLOOR"))
 					{
 						//The highest non-air block, solid block
-						return GetHeightmap((long[])hmcomp.Get("OCEAN_FLOOR"));
+						return GetHeightmap((long[])hmcomp.Get("OCEAN_FLOOR"), version, parent?.dimensionID == DimensionID.Overworld);
 					}
 					else if(type == HeightmapType.SolidBlocks && hmcomp.Contains("MOTION_BLOCKING"))
 					{
 						//The highest block that blocks motion or contains a fluid
-						return GetHeightmap((long[])hmcomp.Get("MOTION_BLOCKING"));
+						return GetHeightmap((long[])hmcomp.Get("MOTION_BLOCKING"), version, parent?.dimensionID == DimensionID.Overworld);
 					}
 					else if(hmcomp.Contains("WORLD_SURFACE"))
 					{
 						//The highest non-air block
-						return GetHeightmap((long[])hmcomp.Get("WORLD_SURFACE"));
+						return GetHeightmap((long[])hmcomp.Get("WORLD_SURFACE"), version, parent?.dimensionID == DimensionID.Overworld);
 					}
 					else
 					{
@@ -159,7 +159,7 @@ namespace WorldForge.NBT
 		}
 
 		///<summary>Reads the heightmap stored in the given long array.</summary>
-		public short[,] GetHeightmap(long[] hmlongs)
+		public short[,] GetHeightmap(long[] hmlongs, GameVersion gameVersion, bool overworld)
 		{
 			if(hmlongs == null) return null;
 			short[,] hm = new short[16, 16];
@@ -212,6 +212,20 @@ namespace WorldForge.NBT
 						}
 					}
 				}
+
+				//Lower heightmap by 65 blocks in case of >= 1.17
+				//TODO: check for custom height overrides
+				if(gameVersion >= GameVersion.Release_1(17) && overworld)
+				{
+					for(int z = 0; z < 16; z++)
+					{
+						for(int x = 0; x < 16; x++)
+						{
+							hm[x, z] -= 65;
+						}
+					}
+				}
+
 				return hm;
 			}
 			catch

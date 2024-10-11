@@ -34,8 +34,7 @@ namespace WorldForge
 		public static IBitmap GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
 		{
 			//TODO: beta regions are not loaded
-			//TODO: heightmap acquisition bypassed
-			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true);
+			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType);
 			if(Bitmaps.BitmapFactory == null)
 			{
 				throw new ArgumentNullException("No bitmap factory was provided.");
@@ -47,7 +46,10 @@ namespace WorldForge
 				{
 					int y = heightmap[x - xMin, z - zMin];
 					if(y < 0) continue;
-
+					if(x == 0 && z == 0)
+					{
+						int a = 0;
+					}
 					var block = dim.GetBlock(new BlockCoord(x, y, z));
 					int shade = 0;
 					if(block != null && shading)

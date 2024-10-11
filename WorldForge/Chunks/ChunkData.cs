@@ -304,7 +304,7 @@ namespace WorldForge.Chunks
 			short[,] hm = null;
 			if(!forceManualCalculation)
 			{
-				hm = sourceNBT?.GetHeightmapFromChunkNBT(type);
+				hm = sourceNBT?.GetHeightmapFromChunkNBT(type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			}
 			if(hm == null)
 			{
@@ -353,7 +353,7 @@ namespace WorldForge.Chunks
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
 			if (sourceNBT == null) return false;
-			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT(type);
+			var chunkHM = sourceNBT.GetHeightmapFromChunkNBT(type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			if (chunkHM == null) return false;
 			for (int x = 0; x < 16; x++)
 			{

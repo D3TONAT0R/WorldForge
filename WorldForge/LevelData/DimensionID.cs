@@ -5,8 +5,9 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public struct DimensionID : INBTConverter
+	public struct DimensionID : INBTConverter, IEquatable<DimensionID>
 	{
+
 		public string ID { get; private set; }
 
 		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld");
@@ -62,6 +63,31 @@ namespace WorldForge
 			{
 				ID = FromIndex(b).ID;
 			}
+		}
+
+		public bool Equals(DimensionID other)
+		{
+			return ID == other.ID;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is DimensionID other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			return ID != null ? ID.GetHashCode() : 0;
+		}
+
+		public static bool operator ==(DimensionID left, DimensionID right)
+		{
+			return left.ID == right.ID;
+		}
+
+		public static bool operator !=(DimensionID left, DimensionID right)
+		{
+			return left.ID != right.ID;
 		}
 	}
 }
