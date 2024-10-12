@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.NBT;
@@ -124,23 +125,22 @@ namespace WorldForge.IO
 		{
 			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
 			{
-				for(int y = 0; y < 64; y++)
+				for(int i = 0; i < 256; i++)
 				{
-					for(int x = 0; x < 4; x++)
-					{
-						for(int z = 0; z < 4; z++)
-						{
-							int i = y * 16 + z * 4 + x;
-							var biome = BiomeIDs.GetFromNumeric((byte)biomeData[i]);
-							var section = c.GetChunkSectionForYCoord(y * 4, false);
-							if(section != null)
-							{
-								section.SetBiome3D4x4At(x * 4, y * 4, z * 4, biome);
-							}
-						}
-					}
+					c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric((byte)biomeData[i]));
 				}
 			}
+		}
+
+		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
+		{
+			int[] biomeData = new int[256];
+			for(int i = 0; i < 256; i++)
+			{
+				var biome = c.GetBiomeAt(i % 16, i / 16) ?? c.ParentDimension?.DefaultBiome ?? BiomeID.Plains;
+				biomeData[i] = biome.ResolveNumericIDForVersion(TargetVersion);
+			}
+			chunkNBT.Add("Biomes", biomeData);
 		}
 
 		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)

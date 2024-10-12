@@ -226,17 +226,9 @@ namespace WorldForge.IO
 		{
 			if(chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
-				byte defaultBiomeID = (byte)BiomeID.Plains.numericId;
-				if(biomeData.All(b => b == defaultBiomeID))
+				for(int i = 0; i < 256; i++)
 				{
-					//Do nothing, as all biomes are plains biomes anyway (the default biome)
-				}
-				else
-				{
-					for(int i = 0; i < 256; i++)
-					{
-						c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric(biomeData[i]));
-					}
+					c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric(biomeData[i]));
 				}
 			}
 		}

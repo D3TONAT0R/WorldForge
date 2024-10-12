@@ -9,6 +9,29 @@ namespace WorldForge.IO
 	{
 		public ChunkSerializer_1_15(GameVersion version) : base(version) { }
 
+		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		{
+			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
+			{
+				for(int y = 0; y < 64; y++)
+				{
+					for(int x = 0; x < 4; x++)
+					{
+						for(int z = 0; z < 4; z++)
+						{
+							int i = y * 16 + z * 4 + x;
+							var biome = BiomeIDs.GetFromNumeric((byte)biomeData[i]);
+							var section = c.GetChunkSectionForYCoord(y * 4, false);
+							if(section != null)
+							{
+								section.SetBiome3D4x4At(x * 4, y * 4, z * 4, biome);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
 		{
 			//TODO: check if the biomes exists in the target version & replace them if necessary
