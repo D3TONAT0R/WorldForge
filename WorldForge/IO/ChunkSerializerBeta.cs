@@ -170,12 +170,12 @@ namespace WorldForge.IO
 
 		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			//Do nothing, tile ticks were not implementen in old regions.
+			//Do nothing, tile ticks were not implemented in old regions.
 		}
 
 		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
 		{
-			//Do nothing, tile ticks were not implementen in old regions.
+			//Do nothing, tile ticks were not implemented in old regions.
 		}
 	}
 }
