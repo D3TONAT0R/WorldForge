@@ -123,8 +123,12 @@ namespace WorldForge.IO
 
 		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
+			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData) && biomeData.Length > 0)
 			{
+				if(biomeData.Length != 256)
+				{
+					throw new Exception($"Invalid biome data length ({biomeData.Length}), must be 256.");
+				}
 				for(int i = 0; i < 256; i++)
 				{
 					c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric((byte)biomeData[i]));
