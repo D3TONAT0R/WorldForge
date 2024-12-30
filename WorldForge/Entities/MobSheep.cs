@@ -5,7 +5,7 @@ namespace WorldForge.Entities
 	public class MobSheep : MobBreedable
 	{
 		[NBT("Color")]
-		public Color color = Color.White;
+		public ColorType color = ColorType.White;
 		[NBT("Sheared")]
 		public bool sheared = false;
 

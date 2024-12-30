@@ -15,7 +15,7 @@ namespace WorldForge.Builders
 			Gravel
 		}
 
-		public enum BedrockPreset
+		public enum BedrockType
 		{
 			None,
 			Flat,
@@ -23,6 +23,8 @@ namespace WorldForge.Builders
 		}
 
 		public Dimension TargetDimension { get; set; }
+
+		public BedrockType BedrockPattern { get; set; } = BedrockType.Noisy;
 
 		private readonly Random random = new Random();
 
@@ -38,17 +40,17 @@ namespace WorldForge.Builders
 			TargetDimension = targetDimension;
 		}
 
-		public void FillBlockColumn(int x, int z, int height, SurfacePreset preset, BedrockPreset bedrockPreset = BedrockPreset.Noisy)
+		public void FillBlockColumn(int x, int z, int height, SurfacePreset preset)
 		{
 			for(int y = 0; y <= height; y++) {
 				BlockID block = stone;
-				if(y == 0 && bedrockPreset == BedrockPreset.Flat) block = bedrock;
-				else if(y < 4 && bedrockPreset == BedrockPreset.Noisy && random.Next(y + 1) == 0) block = bedrock;
+				if(y == 0 && BedrockPattern == BedrockType.Flat) block = bedrock;
+				else if(y < 4 && BedrockPattern == BedrockType.Noisy && ProbabilityInt(y + 1)) block = bedrock;
 				else if(preset != SurfacePreset.None)
                 {
                     if(y == height) block = GetBlockForPreset(preset, true);
 					else if(y > height - 3) block = GetBlockForPreset(preset, false);
-					else if(y == height - 3 && random.Next(2) == 0) block = GetBlockForPreset(preset, false);
+					else if(y == height - 3 && Probability(0.5f)) block = GetBlockForPreset(preset, false);
 				}
                 TargetDimension.SetBlock(new BlockCoord(x, y, z), block);
 			}
@@ -63,6 +65,16 @@ namespace WorldForge.Builders
 				case SurfacePreset.Gravel: return gravel;
 				default: return stone;
 			}
+		}
+
+		private bool Probability(float prob)
+		{
+			return random.NextDouble() <= prob;
+		}
+
+		private bool ProbabilityInt(int i)
+		{
+			return random.Next(i) == 0;
 		}
 	}
 }

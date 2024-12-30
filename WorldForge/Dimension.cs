@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
+using WorldForge.Builders;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
 using WorldForge.IO;

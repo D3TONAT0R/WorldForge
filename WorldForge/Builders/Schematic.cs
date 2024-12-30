@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using WorldForge.NBT;
 
 namespace WorldForge.Builders
@@ -33,7 +32,7 @@ namespace WorldForge.Builders
 
 		public List<BlockDefinition> palette = new List<BlockDefinition>();
 
-		public string trunkBlock = null;
+		public BlockState trunkBlock = null;
 		public byte trunkHeightMin = 1;
 		public byte trunkHeightMax = 1;
 
@@ -55,7 +54,7 @@ namespace WorldForge.Builders
 			{
 				return false;
 			}
-			if(!string.IsNullOrWhiteSpace(trunkBlock) && trunkHeightMax > 0)
+			if(trunkBlock != null && trunkHeightMax > 0)
 			{
 				for(int i = 0; i < h; i++)
 				{
@@ -72,10 +71,10 @@ namespace WorldForge.Builders
 					{
 						var d = schematic[x1, y1, z1];
 						if(d == 0) continue;
-						var (block, prob) = palette[d];
-						if(r.NextDouble() < prob)
+						var def = palette[d];
+						if(r.NextDouble() < def.probability)
 						{
-							dim.SetBlock((xm + x1, y + h + y1, zm + z1), block);
+							dim.SetBlock((xm + x1, y + h + y1, zm + z1), def.block);
 						}
 					}
 				}
