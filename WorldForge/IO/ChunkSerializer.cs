@@ -37,6 +37,10 @@ namespace WorldForge.IO
 			{
 				return GetOrCreateSerializer<ChunkSerializer_1_16>(gameVersion);
 			}
+			else if(gameVersion >= GameVersion.Release_1(15))
+			{
+				return GetOrCreateSerializer<ChunkSerializer_1_15>(gameVersion);
+			}
 			else if(gameVersion >= GameVersion.Release_1(13))
 			{
 				return GetOrCreateSerializer<ChunkSerializer_1_13>(gameVersion);
