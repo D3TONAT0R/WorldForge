@@ -45,7 +45,7 @@ namespace WorldForge.Builders.PostProcessors
 			{BiomeIDs.Get("deep_frozen_ocean"), 72 },
 		};
 
-		public SnowPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public SnowPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			xml.TryParseBool("top-only", ref topOnly);
 			xml.TryParseBool("check-biomes", ref biomeCheck);

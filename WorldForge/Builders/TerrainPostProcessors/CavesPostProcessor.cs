@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using NoiseGenerator;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
@@ -134,7 +135,7 @@ namespace WorldForge.Builders.PostProcessors
 					{
 						r = Math.Sqrt(r);
 					}
-					int y = (int)Math.Lerp(yMin, yMax, (float)r);
+					int y = (int)MathUtils.Lerp(yMin, yMax, (float)r);
 					if(y > topPos.y) return;
 					GenerateCave(dim, new Vector3(topPos.x, y, topPos.z), 0);
 				}
@@ -163,7 +164,7 @@ namespace WorldForge.Builders.PostProcessors
 						//Nothing was carved, the cave is dead
 						return;
 					}
-					Vector3 newDirection = ApplyYWeights(pos.Y, GetRandomVector3(true));
+					Vector3 newDirection = ApplyYWeights((float)pos.y, GetRandomVector3(true));
 					direction += newDirection * variation * 0.5f;
 					direction = Vector3.Normalize(direction);
 					size = MathUtils.Lerp(size, RandomRange(2, 6) * delta, 0.15f);
@@ -209,7 +210,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public class CavernCarver : Carver
 		{
-			private NoiseGenerator.PerlinGenerator perlinGen;
+			private PerlinGenerator perlinGen;
 
 			public int yMin = 4;
 			public int yMax = 32;
@@ -235,7 +236,7 @@ namespace WorldForge.Builders.PostProcessors
 				{
 					center = (int)MathUtils.Lerp(yMin, yMax, 0.3f);
 				}
-				perlinGen = new NoiseGenerator.PerlinGenerator(new Vector3(0.06f / scaleXZ, 0.10f / scaleY, 0.06f / scaleXZ), -1);
+				perlinGen = new PerlinGenerator(new System.Numerics.Vector3(0.06f / scaleXZ, 0.10f / scaleY, 0.06f / scaleXZ), -1);
 				perlinGen.fractalIterations.Value = 3;
 				perlinGen.fractalPersistence = 0.15f * noiseScale;
 			}
@@ -350,7 +351,7 @@ namespace WorldForge.Builders.PostProcessors
 		private Weightmap<float> weightmap;
 		private Dictionary<int, Layer> caveGenLayers = new Dictionary<int, Layer>();
 
-		public CavesPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public CavesPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			weightmap = LoadWeightmapAndLayers(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, caveGenLayers, CreateCaveGenLayer);
 			if(weightmap == null)
@@ -392,7 +393,8 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			if(layer.carvers.Count == 0)
 			{
-				ConsoleOutput.WriteWarning($"The layer '{elem.Name.LocalName}' is defined but has no carvers added to it.");
+				//TODO: create logger system
+				Console.WriteLine($"The layer '{elem.Name.LocalName}' is defined but has no carvers added to it.");
 			}
 			return layer;
 		}

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Xml.Linq;
+using NoiseGenerator;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
 
@@ -160,7 +162,7 @@ namespace WorldForge.Builders.PostProcessors
 			this.name = name;
 		}
 
-		public bool AddSurfaceGenerator(XElement xml)
+		public bool AddSurfaceGenerator(XElement xml, bool throwExceptions = true)
 		{
 			string type = xml.Attribute("type")?.Value ?? "standard";
 			string[] blocks = xml.Attribute("blocks").Value.Split(',');
@@ -191,12 +193,12 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				ConsoleOutput.WriteError("Unknwon generator type: " + type);
+				if(throwExceptions) throw new ArgumentException("Unknown generator type: " + type);
 				return false;
 			}
 		}
 
-		public bool AddSchematicGenerator(WeightmappedTerrainPostProcessor gen, XElement xml)
+		public bool AddSchematicGenerator(WeightmappedTerrainPostProcessor gen, XElement xml, bool throwExceptions = true)
 		{
 			var schem = xml.Attribute("schem");
 			var amount = 1f;
@@ -205,7 +207,15 @@ namespace WorldForge.Builders.PostProcessors
 			xml.TryParseBoolAttribute("plant-check", ref plantCheck);
 			if(schem != null)
 			{
-				generators.Add(new SchematicInstanceGenerator(gen.context.postProcessor.schematics[schem.Value], amount, plantCheck));
+				if(gen.context.Schematics.TryGet(schem.Value, out var schematic))
+				{
+					generators.Add(new SchematicInstanceGenerator(schematic, amount, plantCheck));
+				}
+				else
+				{
+					if(throwExceptions) throw new ArgumentException($"Could not find schematic named '{schem.Value}'");
+					return false;
+				}
 				return true;
 			}
 			else
@@ -218,13 +228,13 @@ namespace WorldForge.Builders.PostProcessors
 				}
 				else
 				{
-					ConsoleOutput.WriteError("block/schematic generator has missing arguments (must have either 'block' or 'schem')");
+					if(throwExceptions) throw new ArgumentException("block/schematic generator has missing arguments (must have either 'block' or 'schem')");
 					return false;
 				}
 			}
 		}
 
-		public bool AddBiomeGenerator(XElement xml)
+		public bool AddBiomeGenerator(XElement xml, bool throwExceptions = true)
 		{
 			var id = xml.Attribute("id");
 			if(id != null && id.Value.Length > 0)
@@ -241,7 +251,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				ConsoleOutput.WriteError("Biome generator is missing 'id' attribute");
+				if(throwExceptions) throw new ArgumentException("Biome generator is missing 'id' attribute");
 				return false;
 			}
 		}

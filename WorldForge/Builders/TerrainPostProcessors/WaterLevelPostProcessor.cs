@@ -10,11 +10,11 @@ namespace WorldForge.Builders.PostProcessors
 
 		int waterLevel = 62;
 		public string waterBlock = "minecraft:water";
-		byte[,] waterSurfaceMap;
+		Heightmap waterSurfaceMap;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public WaterLevelPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public WaterLevelPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			worldOriginOffsetX = offsetX;
 			worldOriginOffsetZ = offsetZ;
@@ -22,11 +22,10 @@ namespace WorldForge.Builders.PostProcessors
 			if(fileXml != null)
 			{
 				string path = Path.Combine(rootPath, xml.Element("file").Value);
-				waterSurfaceMap = ArrayConverter.Flip(HeightmapImporter.ImportHeightmapRaw(path, 0, 0, sizeX, sizeZ));
+				waterSurfaceMap = Heightmap.FromImage(path, 0, 0, sizeX, sizeZ);
 			}
 			xml.TryParseInt("waterlevel", ref waterLevel);
 			if(xml.Element("waterblock") != null) waterBlock = xml.Element("waterblock").Value;
-			ConsoleOutput.WriteLine("Water mapping enabled");
 		}
 
 		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
@@ -34,7 +33,7 @@ namespace WorldForge.Builders.PostProcessors
 			int start = waterLevel;
 			if(waterSurfaceMap != null)
 			{
-				start = Math.Max(waterSurfaceMap?[pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ] ?? (short)-1, waterLevel);
+				start = Math.Max(waterSurfaceMap?.heights[pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ] ?? (short)-1, waterLevel);
 			}
 			for(int y2 = start; y2 > pos.y; y2--)
 			{

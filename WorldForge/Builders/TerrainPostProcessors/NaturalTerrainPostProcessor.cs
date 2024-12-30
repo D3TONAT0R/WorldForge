@@ -12,7 +12,7 @@ namespace WorldForge.Builders.PostProcessors
 		public int waterLevel = -256;
 		public override PostProcessType PostProcessorType => PostProcessType.Both;
 
-		public NaturalTerrainPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public NaturalTerrainPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			waterLevel = int.Parse(xml.Element("waterlevel")?.Value ?? "-1");
 		}

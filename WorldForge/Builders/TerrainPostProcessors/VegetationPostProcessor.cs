@@ -51,7 +51,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public VegetationPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public VegetationPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			grassChance = float.Parse(xml.Element("grass")?.Value ?? "0.2");
 			treesChance = float.Parse(xml.Element("trees")?.Value ?? "0.3") / 128f;

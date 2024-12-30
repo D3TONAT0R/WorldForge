@@ -30,17 +30,17 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public OreGenPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public OreGenPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			random = new Random();
 			rarityMul = float.Parse(xml.Element("multiplier")?.Value ?? "1");
 			var map = xml.Element("map");
-			weightmap = LoadWeightmapAndLayers(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, layers, (xe) => CreateLayer(xe, context.targetVersion));
+			weightmap = LoadWeightmapAndLayers(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, layers, (xe) => CreateLayer(xe, context.TargetVersion));
 			if(weightmap == null)
 			{
-				Console.WriteLine($"Generating ores with default settings for version {context.targetVersion}");
+				Console.WriteLine($"Generating ores with default settings for version {context.TargetVersion}");
 				var gen = new OreGenLayer();
-				gen.ores.AddRange(GetVanillaOreGenerators(context.targetVersion));
+				gen.ores.AddRange(GetVanillaOreGenerators(context.TargetVersion));
 				layers.Add(-1, gen);
 			}
 		}

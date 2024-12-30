@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 using WorldForge;
 using WorldForge.Biomes;
@@ -34,7 +35,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Both;
 
-		public ThawingPostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public ThawingPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 
 		}
@@ -52,7 +53,8 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				ConsoleOutput.WriteError($"Biome at [{pos.x},{pos.z}] was null");
+				//TODO: logger
+				Console.WriteLine($"Biome at [{pos.x},{pos.z}] was null");
 			}
 		}
 

@@ -32,7 +32,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected static Random random = new Random();
 
-		public readonly Dimension context;
+		public readonly PostProcessContext context;
 
 		public virtual Priority OrderPriority => Priority.Default;
 
@@ -48,7 +48,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		public Weightmap<float> mask = null;
 
-		public PostProcessor(Dimension context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public PostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ,
+			int sizeX, int sizeZ)
 		{
 			this.context = context;
 			worldOriginOffsetX = offsetX;

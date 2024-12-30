@@ -55,20 +55,20 @@ namespace WorldForge.TileEntities
 
 		public class Pattern : INBTConverter
 		{
-			public ColorInt color = ColorInt.White;
+			public ColorTypeInt colorType = ColorTypeInt.White;
 			public PatternResource pattern = null;
 
 			public void FromNBT(object nbtData)
 			{
 				var comp = (NBTCompound)nbtData;
-				if(comp.TryGet("color", out int c)) color = (ColorInt)c;
+				if(comp.TryGet("color", out int c)) colorType = (ColorTypeInt)c;
 				if(comp.Contains("pattern")) pattern = PatternResource.CreateFromNBT(comp.Get("pattern"));
 			}
 
 			public object ToNBT(GameVersion version)
 			{
 				var comp = new NBTCompound();
-				comp.Add("color", (int)color);
+				comp.Add("color", (int)colorType);
 				if(pattern != null) comp.Add("pattern", pattern.ToNBT(version));
 				return comp;
 			}

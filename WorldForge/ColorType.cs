@@ -1,6 +1,6 @@
 ﻿namespace WorldForge
 {
-	public enum Color : byte
+	public enum ColorType : byte
 	{
 		White = 0,
 		Orange = 1,
@@ -20,7 +20,7 @@
 		Black = 15
 	}
 
-	public enum ColorInt : int
+	public enum ColorTypeInt : int
 	{
 		White = 0,
 		Orange = 1,

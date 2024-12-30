@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Xml.Linq;
 using WorldForge.Coordinates;
@@ -13,7 +15,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public WeightmappedTerrainPostProcessor(Dimension context, XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public WeightmappedTerrainPostProcessor(PostProcessContext context, XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			string mapFileName = Path.Combine(rootPath, xml.Attribute("file").Value);
@@ -22,7 +24,7 @@ namespace WorldForge.Builders.PostProcessors
 				XAttribute colorAttr = layer.Attribute("color");
 				if(colorAttr == null)
 				{
-					ConsoleOutput.WriteError("layer is missing required attribute 'color': " + layer.ToString().Trim());
+					throw new ArgumentException("layer is missing required attribute 'color': " + layer.ToString().Trim());
 					continue;
 				}
 				var color = ParseColor(colorAttr.Value);
@@ -54,7 +56,6 @@ namespace WorldForge.Builders.PostProcessors
 			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit, 0, 0, sizeX, sizeZ);
 		}
 
-
 		Color ParseColor(string input)
 		{
 			Color c;
@@ -69,7 +70,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				c = CommonSplatmapColors.NameToColor(input);
+				c = CommonWeightmapColors.NameToColor(input);
 			}
 			return c;
 		}

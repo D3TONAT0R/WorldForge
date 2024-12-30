@@ -5,7 +5,7 @@ namespace WorldForge.Entities
 	public class MobWolf : MobBreedable
 	{
 		[NBT("CollarColor")]
-		public Color collarColor = Color.Red;
+		public ColorType collarColor = ColorType.Red;
 		[NBT("variant")]
 		public string variant = "minecraft:pale";
 
