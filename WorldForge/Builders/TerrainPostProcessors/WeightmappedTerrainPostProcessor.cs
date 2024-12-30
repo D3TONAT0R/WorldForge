@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
-using WorldForge;
 using WorldForge.Coordinates;
-using Color = System.Drawing.Color;
 
-namespace WorldForge.Builders.PostProcessors.Splatmapper
+namespace WorldForge.Builders.PostProcessors
 {
-	public class SplatmappedTerrainPostProcessor : PostProcessor
+	public class WeightmappedTerrainPostProcessor : PostProcessor
 	{
 
 		public Weightmap<byte> map;
@@ -15,7 +13,7 @@ namespace WorldForge.Builders.PostProcessors.Splatmapper
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public SplatmappedTerrainPostProcessor(Dimension context, XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public WeightmappedTerrainPostProcessor(Dimension context, XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			string mapFileName = Path.Combine(rootPath, xml.Attribute("file").Value);

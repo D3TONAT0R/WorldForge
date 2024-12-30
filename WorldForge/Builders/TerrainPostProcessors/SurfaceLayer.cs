@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
 
-namespace WorldForge.Builders.PostProcessors.Splatmapper
+namespace WorldForge.Builders.PostProcessors
 {
 	public abstract class SurfaceLayerGenerator
 	{
@@ -196,7 +196,7 @@ namespace WorldForge.Builders.PostProcessors.Splatmapper
 			}
 		}
 
-		public bool AddSchematicGenerator(SplatmappedTerrainPostProcessor gen, XElement xml)
+		public bool AddSchematicGenerator(WeightmappedTerrainPostProcessor gen, XElement xml)
 		{
 			var schem = xml.Attribute("schem");
 			var amount = 1f;

@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using WorldForge;
 using WorldForge.Coordinates;
 
-namespace WorldForge.Builders.PostProcessors.Splatmapper
+namespace WorldForge.Builders.PostProcessors
 {
 	public class OreGenPostProcessor : PostProcessor
 	{
