@@ -37,11 +37,11 @@ namespace WorldForge
 		{
 			//TODO: beta regions are not loaded
 			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType);
-			var image = new MagickImage(MagickColor.FromRgb(0, 0, 0), (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
+			var image = new MagickImage(MagickColors.Transparent, (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
 			var pixels = image.GetPixels();
-			for(int z = zMin; z < zMax; z++)
+			for(int z = zMin; z <= zMax; z++)
 			{
-				for(int x = xMin; x < xMax; x++)
+				for(int x = xMin; x <= xMax; x++)
 				{
 					int y = heightmap[x - xMin, z - zMin];
 					if(y < 0) continue;

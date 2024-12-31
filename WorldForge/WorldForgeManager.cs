@@ -29,6 +29,7 @@ namespace WorldForge
 			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
 			ItemList.Initialize(GetResourceAsText("items.csv"));
 			BiomeIDs.Initialize(GetResourceAsText("biomes.csv"));
+			Blocks.InitializeColorMap(GetResource("colormap.png"));
 			Initialized = true;
 		}
 
