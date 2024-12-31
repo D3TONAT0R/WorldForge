@@ -1,24 +1,24 @@
+using ImageMagick;
 using System;
-using System.Drawing;
 
 namespace WorldForge.Builders.PostProcessors
 {
 	public class CommonWeightmapColors
 	{
-		public static Color white = Color.White;
-		public static Color black = Color.FromArgb(255, 0, 0, 0);
+		public static IMagickColor<byte> white = MagickColor.FromRgb(255, 255, 255);
+		public static IMagickColor<byte> black = MagickColor.FromRgb(0, 0, 0);
 
-		//Primary splat colors
-		public static Color red = Color.FromArgb(255, 255, 0, 0);
-		public static Color green = Color.FromArgb(255, 0, 255, 0);
-		public static Color blue = Color.FromArgb(255, 0, 0, 255);
+		//Primary colors
+		public static IMagickColor<byte> red = MagickColor.FromRgb(255, 0, 0);
+		public static IMagickColor<byte> green = MagickColor.FromRgb(0, 255, 0);
+		public static IMagickColor<byte> blue = MagickColor.FromRgb(0, 0, 255);
 
-		//Secondary splat colors
-		public static Color yellow = Color.FromArgb(255, 255, 255, 0);
-		public static Color cyan = Color.FromArgb(255, 0, 255, 255);
-		public static Color magenta = Color.FromArgb(255, 255, 0, 255);
+		//Secondary colors
+		public static IMagickColor<byte> yellow = MagickColor.FromRgb(255, 255, 0);
+		public static IMagickColor<byte> cyan = MagickColor.FromRgb(0, 255, 255);
+		public static IMagickColor<byte> magenta = MagickColor.FromRgb(255, 0, 255);
 
-		public static Color NameToColor(string s)
+		public static IMagickColor<byte> NameToColor(string s)
 		{
 			switch(s.ToLower())
 			{
@@ -38,7 +38,7 @@ namespace WorldForge.Builders.PostProcessors
 				case "cyan": return cyan;
 				case "m":
 				case "magenta": return magenta;
-				default: Console.WriteLine("Unknown splat color: " + s); return black;
+				default: Console.WriteLine("Unknown common color: " + s); return black;
 			}
 		}
 	} 

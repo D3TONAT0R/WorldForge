@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using WorldForge.NBT;
+﻿using WorldForge.NBT;
 
 namespace WorldForge.Entities
 {

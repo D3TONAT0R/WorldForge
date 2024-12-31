@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ImageMagick;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Xml.Linq;
 using WorldForge.Coordinates;
@@ -47,7 +47,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 
-			Color[] mappedColors = new Color[layers.Count];
+			IMagickColor<byte>[] mappedColors = new IMagickColor<byte>[layers.Count];
 			for(int i = 0; i < layers.Count; i++)
 			{
 				mappedColors[i] = layers[i].layerColor;
@@ -56,17 +56,17 @@ namespace WorldForge.Builders.PostProcessors
 			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit, 0, 0, sizeX, sizeZ);
 		}
 
-		Color ParseColor(string input)
+		IMagickColor<byte> ParseColor(string input)
 		{
-			Color c;
+			IMagickColor<byte> c;
 			if(input.Contains(","))
 			{
 				//It's a manually defined color
 				string[] cs = input.Split(',');
-				int r = int.Parse(cs[0]);
-				int g = int.Parse(cs[1]);
-				int b = int.Parse(cs[2]);
-				c = Color.FromArgb(255, r, g, b);
+				var r = byte.Parse(cs[0]);
+				var g = byte.Parse(cs[1]);
+				var b = byte.Parse(cs[2]);
+				c = MagickColor.FromRgb(r, g, b);
 			}
 			else
 			{

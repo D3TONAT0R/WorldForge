@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Xml.Linq;
+using ImageMagick;
 using NoiseGenerator;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
@@ -153,10 +153,10 @@ namespace WorldForge.Builders.PostProcessors
 	{
 
 		public string name;
-		public Color layerColor;
+		public IMagickColor<byte> layerColor;
 		public List<SurfaceLayerGenerator> generators = new List<SurfaceLayerGenerator>();
 
-		public SurfaceLayer(Color color, string name = null)
+		public SurfaceLayer(IMagickColor<byte> color, string name = null)
 		{
 			layerColor = color;
 			this.name = name;

@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using WorldForge.Coordinates;
+﻿using WorldForge.Coordinates;
 using WorldForge.NBT;
 
 namespace WorldForge.Entities
