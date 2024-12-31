@@ -6,7 +6,7 @@ namespace WorldForgeConsole
 	{
 		static void Main(string[] args)
 		{
-			WorldForgeManager.Initialize(new WFBitmapFactory());
+			WorldForgeManager.Initialize();
 			WorldForge.WorldForgeConsole.Start(args);
 		}
 	}
