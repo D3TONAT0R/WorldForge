@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageMagick;
+using System;
 using System.IO;
 using WorldForge.IO;
 using WorldForge.Regions;
@@ -35,7 +36,7 @@ namespace WorldForge.ConsoleTools
 				WorldForgeConsole.WriteError(e.ToString());
 				return;
 			}
-			IBitmap mask = Bitmaps.Load(map);
+			MagickImage mask = new MagickImage(map);
 			var merger = new RegionMerger(region1, region2, mask);
 			WorldForgeConsole.WriteLine("Merging ...");
 			var mergedRegion = merger.Merge();

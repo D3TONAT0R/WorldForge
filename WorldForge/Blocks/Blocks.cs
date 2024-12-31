@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageMagick;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -110,7 +111,7 @@ namespace WorldForge
 			"purple"
 		};
 
-		internal static BitmapColor[,] colormap;
+		internal static IMagickColor<byte>[,] colormap;
 
 		public static string GetRandomColor(Random r)
 		{
@@ -146,7 +147,7 @@ namespace WorldForge
 			}
 		}
 
-		public static BitmapColor GetMapColor(BlockID block, int shade)
+		public static IMagickColor<byte> GetMapColor(BlockID block, int shade)
 		{
 			if(block != null)
 			{
@@ -159,19 +160,20 @@ namespace WorldForge
 			}
 			else
 			{
-				return new BitmapColor(0, 0, 0, 0);
+				return MagickColor.FromRgba(0, 0, 0, 0);
 			}
 		}
 
 		public static void InitializeColorMap(Stream colorBitmapStream)
 		{
-			var bmp = Bitmaps.LoadFromStream(colorBitmapStream);
-			colormap = new BitmapColor[bmp.Width, 3];
-			for(int x = 0; x < bmp.Width; x++)
+			var image = new MagickImage(colorBitmapStream);
+			colormap = new IMagickColor<byte>[image.Width, 3];
+			var pixels = image.GetPixels();
+			for(int x = 0; x < image.Width; x++)
 			{
 				for(int y = 0; y < 3; y++)
 				{
-					colormap[x, y] = bmp.GetPixel(x, y);
+					colormap[x, y] = pixels.GetPixelColor(x, y);
 				}
 			}
 		}

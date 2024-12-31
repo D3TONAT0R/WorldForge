@@ -24,21 +24,11 @@ namespace WorldForge
 			MaxDegreeOfParallelism = Environment.ProcessorCount
 		};
 
-		public static void Initialize(IBitmapFactory bitmapFactory)
+		public static void Initialize()
 		{
 			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
 			ItemList.Initialize(GetResourceAsText("items.csv"));
 			BiomeIDs.Initialize(GetResourceAsText("biomes.csv"));
-
-			if(bitmapFactory != null)
-			{
-				Bitmaps.BitmapFactory = bitmapFactory;
-				Blocks.InitializeColorMap(GetResource("colormap.png"));
-			}
-			else
-			{
-				Console.WriteLine("WorldForge initialized without a bitmap factory. All bitmap related functions will not be available.");
-			}
 			Initialized = true;
 		}
 

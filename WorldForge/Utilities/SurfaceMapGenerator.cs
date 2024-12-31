@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ImageMagick;
+using System;
+using System.Linq;
 using WorldForge.Coordinates;
 
 namespace WorldForge
 {
 	public static class SurfaceMapGenerator
 	{
-		public static IBitmap GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
+		public static MagickImage GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
 		{
 			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true);
-			if(Bitmaps.BitmapFactory == null)
-			{
-				throw new ArgumentNullException("No bitmap factory was provided.");
-			}
-			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
+			var image = new MagickImage(MagickColor.FromRgb(0, 0, 0), (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
+			var pixels = image.GetPixels();
+			var color = new byte[image.ChannelCount];
 			for(int z = zMin; z < zMax; z++)
 			{
 				for(int x = xMin; x < xMax; x++)
@@ -22,24 +20,25 @@ namespace WorldForge
 					int y = heightmap[x - xMin, z - zMin];
 					if(y < 0) continue;
 					byte brt = (byte)Math.Max(Math.Min(y, 255), 0);
-					bmp.SetPixel(x - xMin, z - zMin, new BitmapColor(brt, brt, brt));
+					for(int i = 0; i < color.Length; i++)
+					{
+						color[i] = brt;
+					}
+					pixels.SetPixel(x - xMin, z - zMin, color);
 				}
 			}
-			return bmp;
+			return image;
 		}
 
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public static IBitmap GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
+		public static MagickImage GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
 		{
 			//TODO: beta regions are not loaded
 			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType);
-			if(Bitmaps.BitmapFactory == null)
-			{
-				throw new ArgumentNullException("No bitmap factory was provided.");
-			}
-			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
+			var image = new MagickImage(MagickColor.FromRgb(0, 0, 0), (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
+			var pixels = image.GetPixels();
 			for(int z = zMin; z < zMax; z++)
 			{
 				for(int x = xMin; x < xMax; x++)
@@ -57,10 +56,10 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					bmp.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade));
+					pixels.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade).ToByteArray());
 				}
 			}
-			return bmp;
+			return image;
 		}
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)

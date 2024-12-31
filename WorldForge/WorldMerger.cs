@@ -1,3 +1,4 @@
+using ImageMagick;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,7 +60,7 @@ namespace WorldForge.ConsoleTools
 			WorldForgeConsole.WriteLine($"Enter path to map image (Must be {sizeX * 512}x{sizeZ * 512} or {sizeX * 32}x{sizeZ * 32}:");
 			string map = GetFilePath(false);
 			if(map == null) return;
-			IBitmap worldMergeMap = Bitmaps.Load(map);
+			MagickImage worldMergeMap = new MagickImage(map);
 			byte mergeMode = 0;
 			if(worldMergeMap.Width == sizeX * 512 && worldMergeMap.Height == sizeZ * 512) mergeMode = 1;
 			if(worldMergeMap.Width == sizeX * 32 && worldMergeMap.Height == sizeZ * 32) mergeMode = 2;
@@ -110,7 +111,7 @@ namespace WorldForge.ConsoleTools
 				int localX = r.loc.x - lowerBound.x;
 				int localZ = r.loc.z - lowerBound.z;
 				int scale = mergeMode == 1 ? 512 : 32;
-				IBitmap section = worldMergeMap.CloneArea(localX * scale, localZ * scale, scale, scale);
+				var section = worldMergeMap.CloneArea(new MagickGeometry(localX * scale, localZ * scale, (uint)scale, (uint)scale));
 
 				WorldForgeConsole.WriteLine($"Merging {r.loc.x}.{r.loc.z}.mca ...");
 				var region1 = RegionDeserializer.LoadRegion(Path.Combine(world1Path, r.filename), null);

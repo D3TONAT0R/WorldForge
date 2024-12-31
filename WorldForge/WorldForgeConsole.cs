@@ -17,7 +17,7 @@ namespace WorldForge
 			Console.Clear();
 			if(!WorldForgeManager.Initialized)
 			{
-				WorldForgeManager.Initialize(null);
+				WorldForgeManager.Initialize();
 			}
 			WriteLine("----------");
 			WriteLine("WorldForge");
