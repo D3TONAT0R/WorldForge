@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
 using WorldForge.IO;
@@ -36,7 +37,7 @@ namespace WorldForge.ConsoleTools
 				WorldForgeConsole.WriteError(e.ToString());
 				return;
 			}
-			MagickImage mask = new MagickImage(map);
+			var mask = Image.Load<Rgba32>(map);
 			var merger = new RegionMerger(region1, region2, mask);
 			WorldForgeConsole.WriteLine("Merging ...");
 			var mergedRegion = merger.Merge();

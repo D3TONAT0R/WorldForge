@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ namespace WorldForge.Builders.PostProcessors
 		public static Weightmap<float> CreateSingleChannelMap(string path, ColorChannel channel, int offsetX, int offsetZ, int sizeX, int sizeZ)
 		{
 			var map = new Weightmap<float>(1);
-			var image = new MagickImage(path);
+			var image = Image.Load<Rgba32>(path);
 			map.channels[0] = GetMask(image, channel, offsetX, offsetZ, sizeX, sizeZ);
 			return map;
 		}
@@ -37,7 +38,7 @@ namespace WorldForge.Builders.PostProcessors
 		public static Weightmap<float> CreateRGBAMap(string path, int offsetX, int offsetZ, int sizeX, int sizeZ)
 		{
 			var map = new Weightmap<float>(4);
-			var image = new MagickImage(path);
+			var image = Image.Load<Rgba32>(path);
 			map.channels[0] = GetMask(image, ColorChannel.Red, offsetX, offsetZ, sizeX, sizeZ);
 			map.channels[1] = GetMask(image, ColorChannel.Green, offsetX, offsetZ, sizeX, sizeZ);
 			map.channels[2] = GetMask(image, ColorChannel.Blue, offsetX, offsetZ, sizeX, sizeZ);
@@ -45,16 +46,15 @@ namespace WorldForge.Builders.PostProcessors
 			return map;
 		}
 
-		public static Weightmap<byte> GetFixedWeightmap(string path, IMagickColor<byte>[] mappings, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public static Weightmap<byte> GetFixedWeightmap(string path, Rgba32[] mappings, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
 		{
-			var image = new MagickImage(path);
-			var pixels = image.GetPixels();
+			var image = Image.Load<Rgba32>(path);
 			byte[,] map = new byte[sizeX, sizeZ];
 			Parallel.For(0, sizeX, x =>
 			{
 				for(int y = 0; y < sizeZ; y++)
 				{
-					var c = pixels.GetPixelColor(offsetX + x, offsetZ + y);
+					var c = image[offsetX + x, offsetZ + y];
 					byte mapping;
 					if(ditherLimit > 1)
 					{
@@ -87,15 +87,14 @@ namespace WorldForge.Builders.PostProcessors
 			return weightmap;
 		}
 
-		private static float[,] GetMask(MagickImage image, ColorChannel channel, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		private static float[,] GetMask(Image<Rgba32> image, ColorChannel channel, int offsetX, int offsetZ, int sizeX, int sizeZ)
 		{
-			var pixels = image.GetPixels();
 			float[,] mask = new float[sizeX, sizeZ];
 			Parallel.For(0, sizeX, x =>
 			{
 				for(int y = 0; y < sizeZ; y++)
 				{
-					var c = pixels.GetPixelColor(offsetX + x, offsetZ + y);
+					var c = image[offsetX + x, offsetZ + y];
 					byte v = 0;
 					if(channel == ColorChannel.Red)
 					{
@@ -119,7 +118,7 @@ namespace WorldForge.Builders.PostProcessors
 			return mask;
 		}
 
-		static byte GetClosestMapping(IMagickColor<byte> c, IMagickColor<byte>[] mappings)
+		static byte GetClosestMapping(Rgba32 c, Rgba32[] mappings)
 		{
 			int[] deviations = new int[mappings.Length];
 			for(int i = 0; i < mappings.Length; i++)
@@ -141,7 +140,7 @@ namespace WorldForge.Builders.PostProcessors
 			return index;
 		}
 
-		static byte GetDitheredMapping(IMagickColor<byte> c, IMagickColor<byte>[] mappings, int ditherLimit)
+		static byte GetDitheredMapping(Rgba32 c, Rgba32[] mappings, int ditherLimit)
 		{
 			float[] probs = new float[mappings.Length];
 			for(int i = 0; i < mappings.Length; i++)

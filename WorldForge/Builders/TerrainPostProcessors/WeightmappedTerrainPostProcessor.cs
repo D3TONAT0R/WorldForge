@@ -1,4 +1,4 @@
-﻿using ImageMagick;
+﻿using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,7 +46,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 
-			IMagickColor<byte>[] mappedColors = new IMagickColor<byte>[layers.Count];
+			Rgba32[] mappedColors = new Rgba32[layers.Count];
 			for(int i = 0; i < layers.Count; i++)
 			{
 				mappedColors[i] = layers[i].layerColor;
@@ -55,9 +55,9 @@ namespace WorldForge.Builders.PostProcessors
 			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit, 0, 0, sizeX, sizeZ);
 		}
 
-		IMagickColor<byte> ParseColor(string input)
+		Rgba32 ParseColor(string input)
 		{
-			IMagickColor<byte> c;
+			Rgba32 c;
 			if(input.Contains(","))
 			{
 				//It's a manually defined color
@@ -65,7 +65,7 @@ namespace WorldForge.Builders.PostProcessors
 				var r = byte.Parse(cs[0]);
 				var g = byte.Parse(cs[1]);
 				var b = byte.Parse(cs[2]);
-				c = MagickColor.FromRgb(r, g, b);
+				c = new Rgba32(r, g, b);
 			}
 			else
 			{

@@ -1,18 +1,16 @@
-﻿using ImageMagick;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.Linq;
 using WorldForge.Coordinates;
 
 namespace WorldForge
 {
 	public static class SurfaceMapGenerator
 	{
-		public static MagickImage GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
+		public static Image<Rgba32> GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
 		{
 			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true);
-			var image = new MagickImage(MagickColor.FromRgb(0, 0, 0), (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
-			var pixels = image.GetPixels();
-			var color = new byte[image.ChannelCount];
+			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1));
 			for(int z = zMin; z < zMax; z++)
 			{
 				for(int x = xMin; x < xMax; x++)
@@ -20,11 +18,7 @@ namespace WorldForge
 					int y = heightmap[x - xMin, z - zMin];
 					if(y < 0) continue;
 					byte brt = (byte)Math.Max(Math.Min(y, 255), 0);
-					for(int i = 0; i < color.Length; i++)
-					{
-						color[i] = brt;
-					}
-					pixels.SetPixel(x - xMin, z - zMin, color);
+					image[x - xMin, z - zMin] = new Rgba32(brt, brt, brt);
 				}
 			}
 			return image;
@@ -33,12 +27,11 @@ namespace WorldForge
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public static MagickImage GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
+		public static Image<Rgba32> GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
 		{
 			//TODO: beta regions are not loaded
 			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType);
-			var image = new MagickImage(MagickColors.Transparent, (uint)heightmap.GetLength(0), (uint)heightmap.GetLength(1));
-			var pixels = image.GetPixels();
+			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1), new Rgba32(0, 0, 0, 0));
 			for(int z = zMin; z <= zMax; z++)
 			{
 				for(int x = xMin; x <= xMax; x++)
@@ -56,7 +49,7 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					pixels.SetPixel(x - xMin, z - zMin, Blocks.GetMapColor(block, shade).ToByteArray());
+					image[x - xMin, z - zMin] = Blocks.GetMapColor(block, shade);
 				}
 			}
 			return image;

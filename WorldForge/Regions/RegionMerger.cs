@@ -1,4 +1,5 @@
-using ImageMagick;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using WorldForge.Coordinates;
 
@@ -47,7 +48,7 @@ namespace WorldForge.Regions
 			}
 		}
 
-		public RegionMerger(Region r1, Region r2, IMagickImage<byte> mask) : this(r1, r2, ConvertToMergeMask(mask))
+		public RegionMerger(Region r1, Region r2, Image<Rgba32> mask) : this(r1, r2, ConvertToMergeMask(mask))
 		{
 		}
 
@@ -55,19 +56,18 @@ namespace WorldForge.Regions
 		{
 		}
 
-		public static byte[,] ConvertToMergeMask(IMagickImage<byte> mask)
+		public static byte[,] ConvertToMergeMask(Image<Rgba32> mask)
 		{
 			if (!(mask.Width == 512 && mask.Height == 512) && !(mask.Width == 32 && mask.Height == 32))
 			{
 				throw new ArgumentException("Bitmap masks must be either 512x512 or 32x32");
 			}
 			byte[,] map = new byte[mask.Width, mask.Height];
-			var pixels = mask.GetPixels();
 			for (int x = 0; x < mask.Width; x++)
 			{
 				for (int z = 0; z < mask.Height; z++)
 				{
-					map[x, z] = (byte)(pixels.GetPixelColor(x, z).R > 0.5f ? 2 : 1);
+					map[x, z] = (byte)(mask[x, z].R > 0.5f ? 2 : 1);
 				}
 			}
 			return map;

@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -111,7 +112,7 @@ namespace WorldForge
 			"purple"
 		};
 
-		internal static IMagickColor<byte>[,] colormap;
+		internal static Color[,] colormap;
 
 		public static string GetRandomColor(Random r)
 		{
@@ -147,7 +148,7 @@ namespace WorldForge
 			}
 		}
 
-		public static IMagickColor<byte> GetMapColor(BlockID block, int shade)
+		public static Color GetMapColor(BlockID block, int shade)
 		{
 			if(block != null)
 			{
@@ -160,20 +161,19 @@ namespace WorldForge
 			}
 			else
 			{
-				return MagickColor.FromRgba(0, 0, 0, 0);
+				return Color.FromRgba(0, 0, 0, 0);
 			}
 		}
 
 		public static void InitializeColorMap(Stream colorBitmapStream)
 		{
-			var image = new MagickImage(colorBitmapStream);
-			colormap = new IMagickColor<byte>[image.Width, 3];
-			var pixels = image.GetPixels();
+			var image = Image.Load<Rgba32>(colorBitmapStream);
+			colormap = new Color[image.Width, 3];
 			for(int x = 0; x < image.Width; x++)
 			{
 				for(int y = 0; y < 3; y++)
 				{
-					colormap[x, y] = pixels.GetPixelColor(x, y);
+					colormap[x, y] = image[x, y];
 				}
 			}
 		}

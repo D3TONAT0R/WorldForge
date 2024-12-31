@@ -1,24 +1,25 @@
-using ImageMagick;
 using System;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace WorldForge.Builders.PostProcessors
 {
 	public class CommonWeightmapColors
 	{
-		public static IMagickColor<byte> white = MagickColor.FromRgb(255, 255, 255);
-		public static IMagickColor<byte> black = MagickColor.FromRgb(0, 0, 0);
+		public static Color white = Color.FromRgb(255, 255, 255);
+		public static Color black = Color.FromRgb(0, 0, 0);
 
 		//Primary colors
-		public static IMagickColor<byte> red = MagickColor.FromRgb(255, 0, 0);
-		public static IMagickColor<byte> green = MagickColor.FromRgb(0, 255, 0);
-		public static IMagickColor<byte> blue = MagickColor.FromRgb(0, 0, 255);
+		public static Color red = Color.FromRgb(255, 0, 0);
+		public static Color green = Color.FromRgb(0, 255, 0);
+		public static Color blue = Color.FromRgb(0, 0, 255);
 
 		//Secondary colors
-		public static IMagickColor<byte> yellow = MagickColor.FromRgb(255, 255, 0);
-		public static IMagickColor<byte> cyan = MagickColor.FromRgb(0, 255, 255);
-		public static IMagickColor<byte> magenta = MagickColor.FromRgb(255, 0, 255);
+		public static Color yellow = Color.FromRgb(255, 255, 0);
+		public static Color cyan = Color.FromRgb(0, 255, 255);
+		public static Color magenta = Color.FromRgb(255, 0, 255);
 
-		public static IMagickColor<byte> NameToColor(string s)
+		public static Color NameToColor(string s)
 		{
 			switch(s.ToLower())
 			{
