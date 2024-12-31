@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using NoiseGenerator;
+using SimpleNoise;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
@@ -210,7 +210,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public class CavernCarver : Carver
 		{
-			private PerlinGenerator perlinGen;
+			private NoiseParameters noiseParameters;
 
 			public int yMin = 4;
 			public int yMax = 32;
@@ -236,16 +236,19 @@ namespace WorldForge.Builders.PostProcessors
 				{
 					center = (int)MathUtils.Lerp(yMin, yMax, 0.3f);
 				}
-				perlinGen = new PerlinGenerator(new System.Numerics.Vector3(0.06f / scaleXZ, 0.10f / scaleY, 0.06f / scaleXZ), -1);
-				perlinGen.fractalIterations.Value = 3;
-				perlinGen.fractalPersistence = 0.15f * noiseScale;
+				scaleXZ /= 64f;
+				scaleY /= 64f;
+				noiseParameters = new NoiseParameters(new System.Numerics.Vector3(0.06f / scaleXZ, 0.10f / scaleY, 0.06f / scaleXZ))
+				{
+					fractalParameters = new FractalParameters(3, 2, 0.15f * noiseScale)
+				};
 			}
 
 			public override void ProcessBlockColumn(Dimension dim, BlockCoord topPos, float mask, Random random)
 			{
 				for(int y = yMin; y <= Math.Min(yMax, topPos.y); y++)
 				{
-					float perlin = perlinGen.GetPerlinAtCoord(topPos.x, y, topPos.z);
+					float perlin = PerlinNoise.Instance.GetNoise3D(new System.Numerics.Vector3(topPos.x, y, topPos.z), noiseParameters);
 					perlin = 2f * (perlin - 0.5f) + 0.5f;
 
 					double hw;

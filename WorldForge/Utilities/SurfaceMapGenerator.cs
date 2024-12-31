@@ -46,10 +46,6 @@ namespace WorldForge
 				{
 					int y = heightmap[x - xMin, z - zMin];
 					if(y < 0) continue;
-					if(x == 0 && z == 0)
-					{
-						int a = 0;
-					}
 					var block = dim.GetBlock(new BlockCoord(x, y, z));
 					int shade = 0;
 					if(block != null && shading)

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using ImageMagick;
-using NoiseGenerator;
+using SimpleNoise;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
 
@@ -60,20 +60,20 @@ namespace WorldForge.Builders.PostProcessors
 
 	public class PerlinSurfaceLayerGenerator : StandardSurfaceLayerGenerator
 	{
-		private PerlinGenerator perlinGen;
+		public NoiseParameters parameters;
 
-		public float perlinThreshold;
+		public float threshold;
 
 		public PerlinSurfaceLayerGenerator(IEnumerable<string> blockLayer, float scale, float threshold) : base(blockLayer)
 		{
-			scale *= 2.6f;
-			perlinGen = new PerlinGenerator(1f / scale, true);
-			perlinThreshold = threshold;
+			var noiseScale = 1f / scale * 24.6f;
+			parameters = new NoiseParameters(noiseScale);
+			this.threshold = threshold;
 		}
 
 		public override bool Generate(Dimension dim, BlockCoord pos)
 		{
-			if(perlinGen.GetPerlinAtCoord(pos.x, pos.z) < perlinThreshold)
+			if(PerlinNoise.Instance.GetNoise2D(new System.Numerics.Vector2(pos.x, pos.z)) < threshold)
 			{
 				return base.Generate(dim, pos);
 			}

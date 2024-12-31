@@ -25,7 +25,6 @@ namespace WorldForge.Builders.PostProcessors
 				if(colorAttr == null)
 				{
 					throw new ArgumentException("layer is missing required attribute 'color': " + layer.ToString().Trim());
-					continue;
 				}
 				var color = ParseColor(colorAttr.Value);
 				var surfaceLayer = new SurfaceLayer(color, layer.Attribute("name")?.Value);
