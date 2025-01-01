@@ -5,7 +5,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class WaterLevelPostProcessor : PostProcessor
+	public class WaterLevelGenerator : PostProcessor
 	{
 
 		int waterLevel = 62;
@@ -14,7 +14,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public WaterLevelPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public WaterLevelGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			worldOriginOffsetX = offsetX;
 			worldOriginOffsetZ = offsetZ;

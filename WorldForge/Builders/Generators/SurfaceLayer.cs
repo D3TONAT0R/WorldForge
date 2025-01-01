@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using SimpleNoise;
 using SixLabors.ImageSharp.PixelFormats;
+using WorldForge;
 using WorldForge.Biomes;
+using WorldForge.Builders;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
@@ -198,7 +200,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public bool AddSchematicGenerator(WeightmappedTerrainPostProcessor gen, XElement xml, bool throwExceptions = true)
+		public bool AddSchematicGenerator(WeightmappedTerrainGenerator gen, XElement xml, bool throwExceptions = true)
 		{
 			var schem = xml.Attribute("schem");
 			var amount = 1f;

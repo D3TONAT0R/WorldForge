@@ -4,7 +4,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class BedrockPostProcessor : PostProcessor
+	public class BedrockGenerator : PostProcessor
 	{
 
 		public bool flatBedrock = false;
@@ -16,7 +16,7 @@ namespace WorldForge.Builders.PostProcessors
 		public override int BlockProcessYMin => 0;
 		public override int BlockProcessYMax => flatBedrock ? 0 : 3;
 
-		public BedrockPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public BedrockGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 

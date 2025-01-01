@@ -7,7 +7,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class WeightmappedTerrainPostProcessor : PostProcessor
+	public class WeightmappedTerrainGenerator : PostProcessor
 	{
 
 		public Weightmap<byte> map;
@@ -15,7 +15,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public WeightmappedTerrainPostProcessor(XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public WeightmappedTerrainGenerator(XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			string mapFileName = Path.Combine(rootPath, xml.Attribute("file").Value);

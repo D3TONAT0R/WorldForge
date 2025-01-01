@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using SimpleNoise;
+using WorldForge;
 using WorldForge.Coordinates;
+using MathUtils = SimpleNoise.MathUtils;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class CavesPostProcessor : LayeredPostProcessor
+	public class CaveGenerator : LayeredGenerator
 	{
 
 		public abstract class Carver
@@ -132,7 +134,7 @@ namespace WorldForge.Builders.PostProcessors
 					{
 						r = Math.Sqrt(r);
 					}
-					int y = (int)MathUtils.Lerp(yMin, yMax, (float)r);
+					int y = (int)WorldForge.MathUtils.Lerp(yMin, yMax, (float)r);
 					if(y > topPos.y) return;
 					GenerateCave(dim, new Vector3(topPos.x, y, topPos.z), 0);
 				}
@@ -164,8 +166,8 @@ namespace WorldForge.Builders.PostProcessors
 					Vector3 newDirection = ApplyYWeights((float)pos.y, GetRandomVector3(true));
 					direction += newDirection * variation * 0.5f;
 					direction = Vector3.Normalize(direction);
-					size = MathUtils.Lerp(size, RandomRange(2, 6) * delta, 0.15f);
-					variation = MathUtils.Lerp(variation, RandomRange(0.2f, 1f) * variationScale, 0.1f);
+					size = WorldForge.MathUtils.Lerp(size, RandomRange(2, 6) * delta, 0.15f);
+					variation = WorldForge.MathUtils.Lerp(variation, RandomRange(0.2f, 1f) * variationScale, 0.1f);
 					if(Probability(branchingChance))
 					{
 						//Start a new branch at the current position
@@ -231,7 +233,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 				if(center == -999)
 				{
-					center = (int)MathUtils.Lerp(yMin, yMax, 0.3f);
+					center = (int)WorldForge.MathUtils.Lerp(yMin, yMax, 0.3f);
 				}
 				noiseParameters = new NoiseParameters(new System.Numerics.Vector3(0.05f * scaleXZ, 0.10f * scaleY, 0.05f * scaleXZ))
 				{
@@ -349,7 +351,7 @@ namespace WorldForge.Builders.PostProcessors
 		private Weightmap<float> weightmap;
 		private Dictionary<int, Layer> caveGenLayers = new Dictionary<int, Layer>();
 
-		public CavesPostProcessor(bool useDefaultGenerators)
+		public CaveGenerator(bool useDefaultGenerators)
 		{
 			if(useDefaultGenerators)
 			{
@@ -357,7 +359,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public CavesPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public CaveGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			weightmap = LoadWeightmap(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, out var weightmapXml);
 			if(weightmapXml != null)

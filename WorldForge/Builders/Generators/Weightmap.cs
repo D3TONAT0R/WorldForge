@@ -2,6 +2,7 @@
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Threading.Tasks;
+using WorldForge;
 
 namespace WorldForge.Builders.PostProcessors
 {

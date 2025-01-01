@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Xml.Linq;
+using WorldForge;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class OreGenerator
+	public class OreVeinGenerator
 	{
 
 		public BlockState block;
@@ -25,13 +26,13 @@ namespace WorldForge.Builders.PostProcessors
 			set => spawnsPerColumn = value / 256f;
 		}
 
-		static OreGenerator()
+		static OreVeinGenerator()
 		{
 			stone = BlockList.Find("minecraft:stone");
 			deepslate = BlockList.Find("minecraft:deepslate");
 		}
 
-		public OreGenerator(string block, int veinSize, float spawnsPerChunk, int yMin, int yMax, float falloff, float falloffCenter)
+		public OreVeinGenerator(string block, int veinSize, float spawnsPerChunk, int yMin, int yMax, float falloff, float falloffCenter)
 		{
 			this.block = new BlockState(BlockList.Find(block));
 			veinSizeMax = veinSize;
@@ -43,12 +44,12 @@ namespace WorldForge.Builders.PostProcessors
 			deepslateBlockVariant = TryGetDeepslateVariant(this.block);
 		}
 
-		public OreGenerator(string block, int veinSize, float spawnsPerChunk, int yMin, int yMax) : this(block, veinSize, spawnsPerChunk, yMin, yMax, 0, (yMin + yMax) / 2f)
+		public OreVeinGenerator(string block, int veinSize, float spawnsPerChunk, int yMin, int yMax) : this(block, veinSize, spawnsPerChunk, yMin, yMax, 0, (yMin + yMax) / 2f)
 		{
 
 		}
 
-		public OreGenerator(XElement elem)
+		public OreVeinGenerator(XElement elem)
 		{
 			block = new BlockState(BlockList.Find(elem.Element("block").Value));
 			elem.TryParseInt("size", ref veinSizeMax);

@@ -4,7 +4,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class NaturalTerrainPostProcessor : PostProcessor
+	public class NaturalSurfaceGenerator : PostProcessor
 	{
 		public int waterLevel = int.MinValue;
 
@@ -16,12 +16,12 @@ namespace WorldForge.Builders.PostProcessors
 		public override Priority OrderPriority => Priority.BeforeDefault;
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public NaturalTerrainPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public NaturalSurfaceGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			waterLevel = int.Parse(xml.Element("waterlevel")?.Value ?? "-1");
 		}
 
-		public NaturalTerrainPostProcessor(int waterLevel = -256)
+		public NaturalSurfaceGenerator(int waterLevel = -256)
 		{
 			this.waterLevel = waterLevel;
 		}

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace WorldForge.Builders.PostProcessors
 {
-    public class WorldPostProcessingStack
+    public class WorldGeneratorStack
 	{
 		public PostProcessContext context;
 
@@ -24,7 +24,7 @@ namespace WorldForge.Builders.PostProcessors
 			Create(Path.GetDirectoryName(importedFilePath), xmlString, ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
 		}
 
-		public WorldPostProcessingStack(PostProcessContext context)
+		public WorldGeneratorStack(PostProcessContext context)
 		{
 			this.context = context;
 		}
@@ -56,15 +56,15 @@ namespace WorldForge.Builders.PostProcessors
 			var name = splatXml.Name.LocalName.ToLower();
 			if(name == "splat")
 			{
-				stack.Add(new WeightmappedTerrainPostProcessor(splatXml, rootPath, ditherLimit, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new WeightmappedTerrainGenerator(splatXml, rootPath, ditherLimit, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "water")
 			{
-				stack.Add(new WaterLevelPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new WaterLevelGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "ores")
 			{
-				stack.Add(new OreGenPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new OreGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "snow")
 			{
@@ -76,19 +76,19 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else if(name == "naturalize")
 			{
-				stack.Add(new NaturalTerrainPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new NaturalSurfaceGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "vegetation")
 			{
-				stack.Add(new VegetationPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new VegetationGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "caves")
 			{
-				stack.Add(new CavesPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new CaveGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "bedrock")
 			{
-				stack.Add(new BedrockPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				stack.Add(new BedrockGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "include")
 			{

@@ -1,12 +1,10 @@
-using System.Collections.Generic;
 using System.Xml.Linq;
-using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Structures;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class VegetationPostProcessor : PostProcessor
+	public class VegetationGenerator : PostProcessor
 	{
 		private const int z = -1;
 
@@ -60,13 +58,13 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public VegetationPostProcessor(float grassPerBlock = 0.2f, float treesPerChunk = 0.3f)
+		public VegetationGenerator(float grassPerBlock = 0.2f, float treesPerChunk = 0.3f)
 		{
 			grassDensity = grassPerBlock;
 			treesDensity = treesPerChunk / 128f;
 		}
 
-		public VegetationPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public VegetationGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			grassDensity = float.Parse(xml.Element("grass")?.Value ?? "0.2");
 			treesDensity = float.Parse(xml.Element("trees")?.Value ?? "0.3") / 128f;

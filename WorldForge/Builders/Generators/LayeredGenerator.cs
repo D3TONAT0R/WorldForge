@@ -4,16 +4,16 @@ using System;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public abstract class LayeredPostProcessor : PostProcessor
+	public abstract class LayeredGenerator : PostProcessor
 	{
 		protected readonly Dictionary<int, Layer> layers = new Dictionary<int, Layer>();
 
-		protected LayeredPostProcessor()
+		protected LayeredGenerator()
 		{
 
 		}
 
-		protected LayeredPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		protected LayeredGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 
