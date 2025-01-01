@@ -196,12 +196,12 @@ namespace WorldForge
 				else biome = BiomeID.Plains;
 			}
 
-			public static SuperflatDimensionGenerator CreateSuperflatOverworldGenerator(BiomeID biome, params SuperflatLayer[] layers)
+			public static SuperflatDimensionGenerator CreateOverworld(BiomeID biome, params SuperflatLayer[] layers)
 			{
-				return CreateSuperflatGenerator(DimensionID.Overworld, biome, layers);
+				return Create(DimensionID.Overworld, biome, layers);
 			}
 
-			public static SuperflatDimensionGenerator CreateSuperflatGenerator(DimensionID dimension, BiomeID biome, params SuperflatLayer[] layers)
+			public static SuperflatDimensionGenerator Create(DimensionID dimension, BiomeID biome, params SuperflatLayer[] layers)
 			{
 				var gen = new SuperflatDimensionGenerator(dimension, layers);
 				gen.biome = biome;
