@@ -15,6 +15,8 @@ namespace WorldForge.Builders.PostProcessors
 			public BlockState lava = new BlockState(BlockList.Find("lava"));
 			public int lavaHeight = 8;
 
+			private BlockID bedrock = BlockList.Find("bedrock");
+
 			public Carver(XElement elem)
 			{
 
@@ -54,24 +56,19 @@ namespace WorldForge.Builders.PostProcessors
 				if(b == null || Blocks.IsAir(b)) return false;
 
 				//Can the cave break the surface?
-				if(b.CompareMultiple(Blocks.terrainSurfaceBlocks) && !allowSurfaceBreak)
-				{
-					return false;
-				}
+				if(b.CompareMultiple(Blocks.terrainSurfaceBlocks) && !allowSurfaceBreak) return false;
+				//Ignore bedrock and existing liquids
+				if(b == bedrock || Blocks.IsLiquid(b)) return false;
 
-				if(b != null && !b.Compare("minecraft:bedrock") && !Blocks.IsLiquid(b))
+				if(pos.y <= lavaHeight)
 				{
-					if(pos.y <= lavaHeight)
-					{
-						dim.SetBlock(pos, lava);
-					}
-					else
-					{
-						dim.SetBlock(pos, BlockState.Air);
-					}
-					return true;
+					dim.SetBlock(pos, lava);
 				}
-				return false;
+				else
+				{
+					dim.SetBlock(pos, BlockState.Air);
+				}
+				return true;
 			}
 
 			protected float RandomRange(float min, float max)
@@ -79,9 +76,9 @@ namespace WorldForge.Builders.PostProcessors
 				return min + (float)random.NextDouble() * (max - min);
 			}
 
-			protected bool Chance(double chance)
+			protected bool Probability(double prob)
 			{
-				return random.NextDouble() <= chance;
+				return random.NextDouble() <= prob;
 			}
 		}
 
@@ -124,7 +121,7 @@ namespace WorldForge.Builders.PostProcessors
 
 			public override void ProcessBlockColumn(Dimension dim, BlockCoord topPos, float mask, Random random)
 			{
-				if(Chance(amount * 0.15f * invChunkArea * (topPos.y * 0.016f) * mask))
+				if(Probability(amount * 0.12f * invChunkArea * (topPos.y * 0.016f) * mask))
 				{
 					var r = random.NextDouble();
 					if(distibution == Distibution.FavorBottom)
@@ -151,7 +148,7 @@ namespace WorldForge.Builders.PostProcessors
 				float variation = RandomRange(0.2f, 1f) * variationScale;
 				Vector3 direction = Vector3.Normalize(GetRandomVector3(iteration == 0));
 				float branchingChance = 0;
-				bool breakSurface = Chance(0.4f);
+				bool breakSurface = Probability(0.4f);
 				if(delta > 0.25f && iteration < 3)
 				{
 					branchingChance = size * 0.01f;
@@ -169,7 +166,7 @@ namespace WorldForge.Builders.PostProcessors
 					direction = Vector3.Normalize(direction);
 					size = MathUtils.Lerp(size, RandomRange(2, 6) * delta, 0.15f);
 					variation = MathUtils.Lerp(variation, RandomRange(0.2f, 1f) * variationScale, 0.1f);
-					if(Chance(branchingChance))
+					if(Probability(branchingChance))
 					{
 						//Start a new branch at the current position
 						GenerateCave(dim, pos, iteration + 1, maxDelta * 0.8f);
@@ -215,7 +212,7 @@ namespace WorldForge.Builders.PostProcessors
 			public int yMin = 4;
 			public int yMax = 32;
 			public int center = -999;
-			public float threshold = 0.68f;
+			public float threshold = 0.75f;
 			public float scaleXZ = 1f;
 			public float scaleY = 1f;
 			public float noiseScale = 1f;
@@ -236,11 +233,9 @@ namespace WorldForge.Builders.PostProcessors
 				{
 					center = (int)MathUtils.Lerp(yMin, yMax, 0.3f);
 				}
-				scaleXZ /= 64f;
-				scaleY /= 64f;
-				noiseParameters = new NoiseParameters(new System.Numerics.Vector3(0.06f / scaleXZ, 0.10f / scaleY, 0.06f / scaleXZ))
+				noiseParameters = new NoiseParameters(new System.Numerics.Vector3(0.05f * scaleXZ, 0.10f * scaleY, 0.05f * scaleXZ))
 				{
-					fractalParameters = new FractalParameters(3, 2, 0.15f * noiseScale)
+					fractalParameters = new FractalParameters(3, 2, 0.25f * noiseScale)
 				};
 			}
 
@@ -293,7 +288,7 @@ namespace WorldForge.Builders.PostProcessors
 
 			public override void ProcessBlockColumn(Dimension dim, BlockCoord topPos, float mask, Random random)
 			{
-				if(Chance(amount * 0.08f * mask))
+				if(Probability(amount * 0.08f * mask))
 				{
 					int y = random.Next(yMin, yMax);
 					if(y > topPos.y) return;
