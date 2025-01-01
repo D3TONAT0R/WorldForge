@@ -30,6 +30,8 @@ namespace WorldForge
 
 		public static readonly GameVersion LastSupportedVersion = Release_1(21, 1);
 
+		public static readonly int FirstDataVersion = 169;
+
 		public static readonly Dictionary<GameVersion, int> dataVersionAssociations = new Dictionary<GameVersion, int>()
 		{
 			{Release_1(9,0), 169},

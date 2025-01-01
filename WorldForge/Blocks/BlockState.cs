@@ -31,7 +31,7 @@ namespace WorldForge
 		public BlockID block;
 		private NBTCompound properties;
 
-		private BlockState() { }
+		public BlockState() { }
 
 		public BlockState(BlockID blockType)
 		{
