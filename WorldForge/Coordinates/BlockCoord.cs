@@ -4,7 +4,7 @@ using WorldForge.NBT;
 
 namespace WorldForge.Coordinates
 {
-	public struct BlockCoord : INBTConverter
+	public struct BlockCoord : INBTConverter, IEquatable<BlockCoord>
 	{
 		public int x;
 		public int y;
@@ -120,6 +120,28 @@ namespace WorldForge.Coordinates
 			else
 			{
 				throw new ArgumentException("Invalid NBT data for BlockCoord: " + nbtData);
+			}
+		}
+
+		public bool Equals(BlockCoord other)
+		{
+			return x == other.x && y == other.y && z == other.z;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is BlockCoord other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hash = 17;
+				hash = hash * 23 + x.GetHashCode();
+				hash = hash * 23 + y.GetHashCode();
+				hash = hash * 23 + z.GetHashCode();
+				return hash;
 			}
 		}
 	}
