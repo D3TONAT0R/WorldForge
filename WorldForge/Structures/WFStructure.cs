@@ -24,7 +24,7 @@ namespace WorldForge.Structures
 				this.probability = probability;
 			}
 
-			public Block(BlockState index, float probability = 1.0f) : this(index, null, probability)
+			public Block(BlockState state, float probability) : this(state, null, probability)
 			{
 
 			}
@@ -46,6 +46,57 @@ namespace WorldForge.Structures
 		public Dictionary<BlockCoord, int> treeTrunk = new Dictionary<BlockCoord, int>();
 		public int trunkMinHeight = 0;
 		public int trunkMaxHeight = 0;
+
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset)
+		{
+			var structure = new WFStructure();
+			structure.paletteData = palette;
+			structure.blocks = Parse3DArray(indices, originOffset);
+			return structure;
+		}
+
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset, int[,,] trunkIndices, int trunkMinHeight, int trunkMaxHeight)
+		{
+			var structure = new WFStructure();
+			structure.paletteData = palette;
+			structure.blocks = Parse3DArray(indices, originOffset);
+			structure.treeTrunk = Parse3DArray(trunkIndices, originOffset);
+			structure.trunkMinHeight = trunkMinHeight;
+			structure.trunkMaxHeight = trunkMaxHeight;
+			return structure;
+		}
+
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset, int trunkIndex, int trunkMinHeight, int trunkMaxHeight)
+		{
+			var structure = new WFStructure();
+			structure.paletteData = palette;
+			structure.blocks = Parse3DArray(indices, originOffset);
+			structure.treeTrunk = new Dictionary<BlockCoord, int> { { new BlockCoord(0, 0, 0), trunkIndex } };
+			structure.trunkMinHeight = trunkMinHeight;
+			structure.trunkMaxHeight = trunkMaxHeight;
+			return structure;
+		}
+
+		private static Dictionary<BlockCoord, int> Parse3DArray(int[,,] indices, BlockCoord originOffset)
+		{
+			var data = new Dictionary<BlockCoord, int>();
+			for(int z = 0; z < indices.GetLength(2); z++)
+			{
+				for(int y = 0; y < indices.GetLength(1); y++)
+				{
+					for(int x = 0; x < indices.GetLength(0); x++)
+					{
+						int i = indices[x, y, z];
+						if(i >= 0)
+						{
+							var pos = new BlockCoord(x, y, z) - originOffset;
+							data[pos] = i;
+						}
+					}
+				}
+			}
+			return data;
+		}
 
 		public void Build(Dimension dimension, BlockCoord origin, Random random, bool allowNewChunks = false)
 		{

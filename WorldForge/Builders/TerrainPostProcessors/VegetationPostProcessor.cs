@@ -1,48 +1,57 @@
+using System.Collections.Generic;
 using System.Xml.Linq;
 using WorldForge;
 using WorldForge.Coordinates;
+using WorldForge.Structures;
 
 namespace WorldForge.Builders.PostProcessors
 {
 	public class VegetationPostProcessor : PostProcessor
 	{
+		private const int z = -1;
 
-		readonly byte[,,] blueprintOakTreeTop = new byte[,,] {
+		private const int oakTrunkMinHeight = 1;
+		private const int oakTrunkMaxHeight = 3;
+
+		private static readonly int[,,] blueprintOakTreeTop = new int[,,] {
 		//YZX
 		{
-		{0,0,0,0,0},
-		{0,0,2,0,0},
-		{0,2,1,2,0},
-		{0,0,2,0,0},
-		{0,0,0,0,0},
+			{z,z,z,z,z},
+			{z,z,1,z,z},
+			{z,1,0,1,z},
+			{z,z,1,z,z},
+			{z,z,z,z,z},
 		},{
-		{0,2,2,2,0},
-		{2,2,2,2,2},
-		{2,2,1,2,2},
-		{2,2,2,2,2},
-		{0,2,2,2,0}
+			{z,1,1,1,z},
+			{1,1,1,1,1},
+			{1,1,0,1,1},
+			{1,1,1,1,1},
+			{z,1,1,1,z}
 		},{
-		{0,2,2,2,0},
-		{2,2,2,2,2},
-		{2,2,1,2,2},
-		{2,2,2,2,2},
-		{0,2,2,2,0}
+			{z,1,1,1,z},
+			{1,1,1,1,1},
+			{1,1,0,1,1},
+			{1,1,1,1,1},
+			{z,1,1,1,z}
 		},{
-		{0,0,0,0,0},
-		{0,2,2,2,0},
-		{0,2,1,2,0},
-		{0,2,2,2,0},
-		{0,0,0,0,0}
+			{z,z,z,z,z},
+			{z,1,1,1,z},
+			{z,1,0,1,z},
+			{z,1,1,1,z},
+			{z,z,z,z,z}
 		},{
-		{0,0,0,0,0},
-		{0,0,2,0,0},
-		{0,2,2,2,0},
-		{0,0,2,0,0},
-		{0,0,0,0,0}
-		}
-	};
-		readonly int treeRadius = 2;
-		readonly int treeTopHeight = 5;
+			{z,z,z,z,z},
+			{z,z,1,z,z},
+			{z,1,1,1,z},
+			{z,z,1,z,z},
+			{z,z,z,z,z}
+			}
+		};
+		private static readonly StructurePalette<WFStructure.Block> oakTreePalette = new StructurePalette<WFStructure.Block>(
+			new WFStructure.Block(new BlockState("oak_log")),
+			new WFStructure.Block(new BlockState("oak_leaves"))
+		);
+		private readonly WFStructure oakTree = WFStructure.From3DArray(oakTreePalette, blueprintOakTreeTop, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
 
 		private float grassChance;
 		private float treesChance;
@@ -79,30 +88,10 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			var b = dim.GetBlock(pos.Below);
 			if(b == null || !CanGrowPlant(b)) return false;
-			int bareTrunkHeight = random.Next(1, 4);
-			int w = treeRadius;
 			if(!dim.IsAirOrNull(pos.Above)) return false;
 			//if(IsObstructed(region, x, y+1, z, x, y+bareTrunkHeight, z) || IsObstructed(region, x-w, y+bareTrunkHeight, z-w, x+w, y+bareTrunkHeight+treeTopHeight, z+w)) return false;
-			dim.SetBlock((pos.Below), "minecraft:dirt");
-			for(int i = 0; i <= bareTrunkHeight; i++)
-			{
-				dim.SetBlock((pos.x, pos.y + i, pos.z), "minecraft:oak_log");
-			}
-			for(int ly = 0; ly < treeTopHeight; ly++)
-			{
-				for(int lz = 0; lz < 2 * treeRadius + 1; lz++)
-				{
-					for(int lx = 0; lx < 2 * treeRadius + 1; lx++)
-					{
-						int palette = blueprintOakTreeTop[ly, lz, lx];
-						if(palette > 0)
-						{
-							string block = palette == 1 ? "minecraft:oak_log" : "minecraft:oak_leaves";
-							dim.SetBlock((pos.x + lx - treeRadius, pos.y + ly + bareTrunkHeight + 1, pos.z + lz - treeRadius), block);
-						}
-					}
-				}
-			}
+			dim.SetBlock(pos.Below, "minecraft:dirt");
+			oakTree.Build(dim, pos, random);
 			return true;
 		}
 

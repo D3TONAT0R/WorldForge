@@ -20,6 +20,11 @@ namespace WorldForge.Structures
 			FromNBT(nbt);
 		}
 
+		public StructurePalette(params T[] values)
+		{
+			list.AddRange(values);
+		}
+
 		public List<T> GetPalette(int paletteIndex = 0) => list;
 
 		public object ToNBT(GameVersion version) => new NBTList(NBTTag.TAG_Compound, list.Select(t => t.ToNBT(version)));
