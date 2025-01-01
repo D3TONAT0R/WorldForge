@@ -47,37 +47,37 @@ namespace WorldForge.Structures
 		public int trunkMinHeight = 0;
 		public int trunkMaxHeight = 0;
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset)
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset)
 		{
 			var structure = new WFStructure();
 			structure.paletteData = palette;
-			structure.blocks = Parse3DArray(indices, originOffset);
+			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
 			return structure;
 		}
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset, int[,,] trunkIndices, int trunkMinHeight, int trunkMaxHeight)
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int[,,] trunkIndices, int trunkMinHeight, int trunkMaxHeight)
 		{
 			var structure = new WFStructure();
 			structure.paletteData = palette;
-			structure.blocks = Parse3DArray(indices, originOffset);
-			structure.treeTrunk = Parse3DArray(trunkIndices, originOffset);
+			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
+			structure.treeTrunk = Parse3DArray(trunkIndices, originOffset, yzxOrder);
 			structure.trunkMinHeight = trunkMinHeight;
 			structure.trunkMaxHeight = trunkMaxHeight;
 			return structure;
 		}
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, BlockCoord originOffset, int trunkIndex, int trunkMinHeight, int trunkMaxHeight)
+		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int trunkIndex, int trunkMinHeight, int trunkMaxHeight)
 		{
 			var structure = new WFStructure();
 			structure.paletteData = palette;
-			structure.blocks = Parse3DArray(indices, originOffset);
+			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
 			structure.treeTrunk = new Dictionary<BlockCoord, int> { { new BlockCoord(0, 0, 0), trunkIndex } };
 			structure.trunkMinHeight = trunkMinHeight;
 			structure.trunkMaxHeight = trunkMaxHeight;
 			return structure;
 		}
 
-		private static Dictionary<BlockCoord, int> Parse3DArray(int[,,] indices, BlockCoord originOffset)
+		private static Dictionary<BlockCoord, int> Parse3DArray(int[,,] indices, BlockCoord originOffset, bool yzxOrder)
 		{
 			var data = new Dictionary<BlockCoord, int>();
 			for(int z = 0; z < indices.GetLength(2); z++)
@@ -86,7 +86,7 @@ namespace WorldForge.Structures
 				{
 					for(int x = 0; x < indices.GetLength(0); x++)
 					{
-						int i = indices[x, y, z];
+						int i = yzxOrder ? indices[y, z, x] : indices[x, y, z];
 						if(i >= 0)
 						{
 							var pos = new BlockCoord(x, y, z) - originOffset;

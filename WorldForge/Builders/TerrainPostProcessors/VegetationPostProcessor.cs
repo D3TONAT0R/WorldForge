@@ -51,7 +51,7 @@ namespace WorldForge.Builders.PostProcessors
 			new WFStructure.Block(new BlockState("oak_log")),
 			new WFStructure.Block(new BlockState("oak_leaves"))
 		);
-		private readonly WFStructure oakTree = WFStructure.From3DArray(oakTreePalette, blueprintOakTreeTop, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
+		private readonly WFStructure oakTree = WFStructure.From3DArray(oakTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
 
 		private float grassDensity;
 		private float treesDensity;
