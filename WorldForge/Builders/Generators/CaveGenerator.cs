@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using SimpleNoise;
-using WorldForge;
 using WorldForge.Coordinates;
-using MathUtils = SimpleNoise.MathUtils;
+using SVector3 = System.Numerics.Vector3;
 
 namespace WorldForge.Builders.PostProcessors
 {
@@ -26,22 +25,23 @@ namespace WorldForge.Builders.PostProcessors
 
 			public abstract void ProcessBlockColumn(Dimension dim, BlockCoord topPos, float mask, Random random);
 
-			protected bool CarveSphere(Dimension dim, Vector3 pos, float radius, bool breakSurface)
+			protected bool CarveSphere(Dimension dim, SVector3 pos, float radius, bool breakSurface)
 			{
 				bool hasCarved = false;
-				int x1 = (int)Math.Floor(pos.x - radius);
-				int x2 = (int)Math.Ceiling(pos.x + radius);
-				int y1 = (int)Math.Floor(pos.y - radius);
-				int y2 = (int)Math.Ceiling(pos.y + radius);
-				int z1 = (int)Math.Floor(pos.z - radius);
-				int z2 = (int)Math.Ceiling(pos.z + radius);
+				int x1 = (int)Math.Floor(pos.X - radius);
+				int x2 = (int)Math.Ceiling(pos.X + radius);
+				int y1 = (int)Math.Floor(pos.Y - radius);
+				int y2 = (int)Math.Ceiling(pos.Y + radius);
+				int z1 = (int)Math.Floor(pos.Z - radius);
+				int z2 = (int)Math.Ceiling(pos.Z + radius);
+				var radiusSq = radius * radius;
 				for(int x = x1; x <= x2; x++)
 				{
 					for(int y = y1; y <= y2; y++)
 					{
 						for(int z = z1; z <= z2; z++)
 						{
-							if(Vector3.Distance(new Vector3(x, y, z), pos) < radius)
+							if(DistanceSquared(new SVector3(x, y, z), pos) < radiusSq)
 							{
 								hasCarved |= CarveBlock(dim, (x, y, z), breakSurface);
 							}
@@ -49,6 +49,11 @@ namespace WorldForge.Builders.PostProcessors
 					}
 				}
 				return hasCarved;
+			}
+
+			private float DistanceSquared(SVector3 a, SVector3 b)
+			{
+				return (a - b).LengthSquared();
 			}
 
 			protected bool CarveBlock(Dimension dim, BlockCoord pos, bool allowSurfaceBreak)
@@ -136,19 +141,19 @@ namespace WorldForge.Builders.PostProcessors
 					}
 					int y = (int)WorldForge.MathUtils.Lerp(yMin, yMax, (float)r);
 					if(y > topPos.y) return;
-					GenerateCave(dim, new Vector3(topPos.x, y, topPos.z), 0);
+					GenerateCave(dim, new SVector3(topPos.x, y, topPos.z), 0);
 				}
 			}
 
 
-			private void GenerateCave(Dimension dim, Vector3 pos, int iteration, float maxDelta = 1f)
+			private void GenerateCave(Dimension dim, SVector3 pos, int iteration, float maxDelta = 1f)
 			{
 				float delta = RandomRange(maxDelta * 0.25f, maxDelta);
 				int life = (int)(RandomRange(50, 300) * delta);
 				life = Math.Min(life, 400);
 				float size = RandomRange(2, 7.5f * delta);
 				float variation = RandomRange(0.2f, 1f) * variationScale;
-				Vector3 direction = Vector3.Normalize(GetRandomVector3(iteration == 0));
+				SVector3 direction = SVector3.Normalize(GetRandomVector(iteration == 0));
 				float branchingChance = 0;
 				bool breakSurface = Probability(0.4f);
 				if(delta > 0.25f && iteration < 3)
@@ -163,9 +168,9 @@ namespace WorldForge.Builders.PostProcessors
 						//Nothing was carved, the cave is dead
 						return;
 					}
-					Vector3 newDirection = ApplyYWeights((float)pos.y, GetRandomVector3(true));
+					SVector3 newDirection = ApplyYWeights((float)pos.Y, GetRandomVector(true));
 					direction += newDirection * variation * 0.5f;
-					direction = Vector3.Normalize(direction);
+					direction = SVector3.Normalize(direction);
 					size = WorldForge.MathUtils.Lerp(size, RandomRange(2, 6) * delta, 0.15f);
 					variation = WorldForge.MathUtils.Lerp(variation, RandomRange(0.2f, 1f) * variationScale, 0.1f);
 					if(Probability(branchingChance))
@@ -177,13 +182,13 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 
-			private Vector3 GetRandomVector3(bool allowUpwards)
+			private SVector3 GetRandomVector(bool allowUpwards)
 			{
-				return Vector3.Normalize(new Vector3()
+				return SVector3.Normalize(new SVector3()
 				{
-					x = RandomRange(-1, 1),
-					y = RandomRange(-1, allowUpwards ? 1 : 0),
-					z = RandomRange(-1, 1)
+					X = RandomRange(-1, 1),
+					Y = RandomRange(-1, allowUpwards ? 1 : 0),
+					Z = RandomRange(-1, 1)
 				});
 			}
 
@@ -196,14 +201,14 @@ namespace WorldForge.Builders.PostProcessors
 				return t * t * (3f - 2f * t);
 			}
 
-			private Vector3 ApplyYWeights(float y, Vector3 dir)
+			private SVector3 ApplyYWeights(float y, SVector3 dir)
 			{
 				float weight = 0;
 				if(y < 16)
 				{
 					weight = Smoothstep(1f - y / 16f, 0, 1);
 				}
-				return Vector3.Lerp(dir, new Vector3(0, 1, 0), weight);
+				return SVector3.Lerp(dir, new SVector3(0, 1, 0), weight);
 			}
 		}
 
@@ -235,7 +240,7 @@ namespace WorldForge.Builders.PostProcessors
 				{
 					center = (int)WorldForge.MathUtils.Lerp(yMin, yMax, 0.3f);
 				}
-				noiseParameters = new NoiseParameters(new System.Numerics.Vector3(0.05f * scaleXZ, 0.10f * scaleY, 0.05f * scaleXZ))
+				noiseParameters = new NoiseParameters(new SVector3(0.05f * scaleXZ, 0.10f * scaleY, 0.05f * scaleXZ))
 				{
 					fractalParameters = new FractalParameters(3, 2, 0.25f * noiseScale)
 				};
@@ -245,7 +250,7 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				for(int y = yMin; y <= Math.Min(yMax, topPos.y); y++)
 				{
-					float perlin = PerlinNoise.Instance.GetNoise3D(new System.Numerics.Vector3(topPos.x, y, topPos.z), noiseParameters);
+					float perlin = PerlinNoise.Instance.GetNoise3D(new SVector3(topPos.x, y, topPos.z), noiseParameters);
 					perlin = 2f * (perlin - 0.5f) + 0.5f;
 
 					double hw;
