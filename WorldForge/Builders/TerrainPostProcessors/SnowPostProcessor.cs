@@ -19,7 +19,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		static Dictionary<BiomeID, short> snowThresholds = new Dictionary<BiomeID, short>()
+		private static readonly Dictionary<BiomeID, short> snowThresholds = new Dictionary<BiomeID, short>()
 		{
 			{BiomeIDs.Get("snowy_tundra"), -999},
 			{BiomeIDs.Get("ice_spikes"), -999 },
@@ -45,7 +45,8 @@ namespace WorldForge.Builders.PostProcessors
 			{BiomeIDs.Get("deep_frozen_ocean"), 72 },
 		};
 
-		public SnowPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public SnowPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
+			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			xml.TryParseBool("top-only", ref topOnly);
 			xml.TryParseBool("check-biomes", ref biomeCheck);

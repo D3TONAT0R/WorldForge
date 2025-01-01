@@ -53,23 +53,29 @@ namespace WorldForge.Builders.PostProcessors
 		);
 		private readonly WFStructure oakTree = WFStructure.From3DArray(oakTreePalette, blueprintOakTreeTop, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
 
-		private float grassChance;
-		private float treesChance;
+		private float grassDensity;
+		private float treesDensity;
 
 		public override Priority OrderPriority => Priority.AfterDefault;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public VegetationPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public VegetationPostProcessor(float grassPerBlock = 0.2f, float treesPerChunk = 0.3f)
 		{
-			grassChance = float.Parse(xml.Element("grass")?.Value ?? "0.2");
-			treesChance = float.Parse(xml.Element("trees")?.Value ?? "0.3") / 128f;
+			grassDensity = grassPerBlock;
+			treesDensity = treesPerChunk / 128f;
+		}
+
+		public VegetationPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		{
+			grassDensity = float.Parse(xml.Element("grass")?.Value ?? "0.2");
+			treesDensity = float.Parse(xml.Element("trees")?.Value ?? "0.3") / 128f;
 		}
 
 		protected override void OnProcessSurface(Dimension world, BlockCoord pos, int pass, float mask)
 		{
 			//Place trees
-			if(random.NextDouble() <= treesChance)
+			if(random.NextDouble() <= treesDensity)
 			{
 				if(PlaceTree(world, pos.Above))
 				{
@@ -78,7 +84,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 			//Place tall grass
-			if(random.NextDouble() <= grassChance)
+			if(random.NextDouble() <= grassDensity)
 			{
 				PlaceGrass(world, pos.Above);
 			}

@@ -62,7 +62,7 @@
 
 		public static void Resolve(GameVersion version, ref BiomeID biome)
 		{
-			if(version < biome.addedInVersion)
+			if(biome.addedInVersion.HasValue && version < biome.addedInVersion)
 			{
 				if(biome.substitute != null)
 				{

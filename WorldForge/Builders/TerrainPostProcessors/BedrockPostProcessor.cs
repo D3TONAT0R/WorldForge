@@ -16,7 +16,8 @@ namespace WorldForge.Builders.PostProcessors
 		public override int BlockProcessYMin => 0;
 		public override int BlockProcessYMax => flatBedrock ? 0 : 3;
 
-		public BedrockPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public BedrockPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
+			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 
 		}

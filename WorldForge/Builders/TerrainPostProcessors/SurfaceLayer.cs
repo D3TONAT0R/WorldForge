@@ -207,7 +207,7 @@ namespace WorldForge.Builders.PostProcessors
 			xml.TryParseBoolAttribute("plant-check", ref plantCheck);
 			if(schem != null)
 			{
-				if(gen.context.Schematics.TryGet(schem.Value, out var schematic))
+				if(gen.Context.Schematics.TryGet(schem.Value, out var schematic))
 				{
 					generators.Add(new SchematicInstanceGenerator(schematic, amount, plantCheck));
 				}

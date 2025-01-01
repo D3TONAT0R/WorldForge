@@ -32,8 +32,6 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected static Random random = new Random();
 
-		public readonly PostProcessContext context;
-
 		public virtual Priority OrderPriority => Priority.Default;
 
 		public abstract PostProcessType PostProcessorType { get; }
@@ -41,17 +39,23 @@ namespace WorldForge.Builders.PostProcessors
 		public virtual int BlockProcessYMin => 0;
 		public virtual int BlockProcessYMax => 255;
 
-		public virtual int NumberOfPasses => 1;
+		public virtual int PassCount => 1;
 
 		protected int worldOriginOffsetX;
 		protected int worldOriginOffsetZ;
 
 		public Weightmap<float> mask = null;
 
-		public PostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ,
+		public PostProcessContext Context { get; private set; }
+
+		protected PostProcessor()
+		{
+			
+		}
+
+		protected PostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ,
 			int sizeX, int sizeZ)
 		{
-			this.context = context;
 			worldOriginOffsetX = offsetX;
 			worldOriginOffsetZ = offsetZ;
 			var maskElem = xml.Element("mask");
@@ -77,42 +81,13 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		protected Weightmap<float> LoadWeightmapAndLayers(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ, Dictionary<int, Layer> layers, Func<XElement, Layer> createLayerAction)
+		protected Weightmap<float> LoadWeightmap(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ, out XElement weightmapXml)
 		{
-			if(layers == null) layers = new Dictionary<int, Layer>();
-			var map = xml.Element("weightmap");
-			if(map != null)
+			weightmapXml = xml.Element("weightmap");
+			if(weightmapXml != null)
 			{
-				string mapFileName = Path.Combine(rootPath, map.Attribute("file").Value);
+				string mapFileName = Path.Combine(rootPath, weightmapXml.Attribute("file").Value);
 				var weightmap = Weightmap<float>.CreateRGBAMap(mapFileName, offsetX, offsetZ, sizeX, sizeZ);
-				foreach(var elem in map.Elements())
-				{
-					string name = elem.Name.LocalName.ToLower();
-					if(name == "r" || name == "red")
-					{
-						RegisterLayer(0, layers, createLayerAction, elem);
-					}
-					else if(name == "g" || name == "green")
-					{
-						RegisterLayer(1, layers, createLayerAction, elem);
-					}
-					else if(name == "b" || name == "blue")
-					{
-						RegisterLayer(2, layers, createLayerAction, elem);
-					}
-					else if(name == "a" || name == "alpha")
-					{
-						RegisterLayer(3, layers, createLayerAction, elem);
-					}
-					else if(name == "n" || name == "none")
-					{
-						RegisterLayer(-1, layers, createLayerAction, elem);
-					}
-					else
-					{
-						throw new ArgumentException("Unknown channel name: " + name);
-					}
-				}
 				return weightmap;
 			}
 			else
@@ -121,30 +96,42 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		private void RegisterLayer(int maskChannelIndex, Dictionary<int, Layer> layers, Func<XElement, Layer> createLayerAction, XElement elem)
+		public void Begin(PostProcessContext context)
 		{
-			layers.Add(maskChannelIndex, createLayerAction(elem));
+			Context = context;
+			OnBegin();
 		}
 
-		public void ProcessBlock(Dimension dim, BlockCoord pos, int pass)
-		{
-			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
-			if(maskValue > 0)
-			{
-				OnProcessBlock(dim, pos, pass, maskValue);
-			}
-		}
-
-		public void ProcessSurface(Dimension dim, BlockCoord pos, int pass)
+		public void ProcessBlock(BlockCoord pos, int pass)
 		{
 			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
 			if(maskValue > 0)
 			{
-				OnProcessSurface(dim, pos, pass, maskValue);
+				OnProcessBlock(Context.Dimension, pos, pass, maskValue);
 			}
 		}
 
-		protected void ProcessSplatmapLayersSurface(Dictionary<int, Layer> layers, Weightmap<float> weightmap, Dimension dim, BlockCoord pos, int pass, float mask)
+		public void ProcessSurface(BlockCoord pos, int pass)
+		{
+			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
+			if(maskValue > 0)
+			{
+				OnProcessSurface(Context.Dimension, pos, pass, maskValue);
+			}
+		}
+
+		public void ProcessRegion(Region reg, int pass)
+		{
+			OnProcessRegion(reg, pass);
+		}
+
+		public void Finish()
+		{
+			OnFinish();
+			Context = null;
+		}
+
+		protected void ProcessWeightmapLayersSurface(Dictionary<int, Layer> layers, Weightmap<float> weightmap, Dimension dim, BlockCoord pos, int pass, float mask)
 		{
 			foreach(var l in layers)
 			{
@@ -160,22 +147,27 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		protected virtual void OnProcessBlock(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected virtual void OnBegin()
 		{
 
 		}
 
-		protected virtual void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected virtual void OnProcessBlock(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 
 		}
 
-		public virtual void ProcessRegion(Dimension dim, Region reg, int rx, int rz, int pass)
+		protected virtual void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 
 		}
 
-		public virtual void OnFinish(World world)
+		protected virtual void OnProcessRegion(Region reg, int pass)
+		{
+
+		}
+
+		protected virtual void OnFinish()
 		{
 
 		}

@@ -190,7 +190,10 @@ namespace WorldForge
 
 			public SuperflatDimensionGenerator(DimensionID dim, params SuperflatLayer[] layers) : base(dim)
 			{
-				this.layers.AddRange(layers);
+				if(dim == DimensionID.Overworld) biome = BiomeID.Plains;
+				else if(dim == DimensionID.Nether) biome = BiomeID.NetherWastes;
+				else if(dim == DimensionID.TheEnd) biome = BiomeID.TheEnd;
+				else biome = BiomeID.Plains;
 			}
 
 			public static SuperflatDimensionGenerator CreateSuperflatOverworldGenerator(BiomeID biome, params SuperflatLayer[] layers)

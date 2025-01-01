@@ -52,7 +52,7 @@ namespace WorldForge.Builders
 					else if(y > height - 3) block = GetBlockForPreset(preset, false);
 					else if(y == height - 3 && Probability(0.5f)) block = GetBlockForPreset(preset, false);
 				}
-                TargetDimension.SetBlock(new BlockCoord(x, y, z), block);
+                TargetDimension.SetBlock(new BlockCoord(x, y, z), block, true);
 			}
 		}
 

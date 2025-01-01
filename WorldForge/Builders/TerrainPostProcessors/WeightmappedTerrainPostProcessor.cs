@@ -15,8 +15,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public WeightmappedTerrainPostProcessor(PostProcessContext context, XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
-			: base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public WeightmappedTerrainPostProcessor(XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			string mapFileName = Path.Combine(rootPath, xml.Attribute("file").Value);
 			foreach(var layer in xml.Elements("layer"))

@@ -85,6 +85,37 @@ namespace WorldForge
 
 		}
 
+		public void PlaceSpawnpoint(int x, int z)
+		{
+			LevelData.spawnpoint = new LevelData.Spawnpoint(x, Overworld.GetHighestBlock(x, z, HeightmapType.AllBlocks), z);
+		}
+
+		public void MakeSurvival(bool forcePlayerGamemode = false)
+		{
+			LevelData.gameTypeAndDifficulty.gameType = Player.GameMode.Survival;
+			LevelData.gameTypeAndDifficulty.allowCommands = false;
+			if(forcePlayerGamemode)
+			{
+				foreach(var player in playerData.Values)
+				{
+					player.player.playerGameType = Player.GameMode.Survival;
+				}
+			}
+		}
+
+		public void MakeCreative(bool forcePlayerGamemode = false)
+		{
+			LevelData.gameTypeAndDifficulty.gameType = Player.GameMode.Creative;
+			LevelData.gameTypeAndDifficulty.allowCommands = true;
+			if(forcePlayerGamemode)
+			{
+				foreach(var player in playerData.Values)
+				{
+					player.player.playerGameType = Player.GameMode.Creative;
+				}
+			}
+		}
+
 		public static void GetWorldInfo(string worldSaveDir, out string worldName, out GameVersion gameVersion, out List<RegionLocation> regions)
 		{
 			NBTFile levelDat = new NBTFile(Path.Combine(worldSaveDir, "level.dat"));

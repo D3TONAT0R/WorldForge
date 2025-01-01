@@ -6,7 +6,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	public class CavesPostProcessor : PostProcessor
+	public class CavesPostProcessor : LayeredPostProcessor
 	{
 
 		public abstract class Carver
@@ -354,21 +354,38 @@ namespace WorldForge.Builders.PostProcessors
 		private Weightmap<float> weightmap;
 		private Dictionary<int, Layer> caveGenLayers = new Dictionary<int, Layer>();
 
-		public CavesPostProcessor(PostProcessContext context, string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(context, rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public CavesPostProcessor(bool useDefaultGenerators)
 		{
-			weightmap = LoadWeightmapAndLayers(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, caveGenLayers, CreateCaveGenLayer);
-			if(weightmap == null)
+			if(useDefaultGenerators)
+			{
+				AddDefaultCaveGenerators();
+			}
+		}
+
+		public CavesPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		{
+			weightmap = LoadWeightmap(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, out var weightmapXml);
+			if(weightmapXml != null)
+			{
+				LoadLayers(weightmapXml.Elements(), CreateCaveGenLayer);
+			}
+			else
 			{
 				Console.WriteLine("Using default settings for cave gen.");
-				//Use default settings
-				var layer = new CaveGenLayer();
-				//Setting XElement to null will result in default values being used
-				layer.carvers.Add(new CaveCarver(null));
-				layer.carvers.Add(new CavernCarver(null));
-				layer.carvers.Add(new SpringCarver(null));
-				layer.carvers.Add(new SpringCarver(null) { isLavaSpring = true, amount = 0.5f });
-				caveGenLayers.Add(-1, layer);
+				AddDefaultCaveGenerators();
 			}
+		}
+
+		private void AddDefaultCaveGenerators()
+		{
+			//Use default settings
+			var layer = new CaveGenLayer();
+			//Setting XElement to null will result in default values being used
+			layer.carvers.Add(new CaveCarver(null));
+			layer.carvers.Add(new CavernCarver(null));
+			layer.carvers.Add(new SpringCarver(null));
+			layer.carvers.Add(new SpringCarver(null) { isLavaSpring = true, amount = 0.5f });
+			caveGenLayers.Add(-1, layer);
 		}
 
 		private Layer CreateCaveGenLayer(XElement elem)
@@ -404,7 +421,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
 		{
-			ProcessSplatmapLayersSurface(caveGenLayers, weightmap, dim, pos, pass, mask);
+			ProcessWeightmapLayersSurface(caveGenLayers, weightmap, dim, pos, pass, mask);
 		}
 	}
 }
