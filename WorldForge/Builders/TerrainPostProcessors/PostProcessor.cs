@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using WorldForge.Coordinates;
 using WorldForge.Regions;
@@ -96,12 +97,6 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public void Begin(PostProcessContext context)
-		{
-			Context = context;
-			OnBegin();
-		}
-
 		public void ProcessBlock(BlockCoord pos, int pass)
 		{
 			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
@@ -123,12 +118,6 @@ namespace WorldForge.Builders.PostProcessors
 		public void ProcessRegion(Region reg, int pass)
 		{
 			OnProcessRegion(reg, pass);
-		}
-
-		public void Finish()
-		{
-			OnFinish();
-			Context = null;
 		}
 
 		protected void ProcessWeightmapLayersSurface(Dictionary<int, Layer> layers, Weightmap<float> weightmap, Dimension dim, BlockCoord pos, int pass, float mask)
@@ -175,6 +164,54 @@ namespace WorldForge.Builders.PostProcessors
 		public virtual void OnCreateWorldFiles(string worldFolder)
 		{
 
+		}
+
+		public void Process(PostProcessContext context)
+		{
+			Context = context;
+			OnBegin();
+			var boundary = context.Boundary;
+			for(int pass = 0; pass < PassCount; pass++)
+			{
+				if(PostProcessorType == PostProcessType.Block || PostProcessorType == PostProcessType.Both)
+				{
+					//Iterate the postprocessors over every block
+					for(int x = boundary.xMin; x <= boundary.xMax; x++)
+					{
+						for(int z = boundary.zMin; z <= boundary.zMax; z++)
+						{
+							for(int y = BlockProcessYMin; y <= BlockProcessYMax; y++)
+							{
+								ProcessBlock(new BlockCoord(x, y, z), pass);
+							}
+						}
+						//UpdateProgressBar(processorIndex, "Decorating terrain", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
+					}
+				}
+
+				if(PostProcessorType == PostProcessType.Surface || PostProcessorType == PostProcessType.Both)
+				{
+					//Iterate the postprocessors over every surface block
+					for(int x = boundary.xMin; x <= boundary.xMax; x++)
+					{
+						for(int z = boundary.zMin; z <= boundary.zMax; z++)
+						{
+							//TODO: remember height so each processor uses the same height
+							ProcessSurface(new BlockCoord(x, context.Dimension.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), z), pass);
+						}
+						//UpdateProgressBar(processorIndex, "Decorating surface", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
+					}
+				}
+
+				//Run every postprocessor once for every region
+				int p = pass;
+				Parallel.ForEach(context.Dimension.regions.Values, reg =>
+				{
+					ProcessRegion(reg, p);
+				});
+			}
+			OnFinish();
+			Context = null;
 		}
 	}
 }

@@ -2,16 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using WorldForge;
-using WorldForge.Builders;
-using WorldForge.Builders.PostProcessors;
-using WorldForge.Coordinates;
 
-namespace TerrainFactory.Modules.MC.PostProcessors
+namespace WorldForge.Builders.PostProcessors
 {
-	public class WorldPostProcessingStack
+    public class WorldPostProcessingStack
 	{
 		public PostProcessContext context;
 
@@ -153,58 +148,11 @@ namespace TerrainFactory.Modules.MC.PostProcessors
 			}
 		}
 
-		public void Process(int xMin, int zMin, int xMax, int zMax)
+		public void Process(PostProcessContext context)
 		{
-			int processorIndex = 0;
 			foreach(var post in stack)
 			{
-				post.Begin(context);
-			}
-			foreach(var post in stack)
-			{
-				for(int pass = 0; pass < post.PassCount; pass++)
-				{
-					if(post.PostProcessorType == PostProcessType.Block || post.PostProcessorType == PostProcessType.Both)
-					{
-						//Iterate the postprocessors over every block
-						for(int x = xMin; x <= xMax; x++)
-						{
-							for(int z = zMin; z <= zMax; z++)
-							{
-								for(int y = post.BlockProcessYMin; y <= post.BlockProcessYMax; y++)
-								{
-									post.ProcessBlock(new BlockCoord(x, y, z), pass);
-								}
-							}
-							//UpdateProgressBar(processorIndex, "Decorating terrain", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
-						}
-					}
-
-					if(post.PostProcessorType == PostProcessType.Surface || post.PostProcessorType == PostProcessType.Both)
-					{
-						//Iterate the postprocessors over every surface block
-						for(int x = xMin; x <= xMax; x++)
-						{
-							for(int z = zMin; z <= zMax; z++)
-							{
-								//TODO: remember height so each processor uses the same height
-								post.ProcessSurface(new BlockCoord(x, context.Dimension.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), z), pass);
-							}
-							//UpdateProgressBar(processorIndex, "Decorating surface", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
-						}
-					}
-
-					//Run every postprocessor once for every region
-					Parallel.ForEach(context.Dimension.regions.Values, reg =>
-					{
-						post.ProcessRegion(reg, pass);
-					});
-				}
-				processorIndex++;
-			}
-			foreach(var post in stack)
-			{
-				post.Finish();
+				post.Process(context);
 			}
 		}
 
