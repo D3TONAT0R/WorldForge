@@ -22,6 +22,7 @@ namespace WorldForge.Builders.PostProcessors
 		private static readonly Dictionary<BiomeID, short> snowThresholds = new Dictionary<BiomeID, short>()
 		{
 			{BiomeIDs.Get("snowy_tundra"), -999},
+			{BiomeIDs.Get("snowy_plains"), -999},
 			{BiomeIDs.Get("ice_spikes"), -999 },
 			{BiomeIDs.Get("snowy_taiga"), -999 },
 			{BiomeIDs.Get("snowy_taiga_hills"), -999 },
@@ -39,8 +40,6 @@ namespace WorldForge.Builders.PostProcessors
 			{BiomeIDs.Get("taiga_hills"), 168 },
 			{BiomeIDs.Get("giant_spruce_taiga"), 168 },
 			{BiomeIDs.Get("giant_spruce_taiga_hills"), 168 },
-			{BiomeIDs.Get("giant_tree_taiga"), 168 },
-			{BiomeIDs.Get("giant_tree_taiga_hills"), 168 },
 			{BiomeIDs.Get("frozen_ocean"), 72 },
 			{BiomeIDs.Get("deep_frozen_ocean"), 72 },
 		};

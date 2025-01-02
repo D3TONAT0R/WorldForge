@@ -34,7 +34,7 @@ namespace WorldForge.Biomes
 			}
 		}
 
-		public static BiomeID Get(string id, bool throwError = false)
+		public static BiomeID Get(string id, bool throwError = true)
 		{
 			foreach(var biome in biomeRegistry)
 			{
