@@ -62,19 +62,19 @@ namespace WorldForge.Builders.PostProcessors
 			snowyMycelium.SetProperty("snowy", true);
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
-			var biome = dim.GetBiome(pos);
+			var biome = dimension.GetBiome(pos);
 			if(biome != null)
 			{
 				if(!topOnly)
 				{
-					FreezeBlock(dim, pos, mask, biome);
+					FreezeBlock(dimension, pos, mask, biome);
 				}
-				int y2 = dim.GetHighestBlock(pos.x, pos.z, HeightmapType.SolidBlocks);
+				int y2 = dimension.GetHighestBlock(pos.x, pos.z, HeightmapType.SolidBlocks);
 				if(topOnly || y2 > pos.y)
 				{
-					FreezeBlock(dim, (pos.x, y2, pos.z), mask, biome);
+					FreezeBlock(dimension, (pos.x, y2, pos.z), mask, biome);
 				}
 			}
 		}

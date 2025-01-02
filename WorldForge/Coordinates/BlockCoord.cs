@@ -54,6 +54,21 @@ namespace WorldForge.Coordinates
 			return new BlockCoord(tuple.Item1, tuple.Item2, tuple.Item3);
 		}
 
+		public BlockCoord Shift(int dx, int dy, int dz)
+		{
+			return new BlockCoord(x + dx, y + dy, z + dz);
+		}
+
+		public BlockCoord Shift(BlockCoord offset)
+		{
+			return new BlockCoord(x + offset.x, y + offset.y, z + offset.z);
+		}
+
+		public BlockCoord ShiftVertical(int dy)
+		{
+			return new BlockCoord(x, y + dy, z);
+		}
+
 		public BlockCoord ChunkToRegionSpace(ChunkCoord localChunk)
 		{
 			if(localChunk.x > 31 || localChunk.z > 31 || localChunk.x < 0 || localChunk.z < 0)

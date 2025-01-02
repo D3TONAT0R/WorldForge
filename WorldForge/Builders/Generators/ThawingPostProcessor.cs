@@ -40,15 +40,15 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 			//Replace snowy biomes with normal biomes
-			var biome = dim.GetBiome(pos.x, pos.z);
+			var biome = dimension.GetBiome(pos.x, pos.z);
 			if(biome != null)
 			{
 				if(biomeDeIcingTable.ContainsKey(biome))
 				{
-					dim.SetBiome(pos.x, pos.z, biomeDeIcingTable[biome]);
+					dimension.SetBiome(pos.x, pos.z, biomeDeIcingTable[biome]);
 				}
 			}
 			else

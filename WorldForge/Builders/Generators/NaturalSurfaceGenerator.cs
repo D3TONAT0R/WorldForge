@@ -26,22 +26,22 @@ namespace WorldForge.Builders.PostProcessors
 			this.waterLevel = waterLevel;
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 			//Place grass on top & 3 layers of dirt below
 			if(pos.y > waterLevel + 1)
 			{
-				dim.SetBlock(pos, grassBlock);
+				dimension.SetBlock(pos, grassBlock);
 				for(int i = 1; i < 4; i++)
 				{
-					dim.SetBlock((pos.x, pos.y - i, pos.z), dirtBlock);
+					dimension.SetBlock((pos.x, pos.y - i, pos.z), dirtBlock);
 				}
 			}
 			else
 			{
 				for(int i = 0; i < 4; i++)
 				{
-					dim.SetBlock((pos.x, pos.y - i, pos.z), gravelBlock);
+					dimension.SetBlock((pos.x, pos.y - i, pos.z), gravelBlock);
 				}
 			}
 			//Fill the terrain with water up to the waterLevel
@@ -50,7 +50,7 @@ namespace WorldForge.Builders.PostProcessors
 				for(int y = pos.y; y <= waterLevel; y++)
 				{
 					var newPos = new BlockCoord(pos.x, y, pos.z);
-					if(dim.IsAirOrNull(newPos)) dim.SetBlock(newPos, waterBlock);
+					if(dimension.IsAirOrNull(newPos)) dimension.SetBlock(newPos, waterBlock);
 				}
 			}
 		}

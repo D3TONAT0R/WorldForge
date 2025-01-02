@@ -160,10 +160,10 @@ namespace WorldForge.Builders.PostProcessors
 			
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord topPos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord topPos, int pass, float mask)
 		{
 			//if (topPos.y < 4) return;
-			ProcessWeightmapLayersSurface(layers, weightmap, dim, topPos, pass, mask);
+			ProcessWeightmapLayersSurface(layers, weightmap, dimension, topPos, pass, mask);
 		}
 	}
 }

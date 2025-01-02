@@ -74,12 +74,12 @@ namespace WorldForge.Builders.PostProcessors
 			return c;
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord topPos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord topPos, int pass, float mask)
 		{
 			byte i = map.GetValue(topPos.x - worldOriginOffsetX, topPos.z - worldOriginOffsetZ);
 			if(i < 255)
 			{
-				layers[i].RunGenerator(dim, topPos);
+				layers[i].RunGenerator(dimension, topPos);
 			}
 		}
 	}

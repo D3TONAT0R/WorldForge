@@ -421,9 +421,9 @@ namespace WorldForge.Builders.PostProcessors
 			return layer;
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
-			ProcessWeightmapLayersSurface(caveGenLayers, weightmap, dim, pos, pass, mask);
+			ProcessWeightmapLayersSurface(caveGenLayers, weightmap, dimension, pos, pass, mask);
 		}
 	}
 }

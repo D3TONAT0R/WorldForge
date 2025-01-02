@@ -28,7 +28,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(xml.Element("waterblock") != null) waterBlock = xml.Element("waterblock").Value;
 		}
 
-		protected override void OnProcessSurface(Dimension dim, BlockCoord pos, int pass, float mask)
+		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 			int start = waterLevel;
 			if(waterSurfaceMap != null)
@@ -38,9 +38,9 @@ namespace WorldForge.Builders.PostProcessors
 			for(int y2 = start; y2 > pos.y; y2--)
 			{
 				BlockCoord pos2 = (pos.x, y2, pos.z);
-				if(dim.IsAirOrNull(pos2))
+				if(dimension.IsAirOrNull(pos2))
 				{
-					dim.SetBlock(pos2, waterBlock);
+					dimension.SetBlock(pos2, waterBlock);
 				}
 			}
 		}
