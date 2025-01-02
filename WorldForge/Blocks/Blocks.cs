@@ -43,10 +43,18 @@ namespace WorldForge
 			"minecraft:podzol"
 		};
 
-		public static readonly BlockID airBlock = BlockList.Find("air");
-		public static readonly BlockID caveAirBlock = BlockList.Find("cave_air");
-		public static readonly BlockID waterBlock = BlockList.Find("water");
-		public static readonly BlockID lavaBlock = BlockList.Find("lava");
+		public static readonly BlockID air = BlockList.Find("air");
+		public static readonly BlockID caveAir = BlockList.Find("cave_air");
+
+		public static readonly BlockID stone = BlockList.Find("stone");
+		public static readonly BlockID bedrock = BlockList.Find("bedrock");
+		public static readonly BlockID grassBlock = BlockList.Find("grass_block");
+		public static readonly BlockID dirt = BlockList.Find("dirt");
+		public static readonly BlockID sand = BlockList.Find("sand");
+		public static readonly BlockID gravel = BlockList.Find("gravel");
+
+		public static readonly BlockID water = BlockList.Find("water");
+		public static readonly BlockID lava = BlockList.Find("lava");
 
 		public static readonly Dictionary<NamespacedID, int> colorMapIndices = new Dictionary<NamespacedID, int>
 		{
@@ -183,13 +191,13 @@ namespace WorldForge
 		public static bool IsAir(BlockID b)
 		{
 			if(b == null) return false;
-			return b == airBlock || b == caveAirBlock;
+			return b == air || b == caveAir;
 		}
 
 		public static bool IsLiquid(BlockID b)
 		{
 			if(b == null) return false;
-			return b == waterBlock || b == lavaBlock;
+			return b == water || b == lava;
 		}
 
 		public static bool IsPlantSustaining(BlockID b)

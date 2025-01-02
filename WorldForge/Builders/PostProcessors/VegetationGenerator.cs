@@ -284,11 +284,6 @@ namespace WorldForge.Builders.PostProcessors
 			return false;
 		}
 
-		private bool Probability(float prob)
-		{
-			return random.NextDouble() <= prob;
-		}
-
 		private bool Check(Dimension dim, BlockCoord pos, BlockID block)
 		{
 			var b = dim.GetBlock(pos);

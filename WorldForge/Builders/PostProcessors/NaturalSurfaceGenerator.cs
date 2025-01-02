@@ -29,15 +29,15 @@ namespace WorldForge.Builders.PostProcessors
 		public override Priority OrderPriority => Priority.BeforeDefault;
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public NaturalSurfaceGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
-		{
-			WaterLevel = int.Parse(xml.Element("waterlevel")?.Value ?? "-1");
-		}
-
 		public NaturalSurfaceGenerator(int waterLevel = -256, SurfaceType surface = SurfaceType.BiomeBased)
 		{
 			WaterLevel = waterLevel;
 			Surface = surface;
+		}
+
+		public NaturalSurfaceGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		{
+			WaterLevel = int.Parse(xml.Element("waterlevel")?.Value ?? "-1");
 		}
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)

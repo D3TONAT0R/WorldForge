@@ -12,11 +12,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public abstract class Carver
 		{
-
-			public BlockState lava = new BlockState(BlockList.Find("lava"));
 			public int lavaHeight = 8;
-
-			private BlockID bedrock = BlockList.Find("bedrock");
 
 			public Carver(XElement elem)
 			{
@@ -65,15 +61,15 @@ namespace WorldForge.Builders.PostProcessors
 				//Can the cave break the surface?
 				if(b.CompareMultiple(Blocks.terrainSurfaceBlocks) && !allowSurfaceBreak) return false;
 				//Ignore bedrock and existing liquids
-				if(b == bedrock || Blocks.IsLiquid(b)) return false;
+				if(b == Blocks.bedrock || Blocks.IsLiquid(b)) return false;
 
 				if(pos.y <= lavaHeight)
 				{
-					dim.SetBlock(pos, lava);
+					dim.SetBlock(pos, Blocks.lava);
 				}
 				else
 				{
-					dim.SetBlock(pos, BlockState.Air);
+					dim.SetBlock(pos, Blocks.air);
 				}
 				return true;
 			}

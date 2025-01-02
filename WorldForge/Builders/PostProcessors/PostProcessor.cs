@@ -213,5 +213,10 @@ namespace WorldForge.Builders.PostProcessors
 			OnFinish();
 			Context = null;
 		}
+
+		protected bool Probability(float prob)
+		{
+			return random.NextDouble() < prob;
+		}
 	}
 }

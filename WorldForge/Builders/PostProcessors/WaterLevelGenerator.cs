@@ -14,6 +14,11 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
+		public WaterLevelGenerator(int level = 62)
+		{
+			waterLevel = level;
+		}
+
 		public WaterLevelGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			worldOriginOffsetX = offsetX;
