@@ -7,6 +7,7 @@ using WorldForge;
 using WorldForge.Biomes;
 using WorldForge.Builders;
 using WorldForge.Coordinates;
+using WorldForge.Structures;
 
 namespace WorldForge.Builders.PostProcessors
 {
@@ -119,7 +120,8 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				if(schematic != null)
 				{
-					return schematic.Build(dim, pos.x, pos.y + 1, pos.z, random);
+					schematic.Build(dim, pos.Above, random);
+					return true;
 				}
 				else
 				{

@@ -6,7 +6,7 @@ using WorldForge.TileEntities;
 
 namespace WorldForge.Structures
 {
-	public class WFStructure
+	public class Schematic
 	{
 		public struct Block : INBTConverter
 		{
@@ -47,17 +47,17 @@ namespace WorldForge.Structures
 		public int trunkMinHeight = 0;
 		public int trunkMaxHeight = 0;
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset)
+		public static Schematic From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset)
 		{
-			var structure = new WFStructure();
+			var structure = new Schematic();
 			structure.paletteData = palette;
 			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
 			return structure;
 		}
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int[,,] trunkIndices, int trunkMinHeight, int trunkMaxHeight)
+		public static Schematic From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int[,,] trunkIndices, int trunkMinHeight, int trunkMaxHeight)
 		{
-			var structure = new WFStructure();
+			var structure = new Schematic();
 			structure.paletteData = palette;
 			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
 			structure.treeTrunk = Parse3DArray(trunkIndices, originOffset, yzxOrder);
@@ -66,9 +66,9 @@ namespace WorldForge.Structures
 			return structure;
 		}
 
-		public static WFStructure From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int trunkIndex, int trunkMinHeight, int trunkMaxHeight)
+		public static Schematic From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset, int trunkIndex, int trunkMinHeight, int trunkMaxHeight)
 		{
-			var structure = new WFStructure();
+			var structure = new Schematic();
 			structure.paletteData = palette;
 			structure.blocks = Parse3DArray(indices, originOffset, yzxOrder);
 			structure.treeTrunk = new Dictionary<BlockCoord, int> { { new BlockCoord(0, 0, 0), trunkIndex } };

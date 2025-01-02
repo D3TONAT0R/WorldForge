@@ -119,23 +119,23 @@ namespace WorldForge.Builders.PostProcessors
 		}
 		};
 
-		private static readonly StructurePalette<WFStructure.Block> oakTreePalette = new StructurePalette<WFStructure.Block>(
-			new WFStructure.Block(new BlockState("oak_log")),
-			new WFStructure.Block(new BlockState("oak_leaves"))
+		private static readonly StructurePalette<Schematic.Block> oakTreePalette = new StructurePalette<Schematic.Block>(
+			new Schematic.Block(new BlockState("oak_log")),
+			new Schematic.Block(new BlockState("oak_leaves"))
 		);
-		private readonly WFStructure oakTree = WFStructure.From3DArray(oakTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
+		private readonly Schematic oakTree = Schematic.From3DArray(oakTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
 
-		private static readonly StructurePalette<WFStructure.Block> birchTreePalette = new StructurePalette<WFStructure.Block>(
-			new WFStructure.Block(new BlockState("birch_log")),
-			new WFStructure.Block(new BlockState("birch_leaves"))
+		private static readonly StructurePalette<Schematic.Block> birchTreePalette = new StructurePalette<Schematic.Block>(
+			new Schematic.Block(new BlockState("birch_log")),
+			new Schematic.Block(new BlockState("birch_leaves"))
 		);
-		private readonly WFStructure birchTree = WFStructure.From3DArray(birchTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, birchTrunkMinHeight, birchTrunkMaxHeight);
+		private readonly Schematic birchTree = Schematic.From3DArray(birchTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, birchTrunkMinHeight, birchTrunkMaxHeight);
 
-		private static readonly StructurePalette<WFStructure.Block> spruceTreePalette = new StructurePalette<WFStructure.Block>(
-			new WFStructure.Block(new BlockState("spruce_log")),
-			new WFStructure.Block(new BlockState("spruce_leaves"))
+		private static readonly StructurePalette<Schematic.Block> spruceTreePalette = new StructurePalette<Schematic.Block>(
+			new Schematic.Block(new BlockState("spruce_log")),
+			new Schematic.Block(new BlockState("spruce_leaves"))
 		);
-		private readonly WFStructure spruceTree = WFStructure.From3DArray(spruceTreePalette, blueprintSpruceTree, true, new BlockCoord(2, 0, 2), 0, spruceTrunkMinHeight, spruceTrunkMaxHeight);
+		private readonly Schematic spruceTree = Schematic.From3DArray(spruceTreePalette, blueprintSpruceTree, true, new BlockCoord(2, 0, 2), 0, spruceTrunkMinHeight, spruceTrunkMaxHeight);
 
 		public GeneratorType FixedGeneratorType { get; set; } = GeneratorType.None;
 
@@ -227,7 +227,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(Probability(probability)) PlaceDeadBush(dim, ground.Above);
 		}
 
-		private bool TrySpawnTree(Dimension dim, BlockCoord ground, WFStructure tree, float amountPerChunk)
+		private bool TrySpawnTree(Dimension dim, BlockCoord ground, Schematic tree, float amountPerChunk)
 		{
 			if(tree == null) return false;
 			if(Probability(amountPerChunk * CHUNK_MULTIPLIER))
@@ -249,7 +249,7 @@ namespace WorldForge.Builders.PostProcessors
 			return false;
 		}
 
-		private bool PlaceTree(Dimension dim, BlockCoord pos, WFStructure tree)
+		private bool PlaceTree(Dimension dim, BlockCoord pos, Schematic tree)
 		{
 			if(!Check(dim, pos.Below, grassBlock, dirtBlock) || !dim.IsAirOrNull(pos.Above)) return false;
 			//if(IsObstructed(region, x, y+1, z, x, y+bareTrunkHeight, z) || IsObstructed(region, x-w, y+bareTrunkHeight, z-w, x+w, y+bareTrunkHeight+treeTopHeight, z+w)) return false;
