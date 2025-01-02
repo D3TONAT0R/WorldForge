@@ -10,12 +10,12 @@ namespace WorldForge.Builders.PostProcessors
 		private bool topOnly = true;
 		private bool biomeCheck = true;
 
-		private BlockState snowLayerBlock;
-		private BlockState iceBlock;
+		private readonly BlockState snowLayerBlock = new BlockState("snow");
+		private readonly BlockState iceBlock = new BlockState("ice");
 
-		private BlockState snowyGrass;
-		private BlockState snowyPodzol;
-		private BlockState snowyMycelium;
+		private readonly BlockState snowyGrass = new BlockState("grass_block", ("snowy", "true"));
+		private readonly BlockState snowyPodzol = new BlockState("podzol", ("snowy", "true"));
+		private readonly BlockState snowyMycelium = new BlockState("mycelium", ("snowy", "true"));
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
@@ -45,21 +45,16 @@ namespace WorldForge.Builders.PostProcessors
 			{BiomeIDs.Get("deep_frozen_ocean"), 72 },
 		};
 
+		public SnowPostProcessor()
+		{
+
+		}
+
 		public SnowPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
 			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
 			xml.TryParseBool("top-only", ref topOnly);
 			xml.TryParseBool("check-biomes", ref biomeCheck);
-
-			snowLayerBlock = new BlockState(BlockList.Find("snow"));
-			iceBlock = new BlockState(BlockList.Find("ice"));
-
-			snowyGrass = new BlockState(BlockList.Find("grass_block"));
-			snowyGrass.SetProperty("snowy", true);
-			snowyPodzol = new BlockState(BlockList.Find("podzol"));
-			snowyPodzol.SetProperty("snowy", true);
-			snowyMycelium = new BlockState(BlockList.Find("mycelium"));
-			snowyMycelium.SetProperty("snowy", true);
 		}
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)

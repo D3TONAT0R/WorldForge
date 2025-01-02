@@ -12,11 +12,11 @@ namespace WorldForge.Builders
 			Gravel
 		}
 
-		private BlockID bedrock = BlockList.Find("bedrock");
-		private BlockID grass = BlockList.Find("grass_block");
-		private BlockID dirt = BlockList.Find("dirt");
-		private BlockID sand = BlockList.Find("sand");
-		private BlockID gravel = BlockList.Find("gravel");
+		private readonly BlockID bedrock = BlockList.Find("bedrock");
+		private readonly BlockID grass = BlockList.Find("grass_block");
+		private readonly BlockID dirt = BlockList.Find("dirt");
+		private readonly BlockID sand = BlockList.Find("sand");
+		private readonly BlockID gravel = BlockList.Find("gravel");
 
 		public SurfacePreset Surface { get; set; }
 

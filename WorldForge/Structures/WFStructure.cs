@@ -86,10 +86,10 @@ namespace WorldForge.Structures
 				{
 					for(int x = 0; x < indices.GetLength(0); x++)
 					{
-						int i = yzxOrder ? indices[y, z, x] : indices[x, y, z];
+						int i = indices[x, y, z];
 						if(i >= 0)
 						{
-							var pos = new BlockCoord(x, y, z) - originOffset;
+							var pos = (yzxOrder ? new BlockCoord(z, x, y) : new BlockCoord(x, y, z)) - originOffset;
 							data[pos] = i;
 						}
 					}

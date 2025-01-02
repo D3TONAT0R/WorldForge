@@ -112,16 +112,16 @@ namespace WorldForge.Builders.PostProcessors
 			{_,1,1,1,_}
 		},{
 			{_,_,_,_,_},
-			{_,_,0,_,_},
-			{_,0,1,0,_},
-			{_,_,0,_,_},
+			{_,_,1,_,_},
+			{_,1,1,1,_},
+			{_,_,1,_,_},
 			{_,_,_,_,_}
 		},{
-			{_,1,1,1,_},
-			{1,1,1,1,1},
-			{1,1,0,1,1},
-			{1,1,1,1,1},
-			{_,1,1,1,_}
+			{_,_,_,_,_},
+			{_,_,_,_,_},
+			{_,_,1,_,_},
+			{_,_,_,_,_},
+			{_,_,_,_,_},
 		},{
 			{_,_,_,_,_},
 			{_,_,1,_,_},
@@ -152,26 +152,25 @@ namespace WorldForge.Builders.PostProcessors
 		public GeneratorType FixedGeneratorType { get; set; } = GeneratorType.None;
 
 		public float GrassDensity { get; set; } = 0.15f;
-		public float GeneralTreesPerChunk { get; set; } = 0.1f;
-		public float ForestTreesPerChunk { get; set; } = 0.7f;
-		public float CactiPerChunk { get; set; } = 0.1f;
+		public float GeneralTreesPerChunk { get; set; } = 0.03f;
+		public float ForestTreesPerChunk { get; set; } = 2.5f;
+		public float CactiPerChunk { get; set; } = 0.25f;
 		public float DeadBushPerChunk { get; set; } = 0.3f;
 
-		private BlockID grassBlock = BlockList.Find("grass_block");
-		private BlockID dirtBlock = BlockList.Find("dirt");
-		private BlockID sandBlock = BlockList.Find("sand");
-		private BlockID grass = BlockList.Find("grass");
-		private BlockID deadBush = BlockList.Find("dead_bush");
-		private BlockID cactus = BlockList.Find("cactus");
+		private readonly BlockID grassBlock = BlockList.Find("grass_block");
+		private readonly BlockID dirtBlock = BlockList.Find("dirt");
+		private readonly BlockID sandBlock = BlockList.Find("sand");
+		private readonly BlockID grass = BlockList.Find("grass");
+		private readonly BlockID deadBush = BlockList.Find("dead_bush");
+		private readonly BlockID cactus = BlockList.Find("cactus");
 
 		public override Priority OrderPriority => Priority.AfterDefault;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public VegetationGenerator(float grassPerBlock = 0.2f, float treesPerChunk = 0.3f)
+		public VegetationGenerator()
 		{
-			GrassDensity = grassPerBlock;
-			GeneralTreesPerChunk = treesPerChunk / 128f;
+
 		}
 
 		public VegetationGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
@@ -182,7 +181,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
-			var gen = FixedGeneratorType == GeneratorType.None ? GetBiomeType(dimension.GetBiome(pos)) : FixedGeneratorType;
+			var gen = FixedGeneratorType == GeneratorType.None ? GetBiomeType(dimension, pos) : FixedGeneratorType;
 			switch(gen)
 			{
 				case GeneratorType.None:
@@ -230,12 +229,12 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		private bool TrySpawnGrass(Dimension dim, BlockCoord ground, float? probability = null)
+		private void TrySpawnGrass(Dimension dim, BlockCoord ground, float? probability = null)
 		{
 			if(Probability(probability ?? GrassDensity)) PlaceGrass(dim, ground.Above, grass);
 		}
 
-		private bool TrySpawnDeadBush(Dimension dim, BlockCoord ground, float probability)
+		private void TrySpawnDeadBush(Dimension dim, BlockCoord ground, float probability)
 		{
 			if(Probability(probability)) PlaceDeadBush(dim, ground.Above);
 		}
@@ -329,8 +328,9 @@ namespace WorldForge.Builders.PostProcessors
 			return true;
 		}
 
-		private GeneratorType GetBiomeType(BiomeID biome)
+		private GeneratorType GetBiomeType(Dimension dim, BlockCoord pos)
 		{
+			var biome = dim.GetBiome(pos) ?? dim.DefaultBiome ?? BiomeID.Plains;
 			switch(biome.id)
 			{
 				case "plains":
