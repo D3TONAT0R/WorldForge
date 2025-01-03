@@ -29,16 +29,15 @@ namespace WorldForge
 			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
 			ItemList.Initialize(GetResourceAsText("items.csv"));
 			BiomeIDs.Initialize(GetResourceAsText("biomes.csv"));
-			Blocks.InitializeColorMap(GetResource("colormap.png"));
 			Initialized = true;
 		}
 
-		private static Stream GetResource(string fileName)
+		public static Stream GetResource(string fileName)
 		{
 			return Assembly.GetExecutingAssembly().GetManifestResourceStream("WorldForge.Resources." + fileName);
 		}
 
-		private static string GetResourceAsText(string fileName)
+		public static string GetResourceAsText(string fileName)
 		{
 			using(Stream stream = GetResource(fileName))
 			{

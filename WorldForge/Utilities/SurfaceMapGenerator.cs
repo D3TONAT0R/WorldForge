@@ -49,7 +49,7 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					image[x - xMin, z - zMin] = Blocks.GetMapColor(block, shade);
+					image[x - xMin, z - zMin] = BlockMapColors.GetColor(block, shade);
 				}
 			}
 			return image;

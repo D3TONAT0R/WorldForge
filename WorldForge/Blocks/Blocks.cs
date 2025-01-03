@@ -1,8 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace WorldForge
 {
@@ -56,52 +52,6 @@ namespace WorldForge
 		public static readonly BlockID water = BlockList.Find("water");
 		public static readonly BlockID lava = BlockList.Find("lava");
 
-		public static readonly Dictionary<NamespacedID, int> colorMapIndices = new Dictionary<NamespacedID, int>
-		{
-			{new NamespacedID("minecraft:grass_block"), 0 },
-			{new NamespacedID("minecraft:dirt"), 1 },
-			{new NamespacedID("minecraft:coarse_dirt"), 1 },
-			{new NamespacedID("minecraft:podzol"), 1 },
-			{new NamespacedID("minecraft:water"), 2 },
-			{new NamespacedID("minecraft:oak_leaves"),3 },
-			{new NamespacedID("minecraft:birch_leaves"), 3 },
-			{new NamespacedID("minecraft:spruce_leaves"), 3 },
-			{new NamespacedID("minecraft:jungle_leaves"),3 },
-			{new NamespacedID("minecraft:acacia_leaves"), 3 },
-			{new NamespacedID("minecraft:dark_oak_leaves"),3 },
-			{new NamespacedID("minecraft:azalea_leaves"),3 },
-			{new NamespacedID("minecraft:mangrove_leaves"),3 },
-			{new NamespacedID("minecraft:cactus"),3 },
-			{new NamespacedID("minecraft:short_grass"),3 },
-			{new NamespacedID("minecraft:tall_grass"),3 },
-			{new NamespacedID("minecraft:dandelion"),3 },
-			{new NamespacedID("minecraft:poppy"),3 },
-			{new NamespacedID("minecraft:stone"),4 },
-			{new NamespacedID("minecraft:diorite"),4 },
-			{new NamespacedID("minecraft:granite"),4 },
-			{new NamespacedID("minecraft:andesite"),4 },
-			{new NamespacedID("minecraft:gravel"),4 },
-			{new NamespacedID("minecraft:oak_log"),5 },
-			{new NamespacedID("minecraft:birch_log"),5 },
-			{new NamespacedID("minecraft:spruce_log"),5 },
-			{new NamespacedID("minecraft:jungle_log"),5 },
-			{new NamespacedID("minecraft:acacia_log"),5 },
-			{new NamespacedID("minecraft:dark_oak_log"),5 },
-			{new NamespacedID("minecraft:snow"),6 },
-			{new NamespacedID("minecraft:snow_block"),6 },
-			{new NamespacedID("minecraft:sand"),7 },
-			{new NamespacedID("minecraft:sandstone"),7 },
-			{new NamespacedID("minecraft:cobblestone"),8 },
-			{new NamespacedID("minecraft:bedrock"),8 },
-			{new NamespacedID("minecraft:obsidian"), 8 },
-			{new NamespacedID("minecraft:lava"),9 },
-			{new NamespacedID("minecraft:magma_block"),9 },
-			{new NamespacedID("minecraft:ice"),10 },
-			{new NamespacedID("minecraft:packed_ice"),10 },
-			{new NamespacedID("minecraft:blue_ice"),10 },
-			{new NamespacedID("minecraft:frosted_ice"),10 }
-		};
-
 		public static readonly string[] commonColors = new string[]
 		{
 			"white",
@@ -121,13 +71,6 @@ namespace WorldForge
 			"magenta",
 			"purple"
 		};
-
-		internal static Color[,] colormap;
-
-		public static string GetRandomColor(Random r)
-		{
-			return commonColors[r.Next(commonColors.Length)];
-		}
 
 		public static bool IsBlockForMap(BlockID b, HeightmapType type)
 		{
@@ -155,36 +98,6 @@ namespace WorldForge
 			else
 			{
 				return false;
-			}
-		}
-
-		public static Color GetMapColor(BlockID block, int shade)
-		{
-			if(block != null)
-			{
-				if(!colorMapIndices.TryGetValue(block.ID, out int index))
-				{
-					index = 15;
-				}
-				shade = 1 - shade;
-				return colormap[index, shade];
-			}
-			else
-			{
-				return Color.FromRgba(0, 0, 0, 0);
-			}
-		}
-
-		public static void InitializeColorMap(Stream colorBitmapStream)
-		{
-			var image = Image.Load<Rgba32>(colorBitmapStream);
-			colormap = new Color[image.Width, 3];
-			for(int x = 0; x < image.Width; x++)
-			{
-				for(int y = 0; y < 3; y++)
-				{
-					colormap[x, y] = image[x, y];
-				}
 			}
 		}
 
