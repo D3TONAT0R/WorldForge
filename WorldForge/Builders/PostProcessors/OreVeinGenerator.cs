@@ -118,9 +118,9 @@ namespace WorldForge.Builders.PostProcessors
 
 		private BlockState TryGetDeepslateVariant(BlockState regular)
 		{
-			if(regular.block.IsVanillaBlock)
+			if(regular.Block.IsVanillaBlock)
 			{
-				switch(regular.block.ID.id)
+				switch(regular.Block.ID.id)
 				{
 					case "coal_ore":
 					case "iron_ore":
@@ -130,7 +130,7 @@ namespace WorldForge.Builders.PostProcessors
 					case "lapis_ore":
 					case "redstone_ore":
 					case "emerald_ore":
-						return new BlockState("deepslate_" + regular.block.ID.id);
+						return new BlockState("deepslate_" + regular.Block.ID.id);
 					default: return null;
 				}
 			}

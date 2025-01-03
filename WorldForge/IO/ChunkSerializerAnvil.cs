@@ -255,7 +255,7 @@ namespace WorldForge.IO
 			foreach(var t in c.PostProcessTicks)
 			{
 				NBTCompound tick = new NBTCompound();
-				var numID = c.GetBlockAt(t).block.numericID;
+				var numID = c.GetBlockAt(t).Block.numericID;
 				tick.Add("i", numID.HasValue ? (byte)numID.Value.id : 0);
 				tick.Add("p", 0);
 				tick.Add("t", 0);

@@ -64,7 +64,7 @@ namespace WorldForge.Chunks
 		{
 			for (short i = 0; i < palette.Count; i++)
 			{
-				if (palette[i].Compare(state, true)) return (ushort)i;
+				if (palette[i].Compare(state)) return (ushort)i;
 			}
 			return null;
 		}

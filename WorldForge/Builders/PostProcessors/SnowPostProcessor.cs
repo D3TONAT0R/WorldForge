@@ -107,15 +107,15 @@ namespace WorldForge.Builders.PostProcessors
 				if(block.IsLiquid || block.CompareMultiple("minecraft:snow", "minecraft:ice")) return;
 				dim.SetBlock(pos.Above, snowLayerBlock);
 				//Add "snowy" tag on blocks that support it.
-				if(block == snowyGrass.block)
+				if(block == snowyGrass.Block)
 				{
 					dim.SetBlock(pos, snowyGrass);
 				}
-				else if(block == snowyPodzol.block)
+				else if(block == snowyPodzol.Block)
 				{
 					dim.SetBlock(pos, snowyPodzol);
 				}
-				else if(block == snowyMycelium.block)
+				else if(block == snowyMycelium.Block)
 				{
 					dim.SetBlock(pos, snowyMycelium);
 				}

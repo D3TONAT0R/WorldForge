@@ -293,7 +293,7 @@ namespace WorldForge.Chunks
 			while (y >= LowestSection * 16)
 			{
 				var blockState = GetBlockAt((x.Mod(16), y, z.Mod(16)));
-				if (blockState != null && Blocks.IsBlockForMap(blockState.block, type)) return y;
+				if (blockState != null && Blocks.IsBlockForMap(blockState.Block, type)) return y;
 				y--;
 			}
 			return short.MinValue;

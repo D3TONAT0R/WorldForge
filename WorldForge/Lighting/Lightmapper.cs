@@ -143,7 +143,7 @@ namespace WorldForge.Lighting
 			}
 			else
 			{
-				return GetOcclusionLevel(c.GetBlockAt(pos).block);
+				return GetOcclusionLevel(c.GetBlockAt(pos).Block);
 			}
 		}
 

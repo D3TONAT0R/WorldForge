@@ -111,7 +111,7 @@ namespace WorldForge.Regions
 			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
-				return chunk.GetBlockAt(pos.LocalChunkCoords)?.block ?? BlockList.Find("minecraft:air");
+				return chunk.GetBlockAt(pos.LocalChunkCoords)?.Block ?? BlockList.Find("minecraft:air");
 			}
 			else
 			{

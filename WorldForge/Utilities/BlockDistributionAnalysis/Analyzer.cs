@@ -29,7 +29,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 					{
 						if(b != null)
 						{
-							analysisData.IncreaseCounter(b.block, (short)pos.y);
+							analysisData.IncreaseCounter(b.Block, (short)pos.y);
 						}
 					});
 					analysisData.chunkCounter++;

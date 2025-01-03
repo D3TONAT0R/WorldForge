@@ -28,38 +28,51 @@ namespace WorldForge
 		}
 		private static BlockState unknown;
 
-		public BlockID block;
+		public BlockID Block { get; private set; }
+
 		private NBTCompound properties;
+
+		public int Hash { get; private set; }
 
 		public BlockState() { }
 
-		public BlockState(BlockID blockType)
+		public BlockState(BlockID block)
 		{
-			if(blockType == null)
+			if(block == null)
 			{
 				throw new NullReferenceException("Attempted to create a BlockState with a null BlockID.");
 			}
-			block = blockType;
+			Block = block;
 			AddDefaultBlockProperties();
+			InitializeHash();
 		}
 
-		public BlockState(string blockType, params (string, string)[] properties) : this(BlockList.Find(blockType))
+		public BlockState(string id, params (string, string)[] properties) : this(BlockList.Find(id))
 		{
 			foreach(var prop in properties)
 			{
 				SetProperty(prop.Item1, prop.Item2);
 			}
+			InitializeHash();
 		}
 
 		public BlockState(NBTCompound paletteNBT) : this(BlockList.Find(paletteNBT.Get<string>("Name")))
 		{
 			paletteNBT.TryGet("Properties", out properties);
+			InitializeHash();
 		}
 
 		public BlockState(BlockState original)
 		{
-			block = original.block;
+			Block = original.Block;
 			properties = original.properties?.Clone();
+			InitializeHash();
+		}
+
+		public BlockState(BlockID block, NBTCompound properties) : this(block)
+		{
+			this.properties = properties.Clone();
+			InitializeHash();
 		}
 
 		public bool HasProperty(string key)
@@ -88,6 +101,7 @@ namespace WorldForge
 		{
 			if(properties == null) properties = new NBTCompound();
 			properties.Set(key, value);
+			RecalculateHash();
 		}
 
 		public void SetProperty(string key, int value)
@@ -103,13 +117,18 @@ namespace WorldForge
 		public bool RemoveProperty(string key)
 		{
 			if(properties == null) return false;
-			return properties.Remove(key);
+			if(properties.Remove(key))
+			{
+				RecalculateHash();
+				return true;
+			}
+			return false;
 		}
 
 		void AddDefaultBlockProperties()
 		{
-			if(block == null) return;
-			switch(block.ID.id)
+			if(Block == null) return;
+			switch(Block.ID.id)
 			{
 				case "oak_leaves":
 				case "spruce_leaves":
@@ -125,16 +144,13 @@ namespace WorldForge
 
 		public bool Compare(BlockState other, bool compareProperties = true)
 		{
-			if(compareProperties)
-			{
-				if(!NBTCompound.AreEqual(properties, other.properties)) return false;
-			}
-			return block == other.block;
+			if(compareProperties) return Hash == other.Hash;
+			return Block == other.Block;
 		}
 
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder(block?.ID.FullID);
+			StringBuilder sb = new StringBuilder(Block?.ID.FullID);
 			if(properties.contents.Count > 0)
 			{
 				sb.Append("[");
@@ -153,7 +169,7 @@ namespace WorldForge
 		public object ToNBT(GameVersion version)
 		{
 			var nbt = new NBTCompound();
-			nbt.Add("Name", block.ID.FullID);
+			nbt.Add("Name", Block.ID.FullID);
 			if(!NBTCompound.IsNullOrEmpty(properties))
 			{
 				nbt.Add("Properties", properties);
@@ -164,8 +180,9 @@ namespace WorldForge
 		public void FromNBT(object nbtData)
 		{
 			var comp = (NBTCompound)nbtData;
-			block = BlockList.Find(comp.Get<string>("Name"));
+			Block = BlockList.Find(comp.Get<string>("Name"));
 			comp.TryGet("Properties", out properties);
+			RecalculateHash();
 		}
 
 		public static void ResolveBlockState(GameVersion version, ref BlockState state)
@@ -180,18 +197,18 @@ namespace WorldForge
 			{
 				throw new Exception($"BlockState resolution loop detected. Block: {state}");
 			}
-			if(state.block == null)
+			if(state.Block == null)
 			{
 				state = Air;
 			}
 			else
 			{
-				if(version < state.block.AddedInVersion)
+				if(version < state.Block.AddedInVersion)
 				{
-					if(state.block.substitute != null)
+					if(state.Block.substitute != null)
 					{
 						state = new BlockState(state);
-						state.block = (BlockID)state.block.substitute;
+						state = new BlockState((BlockID)state.Block.substitute, state.properties);
 						ResolveBlockState(version, ref state, iteration + 1);
 					}
 					else
@@ -200,23 +217,23 @@ namespace WorldForge
 					}
 				}
 			}
-			if(BlockList.TryGetPreviousID(state.block, version, out var newID))
+			if(BlockList.TryGetPreviousID(state.Block, version, out var newID))
 			{
-				state.block = newID;
+				state = new BlockState(newID, state.properties);
 			}
 		}
 
 		public NumericID? ToNumericID(GameVersion version)
 		{
-			if(block == null) return new NumericID(0, 0);
-			if(!block.ID.HasCustomNamespace)
+			if(Block == null) return new NumericID(0, 0);
+			if(!Block.ID.HasCustomNamespace)
 			{
-				var id = block.ID.id;
+				var id = Block.ID.id;
 				if(id.EndsWith("_stairs"))
 				{
-					if(block.numericID.HasValue)
+					if(Block.numericID.HasValue)
 					{
-						return new NumericID(block.numericID.Value.id, GetFacingMetaStairs(this));
+						return new NumericID(Block.numericID.Value.id, GetFacingMetaStairs(this));
 					}
 					return null;
 				}
@@ -233,23 +250,23 @@ namespace WorldForge
 							case "east": meta = 5; break;
 						}
 					}
-					return new NumericID(block.numericID.Value.id, meta);
+					return new NumericID(Block.numericID.Value.id, meta);
 				}
 				else if(id.EndsWith("_sign"))
 				{
 					byte meta = 0;
 					if(TryGetProperty("rotation", out var r)) meta = byte.Parse(r);
-					if(block.numericID.HasValue)
+					if(Block.numericID.HasValue)
 					{
-						return new NumericID(block.numericID.Value.id, meta);
+						return new NumericID(Block.numericID.Value.id, meta);
 					}
 					return null;
 				}
 				else if(id.EndsWith("_slab"))
 				{
 					bool doubleSlab = GetProperty("double") == "true";
-					if(!block.numericID.HasValue) return null;
-					var numId = block.numericID.Value;
+					if(!Block.numericID.HasValue) return null;
+					var numId = Block.numericID.Value;
 					if(doubleSlab)
 					{
 						if(numId.id == 44) numId.id = 43;
@@ -260,8 +277,8 @@ namespace WorldForge
 				{
 					case "torch":
 					case "wall_torch":
-						if(!block.numericID.HasValue) return null;
-						return new NumericID(block.numericID.Value.id, GetFacingMetaWallTorch(this));
+						if(!Block.numericID.HasValue) return null;
+						return new NumericID(Block.numericID.Value.id, GetFacingMetaWallTorch(this));
 					case "redstone_torch":
 					case "redstone_wall_torch":
 						short blockId = (short)(GetProperty("lit") == "true" ? 76 : 75);
@@ -274,7 +291,7 @@ namespace WorldForge
 						return new NumericID(54, meta);
 				}
 			}
-            return block.numericID;
+            return Block.numericID;
         }
 
 		public static BlockState FromNumericID(NumericID numericID)
@@ -414,5 +431,26 @@ namespace WorldForge
 				default: return 0;
 			}
 		}
+
+		private void InitializeHash()
+		{
+			if(Hash == default) RecalculateHash();
+		}
+
+		private void RecalculateHash()
+		{
+			int h = Block.GetHashCode();
+			if(properties != null)
+			{
+				foreach(var property in properties)
+				{
+					h += 17 * property.Key.GetHashCode();
+					h += 31 * property.Value.GetHashCode();
+				}
+			}
+			Hash = h;
+		}
+
+		public override int GetHashCode() => Hash;
 	}
 }

@@ -72,9 +72,9 @@ namespace WorldForge.Builders.PostProcessors
 			if(block.HasProperty("snowy"))
 			{
 				//Replace block with itself to get rid of the "snowy" property
-				dim.SetBlock(pos, block.block);
+				dim.SetBlock(pos, block.Block);
 			}
-			else if(blockReplacementTable.TryGetValue(block.block, out var replacement))
+			else if(blockReplacementTable.TryGetValue(block.Block, out var replacement))
 			{
 				dim.SetBlock(pos, replacement);
 			}
