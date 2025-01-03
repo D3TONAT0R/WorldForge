@@ -91,6 +91,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
+		public override bool Multithreading => false;
+
 		public OreGenerator(bool useVanillaOreGenerators)
 		{
 			if(useVanillaOreGenerators)
@@ -104,7 +106,6 @@ namespace WorldForge.Builders.PostProcessors
 
 		public OreGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
 		{
-			random = new Random();
 			rarityMul = float.Parse(xml.Element("multiplier")?.Value ?? "1");
 			var map = xml.Element("map");
 			weightmap = LoadWeightmap(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, out var weightXml);

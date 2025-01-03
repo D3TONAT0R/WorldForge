@@ -95,7 +95,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(block.IsWater)
 			{
 				//100% ice coverage above mask values of 0.25f
-				if(mask >= 1 || random.NextDouble() <= mask * 4f)
+				if(mask >= 1 || random.Value.NextDouble() <= mask * 4f)
 				{
 					dim.SetBlock(pos, iceBlock);
 				}

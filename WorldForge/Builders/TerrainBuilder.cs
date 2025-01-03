@@ -33,7 +33,7 @@ namespace WorldForge.Builders
 		{
 			if(CreateNewRegions && !dim.TryGetRegionAtBlock(x, z, out _))
 			{
-				dim.AddRegion(x.Mod(512), z.Mod(512));
+				dim.CreateRegionIfMissing(x.Mod(512), z.Mod(512));
 			}
 			for(int y = 0; y <= height; y++)
 			{

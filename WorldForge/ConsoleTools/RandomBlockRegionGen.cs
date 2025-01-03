@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 using WorldForge.Regions;
@@ -20,7 +21,7 @@ namespace WorldForge.ConsoleTools
 			string savepath = GetFilePath(true);
 			WorldForgeConsole.WriteLine("Starting...");
 			region = Region.CreateNew(new RegionLocation(0, 0), null);
-			FillWithRandomBlocks();
+			FillWithRandomBlocks(GameVersion.DefaultVersion);
 			WorldForgeConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
 			RegionSerializer.WriteRegionToStream(region, stream, GameVersion.DefaultVersion);
@@ -30,8 +31,9 @@ namespace WorldForge.ConsoleTools
 
 		int size = 1;
 
-		private void FillWithRandomBlocks()
+		private void FillWithRandomBlocks(GameVersion maxVersion)
 		{
+			var availableBlocks = BlockList.allBlocks.Values.Where(b => b.AddedInVersion <= maxVersion).ToArray();
 			Random random = new Random();
 			for(int z = 0; z < 512; z += size)
 			{
@@ -39,7 +41,7 @@ namespace WorldForge.ConsoleTools
 				{
 					for(int y = 0; y < size * 4; y += size)
 					{
-						string block = BlockList.blocks[random.Next(0, BlockList.blocks.Length)];
+						var block = availableBlocks[random.Next(0, availableBlocks.Length)];
 						for(int i = 0; i < size; i++)
 						{
 							for(int j = 0; j < size; j++)

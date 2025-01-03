@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using WorldForge.Coordinates;
@@ -30,10 +32,11 @@ namespace WorldForge.Builders.PostProcessors
 
 	public abstract class PostProcessor
 	{
-
-		protected static Random random = new Random();
+		protected static ThreadLocal<Random> random = new ThreadLocal<Random>(() => new Random());
 
 		public virtual Priority OrderPriority => Priority.Default;
+
+		public virtual bool Multithreading => true;
 
 		public abstract PostProcessType PostProcessorType { get; }
 
@@ -131,7 +134,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 				if(layerMask > 0.001f)
 				{
-					l.Value.ProcessBlockColumn(dim, random, pos, layerMask);
+					l.Value.ProcessBlockColumn(dim, random.Value, pos, layerMask);
 				}
 			}
 		}
@@ -171,41 +174,41 @@ namespace WorldForge.Builders.PostProcessors
 			Context = context;
 			OnBegin();
 			var boundary = context.Boundary;
+			var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Multithreading ? -1 : 1 };
 			for(int pass = 0; pass < PassCount; pass++)
 			{
 				if(PostProcessorType == PostProcessType.Block || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every block
-					for(int x = boundary.xMin; x <= boundary.xMax; x++)
+					Parallel.For(boundary.zMin, boundary.zMax + 1, parallelOptions, z =>
 					{
-						for(int z = boundary.zMin; z <= boundary.zMax; z++)
+						for(int x = boundary.xMin; x <= boundary.xMax; x++)
 						{
 							for(int y = BlockProcessYMin; y <= BlockProcessYMax; y++)
 							{
 								ProcessBlock(new BlockCoord(x, y, z), pass);
 							}
 						}
-						//UpdateProgressBar(processorIndex, "Decorating terrain", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
-					}
+					});
 				}
 
 				if(PostProcessorType == PostProcessType.Surface || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every surface block
-					for(int x = boundary.xMin; x <= boundary.xMax; x++)
+					Parallel.For(boundary.zMin, boundary.zMax + 1, parallelOptions, z =>
 					{
-						for(int z = boundary.zMin; z <= boundary.zMax; z++)
+						for(int x = boundary.xMin; x <= boundary.xMax; x++)
 						{
 							//TODO: remember height so each processor uses the same height
 							ProcessSurface(new BlockCoord(x, context.Dimension.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), z), pass);
 						}
 						//UpdateProgressBar(processorIndex, "Decorating surface", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
-					}
+					});
 				}
 
 				//Run every postprocessor once for every region
 				int p = pass;
-				Parallel.ForEach(context.Dimension.regions.Values, reg =>
+				Parallel.ForEach(context.Dimension.regions.Values, parallelOptions, reg =>
 				{
 					ProcessRegion(reg, p);
 				});
@@ -216,7 +219,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected bool Probability(float prob)
 		{
-			return random.NextDouble() < prob;
+			return random.Value.NextDouble() < prob;
 		}
 	}
 }

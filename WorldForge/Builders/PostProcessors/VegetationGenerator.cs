@@ -141,7 +141,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public float GrassDensity { get; set; } = 0.15f;
 		public float GeneralTreesPerChunk { get; set; } = 0.03f;
-		public float ForestTreesPerChunk { get; set; } = 2.5f;
+		public float ForestTreesPerChunk { get; set; } = 4f;
 		public float CactiPerChunk { get; set; } = 0.25f;
 		public float DeadBushPerChunk { get; set; } = 0.3f;
 
@@ -254,7 +254,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(!Check(dim, pos.Below, grassBlock, dirtBlock) || !dim.IsAirOrNull(pos.Above)) return false;
 			//if(IsObstructed(region, x, y+1, z, x, y+bareTrunkHeight, z) || IsObstructed(region, x-w, y+bareTrunkHeight, z-w, x+w, y+bareTrunkHeight+treeTopHeight, z+w)) return false;
 			dim.SetBlock(pos.Below, "minecraft:dirt");
-			tree.Build(dim, pos, random);
+			tree.Build(dim, pos, random.Value);
 			return true;
 		}
 
@@ -274,7 +274,7 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			if(Check(dim, pos.Below, sandBlock) && dim.IsAirOrNull(pos.Above))
 			{
-				int height = random.Next(1, 4);
+				int height = random.Value.Next(1, 4);
 				for(int y = 0; y < height; y++)
 				{
 					dim.SetBlock(pos.ShiftVertical(y), cactus);

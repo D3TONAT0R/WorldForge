@@ -76,12 +76,12 @@ namespace WorldForge.Builders.PostProcessors
 
 			protected float RandomRange(float min, float max)
 			{
-				return min + (float)random.NextDouble() * (max - min);
+				return min + (float)random.Value.NextDouble() * (max - min);
 			}
 
 			protected bool Probability(double prob)
 			{
-				return random.NextDouble() <= prob;
+				return random.Value.NextDouble() <= prob;
 			}
 		}
 

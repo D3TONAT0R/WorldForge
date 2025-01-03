@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
-using WorldForge.Builders;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
 using WorldForge.IO;
@@ -28,7 +28,7 @@ namespace WorldForge
 
 		private BiomeID defaultBiome;
 
-		public Dictionary<RegionLocation, Region> regions = new Dictionary<RegionLocation, Region>();
+		public ConcurrentDictionary<RegionLocation, Region> regions = new ConcurrentDictionary<RegionLocation, Region>();
 
 		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
@@ -83,7 +83,7 @@ namespace WorldForge
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
-			dim.regions = new Dictionary<RegionLocation, Region>();
+			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
 			bool isAlphaFormat = world.GameVersion < GameVersion.Beta_1(3);
 			//TODO: how to load alpha chunks?
 			var dataRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
@@ -118,7 +118,7 @@ namespace WorldForge
 					if(!dim.TryGetRegionAtBlock(regionPos.x, regionPos.z, out var region))
 					{
 						region = Region.CreateNew(regionPos, dim);
-						dim.regions.Add(regionPos, region);
+						dim.AddRegion(region);
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
@@ -142,7 +142,7 @@ namespace WorldForge
 					try
 					{
 						var region = RegionDeserializer.PreloadRegion(f, dim, gameVersion);
-						dim.regions.Add(region.regionPos, region);
+						dim.AddRegion(region);
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
@@ -181,7 +181,7 @@ namespace WorldForge
 				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
 					var loc = new RegionLocation(x, z);
-					regions.Add(loc, Region.CreateNew(loc, this));
+					AddRegion(Region.CreateNew(loc, this));
 				}
 			}
 		}
@@ -210,6 +210,14 @@ namespace WorldForge
 		public bool TryGetRegionAtBlock(int x, int z, out Region region)
 		{
 			return regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out region);
+		}
+
+		public void AddRegion(Region reg)
+		{
+			if(!regions.TryAdd(reg.regionPos, reg))
+			{
+				throw new ArgumentException("Region already exists in dimension.");
+			}
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
@@ -321,13 +329,13 @@ namespace WorldForge
 			}*/
 		}
 
-		public bool AddRegion(int rx, int rz)
+		public bool CreateRegionIfMissing(int rx, int rz)
 		{
 			var rloc = new RegionLocation(rx, rz);
 			if(!regions.ContainsKey(rloc))
 			{
 				var r = Region.CreateNew(rloc, this);
-				regions.Add(rloc, r);
+				AddRegion(r);
 				return true;
 			}
 			else

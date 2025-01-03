@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace WorldForge.Coordinates
 {
-	public struct RegionLocation
+	public struct RegionLocation : IEquatable<RegionLocation>
 	{
 		public int x;
 		public int z;
@@ -45,6 +46,27 @@ namespace WorldForge.Coordinates
 		public override string ToString()
 		{
 			return $"({x},{z})";
+		}
+
+		public bool Equals(RegionLocation other)
+		{
+			return x == other.x && z == other.z;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is RegionLocation other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hash = 17;
+				hash = hash * 31 + x.GetHashCode();
+				hash = hash * 31 + z.GetHashCode();
+				return hash;
+			}
 		}
 	}
 }
