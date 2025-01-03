@@ -23,7 +23,7 @@ namespace WorldForge.ConsoleTools
 			int zMax = int.Parse(Console.ReadLine());
 			World w = World.Load(path);
 			string mapPath = Path.Combine(path, "surface_map.png");
-			SurfaceMapGenerator.GenerateSurfaceMap(w.Overworld, xMin, zMin, xMax - 1, zMax - 1, HeightmapType.SolidBlocks, true).SaveAsPng(mapPath);
+			SurfaceMapGenerator.GenerateSurfaceMap(w.Overworld, new Boundary(xMin, zMin, xMax, zMax), HeightmapType.SolidBlocks, true).SaveAsPng(mapPath);
 			Console.WriteLine("Map written to " + mapPath);
 		}
 	}

@@ -7,18 +7,18 @@ namespace WorldForge
 {
 	public static class SurfaceMapGenerator
 	{
-		public static Image<Rgba32> GenerateHeightMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType)
+		public static Image<Rgba32> GenerateHeightMap(Dimension dim, Boundary boundary, HeightmapType surfaceType)
 		{
-			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType, true);
+			var heightmap = dim.GetHeightmap(boundary, surfaceType, true);
 			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1));
-			for(int z = zMin; z < zMax; z++)
+			for(int z = boundary.zMin; z < boundary.zMax; z++)
 			{
-				for(int x = xMin; x < xMax; x++)
+				for(int x = boundary.xMin; x < boundary.xMax; x++)
 				{
-					int y = heightmap[x - xMin, z - zMin];
+					int y = heightmap[x - boundary.xMin, z - boundary.zMin];
 					if(y < 0) continue;
 					byte brt = (byte)Math.Max(Math.Min(y, 255), 0);
-					image[x - xMin, z - zMin] = new Rgba32(brt, brt, brt);
+					image[x - boundary.xMin, z - boundary.zMin] = new Rgba32(brt, brt, brt);
 				}
 			}
 			return image;
@@ -27,29 +27,29 @@ namespace WorldForge
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public static Image<Rgba32> GenerateSurfaceMap(Dimension dim, int xMin, int zMin, int xMax, int zMax, HeightmapType surfaceType, bool shading)
+		public static Image<Rgba32> GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
 		{
 			//TODO: beta regions are not loaded
-			var heightmap = dim.GetHeightmap(xMin, zMin, xMax, zMax, surfaceType);
+			var heightmap = dim.GetHeightmap(boundary, surfaceType);
 			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1), new Rgba32(0, 0, 0, 0));
-			for(int z = zMin; z <= zMax; z++)
+			for(int z = boundary.zMin; z < boundary.zMax; z++)
 			{
-				for(int x = xMin; x <= xMax; x++)
+				for(int x = boundary.xMin; x < boundary.xMax; x++)
 				{
-					int y = heightmap[x - xMin, z - zMin];
+					int y = heightmap[x - boundary.xMin, z - boundary.zMin];
 					if(y < 0) continue;
 					var block = dim.GetBlock(new BlockCoord(x, y, z));
 					int shade = 0;
 					if(block != null && shading)
 					{
-						shade = GetShade(dim, xMin, zMin, z, block, x, y, heightmap);
+						shade = GetShade(dim, boundary.xMin, boundary.zMin, z, block, x, y, heightmap);
 					}
 
 					//Check for snow above the block
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					image[x - xMin, z - zMin] = BlockMapColors.GetColor(block, shade);
+					image[x - boundary.xMin, z - boundary.zMin] = BlockMapColors.GetColor(block, shade);
 				}
 			}
 			return image;

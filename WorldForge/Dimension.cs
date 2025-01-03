@@ -436,13 +436,13 @@ namespace WorldForge
 		/// <summary>
 		/// Generates a Heightmap from the specified area (With Z starting from top)
 		/// </summary>
-		public short[,] GetHeightmap(int xMin, int zMin, int xMax, int zMax, HeightmapType type, bool forceManualCalculation = false)
+		public short[,] GetHeightmap(Boundary boundary, HeightmapType type, bool forceManualCalculation = false)
 		{
-			short[,] heightmap = new short[xMax - xMin + 1, zMax - zMin + 1];
+			short[,] heightmap = new short[boundary.LengthX, boundary.LengthZ];
 			Dictionary<ChunkCoord, short[,]> chunkHeightmaps = new Dictionary<ChunkCoord, short[,]>();
-			for(int z = zMin; z <= zMax; z++)
+			for(int z = boundary.zMin; z < boundary.zMax; z++)
 			{
-				for(int x = xMin; x <= xMax; x++)
+				for(int x = boundary.xMin; x < boundary.xMax; x++)
 				{
 					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
 					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
@@ -460,7 +460,7 @@ namespace WorldForge
 					{
 						height = GetHighestBlock(x, z, type);
 					}
-					heightmap[x - xMin, z - zMin] = height;
+					heightmap[x - boundary.xMin, z - boundary.zMin] = height;
 				}
 			}
 			return heightmap;
