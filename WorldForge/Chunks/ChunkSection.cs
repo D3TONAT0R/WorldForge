@@ -76,7 +76,7 @@ namespace WorldForge.Chunks
 
 		private ushort AddBlockToPalette(BlockState block)
 		{
-			//if (block == null) throw new NullReferenceException("Attempted to add a null BlockState to the palette.");
+			if (block == null) throw new NullReferenceException("Attempted to add a null BlockState to the palette.");
 			palette.Add(block);
 			return (ushort)(palette.Count - 1);
 		}

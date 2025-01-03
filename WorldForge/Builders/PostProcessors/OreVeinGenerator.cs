@@ -9,7 +9,7 @@ namespace WorldForge.Builders.PostProcessors
 	{
 
 		public BlockState block;
-		public BlockState? deepslateBlockVariant;
+		public BlockState deepslateBlockVariant;
 		public int veinSizeMax = 10;
 		public float spawnsPerColumn = 4 / 256f;
 		public int heightMin = 1;
@@ -83,7 +83,7 @@ namespace WorldForge.Builders.PostProcessors
 						}
 						else if(deepslateBlockVariant != null && dim.GetBlock(pos) == deepslate)
 						{
-							dim.SetBlock(pos, deepslateBlockVariant.Value);
+							dim.SetBlock(pos, deepslateBlockVariant);
 						}
 					}
 				}
@@ -116,7 +116,7 @@ namespace WorldForge.Builders.PostProcessors
 			return random.NextDouble() <= prob;
 		}
 
-		private BlockState? TryGetDeepslateVariant(BlockState regular)
+		private BlockState TryGetDeepslateVariant(BlockState regular)
 		{
 			if(regular.Block.IsVanillaBlock)
 			{

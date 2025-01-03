@@ -38,7 +38,6 @@ namespace WorldForge.IO
 			foreach(var b in section.palette)
 			{
 				var b1 = b;
-				//TODO: not sure if resolving is needed here
 				BlockState.ResolveBlockState(TargetVersion, ref b1);
 				paletteList.Add(b1.ToNBT(TargetVersion));
 			}

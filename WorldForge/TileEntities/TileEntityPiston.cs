@@ -17,7 +17,7 @@ namespace WorldForge.TileEntities
 		}
 
 		[NBT("blockState")]
-		public BlockState? blockState = null;
+		public BlockState blockState = null;
 		[NBT("extending")]
 		public bool extending = false;
 		[NBT("facing")]

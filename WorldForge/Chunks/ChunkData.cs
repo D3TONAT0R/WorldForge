@@ -145,7 +145,7 @@ namespace WorldForge.Chunks
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
-		public BlockState? GetBlockAt(BlockCoord pos)
+		public BlockState GetBlockAt(BlockCoord pos)
 		{
 			if (!HasTerrain) return null;
 			if(!IsLoaded) Load();
@@ -293,7 +293,7 @@ namespace WorldForge.Chunks
 			while (y >= LowestSection * 16)
 			{
 				var blockState = GetBlockAt((x.Mod(16), y, z.Mod(16)));
-				if (blockState != null && Blocks.IsBlockForMap(blockState.Value.Block, type)) return y;
+				if (blockState != null && Blocks.IsBlockForMap(blockState.Block, type)) return y;
 				y--;
 			}
 			return short.MinValue;

@@ -27,7 +27,10 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 				{
 					chunk.ForEachBlock(YMin, YMax, (pos, b) =>
 					{
-						analysisData.IncreaseCounter(b.Block, (short)pos.y);
+						if(b != null)
+						{
+							analysisData.IncreaseCounter(b.Block, (short)pos.y);
+						}
 					});
 					analysisData.chunkCounter++;
 				}
