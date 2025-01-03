@@ -30,6 +30,8 @@ namespace WorldForge
 
 		public ConcurrentDictionary<RegionLocation, Region> regions = new ConcurrentDictionary<RegionLocation, Region>();
 
+		private object regionsLock = new object();
+
 		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
 			return new Dimension(parentWorld, id, defaultBiome);
@@ -214,6 +216,10 @@ namespace WorldForge
 
 		public void AddRegion(Region reg)
 		{
+			if(reg.regionPos.x < -100 || reg.regionPos.z < -100 || reg.regionPos.x > 100 || reg.regionPos.z > 100)
+			{
+				throw new ArgumentException("Suspicious region position");
+			}
 			if(!regions.TryAdd(reg.regionPos, reg))
 			{
 				throw new ArgumentException("Region already exists in dimension.");
@@ -332,15 +338,18 @@ namespace WorldForge
 		public bool CreateRegionIfMissing(int rx, int rz)
 		{
 			var rloc = new RegionLocation(rx, rz);
-			if(!regions.ContainsKey(rloc))
+			lock(regionsLock)
 			{
-				var r = Region.CreateNew(rloc, this);
-				AddRegion(r);
-				return true;
-			}
-			else
-			{
-				return false;
+				if(!regions.ContainsKey(rloc))
+				{
+					var r = Region.CreateNew(rloc, this);
+					AddRegion(r);
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 

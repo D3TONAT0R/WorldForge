@@ -84,7 +84,7 @@ namespace WorldForge.Builders.PostProcessors
 			byte i = map.GetValue(topPos.x - worldOriginOffsetX, topPos.z - worldOriginOffsetZ);
 			if(i < 255)
 			{
-				layers[i].RunGenerator(dimension, topPos);
+				layers[i].RunGenerator(dimension, topPos, Seed);
 			}
 		}
 	}

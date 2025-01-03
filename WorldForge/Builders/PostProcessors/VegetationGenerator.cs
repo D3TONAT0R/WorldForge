@@ -169,70 +169,71 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
+			long seed = Seed;
 			var gen = FixedGeneratorType == GeneratorType.None ? GetBiomeType(dimension, pos) : FixedGeneratorType;
 			switch(gen)
 			{
 				case GeneratorType.None:
 					break;
 				case GeneratorType.GrassOnly:
-					TrySpawnGrass(dimension, pos);
+					TrySpawnGrass(dimension, seed, pos);
 					break;
 				case GeneratorType.Plains:
 
-					if(!TrySpawnTree(dimension, pos, oakTree, GeneralTreesPerChunk))
+					if(!TrySpawnTree(dimension, seed, pos, oakTree, GeneralTreesPerChunk))
 					{
-						TrySpawnGrass(dimension, pos);
+						TrySpawnGrass(dimension, seed + 1, pos);
 					}
 					break;
 				case GeneratorType.Desert:
-					if(!TrySpawnCactus(dimension, pos, CactiPerChunk))
+					if(!TrySpawnCactus(dimension, seed, pos, CactiPerChunk))
 					{
-						TrySpawnDeadBush(dimension, pos, DeadBushPerChunk * CHUNK_MULTIPLIER);
+						TrySpawnDeadBush(dimension, seed + 1, pos, DeadBushPerChunk * CHUNK_MULTIPLIER);
 					}
 					break;
 				case GeneratorType.ColdPlains:
-					if(!TrySpawnTree(dimension, pos, oakTree, GeneralTreesPerChunk))
+					if(!TrySpawnTree(dimension, seed, pos, oakTree, GeneralTreesPerChunk))
 					{
-						TrySpawnGrass(dimension, pos);
+						TrySpawnGrass(dimension, seed + 1, pos);
 					}
 					break;
 				case GeneratorType.Forest:
-					if(!TrySpawnTree(dimension, pos, oakTree, ForestTreesPerChunk))
+					if(!TrySpawnTree(dimension, seed, pos, oakTree, ForestTreesPerChunk))
 					{
-						TrySpawnGrass(dimension, pos, GrassDensity * 0.5f);
+						TrySpawnGrass(dimension, seed + 1, pos, GrassDensity * 0.5f);
 					}
 					break;
 				case GeneratorType.BirchForest:
-					if(!TrySpawnTree(dimension, pos, birchTree, ForestTreesPerChunk))
+					if(!TrySpawnTree(dimension, seed, pos, birchTree, ForestTreesPerChunk))
 					{
-						TrySpawnGrass(dimension, pos, GrassDensity * 0.5f);
+						TrySpawnGrass(dimension, seed + 1, pos, GrassDensity * 0.5f);
 					}
 					break;
 				case GeneratorType.SpruceForest:
-					if(!TrySpawnTree(dimension, pos, spruceTree, ForestTreesPerChunk))
+					if(!TrySpawnTree(dimension, seed, pos, spruceTree, ForestTreesPerChunk))
 					{
-						TrySpawnGrass(dimension, pos, GrassDensity * 0.5f);
+						TrySpawnGrass(dimension, seed + 1, pos, GrassDensity * 0.5f);
 					}
 					break;
 			}
 		}
 
-		private void TrySpawnGrass(Dimension dim, BlockCoord ground, float? probability = null)
+		private void TrySpawnGrass(Dimension dim, long seed, BlockCoord ground, float? probability = null)
 		{
-			if(Probability(probability ?? GrassDensity)) PlaceGrass(dim, ground.Above, grass);
+			if(SeededRandom.Probability(probability ?? GrassDensity, seed, ground)) PlaceGrass(dim, ground.Above, grass);
 		}
 
-		private void TrySpawnDeadBush(Dimension dim, BlockCoord ground, float probability)
+		private void TrySpawnDeadBush(Dimension dim, long seed, BlockCoord ground, float probability)
 		{
-			if(Probability(probability)) PlaceDeadBush(dim, ground.Above);
+			if(SeededRandom.Probability(probability, seed, ground)) PlaceDeadBush(dim, ground.Above);
 		}
 
-		private bool TrySpawnTree(Dimension dim, BlockCoord ground, Schematic tree, float amountPerChunk)
+		private bool TrySpawnTree(Dimension dim, long seed, BlockCoord ground, Schematic tree, float amountPerChunk)
 		{
 			if(tree == null) return false;
-			if(Probability(amountPerChunk * CHUNK_MULTIPLIER))
+			if(SeededRandom.Probability(amountPerChunk * CHUNK_MULTIPLIER, seed, ground))
 			{
-				if(PlaceTree(dim, ground.Above, tree))
+				if(PlaceTree(dim, ground.Above, tree, seed))
 				{
 					return true;
 				}
@@ -240,21 +241,21 @@ namespace WorldForge.Builders.PostProcessors
 			return false;
 		}
 
-		private bool TrySpawnCactus(Dimension dim, BlockCoord ground, float amountPerChunk)
+		private bool TrySpawnCactus(Dimension dim, long seed, BlockCoord ground, float amountPerChunk)
 		{
-			if(Probability(amountPerChunk * CHUNK_MULTIPLIER))
+			if(SeededRandom.Probability(amountPerChunk * CHUNK_MULTIPLIER, seed, ground))
 			{
 				return PlaceCactus(dim, ground.Above);
 			}
 			return false;
 		}
 
-		private bool PlaceTree(Dimension dim, BlockCoord pos, Schematic tree)
+		private bool PlaceTree(Dimension dim, BlockCoord pos, Schematic tree, long seed)
 		{
 			if(!Check(dim, pos.Below, grassBlock, dirtBlock) || !dim.IsAirOrNull(pos.Above)) return false;
 			//if(IsObstructed(region, x, y+1, z, x, y+bareTrunkHeight, z) || IsObstructed(region, x-w, y+bareTrunkHeight, z-w, x+w, y+bareTrunkHeight+treeTopHeight, z+w)) return false;
 			dim.SetBlock(pos.Below, "minecraft:dirt");
-			tree.Build(dim, pos, random.Value);
+			tree.Build(dim, pos, seed);
 			return true;
 		}
 

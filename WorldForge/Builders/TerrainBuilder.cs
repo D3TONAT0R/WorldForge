@@ -13,8 +13,6 @@ namespace WorldForge.Builders
 			Noisy
 		}
 
-		private readonly Random random = new Random();
-
 		public bool CreateNewRegions { get; set; } = true;
 
 		public BlockID FillBlock { get; set; }
@@ -31,9 +29,10 @@ namespace WorldForge.Builders
 
 		public void FillBlockColumn(Dimension dim, int x, int z, int height)
 		{
+			var pos = new BlockCoord(x, height, z);
 			if(CreateNewRegions && !dim.TryGetRegionAtBlock(x, z, out _))
 			{
-				dim.CreateRegionIfMissing(x.Mod(512), z.Mod(512));
+				dim.CreateRegionIfMissing(pos.Region.x, pos.Region.z);
 			}
 			for(int y = 0; y <= height; y++)
 			{
@@ -46,25 +45,15 @@ namespace WorldForge.Builders
 			dim.SetBlock(coord, FillBlock, true);
 		}
 
-		protected bool TryCreateBedrock(Dimension dim, BlockCoord coord)
+		protected bool TryCreateBedrock(Dimension dim, BlockCoord coord, long seed)
 		{
 			if(coord.y == BottomHeight && BedrockPattern == BedrockType.Flat
-				|| coord.y < BottomHeight + 4 && BedrockPattern == BedrockType.Noisy && ProbabilityInt(coord.y + 1 - BottomHeight))
+				|| coord.y < BottomHeight + 4 && BedrockPattern == BedrockType.Noisy && SeededRandom.ProbabilityInt(coord.y + 1 - BottomHeight, seed, coord))
 			{
 				dim.SetBlock(coord, BlockList.Find("bedrock"), true);
 				return true;
 			}
 			return false;
-		}
-
-		protected bool Probability(float prob)
-		{
-			return random.NextDouble() <= prob;
-		}
-
-		protected bool ProbabilityInt(int i)
-		{
-			return random.Next(i) == 0;
 		}
 	}
 }

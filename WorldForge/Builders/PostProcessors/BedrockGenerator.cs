@@ -33,10 +33,11 @@ namespace WorldForge.Builders.PostProcessors
 			TrySetBedrock(dim, pos);
 			if(Noisy)
 			{
+				var seed = Seed;
 				for(int i = 1; i < 4; i++)
 				{
 					pos.y = Level + i;
-					if(Probability(1f - i / 4f)) TrySetBedrock(dim, pos.ShiftVertical(i));
+					if(SeededRandom.Probability(1f - i / 4f, seed, pos)) TrySetBedrock(dim, pos);
 				}
 			}
 		}

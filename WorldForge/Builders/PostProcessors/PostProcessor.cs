@@ -45,20 +45,23 @@ namespace WorldForge.Builders.PostProcessors
 
 		public virtual int PassCount => 1;
 
+		public long Seed { get; private set; }
+
+		private readonly int typeHash;
+
 		protected int worldOriginOffsetX;
 		protected int worldOriginOffsetZ;
 
-		public Weightmap<float> mask = null;
+		public Weightmap<float> mask;
 
 		public PostProcessContext Context { get; private set; }
 
 		protected PostProcessor()
 		{
-			
+			typeHash = GetType().GetHashCode();
 		}
 
-		protected PostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ,
-			int sizeX, int sizeZ)
+		protected PostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : this()
 		{
 			worldOriginOffsetX = offsetX;
 			worldOriginOffsetZ = offsetZ;
@@ -172,11 +175,13 @@ namespace WorldForge.Builders.PostProcessors
 		public void Process(PostProcessContext context)
 		{
 			Context = context;
+			GenerateSeed(context, 0);
 			OnBegin();
 			var boundary = context.Boundary;
 			var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Multithreading ? -1 : 1 };
 			for(int pass = 0; pass < PassCount; pass++)
 			{
+				GenerateSeed(context, pass);
 				if(PostProcessorType == PostProcessType.Block || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every block
@@ -192,6 +197,7 @@ namespace WorldForge.Builders.PostProcessors
 					});
 				}
 
+				GenerateSeed(context, pass + 313);
 				if(PostProcessorType == PostProcessType.Surface || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every surface block
@@ -206,6 +212,7 @@ namespace WorldForge.Builders.PostProcessors
 					});
 				}
 
+				GenerateSeed(context, pass + 791);
 				//Run every postprocessor once for every region
 				int p = pass;
 				Parallel.ForEach(context.Dimension.regions.Values, parallelOptions, reg =>
@@ -217,9 +224,9 @@ namespace WorldForge.Builders.PostProcessors
 			Context = null;
 		}
 
-		protected bool Probability(float prob)
+		private void GenerateSeed(PostProcessContext context, int offset)
 		{
-			return random.Value.NextDouble() < prob;
+			Seed = context.BaseSeed + typeHash + offset * 2039;
 		}
 	}
 }

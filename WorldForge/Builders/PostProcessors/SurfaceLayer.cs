@@ -17,7 +17,7 @@ namespace WorldForge.Builders.PostProcessors
 		public int yMin = int.MinValue;
 		public int yMax = int.MaxValue;
 
-		public abstract bool Generate(Dimension dim, BlockCoord pos);
+		public abstract bool Generate(Dimension dim, BlockCoord pos, long seed);
 
 		protected bool SetBlock(Dimension dim, BlockCoord pos, string b)
 		{
@@ -46,7 +46,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public override bool Generate(Dimension dim, BlockCoord pos)
+		public override bool Generate(Dimension dim, BlockCoord pos, long seed)
 		{
 			if(pos.y < yMin || pos.y > yMax)
 			{
@@ -74,11 +74,11 @@ namespace WorldForge.Builders.PostProcessors
 			this.threshold = threshold;
 		}
 
-		public override bool Generate(Dimension dim, BlockCoord pos)
+		public override bool Generate(Dimension dim, BlockCoord pos, long seed)
 		{
 			if(PerlinNoise.Instance.GetNoise2D(new System.Numerics.Vector2(pos.x, pos.z)) < threshold)
 			{
-				return base.Generate(dim, pos);
+				return base.Generate(dim, pos, seed);
 			}
 			else
 			{
@@ -95,8 +95,6 @@ namespace WorldForge.Builders.PostProcessors
 		private string block;
 		private bool isPlant;
 
-		private Random random = new Random();
-
 		public SchematicInstanceGenerator(Schematic schem, float chance, bool doPlantCheck)
 		{
 			this.chance = chance;
@@ -111,16 +109,16 @@ namespace WorldForge.Builders.PostProcessors
 			isPlant = doPlantCheck;
 		}
 
-		public override bool Generate(Dimension dim, BlockCoord pos)
+		public override bool Generate(Dimension dim, BlockCoord pos, long seed)
 		{
 			if(isPlant && (!Blocks.IsPlantSustaining(dim.GetBlock(pos)) || !dim.IsAirOrNull(pos.Above))) return false;
 			if(pos.y < yMin || pos.y > yMax) return false;
 
-			if(random.NextDouble() < chance / 128f)
+			if(SeededRandom.Probability(chance / 128f, seed, pos))
 			{
 				if(schematic != null)
 				{
-					schematic.Build(dim, pos.Above, random);
+					schematic.Build(dim, pos.Above, seed);
 					return true;
 				}
 				else
@@ -144,7 +142,7 @@ namespace WorldForge.Builders.PostProcessors
 			biomeID = biome;
 		}
 
-		public override bool Generate(Dimension dim, BlockCoord pos)
+		public override bool Generate(Dimension dim, BlockCoord pos, long seed)
 		{
 			if(pos.y < yMin || pos.y > yMax) return false;
 			dim.SetBiome(pos.x, pos.z, biomeID);
@@ -260,11 +258,11 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public void RunGenerator(Dimension dim, BlockCoord pos)
+		public void RunGenerator(Dimension dim, BlockCoord pos, long seed)
 		{
 			for(int i = 0; i < generators.Count; i++)
 			{
-				generators[i].Generate(dim, pos);
+				generators[i].Generate(dim, pos, seed + 41 + i * 37);
 			}
 		}
 	}

@@ -98,27 +98,27 @@ namespace WorldForge.Structures
 			return data;
 		}
 
-		public void Build(Dimension dimension, BlockCoord origin, Random random, bool allowNewChunks = false)
+		public void Build(Dimension dimension, BlockCoord origin, long seed, bool allowNewChunks = false)
 		{
-			int paletteIndex = paletteData.PaletteCount > 1 ? random.Next(paletteData.PaletteCount) : 0;
+			int paletteIndex = paletteData.PaletteCount > 1 ? SeededRandom.Int(paletteData.PaletteCount, seed, origin) : 0;
 			var palette = paletteData.GetPalette(paletteIndex);
 
 			//Build tree trunk (if applicable) and adjust origin for main structure (the top part)
 			if(treeTrunk != null && treeTrunk.Count > 0 && trunkMaxHeight > 0)
 			{
-				int height = random.Next(trunkMinHeight, trunkMaxHeight + 1);
+				int height = SeededRandom.RangeInt(trunkMinHeight, trunkMaxHeight + 1, seed, origin);
 				for(int i = 0; i < height; i++)
 				{
-					Build(dimension, origin + new BlockCoord(0, i, 0), random, allowNewChunks, treeTrunk, palette);
+					Build(dimension, origin + new BlockCoord(0, i, 0), seed, allowNewChunks, treeTrunk, palette);
 				}
 				origin.y += height;
 			}
 
 			//Build main structure
-			Build(dimension, origin, random, allowNewChunks, blocks, palette);
+			Build(dimension, origin, seed, allowNewChunks, blocks, palette);
 		}
 
-		private void Build(Dimension dimension, BlockCoord origin, Random random, bool allowNewChunks, Dictionary<BlockCoord, int> data, List<Block> palette)
+		private void Build(Dimension dimension, BlockCoord origin, long seed, bool allowNewChunks, Dictionary<BlockCoord, int> data, List<Block> palette)
 		{
 			foreach(var kv in data)
 			{
@@ -126,7 +126,7 @@ namespace WorldForge.Structures
 				var index = kv.Value;
 				var block = palette[index];
 
-				if(random.NextDouble() <= block.probability)
+				if(SeededRandom.Probability(block.probability, seed, origin + pos))
 				{
 					dimension.SetBlock(origin + pos, block.state, allowNewChunks);
 					if(block.nbt != null)

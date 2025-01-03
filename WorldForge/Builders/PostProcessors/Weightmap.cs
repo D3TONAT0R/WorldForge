@@ -8,9 +8,6 @@ namespace WorldForge.Builders.PostProcessors
 {
 	public class Weightmap<T>
 	{
-
-		private static Random random = new Random();
-
 		private T[][,] channels;
 
 		private Weightmap(int channelCount)
@@ -59,7 +56,7 @@ namespace WorldForge.Builders.PostProcessors
 					byte mapping;
 					if(ditherLimit > 1)
 					{
-						mapping = GetDitheredMapping(c, mappings, ditherLimit);
+						mapping = GetDitheredMapping(x, y, c, mappings, ditherLimit);
 					}
 					else
 					{
@@ -141,7 +138,7 @@ namespace WorldForge.Builders.PostProcessors
 			return index;
 		}
 
-		static byte GetDitheredMapping(Rgba32 c, Rgba32[] mappings, int ditherLimit)
+		static byte GetDitheredMapping(int x, int y, Rgba32 c, Rgba32[] mappings, int ditherLimit)
 		{
 			float[] probs = new float[mappings.Length];
 			for(int i = 0; i < mappings.Length; i++)
@@ -161,7 +158,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			float max = 0;
 			foreach(float p in probs) max += p;
-			double d = random.NextDouble() * max;
+			double d = SeededRandom.Double(x, y, 0) * max;
 			double v = 0;
 			for(byte i = 0; i < probs.Length; i++)
 			{

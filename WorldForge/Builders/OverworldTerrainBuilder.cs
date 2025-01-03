@@ -22,6 +22,8 @@ namespace WorldForge.Builders
 
 		public float SurfaceLayerThickness { get; set; } = 3.5f;
 
+		public long Seed { get; set; } = -1;
+
 		public OverworldTerrainBuilder(SurfacePreset surface)
 		{
 			Surface = surface;
@@ -29,7 +31,8 @@ namespace WorldForge.Builders
 
 		protected override void SetBlock(Dimension dim, BlockCoord coord, int height)
 		{
-			if(!TryCreateBedrock(dim, coord))
+			var seed = Seed == -1 ? (dim.ParentWorld?.LevelData.worldGen.WorldSeed ?? 0) : Seed;
+			if(!TryCreateBedrock(dim, coord, seed))
 			{
 				BlockID block = FillBlock;
 				if(Surface != SurfacePreset.None)
@@ -37,7 +40,7 @@ namespace WorldForge.Builders
 					int t = (int)SurfaceLayerThickness;
 					if(coord.y == height) block = GetBlockForPreset(Surface, true);
 					else if(coord.y > height - t) block = GetBlockForPreset(Surface, false);
-					else if(coord.y == height - t && Probability(SurfaceLayerThickness - t)) block = GetBlockForPreset(Surface, false);
+					else if(coord.y == height - t && SeededRandom.Probability(SurfaceLayerThickness - t, seed, coord)) block = GetBlockForPreset(Surface, false);
 				}
 				dim.SetBlock(coord, block, true);
 			}
