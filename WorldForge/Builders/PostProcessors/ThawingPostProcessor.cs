@@ -67,14 +67,14 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			if(dim.IsAirOrNull(pos)) return;
 			//Replace snowy blocks with air or water
-			BlockState block = dim.GetBlockState(pos);
+			var block = dim.GetBlockState(pos);
 			if(block == null) return;
-			if(block.HasProperty("snowy"))
+			if(block.Value.HasProperty("snowy"))
 			{
 				//Replace block with itself to get rid of the "snowy" property
-				dim.SetBlock(pos, block.Block);
+				dim.SetBlock(pos, block.Value.Block);
 			}
-			else if(blockReplacementTable.TryGetValue(block.Block, out var replacement))
+			else if(blockReplacementTable.TryGetValue(block.Value.Block, out var replacement))
 			{
 				dim.SetBlock(pos, replacement);
 			}

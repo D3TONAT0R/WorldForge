@@ -120,7 +120,7 @@ namespace WorldForge.Regions
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(BlockCoord pos)
+		public BlockState? GetBlockState(BlockCoord pos)
 		{
 			return GetChunkAtBlock(pos, false)?.GetBlockAt(pos.LocalChunkCoords);
 		}

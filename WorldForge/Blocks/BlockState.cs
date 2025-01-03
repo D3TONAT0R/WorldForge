@@ -5,7 +5,7 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public class BlockState : INBTConverter
+	public struct BlockState : INBTConverter
 	{
 
 		public static BlockState Air
@@ -13,20 +13,20 @@ namespace WorldForge
 			get
 			{
 				if(air == null) air = new BlockState(BlockList.Find("air"));
-				return air;
+				return air.Value;
 			}
 		}
-		private static BlockState air;
+		private static BlockState? air;
 
 		public static BlockState Unknown
 		{
 			get
 			{
 				if(unknown == null) unknown = new BlockState();
-				return unknown;
+				return unknown.Value;
 			}
 		}
-		private static BlockState unknown;
+		private static BlockState? unknown;
 
 		public BlockID Block { get; private set; }
 
@@ -34,7 +34,7 @@ namespace WorldForge
 
 		public int Hash { get; private set; }
 
-		public BlockState() { }
+		//public BlockState() { }
 
 		public BlockState(BlockID block)
 		{
@@ -43,6 +43,8 @@ namespace WorldForge
 				throw new NullReferenceException("Attempted to create a BlockState with a null BlockID.");
 			}
 			Block = block;
+			properties = null;
+			Hash = 0;
 			AddDefaultBlockProperties();
 			InitializeHash();
 		}
@@ -62,9 +64,8 @@ namespace WorldForge
 			InitializeHash();
 		}
 
-		public BlockState(BlockState original)
+		public BlockState(BlockState original) : this(original.Block)
 		{
-			Block = original.Block;
 			properties = original.properties?.Clone();
 			InitializeHash();
 		}
@@ -187,7 +188,6 @@ namespace WorldForge
 
 		public static void ResolveBlockState(GameVersion version, ref BlockState state)
 		{
-			if(state == null) return;
 			ResolveBlockState(version, ref state, 1);
 		}
 
@@ -294,7 +294,7 @@ namespace WorldForge
             return Block.numericID;
         }
 
-		public static BlockState FromNumericID(NumericID numericID)
+		public static BlockState? FromNumericID(NumericID numericID)
 		{
 
 			//Facing metadata:
@@ -343,7 +343,9 @@ namespace WorldForge
 					SetFacingPropertyFurnace(state, meta);
 					return state;
 				default:
-					return new BlockState(BlockList.FindByNumeric(numericID));
+					var b = BlockList.FindByNumeric(numericID);
+					if(b != null) return new BlockState(b);
+					else return null;
 			}
 		}
 

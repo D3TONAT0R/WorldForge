@@ -1,5 +1,6 @@
 ﻿using System;
 using WorldForge.Chunks;
+using WorldForge.Coordinates;
 using WorldForge.Entities;
 using WorldForge.NBT;
 using WorldForge.Regions;
@@ -72,17 +73,14 @@ namespace WorldForge.IO
 				{
 					for(int x = 0; x < 16; x++)
 					{
-						var blockState = c.GetBlockAt((x, y, z));
+						var blockState = c.GetBlockAt(new BlockCoord(x, y, z)) ?? BlockState.Air;
 						BlockState.ResolveBlockState(TargetVersion, ref blockState); //Resolve block state (substitute blocks if necessary)
-						if(blockState != null)
-						{
-							var numID = blockState.ToNumericID(TargetVersion) ?? NumericID.Air;
-							var i = GetArrayIndex(x, y, z);
-							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
-							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
-							blocks[i] = (byte)numID.id;
-							metaNibbles[i] = (byte)numID.damage;
-						}
+						var numID = blockState.ToNumericID(TargetVersion) ?? NumericID.Air;
+						var i = GetArrayIndex(x, y, z);
+						if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
+						if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
+						blocks[i] = (byte)numID.id;
+						metaNibbles[i] = (byte)numID.damage;
 					}
 				}
 			}

@@ -240,10 +240,10 @@ namespace WorldForge.Regions
 			for (int y = 0; y < 256; y++)
 			{
 				BlockCoord pos = (x, y, z);
-				BlockState block = source.GetBlockState(pos);
+				var block = source.GetBlockState(pos);
 				if (block != null)
 				{
-					dst.SetBlock(pos, block);
+					dst.SetBlock(pos, block.Value);
 					//Also copy any tile entities associated with this block
 					var te = source.GetTileEntity(pos);
 					if (te != null)

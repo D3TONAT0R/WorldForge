@@ -255,7 +255,7 @@ namespace WorldForge
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(BlockCoord pos)
+		public BlockState? GetBlockState(BlockCoord pos)
 		{
 			return GetRegionAtBlock(pos.x, pos.z)?.GetBlockState(pos.LocalRegionCoords);
 		}

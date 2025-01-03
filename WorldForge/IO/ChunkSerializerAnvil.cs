@@ -63,7 +63,7 @@ namespace WorldForge.IO
 						var block = BlockState.FromNumericID(new NumericID(blocks[i], meta[i]));
 						if(block != null)
 						{
-							c.SetBlockAt((x, y + sectionY * 16, z), block);
+							c.SetBlockAt((x, y + sectionY * 16, z), block.Value);
 						}
 					}
 				}
@@ -139,16 +139,13 @@ namespace WorldForge.IO
 					for(int x = 0; x < 16; x++)
 					{
 						int i = GetIndex(x, y, z);
-						var blockState = c.GetBlockAt(x, y, z);
+						BlockState blockState = c.GetBlockAt(x, y, z);
 						BlockState.ResolveBlockState(TargetVersion, ref blockState);
-						if(blockState != null)
-						{
-							var numID = blockState.ToNumericID(TargetVersion) ?? NumericID.Air;
-							if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
-							if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
-							ids[i] = (byte)numID.id;
-							metaNibbles[i] = (byte)numID.damage;
-						}
+						var numID = blockState.ToNumericID(TargetVersion) ?? NumericID.Air;
+						if(numID.id < 0 || numID.id > 255) throw new IndexOutOfRangeException("Block ID out of range (0-255)");
+						if(numID.damage < 0 || numID.damage > 15) throw new IndexOutOfRangeException("Block meta exceeds limit of (0-15)");
+						ids[i] = (byte)numID.id;
+						metaNibbles[i] = (byte)numID.damage;
 					}
 				}
 			}
@@ -255,7 +252,9 @@ namespace WorldForge.IO
 			foreach(var t in c.PostProcessTicks)
 			{
 				NBTCompound tick = new NBTCompound();
-				var numID = c.GetBlockAt(t).Block.numericID;
+				var state = c.GetBlockAt(t);
+				if(state == null) continue;
+				var numID = state.Value.Block.numericID;
 				tick.Add("i", numID.HasValue ? (byte)numID.Value.id : 0);
 				tick.Add("p", 0);
 				tick.Add("t", 0);
