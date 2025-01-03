@@ -618,6 +618,9 @@ namespace WorldForge
 			allBlocks = new Dictionary<NamespacedID, BlockID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();
+			oldRemappings = new Dictionary<NamespacedID, Remapping>();
+			newRemappings = new Dictionary<BlockID, Remapping>();
+
 			var lines = blockData.Replace("\r", "").Split('\n');
 			//ID,Properties,Numeric ID,Pre-flattening ID,Added in Version,Fallback
 			List<(BlockID, string)> fallbacks = new List<(BlockID, string)>();
@@ -656,8 +659,6 @@ namespace WorldForge
 			}
 
 			//Set remappings
-			oldRemappings = new Dictionary<NamespacedID, Remapping>();
-			newRemappings = new Dictionary<BlockID, Remapping>();
 			if(remappingsData != null)
 			{
 				CSV remappingsCSV = new CSV(remappingsData);
