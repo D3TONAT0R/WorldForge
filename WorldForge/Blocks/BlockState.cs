@@ -71,7 +71,7 @@ namespace WorldForge
 
 		public BlockState(BlockID block, NBTCompound properties) : this(block)
 		{
-			this.properties = properties.Clone();
+			this.properties = properties?.Clone();
 			InitializeHash();
 		}
 

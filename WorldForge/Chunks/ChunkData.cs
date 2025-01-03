@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using WorldForge.Biomes;
 using WorldForge.Coordinates;
@@ -36,7 +37,7 @@ namespace WorldForge.Chunks
 
 
 		public string defaultBlock = "minecraft:stone";
-		public Dictionary<sbyte, ChunkSection> Sections { get; private set; }
+		public ConcurrentDictionary<sbyte, ChunkSection> Sections { get; private set; }
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
 		public List<Entity> Entities { get; private set; }
@@ -79,7 +80,7 @@ namespace WorldForge.Chunks
 
 		public void InitializeNewChunk()
 		{
-			Sections = new Dictionary<sbyte, ChunkSection>();
+			Sections = new ConcurrentDictionary<sbyte, ChunkSection>();
 			TileEntities = new Dictionary<BlockCoord, TileEntity>();
 			Entities = new List<Entity>();
 			PostProcessTicks = new List<BlockCoord>();
@@ -122,12 +123,14 @@ namespace WorldForge.Chunks
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
 			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
-			if (!Sections.ContainsKey(sectionY))
+			if(!Sections.ContainsKey(sectionY))
 			{
-				if (allowNew)
+				if(allowNew)
 				{
-					Sections.Add(sectionY, new ChunkSection(this, defaultBlock));
-					RecalculateSectionRange();
+					if(Sections.TryAdd(sectionY, new ChunkSection(this, defaultBlock)))
+					{
+						RecalculateSectionRange();
+					}
 				}
 				else
 				{

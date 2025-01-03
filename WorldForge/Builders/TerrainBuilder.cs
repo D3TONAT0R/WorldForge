@@ -32,7 +32,7 @@ namespace WorldForge.Builders
 			var pos = new BlockCoord(x, height, z);
 			if(CreateNewRegions && !dim.TryGetRegionAtBlock(x, z, out _))
 			{
-				dim.CreateRegionIfMissing(pos.Region.x, pos.Region.z);
+				dim.CreateRegionIfMissing(pos.Region);
 			}
 			for(int y = 0; y <= height; y++)
 			{

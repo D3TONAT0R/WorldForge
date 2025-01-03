@@ -30,8 +30,6 @@ namespace WorldForge
 
 		public ConcurrentDictionary<RegionLocation, Region> regions = new ConcurrentDictionary<RegionLocation, Region>();
 
-		private object regionsLock = new object();
-
 		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
 			return new Dimension(parentWorld, id, defaultBiome);
@@ -120,7 +118,7 @@ namespace WorldForge
 					if(!dim.TryGetRegionAtBlock(regionPos.x, regionPos.z, out var region))
 					{
 						region = Region.CreateNew(regionPos, dim);
-						dim.AddRegion(region);
+						dim.AddRegion(region, true);
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
@@ -144,7 +142,7 @@ namespace WorldForge
 					try
 					{
 						var region = RegionDeserializer.PreloadRegion(f, dim, gameVersion);
-						dim.AddRegion(region);
+						dim.AddRegion(region, true);
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
@@ -183,7 +181,7 @@ namespace WorldForge
 				for(int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
 					var loc = new RegionLocation(x, z);
-					AddRegion(Region.CreateNew(loc, this));
+					AddRegion(Region.CreateNew(loc, this), true);
 				}
 			}
 		}
@@ -214,16 +212,14 @@ namespace WorldForge
 			return regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out region);
 		}
 
-		public void AddRegion(Region reg)
+		public bool AddRegion(Region reg, bool throwException)
 		{
-			if(reg.regionPos.x < -100 || reg.regionPos.z < -100 || reg.regionPos.x > 100 || reg.regionPos.z > 100)
-			{
-				throw new ArgumentException("Suspicious region position");
-			}
-			if(!regions.TryAdd(reg.regionPos, reg))
+			bool added = regions.TryAdd(reg.regionPos, reg);
+			if(!added && throwException)
 			{
 				throw new ArgumentException("Region already exists in dimension.");
 			}
+			return added;
 		}
 
 		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
@@ -335,191 +331,183 @@ namespace WorldForge
 			}*/
 		}
 
-		public bool CreateRegionIfMissing(int rx, int rz)
+		public bool CreateRegionIfMissing(RegionLocation loc)
 		{
-			var rloc = new RegionLocation(rx, rz);
-			lock(regionsLock)
+			if(!regions.ContainsKey(loc))
 			{
-				if(!regions.ContainsKey(rloc))
+				var r = Region.CreateNew(loc, this);
+				return AddRegion(r, false);
+			}
+			return false;
+	}
+
+	public bool HasRegion(int rx, int rz)
+	{
+		return regions.ContainsKey(new RegionLocation(rx, rz));
+	}
+
+	public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
+	{
+		//TODO
+		throw new NotImplementedException();
+	}
+
+	///<summary>Sets the block state at the given location.</summary>
+	public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
+	{
+		//TODO: Check for varying build limits
+		//if (pos.y < 0 || pos.y > 255) return false;
+		var r = GetRegionAt(pos.x, pos.z);
+		if(r != null)
+		{
+			return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	///<summary>Sets the block type at the given location.</summary>
+	public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
+	{
+		return SetBlock(pos, new BlockState(block), allowNewChunks);
+	}
+
+	///<summary>Sets the block type at the given location.</summary>
+	public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
+	{
+		return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
+	}
+
+	///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
+	public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
+	{
+		//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
+		//if (pos.y < 0 || pos.y > 255) return;
+		var r = GetRegionAt(pos.x, pos.z);
+		if(r != null)
+		{
+			r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
+		}
+		else
+		{
+			throw new ArgumentException($"The location was outside of the world: {pos}");
+		}
+	}
+
+	///<summary>Sets the tile entity at the given location.</summary>
+	public bool SetTileEntity(BlockCoord pos, TileEntity te)
+	{
+		if(TryGetRegionAtBlock(pos.x, pos.z, out var region))
+		{
+			return region.SetTileEntity(pos, te);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
+	{
+		if(SetBlock(pos, block, allowNewChunks))
+		{
+			return SetTileEntity(pos, te);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Generates a Heightmap from the specified area (With Z starting from top)
+	/// </summary>
+	public short[,] GetHeightmap(Boundary boundary, HeightmapType type, bool forceManualCalculation = false)
+	{
+		short[,] heightmap = new short[boundary.LengthX, boundary.LengthZ];
+		Dictionary<ChunkCoord, short[,]> chunkHeightmaps = new Dictionary<ChunkCoord, short[,]>();
+		for(int z = boundary.zMin; z < boundary.zMax; z++)
+		{
+			for(int x = boundary.xMin; x < boundary.xMax; x++)
+			{
+				var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
+				if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
 				{
-					var r = Region.CreateNew(rloc, this);
-					AddRegion(r);
-					return true;
+					var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x.Mod(32), chunkCoord.z.Mod(32));
+					chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
+					chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
+				}
+				short height;
+				if(chunkHeightmap != null)
+				{
+					height = chunkHeightmap[x.Mod(16), z.Mod(16)];
 				}
 				else
 				{
-					return false;
+					height = GetHighestBlock(x, z, type);
 				}
+				heightmap[x - boundary.xMin, z - boundary.zMin] = height;
 			}
 		}
+		return heightmap;
+	}
 
-		public bool HasRegion(int rx, int rz)
+	/// <summary>
+	/// Gets the depth of the water at the given location, in blocks
+	/// </summary>
+	public int GetWaterDepth(BlockCoord pos)
+	{
+		return GetRegionAt(pos.x, pos.z)?.GetWaterDepth(pos.LocalRegionCoords) ?? 0;
+	}
+
+	/// <summary>
+	/// Gets the highest block at the given location.
+	/// </summary>
+	public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
+	{
+		return GetRegionAt(x, z)?.GetHighestBlock(x.Mod(512), z.Mod(512), heightmapType) ?? short.MinValue;
+	}
+
+	public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ, GameVersion gameVersion)
+	{
+		RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
+	}
+
+	public void WriteData(string rootDir, GameVersion gameVersion)
+	{
+		Directory.CreateDirectory(rootDir);
+		var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
+		if(gameVersion >= GameVersion.FirstMCRVersion)
 		{
-			return regions.ContainsKey(new RegionLocation(rx, rz));
+			Directory.CreateDirectory(Path.Combine(rootDir, "region"));
+
+			string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
+			Parallel.ForEach(regions, parallelOptions, region =>
+			{
+				string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
+				region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
+			});
 		}
-
-		public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
+		else
 		{
-			//TODO
-			throw new NotImplementedException();
-		}
-
-		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
-		{
-			//TODO: Check for varying build limits
-			//if (pos.y < 0 || pos.y > 255) return false;
-			var r = GetRegionAt(pos.x, pos.z);
-			if(r != null)
+			var alphaSerializer = (ChunkSerializerAlpha)ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
+			Parallel.ForEach(regions, parallelOptions, region =>
 			{
-				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(block), allowNewChunks);
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
-		}
-
-		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
-		{
-			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
-			//if (pos.y < 0 || pos.y > 255) return;
-			var r = GetRegionAt(pos.x, pos.z);
-			if(r != null)
-			{
-				r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
-			}
-			else
-			{
-				throw new ArgumentException($"The location was outside of the world: {pos}");
-			}
-		}
-
-		///<summary>Sets the tile entity at the given location.</summary>
-		public bool SetTileEntity(BlockCoord pos, TileEntity te)
-		{
-			if(TryGetRegionAtBlock(pos.x, pos.z, out var region))
-			{
-				return region.SetTileEntity(pos, te);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
-		{
-			if(SetBlock(pos, block, allowNewChunks))
-			{
-				return SetTileEntity(pos, te);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		/// <summary>
-		/// Generates a Heightmap from the specified area (With Z starting from top)
-		/// </summary>
-		public short[,] GetHeightmap(Boundary boundary, HeightmapType type, bool forceManualCalculation = false)
-		{
-			short[,] heightmap = new short[boundary.LengthX, boundary.LengthZ];
-			Dictionary<ChunkCoord, short[,]> chunkHeightmaps = new Dictionary<ChunkCoord, short[,]>();
-			for(int z = boundary.zMin; z < boundary.zMax; z++)
-			{
-				for(int x = boundary.xMin; x < boundary.xMax; x++)
+				if(!region.Value.IsLoaded) region.Value.Load();
+				foreach(var c in region.Value.chunks)
 				{
-					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
-					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
+					if(c != null)
 					{
-						var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x.Mod(32), chunkCoord.z.Mod(32));
-						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
-						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
+						ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
+						Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
+						var file = alphaSerializer.CreateChunkNBT(c);
+						File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), file.WriteBytesGZip());
 					}
-					short height;
-					if(chunkHeightmap != null)
-					{
-						height = chunkHeightmap[x.Mod(16), z.Mod(16)];
-					}
-					else
-					{
-						height = GetHighestBlock(x, z, type);
-					}
-					heightmap[x - boundary.xMin, z - boundary.zMin] = height;
 				}
-			}
-			return heightmap;
-		}
-
-		/// <summary>
-		/// Gets the depth of the water at the given location, in blocks
-		/// </summary>
-		public int GetWaterDepth(BlockCoord pos)
-		{
-			return GetRegionAt(pos.x, pos.z)?.GetWaterDepth(pos.LocalRegionCoords) ?? 0;
-		}
-
-		/// <summary>
-		/// Gets the highest block at the given location.
-		/// </summary>
-		public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
-		{
-			return GetRegionAt(x, z)?.GetHighestBlock(x.Mod(512), z.Mod(512), heightmapType) ?? short.MinValue;
-		}
-
-		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ, GameVersion gameVersion)
-		{
-			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
-		}
-
-		public void WriteData(string rootDir, GameVersion gameVersion)
-		{
-			Directory.CreateDirectory(rootDir);
-			var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
-			if(gameVersion >= GameVersion.FirstMCRVersion)
-			{
-				Directory.CreateDirectory(Path.Combine(rootDir, "region"));
-
-				string extension = gameVersion >= GameVersion.FirstAnvilVersion ? "mca" : "mcr";
-				Parallel.ForEach(regions, parallelOptions, region =>
-				{
-					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
-					region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
-				});
-			}
-			else
-			{
-				var alphaSerializer = (ChunkSerializerAlpha)ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
-				Parallel.ForEach(regions, parallelOptions, region =>
-				{
-					if(!region.Value.IsLoaded) region.Value.Load();
-					foreach(var c in region.Value.chunks)
-					{
-						if(c != null)
-						{
-							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
-							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
-							var file = alphaSerializer.CreateChunkNBT(c);
-							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), file.WriteBytesGZip());
-						}
-					}
-				});
-			}
+			});
 		}
 	}
+}
 }

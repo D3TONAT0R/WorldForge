@@ -107,7 +107,10 @@ namespace WorldForge.IO
 						}
 					}
 				}
-				c.Sections.Add(secY, section);
+				if(!c.Sections.TryAdd(secY, section))
+				{
+					throw new Exception("Failed to add section to chunk data.");
+				}
 			}
 		}
 
