@@ -10,6 +10,9 @@
         public int LengthX => xMax - xMin;
 		public int LengthZ => zMax - zMin;
 
+        public int CenterX => (xMin + xMax) / 2;
+		public int CenterZ => (zMin + zMax) / 2;
+
 		public Boundary(int xMin, int zMin, int xMax, int zMax)
         {
             this.xMin = xMin;

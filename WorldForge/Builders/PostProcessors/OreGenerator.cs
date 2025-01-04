@@ -91,8 +91,6 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public override bool Multithreading => false;
-
 		public OreGenerator(bool useVanillaOreGenerators)
 		{
 			if(useVanillaOreGenerators)

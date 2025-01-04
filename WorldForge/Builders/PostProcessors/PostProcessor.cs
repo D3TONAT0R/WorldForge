@@ -178,6 +178,10 @@ namespace WorldForge.Builders.PostProcessors
 			GenerateSeed(context, 0);
 			OnBegin();
 			var boundary = context.Boundary;
+			var chunkMin = new BlockCoord(boundary.xMin, 0, boundary.zMin).Chunk;
+			var chunkMax = new BlockCoord(boundary.xMax, 0, boundary.zMax).Chunk;
+			chunkMax.x++;
+			chunkMax.z++;
 			var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Multithreading ? -1 : 1 };
 			for(int pass = 0; pass < PassCount; pass++)
 			{
@@ -185,13 +189,19 @@ namespace WorldForge.Builders.PostProcessors
 				if(PostProcessorType == PostProcessType.Block || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every block
-					Parallel.For(boundary.zMin, boundary.zMax + 1, parallelOptions, z =>
+					//Run parallel tasks for each chunk to avoid locking
+					Parallel.ForEach(context.Dimension.EnumerateChunks(chunkMin, chunkMax), parallelOptions, chunk =>
 					{
-						for(int x = boundary.xMin; x <= boundary.xMax; x++)
+						int bx = chunk.WorldSpaceCoord.BlockCoord.x;
+						int bz = chunk.WorldSpaceCoord.BlockCoord.z;
+						for(int z = 0; z < 16; z++)
 						{
-							for(int y = BlockProcessYMin; y <= BlockProcessYMax; y++)
+							for(int x = 0; x < 16; x++)
 							{
-								ProcessBlock(new BlockCoord(x, y, z), pass);
+								for(int y = BlockProcessYMin; y <= BlockProcessYMax; y++)
+								{
+									ProcessBlock(new BlockCoord(bx + x, y, bz + z), pass);
+								}
 							}
 						}
 					});
@@ -201,14 +211,19 @@ namespace WorldForge.Builders.PostProcessors
 				if(PostProcessorType == PostProcessType.Surface || PostProcessorType == PostProcessType.Both)
 				{
 					//Iterate the postprocessors over every surface block
-					Parallel.For(boundary.zMin, boundary.zMax + 1, parallelOptions, z =>
+					//Run parallel tasks for each chunk to avoid locking
+					Parallel.ForEach(context.Dimension.EnumerateChunks(chunkMin, chunkMax), parallelOptions, chunk =>
 					{
-						for(int x = boundary.xMin; x <= boundary.xMax; x++)
+						int bx = chunk.WorldSpaceCoord.BlockCoord.x;
+						int bz = chunk.WorldSpaceCoord.BlockCoord.z;
+						for(int z = 0; z < 16; z++)
 						{
-							//TODO: remember height so each processor uses the same height
-							ProcessSurface(new BlockCoord(x, context.Dimension.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), z), pass);
+							for(int x = 0; x < 16; x++)
+							{
+								//TODO: remember height so each processor uses the same height
+								ProcessSurface(new BlockCoord(bx + x, chunk.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), bz + z), pass);
+							}
 						}
-						//UpdateProgressBar(processorIndex, "Decorating surface", name, (x + 1) / (float)heightmapLengthX, pass, post.NumberOfPasses);
 					});
 				}
 

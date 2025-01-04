@@ -18,6 +18,9 @@ namespace WorldForge
 		}
 		private static BlockState air;
 
+		public static readonly BlockState Water = new BlockState(BlockList.Find("water"));
+		public static readonly BlockState Lava = new BlockState(BlockList.Find("lava"));
+
 		public static BlockState Unknown
 		{
 			get

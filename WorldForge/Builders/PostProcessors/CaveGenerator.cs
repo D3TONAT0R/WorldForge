@@ -65,11 +65,11 @@ namespace WorldForge.Builders.PostProcessors
 
 				if(pos.y <= lavaHeight)
 				{
-					dim.SetBlock(pos, Blocks.lava);
+					dim.SetBlock(pos, BlockState.Lava);
 				}
 				else
 				{
-					dim.SetBlock(pos, Blocks.air);
+					dim.SetBlock(pos, BlockState.Air);
 				}
 				return true;
 			}
@@ -215,7 +215,7 @@ namespace WorldForge.Builders.PostProcessors
 			public int yMin = 4;
 			public int yMax = 32;
 			public int center = -999;
-			public float threshold = 0.75f;
+			public float threshold = 0.8f;
 			public float scaleXZ = 1f;
 			public float scaleY = 1f;
 			public float noiseScale = 1f;
@@ -246,7 +246,7 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				for(int y = yMin; y <= Math.Min(yMax, topPos.y); y++)
 				{
-					float perlin = PerlinNoise.Instance.GetNoise3D(new SVector3(topPos.x, y, topPos.z), noiseParameters);
+					float perlin = SimplexNoise.Instance.GetNoise3D(new SVector3(topPos.x, y, topPos.z), noiseParameters);
 					perlin = 2f * (perlin - 0.5f) + 0.5f;
 
 					double hw;
@@ -275,9 +275,6 @@ namespace WorldForge.Builders.PostProcessors
 			public float amount = 1f;
 			public bool isLavaSpring = false;
 
-			private BlockState waterBlock = new BlockState(BlockList.Find("water"));
-			private BlockState lavaBlock = new BlockState(BlockList.Find("lava"));
-
 			public SpringCarver(XElement elem) : base(elem)
 			{
 				if(elem != null)
@@ -295,7 +292,7 @@ namespace WorldForge.Builders.PostProcessors
 				{
 					int y = random.Next(yMin, yMax);
 					if(y > topPos.y) return;
-					TryGenerateSpring(dim, topPos, isLavaSpring ? lavaBlock : waterBlock);
+					TryGenerateSpring(dim, topPos, isLavaSpring ? BlockState.Lava : BlockState.Water);
 				}
 			}
 
