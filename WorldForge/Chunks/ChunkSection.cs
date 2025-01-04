@@ -26,7 +26,10 @@ namespace WorldForge.Chunks
 		public ChunkSection(ChunkData chunk)
 		{
 			containingChunk = chunk;
-			palette = new List<BlockState>();
+			palette = new List<BlockState>
+			{
+				BlockState.Air
+			};
 		}
 
 		public void SetBlockAt(int x, int y, int z, BlockState block)
