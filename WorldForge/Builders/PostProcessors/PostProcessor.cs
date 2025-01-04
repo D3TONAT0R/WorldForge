@@ -114,7 +114,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public void ProcessSurface(BlockCoord pos, int pass)
 		{
-			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
+			float maskValue = mask?.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) ?? 1;
 			if(maskValue > 0)
 			{
 				OnProcessSurface(Context.Dimension, pos, pass, maskValue);

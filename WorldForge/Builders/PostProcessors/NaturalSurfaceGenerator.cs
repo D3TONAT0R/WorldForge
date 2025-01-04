@@ -27,7 +27,6 @@ namespace WorldForge.Builders.PostProcessors
 		private readonly BiomeID desert = BiomeIDs.Get("desert");
 
 		public override Priority OrderPriority => Priority.BeforeDefault;
-		public override bool Multithreading => true;
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
 		public NaturalSurfaceGenerator(int waterLevel = -256, SurfaceType surface = SurfaceType.BiomeBased)

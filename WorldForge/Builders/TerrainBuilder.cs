@@ -15,16 +15,16 @@ namespace WorldForge.Builders
 
 		public bool CreateNewRegions { get; set; } = true;
 
-		public BlockID FillBlock { get; set; }
+		public BlockState FillBlock { get; set; }
 
 		public int BottomHeight { get; set; } = 0;
 
 		public BedrockType BedrockPattern { get; set; } = BedrockType.Noisy;
 
 
-		public TerrainBuilder(BlockID fillBlock = null)
+		public TerrainBuilder(BlockState fillBlock = null)
 		{
-			FillBlock = fillBlock ?? BlockList.Find("stone");
+			FillBlock = fillBlock ?? new BlockState("stone");
 		}
 
 		public void FillBlockColumn(Dimension dim, int x, int z, int height)

@@ -35,8 +35,6 @@ namespace WorldForge.Chunks
 
 		public ChunkStatus Status { get; set; } = ChunkStatus.light;
 
-
-		public string defaultBlock = "minecraft:stone";
 		public ConcurrentDictionary<sbyte, ChunkSection> Sections { get; private set; }
 		public sbyte HighestSection { get; private set; }
 		public sbyte LowestSection { get; private set; }
@@ -123,21 +121,19 @@ namespace WorldForge.Chunks
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
 			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
-			if(!Sections.ContainsKey(sectionY))
+			if(Sections.TryGetValue(sectionY, out var section))
 			{
-				if(allowNew)
-				{
-					if(Sections.TryAdd(sectionY, new ChunkSection(this, defaultBlock)))
-					{
-						RecalculateSectionRange();
-					}
-				}
-				else
-				{
-					return null;
-				}
+				return section;
 			}
-			return Sections[sectionY];
+			if(allowNew)
+			{
+				if(Sections.TryAdd(sectionY, new ChunkSection(this)))
+				{
+					RecalculateSectionRange();
+				}
+				return Sections[sectionY];
+			}
+			return null;
 		}
 
 		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
@@ -232,9 +228,9 @@ namespace WorldForge.Chunks
 		public void SetBiomeAt(int x, int z, BiomeID biome)
 		{
 			if(!IsLoaded) Load();
-			foreach (var sec in Sections.Values)
+			foreach (var sec in Sections)
 			{
-				sec.SetBiomeColumnAt(x, z, biome);
+				sec.Value.SetBiomeColumnAt(x, z, biome);
 			}
 		}
 

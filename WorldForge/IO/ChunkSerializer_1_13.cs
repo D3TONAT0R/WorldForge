@@ -71,7 +71,7 @@ namespace WorldForge.IO
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach(var o in sectionsList.listContent)
 			{
-				var section = new ChunkSection(c, null);
+				var section = new ChunkSection(c);
 
 				var sectionComp = (NBTCompound)o;
 				if(!SectionHasBlocks(sectionComp)) continue;

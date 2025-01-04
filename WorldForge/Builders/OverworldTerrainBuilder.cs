@@ -12,11 +12,11 @@ namespace WorldForge.Builders
 			Gravel
 		}
 
-		private readonly BlockID bedrock = BlockList.Find("bedrock");
-		private readonly BlockID grass = BlockList.Find("grass_block");
-		private readonly BlockID dirt = BlockList.Find("dirt");
-		private readonly BlockID sand = BlockList.Find("sand");
-		private readonly BlockID gravel = BlockList.Find("gravel");
+		private readonly BlockState bedrock = new BlockState("bedrock");
+		private readonly BlockState grass = new BlockState("grass_block");
+		private readonly BlockState dirt = new BlockState("dirt");
+		private readonly BlockState sand = new BlockState("sand");
+		private readonly BlockState gravel = new BlockState("gravel");
 
 		public SurfacePreset Surface { get; set; }
 
@@ -34,7 +34,7 @@ namespace WorldForge.Builders
 			var seed = Seed == -1 ? (dim.ParentWorld?.LevelData.worldGen.WorldSeed ?? 0) : Seed;
 			if(!TryCreateBedrock(dim, coord, seed))
 			{
-				BlockID block = FillBlock;
+				var block = FillBlock;
 				if(Surface != SurfacePreset.None)
 				{
 					int t = (int)SurfaceLayerThickness;
@@ -46,7 +46,7 @@ namespace WorldForge.Builders
 			}
 		}
 
-		private BlockID GetBlockForPreset(SurfacePreset preset, bool top)
+		private BlockState GetBlockForPreset(SurfacePreset preset, bool top)
 		{
 			switch(preset)
 			{

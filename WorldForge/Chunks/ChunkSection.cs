@@ -23,15 +23,10 @@ namespace WorldForge.Chunks
 
 		//private readonly object lockObj = new object();
 
-		public ChunkSection(ChunkData chunk, string defaultBlock)
+		public ChunkSection(ChunkData chunk)
 		{
 			containingChunk = chunk;
 			palette = new List<BlockState>();
-			if (defaultBlock != null)
-			{
-				palette.Add(new BlockState(BlockList.Find("minecraft:air"))); //Index 0
-				palette.Add(new BlockState(BlockList.Find(defaultBlock))); //Index 1
-			}
 		}
 
 		public void SetBlockAt(int x, int y, int z, BlockState block)
