@@ -269,7 +269,7 @@ namespace WorldForge.Regions
 			{
 				foreach (var e in chunk.Entities)
 				{
-					if (e.BlockPosX.Mod(512) == 16 * cx + x && e.BlockPosZ.Mod(512) == 16 * cz + z)
+					if ((e.BlockPosX & 511) == 16 * cx + x && (e.BlockPosZ & 511) == 16 * cz + z)
 					{
 						merged.chunks[cx, cz].Entities.Add(e);
 					}

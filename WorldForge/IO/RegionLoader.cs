@@ -137,7 +137,7 @@ namespace WorldForge.IO
 				var coord = c.Item1;
 				//TODO: not sure if path is correct
 				var path = c.Item2;
-				var regionSpacePos = new ChunkCoord(coord.x.Mod(32), coord.z.Mod(32));
+				var regionSpacePos = new ChunkCoord(coord.x & 31, coord.z & 31);
 				var chunk = ChunkData.CreateFromNBT(reg, regionSpacePos, new NBTFile(path));
 				reg.chunks[regionSpacePos.x, regionSpacePos.z] = chunk;
 			});

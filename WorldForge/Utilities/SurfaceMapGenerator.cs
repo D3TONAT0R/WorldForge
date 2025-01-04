@@ -69,7 +69,8 @@ namespace WorldForge
 					else shade = -1;
 					if(depth % 8 >= 4 && shade > -1)
 					{
-						if(x.Mod(2) == z.Mod(2)) shade--;
+						//Same as modulo of 2
+						if((x & 1) == (z & 1)) shade--;
 					}
 				}
 				else

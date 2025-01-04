@@ -216,7 +216,7 @@ namespace WorldForge.Regions
 			{
 				//for (int y = 0; y < 256; y++)
 				//{
-				return chunk.GetBiomeAt(x.Mod(16), z.Mod(16));
+				return chunk.GetBiomeAt(x & 0xF, z & 0xF);
 				//}
 			}
 			else
@@ -245,7 +245,7 @@ namespace WorldForge.Regions
 			var chunk = GetChunkAtBlock(new BlockCoord(x, 0, z), false);
 			if (chunk != null)
 			{
-				chunk.SetBiomeAt(x.Mod(16), z.Mod(16), biome);
+				chunk.SetBiomeAt(x & 0xF, z & 0xF, biome);
 			}
 		}
 
@@ -291,7 +291,7 @@ namespace WorldForge.Regions
 			var chunk = GetChunkAtBlock(new BlockCoord(x, 0, z), false);
 			if (chunk != null)
 			{
-				return chunk.GetHighestBlock(x.Mod(16), z.Mod(16), heightmapType);
+				return chunk.GetHighestBlock(x & 0xF, z & 0xF, heightmapType);
 			}
 			else
 			{

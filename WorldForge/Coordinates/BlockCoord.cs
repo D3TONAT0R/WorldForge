@@ -14,11 +14,11 @@ namespace WorldForge.Coordinates
 
 		public ChunkCoord Chunk => new ChunkCoord((int)Math.Floor(x / 16f), (int)Math.Floor(z / 16f));
 
-		public BlockCoord LocalRegionCoords => new BlockCoord(x.Mod(512), y, z.Mod(512));
+		public BlockCoord LocalRegionCoords => new BlockCoord(x & 0x1FF, y, z & 0x1FF);
 
-		public BlockCoord LocalChunkCoords => new BlockCoord(x.Mod(16), y, z.Mod(16));
+		public BlockCoord LocalChunkCoords => new BlockCoord(x & 0xF, y, z & 0xF);
 
-		public BlockCoord LocalSectionCoords => new BlockCoord(x.Mod(16), y.Mod(16), z.Mod(16));
+		public BlockCoord LocalSectionCoords => new BlockCoord(x & 0xF, y & 0xF, z & 0xF);
 
 		public BlockCoord Below => new BlockCoord(x, y - 1, z);
 		public BlockCoord Above => new BlockCoord(x, y + 1, z);

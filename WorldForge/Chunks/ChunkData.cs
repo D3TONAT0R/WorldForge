@@ -117,7 +117,7 @@ namespace WorldForge.Chunks
 		public void SetBlockAt(BlockCoord pos, BlockState block)
 		{
 			if(!IsLoaded) Load();
-			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, block);
+			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, block);
 		}
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
@@ -144,7 +144,7 @@ namespace WorldForge.Chunks
 		public void SetDefaultBlockAt(BlockCoord pos)
 		{
 			if(!IsLoaded) Load();
-			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y.Mod(16), pos.z, 1); //1 is always the default block in a region generated from scratch
+			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, 1); //1 is always the default block in a region generated from scratch
 		}
 
 		///<summary>Gets the block at the given chunk coordinate</summary>
@@ -154,7 +154,7 @@ namespace WorldForge.Chunks
 			if(!IsLoaded) Load();
 			var sec = GetChunkSectionForYCoord(pos.y, false);
 			if (sec == null) return null;
-			return sec.GetBlockAt(pos.x, pos.y.Mod(16), pos.z);
+			return sec.GetBlockAt(pos.x, pos.y & 0xF, pos.z);
 		}
 
 		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
@@ -224,7 +224,7 @@ namespace WorldForge.Chunks
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if (section != null)
 			{
-				section.SetBiomeAt(pos.x, pos.y.Mod(16), pos.z, biome);
+				section.SetBiomeAt(pos.x, pos.y & 0xF, pos.z, biome);
 			}
 		}
 
@@ -245,7 +245,7 @@ namespace WorldForge.Chunks
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if (section != null)
 			{
-				return section.GetBiomeAt(pos.x, pos.y.Mod(16), pos.z);
+				return section.GetBiomeAt(pos.x, pos.y & 0xF, pos.z);
 			}
 			else
 			{
@@ -295,7 +295,7 @@ namespace WorldForge.Chunks
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				var blockState = GetBlockAt((x.Mod(16), y, z.Mod(16)));
+				var blockState = GetBlockAt((x & 0xF, y, z & 0xF));
 				if (blockState != null && Blocks.IsBlockForMap(blockState.Block, type)) return y;
 				y--;
 			}

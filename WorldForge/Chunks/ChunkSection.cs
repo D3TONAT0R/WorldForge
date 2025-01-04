@@ -130,9 +130,9 @@ namespace WorldForge.Chunks
 		{
 			//NOTE: biomes have a vertical resolution of 4 blocks
 			if (biomes == null) InitializeBiomes();
-			x = x.Mod(16);
-			z = z.Mod(16);
-			y = y.Mod(16);
+			x &= 0xF;
+			y &= 0xF;
+			z &= 0xF;
 			biomes[x, y / 4, z] = biome;
 		}
 
@@ -158,7 +158,7 @@ namespace WorldForge.Chunks
 		public BiomeID GetBiomeAt(int x, int y, int z)
 		{
 			if (biomes == null) return null;
-			return biomes[x.Mod(16), (y / 4).Mod(4), z.Mod(16)];
+			return biomes[x & 0xF, (y / 4) & 3, z & 0xF];
 		}
 
 		public BiomeID GetBiomeAt(int x, int z)

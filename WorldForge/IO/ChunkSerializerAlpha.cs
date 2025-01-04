@@ -10,8 +10,8 @@ namespace WorldForge.IO
 
 		public static void GetAlphaChunkPathAndName(ChunkCoord pos, out string folder1, out string folder2, out string fileName)
 		{
-			folder1 = ToBase36(pos.x.Mod(256) % 64);
-			folder2 = ToBase36(pos.z.Mod(256) % 64);
+			folder1 = ToBase36(pos.x & 0xFF % 64);
+			folder2 = ToBase36(pos.z & 0xFF % 64);
 			bool xNeg = pos.x < 0;
 			bool zNeg = pos.z < 0;
 			var chunkNameBuilder = new StringBuilder();

@@ -122,7 +122,7 @@ namespace WorldForge
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
-					var chunk = ChunkData.CreateFromNBT(region, new ChunkCoord(chunkPos.x.Mod(32), chunkPos.z.Mod(32)), nbt);
+					var chunk = ChunkData.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), nbt);
 					cs.ReadChunkNBT(chunk, version);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
@@ -265,7 +265,7 @@ namespace WorldForge
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(int x, int z)
 		{
-			return GetRegionAtBlock(x, z)?.GetBiomeAt(x.Mod(512), z.Mod(512));
+			return GetRegionAtBlock(x, z)?.GetBiomeAt(x & 511, z & 511);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
@@ -277,7 +277,7 @@ namespace WorldForge
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			GetRegionAtBlock(x, z)?.SetBiomeAt(x.Mod(512), z.Mod(512), biome);
+			GetRegionAtBlock(x, z)?.SetBiomeAt(x & 511, z & 511, biome);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
@@ -435,14 +435,14 @@ namespace WorldForge
 				var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
 				if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
 				{
-					var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x.Mod(32), chunkCoord.z.Mod(32));
+					var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x & 31, chunkCoord.z & 31);
 					chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 					chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
 				}
 				short height;
 				if(chunkHeightmap != null)
 				{
-					height = chunkHeightmap[x.Mod(16), z.Mod(16)];
+					height = chunkHeightmap[x & 0xF, z & 0xF];
 				}
 				else
 				{
@@ -467,7 +467,7 @@ namespace WorldForge
 	/// </summary>
 	public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
 	{
-		return GetRegionAt(x, z)?.GetHighestBlock(x.Mod(512), z.Mod(512), heightmapType) ?? short.MinValue;
+		return GetRegionAt(x, z)?.GetHighestBlock(x & 511, z & 511, heightmapType) ?? short.MinValue;
 	}
 
 	public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ, GameVersion gameVersion)

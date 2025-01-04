@@ -46,7 +46,7 @@ namespace WorldForge.IO
 						var section = c.GetChunkSectionForYCoord(y * 4, false);
 						if(section != null)
 						{
-							var biome = section.GetPredominantBiomeAt4x4(x, y.Mod(4), z);
+							var biome = section.GetPredominantBiomeAt4x4(x, y & 3, z);
 							BiomeID.Resolve(TargetVersion, ref biome);
 							if(biome == null) biome = BiomeID.Plains;
 							biomeData[i] = (int)biome.numericId;
