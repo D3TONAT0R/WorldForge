@@ -58,12 +58,12 @@ namespace WorldForge
 
 		public static bool operator ==(NamespacedID l, NamespacedID r)
 		{
-			return l.FullID == r.FullID;
+			return l.Equals(r);
 		}
 
 		public static bool operator !=(NamespacedID l, NamespacedID r)
 		{
-			return !(l == r);
+			return !l.Equals(r);
 		}
 
 		public bool Matches(string id)
