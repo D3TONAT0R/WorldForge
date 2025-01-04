@@ -4,10 +4,12 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public struct NamespacedID : IEquatable<NamespacedID>, INBTConverter
+	public readonly struct NamespacedID : IEquatable<NamespacedID>, INBTConverter
 	{
-		public string customNamespace;
-		public string id;
+		public readonly string customNamespace;
+		public readonly string id;
+
+		public readonly int hash;
 
 		public string FullID => (customNamespace ?? "minecraft") + ":" + id;
 
@@ -22,6 +24,8 @@ namespace WorldForge
 			}
 			customNamespace = ns;
 			this.id = id;
+			hash = 0;
+			hash = FullID.GetHashCode();
 		}
 
 		public NamespacedID(string fullId, bool checkValidity = true)
@@ -38,6 +42,8 @@ namespace WorldForge
 				customNamespace = split[0] != "minecraft" ? split[0] : null;
 				id = split[1];
 			}
+			hash = 0;
+			hash = FullID.GetHashCode();
 		}
 
 		public override string ToString()
@@ -47,7 +53,7 @@ namespace WorldForge
 
 		public override int GetHashCode()
 		{
-			return FullID.GetHashCode();
+			return hash;
 		}
 
 		public static bool operator ==(NamespacedID l, NamespacedID r)
