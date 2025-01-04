@@ -38,5 +38,10 @@ namespace WorldForge
 		{
 			return Lerp(a2, b2, InverseLerp(a1, b1, v));
 		}
+
+		public static int FastDivFloor(int value, int div)
+		{
+			return value < 0 ? (value + 1) / div - 1 : value / div;
+		}
 	}
 }

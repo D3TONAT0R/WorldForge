@@ -10,15 +10,15 @@ namespace WorldForge.Coordinates
 		public int y;
 		public int z;
 
-		public RegionLocation Region => new RegionLocation((int)Math.Floor(x / 512f), (int)Math.Floor(z / 512f));
+		public RegionLocation Region => new RegionLocation(MathUtils.FastDivFloor(x, 512), MathUtils.FastDivFloor(z, 512));
 
-		public ChunkCoord Chunk => new ChunkCoord((int)Math.Floor(x / 16f), (int)Math.Floor(z / 16f));
+		public ChunkCoord Chunk => new ChunkCoord(MathUtils.FastDivFloor(x, 16), MathUtils.FastDivFloor(z, 16));
 
-		public BlockCoord LocalRegionCoords => new BlockCoord(x & 0x1FF, y, z & 0x1FF);
+		public BlockCoord LocalRegionCoords => new BlockCoord(x & 511, y, z & 511);
 
-		public BlockCoord LocalChunkCoords => new BlockCoord(x & 0xF, y, z & 0xF);
+		public BlockCoord LocalChunkCoords => new BlockCoord(x & 15, y, z & 15);
 
-		public BlockCoord LocalSectionCoords => new BlockCoord(x & 0xF, y & 0xF, z & 0xF);
+		public BlockCoord LocalSectionCoords => new BlockCoord(x & 15, y & 15, z & 15);
 
 		public BlockCoord Below => new BlockCoord(x, y - 1, z);
 		public BlockCoord Above => new BlockCoord(x, y + 1, z);

@@ -120,7 +120,7 @@ namespace WorldForge.Chunks
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
-			sbyte sectionY = (sbyte)Math.Floor(y / 16f);
+			sbyte sectionY = (sbyte)MathUtils.FastDivFloor(y, 16);
 			if(Sections.TryGetValue(sectionY, out var section))
 			{
 				return section;

@@ -115,7 +115,7 @@ namespace WorldForge
 					string zBase36 = split[2];
 					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
-					if(!dim.TryGetRegionAtBlock(regionPos.x, regionPos.z, out var region))
+					if(!dim.TryGetRegion(regionPos, out var region))
 					{
 						region = Region.CreateNew(regionPos, dim);
 						dim.AddRegion(region, true);
@@ -201,15 +201,15 @@ namespace WorldForge
 		}
 
 		/// <summary>Gets the region at the given block coordinates, if present</summary>
-		public Region GetRegionAtBlock(int x, int z)
+		public Region GetRegionAtBlock(BlockCoord pos)
 		{
-			regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out var region);
+			regions.TryGetValue(pos.Region, out var region);
 			return region;
 		}
 
-		public bool TryGetRegionAtBlock(int x, int z, out Region region)
+		public bool TryGetRegionAtBlock(BlockCoord pos, out Region region)
 		{
-			return regions.TryGetValue(new RegionLocation(x.RegionCoord(), z.RegionCoord()), out region);
+			return regions.TryGetValue(pos.Region, out region);
 		}
 
 		public bool AddRegion(Region reg, bool throwException)
@@ -247,43 +247,43 @@ namespace WorldForge
 		///<summary>Gets the block type at the given location.</summary>
 		public BlockID GetBlock(BlockCoord pos)
 		{
-			return GetRegionAtBlock(pos.x, pos.z)?.GetBlock(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos)?.GetBlock(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the full block state at the given location.</summary>
 		public BlockState GetBlockState(BlockCoord pos)
 		{
-			return GetRegionAtBlock(pos.x, pos.z)?.GetBlockState(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos)?.GetBlockState(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
-			return GetRegionAtBlock(pos.x, pos.z)?.GetTileEntity(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos)?.GetTileEntity(pos.LocalRegionCoords);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(int x, int z)
 		{
-			return GetRegionAtBlock(x, z)?.GetBiomeAt(x & 511, z & 511);
+			return GetRegionAtBlock(new BlockCoord(x, 0, z))?.GetBiomeAt(x & 511, z & 511);
 		}
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(BlockCoord pos)
 		{
-			return GetRegionAtBlock(pos.x, pos.z)?.GetBiomeAt(pos.LocalRegionCoords);
+			return GetRegionAtBlock(pos)?.GetBiomeAt(pos.LocalRegionCoords);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(int x, int z, BiomeID biome)
 		{
-			GetRegionAtBlock(x, z)?.SetBiomeAt(x & 511, z & 511, biome);
+			GetRegionAtBlock(new BlockCoord(x, 0, z))?.SetBiomeAt(x & 511, z & 511, biome);
 		}
 
 		///<summary>Sets the biome at the given location.</summary>
 		public void SetBiome(BlockCoord pos, BiomeID biome)
 		{
-			GetRegionAtBlock(pos.x, pos.z)?.SetBiomeAt(pos.LocalRegionCoords, biome);
+			GetRegionAtBlock(pos)?.SetBiomeAt(pos.LocalRegionCoords, biome);
 		}
 
 		/// <summary>
@@ -291,7 +291,7 @@ namespace WorldForge
 		/// </summary>
 		public void MarkForTickUpdate(BlockCoord pos)
 		{
-			GetRegionAtBlock(pos.x, pos.z)?.MarkForTickUpdate(pos.LocalRegionCoords);
+			GetRegionAtBlock(pos)?.MarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		/// <summary>
@@ -299,36 +299,7 @@ namespace WorldForge
 		/// </summary>
 		public void UnmarkForTickUpdate(BlockCoord pos)
 		{
-			GetRegionAtBlock(pos.x, pos.z)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
-		}
-
-		//private readonly object lockObj = new object();
-
-		private Region GetRegionAt(int x, int z)
-		{
-			return GetRegionAtBlock(x, z);
-			/*lock (lockObj)
-			{
-				var region = TryGetRegion(x, z);
-				if (region == null)
-				{
-					if (allowNew)
-					{
-						var rloc = new RegionLocation(x.RegionCoord(), z.RegionCoord());
-						var r = new Region(rloc);
-						regions.Add(rloc, r);
-						return r;
-					}
-					else
-					{
-						return null;
-					}
-				}
-				else
-				{
-					return region;
-				}
-			}*/
+			GetRegionAtBlock(pos)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
 		public bool CreateRegionIfMissing(RegionLocation loc)
@@ -357,7 +328,7 @@ namespace WorldForge
 		{
 			//TODO: Check for varying build limits
 			//if (pos.y < 0 || pos.y > 255) return false;
-			var r = GetRegionAt(pos.x, pos.z);
+			var r = GetRegionAtBlock(pos);
 			if(r != null)
 			{
 				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
@@ -385,7 +356,7 @@ namespace WorldForge
 		{
 			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
 			//if (pos.y < 0 || pos.y > 255) return;
-			var r = GetRegionAt(pos.x, pos.z);
+			var r = GetRegionAtBlock(pos);
 			if(r != null)
 			{
 				r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
@@ -399,7 +370,7 @@ namespace WorldForge
 		///<summary>Sets the tile entity at the given location.</summary>
 		public bool SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			if(TryGetRegionAtBlock(pos.x, pos.z, out var region))
+			if(TryGetRegionAtBlock(pos, out var region))
 			{
 				return region.SetTileEntity(pos, te);
 			}
@@ -432,12 +403,13 @@ namespace WorldForge
 			{
 				for(int x = boundary.xMin; x < boundary.xMax; x++)
 				{
-					var chunkCoord = new ChunkCoord(x.ChunkCoord(), z.ChunkCoord());
-					if(!chunkHeightmaps.TryGetValue(chunkCoord, out var chunkHeightmap))
+					var pos = new BlockCoord(x, 0, z);
+					var chunkPos = pos.Chunk;
+					if(!chunkHeightmaps.TryGetValue(chunkPos, out var chunkHeightmap))
 					{
-						var chunk = GetRegionAtBlock(x, z)?.GetChunk(chunkCoord.x & 31, chunkCoord.z & 31);
+						var chunk = GetRegionAtBlock(pos)?.GetChunk(chunkPos.x & 31, chunkPos.z & 31);
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
-						chunkHeightmaps.Add(chunkCoord, chunkHeightmap);
+						chunkHeightmaps.Add(chunkPos, chunkHeightmap);
 					}
 					short height;
 					if(chunkHeightmap != null)
@@ -459,7 +431,7 @@ namespace WorldForge
 		/// </summary>
 		public int GetWaterDepth(BlockCoord pos)
 		{
-			return GetRegionAt(pos.x, pos.z)?.GetWaterDepth(pos.LocalRegionCoords) ?? 0;
+			return GetRegionAtBlock(pos)?.GetWaterDepth(pos.LocalRegionCoords) ?? 0;
 		}
 
 		/// <summary>
@@ -467,7 +439,7 @@ namespace WorldForge
 		/// </summary>
 		public short GetHighestBlock(int x, int z, HeightmapType heightmapType)
 		{
-			return GetRegionAt(x, z)?.GetHighestBlock(x & 511, z & 511, heightmapType) ?? short.MinValue;
+			return GetRegionAtBlock(new BlockCoord(x, 0, z))?.GetHighestBlock(x & 511, z & 511, heightmapType) ?? short.MinValue;
 		}
 
 		public IEnumerable<ChunkData> EnumerateChunks()

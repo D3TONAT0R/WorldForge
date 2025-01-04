@@ -30,7 +30,7 @@ namespace WorldForge.Builders
 		public void FillBlockColumn(Dimension dim, int x, int z, int height)
 		{
 			var pos = new BlockCoord(x, height, z);
-			if(CreateNewRegions && !dim.TryGetRegionAtBlock(x, z, out _))
+			if(CreateNewRegions && !dim.TryGetRegionAtBlock(pos, out _))
 			{
 				dim.CreateRegionIfMissing(pos.Region);
 			}
