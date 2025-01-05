@@ -25,7 +25,7 @@ namespace WorldForge.Builders.PostProcessors
 		private const int _ = -1;
 
 		private const int oakTrunkMinHeight = 1;
-		private const int oakTrunkMaxHeight = 8;
+		private const int oakTrunkMaxHeight = 3;
 		private const int birchTrunkMinHeight = 1;
 		private const int birchTrunkMaxHeight = 4;
 		private const int spruceTrunkMinHeight = 1;
@@ -34,28 +34,22 @@ namespace WorldForge.Builders.PostProcessors
 		private static readonly int[,,] blueprintOakTreeTop = new int[,,] {
 		//YZX
 		{
-			{_,_,_,_,_},
-			{_,_,1,_,_},
-			{_,1,0,1,_},
-			{_,_,1,_,_},
-			{_,_,_,_,_},
-		},{
-			{_,1,1,1,_},
+			{2,1,1,1,2},
 			{1,1,1,1,1},
 			{1,1,0,1,1},
 			{1,1,1,1,1},
-			{_,1,1,1,_}
+			{2,1,1,1,2}
 		},{
-			{_,1,1,1,_},
+			{2,1,1,1,2},
 			{1,1,1,1,1},
 			{1,1,0,1,1},
 			{1,1,1,1,1},
-			{_,1,1,1,_}
+			{2,1,1,1,2}
 		},{
 			{_,_,_,_,_},
-			{_,1,1,1,_},
+			{_,2,1,2,_},
 			{_,1,0,1,_},
-			{_,1,1,1,_},
+			{_,2,1,2,_},
 			{_,_,_,_,_}
 		},{
 			{_,_,_,_,_},
@@ -121,7 +115,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		private static readonly StructurePalette<Schematic.Block> oakTreePalette = new StructurePalette<Schematic.Block>(
 			new Schematic.Block(new BlockState("oak_log")),
-			new Schematic.Block(new BlockState("oak_leaves"))
+			new Schematic.Block(new BlockState("oak_leaves")),
+			new Schematic.Block(new BlockState("oak_leaves"), probability: 0.5f)
 		);
 		private readonly Schematic oakTree = Schematic.From3DArray(oakTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, oakTrunkMinHeight, oakTrunkMaxHeight);
 
@@ -255,7 +250,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(!Check(dim, pos.Below, grassBlock, dirtBlock) || !dim.IsAirOrNull(pos.Above)) return false;
 			//if(IsObstructed(region, x, y+1, z, x, y+bareTrunkHeight, z) || IsObstructed(region, x-w, y+bareTrunkHeight, z-w, x+w, y+bareTrunkHeight+treeTopHeight, z+w)) return false;
 			dim.SetBlock(pos.Below, "minecraft:dirt");
-			tree.Build(dim, pos, seed);
+			tree.Build(dim, pos, seed, false);
 			return true;
 		}
 
@@ -273,7 +268,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		private bool PlaceCactus(Dimension dim, BlockCoord pos)
 		{
-			if(Check(dim, pos.Below, sandBlock) && dim.IsAirOrNull(pos.Above))
+			if(Check(dim, pos.Below, sandBlock) && dim.IsAirOrNull(pos.Above) && CountFreeNeighbors(dim, pos) == 0)
 			{
 				int height = random.Value.Next(1, 4);
 				for(int y = 0; y < height; y++)
@@ -289,6 +284,16 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			var b = dim.GetBlock(pos);
 			return b == block.Block;
+		}
+
+		private int CountFreeNeighbors(Dimension dim, BlockCoord pos)
+		{
+			int free = 0;
+			if(dim.IsAirOrNull(pos.North)) free++;
+			if(dim.IsAirOrNull(pos.South)) free++;
+			if(dim.IsAirOrNull(pos.East)) free++;
+			if(dim.IsAirOrNull(pos.West)) free++;
+			return free;
 		}
 
 		private bool Check(Dimension dim, BlockCoord pos, BlockState block1, BlockState block2)

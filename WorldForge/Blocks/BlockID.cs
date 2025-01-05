@@ -14,6 +14,7 @@ namespace WorldForge
 		public bool IsWater => ID == water;
 		public bool IsLava => ID == lava;
 		public bool IsLiquid => IsWater || IsLava;
+		public bool IsAirOrLiquid => IsAir || IsLiquid;
 
 		/// <summary>
 		/// Registers a new vanilla block type.

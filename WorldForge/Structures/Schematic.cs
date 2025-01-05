@@ -98,7 +98,7 @@ namespace WorldForge.Structures
 			return data;
 		}
 
-		public void Build(Dimension dimension, BlockCoord origin, long seed, bool allowNewChunks = false)
+		public void Build(Dimension dimension, BlockCoord origin, long seed, bool replaceExistingBlocks, bool allowNewChunks = false)
 		{
 			int paletteIndex = paletteData.PaletteCount > 1 ? SeededRandom.Int(paletteData.PaletteCount, seed, origin) : 0;
 			var palette = paletteData.GetPalette(paletteIndex);
@@ -109,16 +109,16 @@ namespace WorldForge.Structures
 				int height = SeededRandom.RangeInt(trunkMinHeight, trunkMaxHeight + 1, seed, origin);
 				for(int i = 0; i < height; i++)
 				{
-					Build(dimension, origin + new BlockCoord(0, i, 0), seed, allowNewChunks, treeTrunk, palette);
+					Build(dimension, origin + new BlockCoord(0, i, 0), seed, allowNewChunks, treeTrunk, palette, replaceExistingBlocks);
 				}
 				origin.y += height;
 			}
 
 			//Build main structure
-			Build(dimension, origin, seed, allowNewChunks, blocks, palette);
+			Build(dimension, origin, seed, allowNewChunks, blocks, palette, replaceExistingBlocks);
 		}
 
-		private void Build(Dimension dimension, BlockCoord origin, long seed, bool allowNewChunks, Dictionary<BlockCoord, int> data, List<Block> palette)
+		private void Build(Dimension dimension, BlockCoord origin, long seed, bool allowNewChunks, Dictionary<BlockCoord, int> data, List<Block> palette, bool replaceBlocks)
 		{
 			foreach(var kv in data)
 			{
@@ -128,11 +128,14 @@ namespace WorldForge.Structures
 
 				if(SeededRandom.Probability(block.probability, seed, origin + pos))
 				{
-					dimension.SetBlock(origin + pos, block.state, allowNewChunks);
-					if(block.nbt != null)
+					if(replaceBlocks || (dimension.GetBlock(origin + pos)?.IsAirOrLiquid ?? true))
 					{
-						var tileEntity = TileEntity.CreateFromNBT(block.nbt, dimension.ParentWorld?.GameVersion, out _);
-						dimension.SetTileEntity(origin + pos, tileEntity);
+						dimension.SetBlock(origin + pos, block.state, allowNewChunks);
+						if(block.nbt != null)
+						{
+							var tileEntity = TileEntity.CreateFromNBT(block.nbt, dimension.ParentWorld?.GameVersion, out _);
+							dimension.SetTileEntity(origin + pos, tileEntity);
+						}
 					}
 				}
 			}

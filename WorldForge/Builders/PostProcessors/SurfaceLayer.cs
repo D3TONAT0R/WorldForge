@@ -118,7 +118,7 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				if(schematic != null)
 				{
-					schematic.Build(dim, pos.Above, seed);
+					schematic.Build(dim, pos.Above, seed, false);
 					return true;
 				}
 				else
