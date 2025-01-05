@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WorldForge.Coordinates;
 using WorldForge.NBT;
 using WorldForge.TileEntities;
@@ -74,6 +75,7 @@ namespace WorldForge.Structures
 			structure.treeTrunk = new Dictionary<BlockCoord, int> { { new BlockCoord(0, 0, 0), trunkIndex } };
 			structure.trunkMinHeight = trunkMinHeight;
 			structure.trunkMaxHeight = trunkMaxHeight;
+			structure.Validate(true);
 			return structure;
 		}
 
@@ -139,6 +141,17 @@ namespace WorldForge.Structures
 					}
 				}
 			}
+		}
+
+		public bool Validate(bool throwException)
+		{
+			int max = blocks.Values.Max();
+			if(max >= paletteData.GetPalette().Count)
+			{
+				if(throwException) throw new ArgumentException($"Block palette indices out of range for palette with {paletteData.GetPalette().Count} entries");
+				return false;
+			}
+			return true;
 		}
 	}
 }

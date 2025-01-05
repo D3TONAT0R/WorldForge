@@ -26,7 +26,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		private const int oakTrunkMinHeight = 1;
 		private const int oakTrunkMaxHeight = 3;
-		private const int birchTrunkMinHeight = 1;
+		private const int birchTrunkMinHeight = 2;
 		private const int birchTrunkMaxHeight = 4;
 		private const int spruceTrunkMinHeight = 1;
 		private const int spruceTrunkMaxHeight = 4;
@@ -122,7 +122,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		private static readonly StructurePalette<Schematic.Block> birchTreePalette = new StructurePalette<Schematic.Block>(
 			new Schematic.Block(new BlockState("birch_log")),
-			new Schematic.Block(new BlockState("birch_leaves"))
+			new Schematic.Block(new BlockState("birch_leaves")),
+			new Schematic.Block(new BlockState("oak_leaves"), probability: 0.5f)
 		);
 		private readonly Schematic birchTree = Schematic.From3DArray(birchTreePalette, blueprintOakTreeTop, true, new BlockCoord(2, 0, 2), 0, birchTrunkMinHeight, birchTrunkMaxHeight);
 
@@ -137,6 +138,7 @@ namespace WorldForge.Builders.PostProcessors
 		public float GrassDensity { get; set; } = 0.15f;
 		public float GeneralTreesPerChunk { get; set; } = 0.03f;
 		public float ForestTreesPerChunk { get; set; } = 4f;
+		public float ForestBirchRatio { get; set; } = 0.08f;
 		public float CactiPerChunk { get; set; } = 0.25f;
 		public float DeadBushPerChunk { get; set; } = 0.3f;
 
@@ -193,7 +195,8 @@ namespace WorldForge.Builders.PostProcessors
 					}
 					break;
 				case GeneratorType.Forest:
-					if(!TrySpawnTree(dimension, seed, pos, oakTree, ForestTreesPerChunk))
+					var tree = SeededRandom.Probability(ForestBirchRatio, seed + 123, pos) ? birchTree : oakTree;
+					if(!TrySpawnTree(dimension, seed, pos, tree, ForestTreesPerChunk))
 					{
 						TrySpawnGrass(dimension, seed + 1, pos, GrassDensity * 0.5f);
 					}
