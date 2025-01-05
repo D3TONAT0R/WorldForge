@@ -53,88 +53,26 @@ namespace WorldForge
 			return (int)Math.Log(bitValue, 2) + 1;
 		}
 
-		public static BitArray CreateBitArray(long[] compressedBitArray, int endIndex = 64)
+		public static ushort[] UnpackBits(long[] compressedData, int bitsPerInt, int arrayLength, bool tightPacking)
 		{
-			List<bool> bitArray = new List<bool>();
-			for(int i = 0; i < compressedBitArray.Length; i++)
+			ushort[] values = new ushort[arrayLength];
+			int bitsPerLong = tightPacking ? 64 : (64 / bitsPerInt) * bitsPerInt;
+			for(int i = 0; i < arrayLength; i++)
 			{
-				var bits = new BitArray(BitConverter.GetBytes(compressedBitArray[i]));
-				//ReverseBitArray(bits);
-				for(int j = 0; j < endIndex; j++)
+				for(int j = 0; j < bitsPerInt; j++)
 				{
-					bitArray.Add(bits[j]);
+					int bitPos = i * bitsPerInt + j;
+					int longIndex = bitPos / bitsPerLong;
+					int longBitPos = bitPos % bitsPerLong;
+					if(GetBit(compressedData[longIndex], longBitPos))
+					{
+						SetBit(ref values[i], j, true);
+					}
 				}
 			}
-			return new BitArray(bitArray.ToArray());
+			return values;
 		}
-
-		public static void ReverseBitArray(BitArray array)
-		{
-			int length = array.Length;
-			int mid = length / 2;
-
-			for(int i = 0; i < mid; i++)
-			{
-				int i1 = length - i - 1;
-				(array[i], array[i1]) = (array[i1], array[i]);
-			}
-		}
-
-		public static ushort CreateInt16FromBits(BitArray bits, int index, int length)
-		{
-			int value = 0;
-			for(int i = 0; i < length; i++)
-			{
-				//Reverse order bits
-				//int i2 = length - i - 1;
-				int i2 = i;
-				if(bits[index + i])
-				{
-					value += 1 << i2;
-				}
-			}
-			return (ushort)value;
-		}
-
-		public static ushort[] ExtractCompressedInts(long[] compressedData, int bitsPerInt, int intArrayLength, bool useFull64BitRange)
-		{
-			var bitArray = CreateBitArray(compressedData, useFull64BitRange ? 64 : (int)(64.0 / bitsPerInt) * bitsPerInt);
-			ushort[] array = new ushort[intArrayLength];
-			for(int i = 0; i < intArrayLength; i++)
-			{
-				array[i] = CreateInt16FromBits(bitArray, i * bitsPerInt, bitsPerInt);
-			}
-			return array;
-		}
-
-		public static ushort[] ExtractCompressedIntsOld(long[] compressedData, int bitsPerInt, int intArrayLength, bool useFull64BitRange)
-		{
-			string bits = "";
-			for(int i = 0; i < compressedData.Length; i++)
-			{
-				string newBits = "";
-				byte[] bytes = BitConverter.GetBytes(compressedData[i]);
-				for(int j = 0; j < 8; j++)
-				{
-					newBits += ByteToBinary(bytes[j], true);
-				}
-				if(useFull64BitRange)
-				{
-					bits += newBits;
-				}
-				else
-				{
-					bits += newBits.Substring(0, (int)Math.Floor(newBits.Length / (double)bitsPerInt) * bitsPerInt);
-				}
-			}
-			ushort[] array = new ushort[intArrayLength];
-			for(int i = 0; i < array.Length; i++)
-			{
-				array[i] = BitsToValue(bits, i * bitsPerInt, bitsPerInt);
-			}
-			return array;
-		}
-
+		
 		public static long[] PackBits(ushort[] values, int bitsPerValue, bool tightPacking)
 		{
 			int arraySize;
@@ -188,20 +126,21 @@ namespace WorldForge
 			return (value & (1 << index)) != 0;
 		}
 
+		public static bool GetBit(long value, int index)
+		{
+			return (value & ((long)1 << index)) != 0;
+		}
+
+		public static void SetBit(ref ushort value, int index, bool state)
+		{
+			if(state) value |= (ushort)(1 << index);
+			else value &= (ushort)~(1 << index);
+		}
+
 		public static void SetBit(ref long value, int index, bool state)
 		{
 			if(state) value |= (long)1 << index;
 			else value &= ~((long)1 << index);
-		}
-
-		private static string NumToBits(ushort num, int length)
-		{
-			string s = Convert.ToString(num, 2);
-			if(s.Length > length)
-			{
-				throw new IndexOutOfRangeException("The number " + num + " does not fit in a binary string with length " + length);
-			}
-			return s.PadLeft(length, '0');
 		}
 
 		//Base 36 encoding / decoding taken from https://github.com/bogdanbujdea/csharpbase36
@@ -265,11 +204,11 @@ namespace WorldForge
 		}
 
 		///<summary>Converts the byte to a bit string.</summary>
-		public static string ByteToBinary(byte b, bool bigendian)
+		public static string ByteToBinary(byte b, bool bigEndian)
 		{
 			string s = Convert.ToString((int)b, 2);
 			s = s.PadLeft(8, '0');
-			if(bigendian) s = ReverseString(s);
+			if(bigEndian) s = ReverseString(s);
 			return s;
 		}
 

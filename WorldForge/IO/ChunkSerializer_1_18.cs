@@ -70,7 +70,7 @@ namespace WorldForge.IO
 					{
 						var biomeData = biomesComp.Get<long[]>(BlockDataCompName);
 						var indexBitLength = BitUtils.GetMaxBitCount((uint)palette.Length - 1);
-						var indices = BitUtils.ExtractCompressedInts(biomeData, indexBitLength, 64, false);
+						var indices = BitUtils.UnpackBits(biomeData, indexBitLength, 64, false);
 
 						for(int y = 0; y < 4; y++)
 						{

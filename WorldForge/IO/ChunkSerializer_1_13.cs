@@ -94,7 +94,7 @@ namespace WorldForge.IO
 					int indexBitCount = Math.Max(4, (int)Math.Log(section.palette.Count - 1, 2.0) + 1);
 					long[] longs = GetBlockDataArray(sectionComp);
 
-					ushort[] indices = BitUtils.ExtractCompressedInts(longs, indexBitCount, 4096, UseFull64BitRange);
+					ushort[] indices = BitUtils.UnpackBits(longs, indexBitCount, 4096, UseFull64BitRange);
 
 					for(int y = 0; y < 16; y++)
 					{
