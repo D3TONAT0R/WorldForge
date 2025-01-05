@@ -25,7 +25,7 @@ namespace WorldForge.Builders.PostProcessors
 		private const int _ = -1;
 
 		private const int oakTrunkMinHeight = 1;
-		private const int oakTrunkMaxHeight = 3;
+		private const int oakTrunkMaxHeight = 8;
 		private const int birchTrunkMinHeight = 1;
 		private const int birchTrunkMaxHeight = 4;
 		private const int spruceTrunkMinHeight = 1;
@@ -145,12 +145,12 @@ namespace WorldForge.Builders.PostProcessors
 		public float CactiPerChunk { get; set; } = 0.25f;
 		public float DeadBushPerChunk { get; set; } = 0.3f;
 
-		private readonly BlockID grassBlock = BlockList.Find("grass_block");
-		private readonly BlockID dirtBlock = BlockList.Find("dirt");
-		private readonly BlockID sandBlock = BlockList.Find("sand");
-		private readonly BlockID grass = BlockList.Find("grass");
-		private readonly BlockID deadBush = BlockList.Find("dead_bush");
-		private readonly BlockID cactus = BlockList.Find("cactus");
+		private readonly BlockState grassBlock = new BlockState("grass_block");
+		private readonly BlockState dirtBlock = new BlockState("dirt");
+		private readonly BlockState sandBlock = new BlockState("sand");
+		private readonly BlockState grass = new BlockState("short_grass");
+		private readonly BlockState deadBush = new BlockState("dead_bush");
+		private readonly BlockState cactus = new BlockState("cactus");
 
 		public override Priority OrderPriority => Priority.AfterDefault;
 
@@ -233,7 +233,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(tree == null) return false;
 			if(SeededRandom.Probability(amountPerChunk * CHUNK_MULTIPLIER, seed, ground))
 			{
-				if(PlaceTree(dim, ground.Above, tree, seed))
+				if(PlaceTree(dim, ground.Above, tree, seed + 791))
 				{
 					return true;
 				}
@@ -259,7 +259,7 @@ namespace WorldForge.Builders.PostProcessors
 			return true;
 		}
 
-		private bool PlaceGrass(Dimension dim, BlockCoord pos, BlockID block)
+		private bool PlaceGrass(Dimension dim, BlockCoord pos, BlockState block)
 		{
 			if(Check(dim, pos.Below, grassBlock, dirtBlock)) return dim.SetBlock(pos, block);
 			return false;
@@ -285,16 +285,16 @@ namespace WorldForge.Builders.PostProcessors
 			return false;
 		}
 
-		private bool Check(Dimension dim, BlockCoord pos, BlockID block)
+		private bool Check(Dimension dim, BlockCoord pos, BlockState block)
 		{
 			var b = dim.GetBlock(pos);
-			return b == block;
+			return b == block.Block;
 		}
 
-		private bool Check(Dimension dim, BlockCoord pos, BlockID block1, BlockID block2)
+		private bool Check(Dimension dim, BlockCoord pos, BlockState block1, BlockState block2)
 		{
 			var b = dim.GetBlock(pos);
-			return b == block1 || b == block2;
+			return b == block1.Block || b == block2.Block;
 		}
 
 		private bool IsObstructed(Dimension dim, int x1, int y1, int z1, int x2, int y2, int z2)
