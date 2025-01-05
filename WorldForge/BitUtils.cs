@@ -138,52 +138,28 @@ namespace WorldForge
 		public static long[] PackBits(ushort[] values, int bitsPerValue, bool tightPacking)
 		{
 			int arraySize;
+			int valuesPerLong = tightPacking ? 64 : 64 / bitsPerValue;
 			if(tightPacking)
 			{
 				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
 			}
 			else
 			{
-				int valuesPerLong = 64 / bitsPerValue;
 				arraySize = (int)Math.Ceiling((double)values.Length / valuesPerLong);
 			}
-			//Generate bit array
-			BitArray bits = new BitArray(values.Length * bitsPerValue);
-			for(int i = 0; i < values.Length; i++)
-			{
-				for(int j = 0; j < bitsPerValue; j++)
-				{
-					bits[i * bitsPerValue + j] = GetBit(values[i], j);
-				}
-			}
 			//Convert bits to longs
+			int bitCount = values.Length * bitsPerValue;
 			long[] longs = new long[arraySize];
-			if(tightPacking)
+			int usedBits = tightPacking ? 64 : valuesPerLong * bitsPerValue;
+			//Fill longs all the way
+			for(int i = 0; i < bitCount; i++)
 			{
-				//Fill longs all the way
-				for(int i = 0; i < bits.Length; i++)
+				int il = i / usedBits;
+				int ib = i % usedBits;
+				bool bit = GetBit(values[i / bitsPerValue], i % bitsPerValue);
+				if(bit)
 				{
-					int il = i / 64;
-					int ib = i % 64;
-					if(bits[i])
-					{
-						SetBit(ref longs[il], ib, true);
-					}
-				}
-			}
-			else
-			{
-				//Fill longs until there isn't enough space left
-				int valuesPerLong = 64 / bitsPerValue;
-				int usedBits = valuesPerLong * bitsPerValue;
-				for(int i = 0; i < bits.Length; i++)
-				{
-					int il = i / usedBits;
-					int ib = i % usedBits;
-					if(bits[i])
-					{
-						SetBit(ref longs[il], ib, true);
-					}
+					SetBit(ref longs[il], ib, true);
 				}
 			}
 			return longs;
@@ -218,60 +194,6 @@ namespace WorldForge
 			else value &= ~((long)1 << index);
 		}
 
-		public static long[] PackBitsOld(ushort[] values, int bitsPerValue, bool tightPacking)
-		{
-			int arraySize;
-			if(tightPacking)
-			{
-				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
-			}
-			else
-			{
-				int valuesPerLong = 64 / bitsPerValue;
-				arraySize = (int)Math.Ceiling((double)values.Length / valuesPerLong);
-			}
-
-			long[] longs = new long[arraySize];
-			string[] longsBinary = new string[longs.Length];
-			for(int j = 0; j < longsBinary.Length; j++)
-			{
-				longsBinary[j] = "";
-			}
-			int i = 0;
-			for(int j = 0; j < values.Length; j++)
-			{
-				string bin = NumToBits(values[j], bitsPerValue);
-				bin = ReverseString(bin);
-				if(!tightPacking)
-				{
-					if(longsBinary[i].Length + bitsPerValue > 64)
-					{
-						//The full value doesn't fit, start on the next long
-						i++;
-						longsBinary[i] += bin;
-					}
-					else
-					{
-						for(int k = 0; k < bitsPerValue; k++)
-						{
-							if(longsBinary[i].Length >= 64) i++;
-							longsBinary[i] += bin[k];
-						}
-					}
-				}
-			}
-
-			for(int j = 0; j < longs.Length; j++)
-			{
-				string s = longsBinary[j];
-				s = s.PadRight(64, '0');
-				s = ReverseString(s);
-				longs[j] = Convert.ToInt64(s, 2);
-			}
-
-			return longs;
-		}
-
 		private static string NumToBits(ushort num, int length)
 		{
 			string s = Convert.ToString(num, 2);
@@ -281,7 +203,6 @@ namespace WorldForge
 			}
 			return s.PadLeft(length, '0');
 		}
-
 
 		//Base 36 encoding / decoding taken from https://github.com/bogdanbujdea/csharpbase36
 
