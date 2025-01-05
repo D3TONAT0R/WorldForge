@@ -12,7 +12,6 @@ namespace WorldForge.Builders
 			Gravel
 		}
 
-		private readonly BlockState bedrock = new BlockState("bedrock");
 		private readonly BlockState grass = new BlockState("grass_block");
 		private readonly BlockState dirt = new BlockState("dirt");
 		private readonly BlockState sand = new BlockState("sand");
@@ -21,8 +20,6 @@ namespace WorldForge.Builders
 		public SurfacePreset Surface { get; set; }
 
 		public float SurfaceLayerThickness { get; set; } = 3.5f;
-
-		public long Seed { get; set; } = -1;
 
 		public OverworldTerrainBuilder(SurfacePreset surface)
 		{

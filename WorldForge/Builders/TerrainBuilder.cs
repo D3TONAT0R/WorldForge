@@ -1,5 +1,6 @@
 ﻿using System;
 using WorldForge.Coordinates;
+using static WorldForge.Builders.OverworldTerrainBuilder;
 
 namespace WorldForge.Builders
 {
@@ -13,14 +14,17 @@ namespace WorldForge.Builders
 			Noisy
 		}
 
+		private readonly BlockState bedrock = new BlockState("bedrock");
+
 		public bool CreateNewRegions { get; set; } = true;
 
 		public BlockState FillBlock { get; set; }
 
 		public int BottomHeight { get; set; } = 0;
 
-		public BedrockType BedrockPattern { get; set; } = BedrockType.Noisy;
+		public long Seed { get; set; } = -1;
 
+		public BedrockType BedrockPattern { get; set; } = BedrockType.Noisy;
 
 		public TerrainBuilder(BlockState fillBlock = null)
 		{
@@ -42,7 +46,12 @@ namespace WorldForge.Builders
 
 		protected virtual void SetBlock(Dimension dim, BlockCoord coord, int height)
 		{
-			dim.SetBlock(coord, FillBlock, true);
+			var seed = Seed == -1 ? (dim.ParentWorld?.LevelData.worldGen.WorldSeed ?? 0) : Seed;
+			if(!TryCreateBedrock(dim, coord, seed))
+			{
+				var block = FillBlock;
+				dim.SetBlock(coord, block, true);
+			}
 		}
 
 		protected bool TryCreateBedrock(Dimension dim, BlockCoord coord, long seed)
@@ -50,7 +59,7 @@ namespace WorldForge.Builders
 			if(coord.y == BottomHeight && BedrockPattern == BedrockType.Flat
 				|| coord.y < BottomHeight + 4 && BedrockPattern == BedrockType.Noisy && SeededRandom.ProbabilityInt(coord.y + 1 - BottomHeight, seed, coord))
 			{
-				dim.SetBlock(coord, BlockList.Find("bedrock"), true);
+				dim.SetBlock(coord, bedrock, true);
 				return true;
 			}
 			return false;
