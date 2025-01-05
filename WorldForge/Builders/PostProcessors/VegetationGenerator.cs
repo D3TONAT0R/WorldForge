@@ -268,7 +268,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		private bool PlaceCactus(Dimension dim, BlockCoord pos)
 		{
-			if(Check(dim, pos.Below, sandBlock) && dim.IsAirOrNull(pos.Above) && CountFreeNeighbors(dim, pos) == 0)
+			if(Check(dim, pos.Below, sandBlock) && dim.IsAirOrNull(pos.Above) && CountFreeNeighbors(dim, pos) == 4)
 			{
 				int height = random.Value.Next(1, 4);
 				for(int y = 0; y < height; y++)
