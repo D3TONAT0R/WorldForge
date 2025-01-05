@@ -5,15 +5,9 @@ namespace WorldForge
 {
 	public static class SeededRandom
 	{
-		//TODO: produces visible repeating patterns on the XZ axis
-		// Linear Congruential Generator (LCG) parameters
-		private const long A = 6364136223846793005;
-		private const long C = 1;
-		private const long M = 1L << 32;
-
 		public static double Double(long seed, int x, int y = 0, int z = 0)
 		{
-			return Value(GetSeed(seed, x, y, z));
+			return Math.Abs(Hash(seed, x, y, z));
 		}
 
 		public static double Double(long seed, BlockCoord pos) => Double(seed, pos.x, pos.y, pos.z);
@@ -69,21 +63,13 @@ namespace WorldForge
 
 		public static bool ProbabilityInt(int i, long seed, BlockCoord pos) => ProbabilityInt(i, seed, pos.x, pos.y, pos.z);
 
-		private static double Value(long seed)
+		private static double Hash(long x, int y, int z, int w)
 		{
-			// Update the seed using the LCG formula
-			seed = (seed * A + C) % M;
-
-			// Normalize the seed to the range [0.0, 1.0]
-			return Math.Abs((double)seed / M);
-		}
-
-		private static long GetSeed(long seed, int x, int y, int z)
-		{
-			// Combine the x, y, and seed values into a single seed value
 			unchecked
 			{
-				return x * 341873128712 + y * 132897987541 + z * 7121522197 + seed * 9214253;
+				long p = x * 16 + y * 327 + z * 431 + w * 123;
+				p = (p << 13) ^ p;
+				return 1.0f - ((p * (p * p * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
 			}
 		}
 	}
