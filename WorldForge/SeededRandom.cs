@@ -51,6 +51,7 @@ namespace WorldForge
 
 		public static bool Probability(float prob, long seed, int x, int y = 0, int z = 0)
 		{
+			if(prob >= 1) return true;
 			return Double(seed, x, y, z) <= prob;
 		}
 

@@ -22,10 +22,10 @@ namespace WorldForge.Coordinates
 
 		public BlockCoord Below => new BlockCoord(x, y - 1, z);
 		public BlockCoord Above => new BlockCoord(x, y + 1, z);
-		public BlockCoord Left => new BlockCoord(x - 1, y, z);
-		public BlockCoord Right => new BlockCoord(x + 1, y, z);
-		public BlockCoord Back => new BlockCoord(x, y, z - 1);
-		public BlockCoord Forward => new BlockCoord(x, y, z + 1);
+		public BlockCoord West => new BlockCoord(x - 1, y, z);
+		public BlockCoord East => new BlockCoord(x + 1, y, z);
+		public BlockCoord North => new BlockCoord(x, y, z - 1);
+		public BlockCoord South => new BlockCoord(x, y, z + 1);
 
 		public BlockCoord(int x, int y, int z)
 		{

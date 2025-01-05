@@ -96,14 +96,14 @@ namespace WorldForge.Lighting
 		private void SpreadHorizontal(BlockCoord pos, LightValue l, ChunkData limitChunk)
 		{
 			if(l.IsDark) return;
-			LightValue oxn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Left)).Attenuated;
-			TrySpreadTo(pos.Left, limitChunk, oxn);
-			LightValue oxp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Right)).Attenuated;
-			TrySpreadTo(pos.Right, limitChunk, oxp);
-			LightValue ozn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Back)).Attenuated;
-			TrySpreadTo(pos.Back, limitChunk, ozn);
-			LightValue ozp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.Forward)).Attenuated;
-			TrySpreadTo(pos.Forward, limitChunk, ozp);
+			LightValue oxn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.West)).Attenuated;
+			TrySpreadTo(pos.West, limitChunk, oxn);
+			LightValue oxp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.East)).Attenuated;
+			TrySpreadTo(pos.East, limitChunk, oxp);
+			LightValue ozn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.North)).Attenuated;
+			TrySpreadTo(pos.North, limitChunk, ozn);
+			LightValue ozp = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.South)).Attenuated;
+			TrySpreadTo(pos.South, limitChunk, ozp);
 		}
 
 		private void Spread(BlockCoord pos, LightValue l, ChunkData limitChunk)

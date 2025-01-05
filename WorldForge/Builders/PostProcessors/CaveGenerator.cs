@@ -309,10 +309,10 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				if(!dim.IsDefaultBlock(pos)) return false;
 				int openSides = 0;
-				if(dim.IsAirNotNull(pos.Left)) openSides++;
-				if(dim.IsAirNotNull(pos.Right)) openSides++;
-				if(dim.IsAirNotNull(pos.Back)) openSides++;
-				if(dim.IsAirNotNull(pos.Forward)) openSides++;
+				if(dim.IsAirNotNull(pos.West)) openSides++;
+				if(dim.IsAirNotNull(pos.East)) openSides++;
+				if(dim.IsAirNotNull(pos.North)) openSides++;
+				if(dim.IsAirNotNull(pos.South)) openSides++;
 				if(openSides >= 1 && openSides <= 2)
 				{
 					//Check for top and bottom
