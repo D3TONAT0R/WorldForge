@@ -5,6 +5,7 @@ using static System.Collections.Specialized.BitVector32;
 using WorldForge.Chunks;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace WorldForge
 {
@@ -135,6 +136,89 @@ namespace WorldForge
 		}
 
 		public static long[] PackBits(ushort[] values, int bitsPerValue, bool tightPacking)
+		{
+			int arraySize;
+			if(tightPacking)
+			{
+				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
+			}
+			else
+			{
+				int valuesPerLong = 64 / bitsPerValue;
+				arraySize = (int)Math.Ceiling((double)values.Length / valuesPerLong);
+			}
+			//Generate bit array
+			BitArray bits = new BitArray(values.Length * bitsPerValue);
+			for(int i = 0; i < values.Length; i++)
+			{
+				for(int j = 0; j < bitsPerValue; j++)
+				{
+					bits[i * bitsPerValue + j] = GetBit(values[i], j);
+				}
+			}
+			//Convert bits to longs
+			long[] longs = new long[arraySize];
+			if(tightPacking)
+			{
+				//Fill longs all the way
+				for(int i = 0; i < bits.Length; i++)
+				{
+					int il = i / 64;
+					int ib = i % 64;
+					if(bits[i])
+					{
+						SetBit(ref longs[il], ib, true);
+					}
+				}
+			}
+			else
+			{
+				//Fill longs until there isn't enough space left
+				int valuesPerLong = 64 / bitsPerValue;
+				int usedBits = valuesPerLong * bitsPerValue;
+				for(int i = 0; i < bits.Length; i++)
+				{
+					int il = i / usedBits;
+					int ib = i % usedBits;
+					if(bits[i])
+					{
+						SetBit(ref longs[il], ib, true);
+					}
+				}
+			}
+			return longs;
+		}
+
+		public static string ToBitString(BitArray bits)
+		{
+			var sb = new StringBuilder();
+
+			for(int i = 0; i < bits.Count; i++)
+			{
+				char c = bits[i] ? '1' : '0';
+				sb.Append(c);
+			}
+
+			return sb.ToString();
+		}
+
+		public static byte ReverseBits(byte b)
+		{
+			return (byte)(((b * 0x80200802ul) & 0x0884422110ul) * 0x0101010101ul >> 32);
+		}
+
+		public static bool GetBit(ushort value, int index)
+		{
+			return (value & (1 << index)) != 0;
+		}
+
+		public static void SetBit(ref long value, int index, bool state)
+		{
+			if(state) value |= (long)1 << index;
+			else value &= ~((long)1 << index);
+		}
+
+		public static long[] PackBitsOld(ushort[] values, int bitsPerValue, bool tightPacking)
 		{
 			int arraySize;
 			if(tightPacking)
