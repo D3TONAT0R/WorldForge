@@ -63,12 +63,12 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				if(!topOnly)
 				{
-					FreezeBlock(dimension, pos, mask, biome);
+					FreezeBlock(dimension, pos, Seed + 1234, mask, biome);
 				}
 				int y2 = dimension.GetHighestBlock(pos.x, pos.z, HeightmapType.SolidBlocks);
 				if(topOnly || y2 > pos.y)
 				{
-					FreezeBlock(dimension, (pos.x, y2, pos.z), mask, biome);
+					FreezeBlock(dimension, new BlockCoord(pos.x, y2, pos.z), Seed + 1234, mask, biome);
 				}
 			}
 		}
@@ -86,7 +86,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		private void FreezeBlock(Dimension dim, BlockCoord pos, float mask, BiomeID biome, bool airCheck = true)
+		private void FreezeBlock(Dimension dim, BlockCoord pos, long seed, float mask, BiomeID biome, bool airCheck = true)
 		{
 			if(biome != null && !IsAboveBiomeThreshold(biome, pos.y)) return;
 			bool canFreeze = !airCheck || dim.IsAirOrNull(pos.Above);
@@ -95,7 +95,7 @@ namespace WorldForge.Builders.PostProcessors
 			if(block.IsWater)
 			{
 				//100% ice coverage above mask values of 0.25f
-				if(mask >= 1 || random.Value.NextDouble() <= mask * 4f)
+				if(mask >= 1 || SeededRandom.Probability(mask * 4f, seed, pos))
 				{
 					dim.SetBlock(pos, iceBlock);
 				}

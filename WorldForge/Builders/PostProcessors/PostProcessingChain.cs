@@ -6,36 +6,50 @@ using System.Xml.Linq;
 
 namespace WorldForge.Builders.PostProcessors
 {
-    public class WorldGeneratorStack
+    public class PostProcessingChain
 	{
-		public PostProcessContext context;
+		public PostProcessContext Context { get; private set; }
 
-		public List<PostProcessor> stack = new List<PostProcessor>();
+		public List<PostProcessor> processors = new List<PostProcessor>();
 
-		public void CreateFromXML(string importedFilePath, string xmlFilePath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public void CreateFromXML(string xmlFilePath, string fileSourceDirectory)
 		{
 			var xmlString = File.ReadAllText(xmlFilePath);
-			Create(Path.GetDirectoryName(importedFilePath), xmlString, ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
+			Create(fileSourceDirectory, xmlString);
 		}
 
-		public void CreateDefaultPostProcessor(string importedFilePath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public void CreateFromXML(string xmlFilePath)
 		{
-			var xmlString = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Resources", "postprocess_default.xml"));
-			Create(Path.GetDirectoryName(importedFilePath), xmlString, ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
+			CreateFromXML(xmlFilePath, Path.GetDirectoryName(xmlFilePath));
 		}
 
-		public WorldGeneratorStack(PostProcessContext context)
+		public void CreateDefaultOverworldChain()
 		{
-			this.context = context;
+			AddProcessor(new BedrockGenerator());
+			AddProcessor(new NaturalSurfaceGenerator(62));
+			AddProcessor(new OreGenerator(true));
+			AddProcessor(new CaveGenerator(true));
+			AddProcessor(new VegetationGenerator());
+			AddProcessor(new SnowPostProcessor());
 		}
 
-		private void Create(string rootPath, string xmlString, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public PostProcessingChain()
+		{
+
+		}
+
+		public void AddProcessor(PostProcessor processor)
+		{
+			processors.Add(processor);
+		}
+
+		private void Create(string fileSourceDir, string xmlString)
 		{
 			var xmlRootElement = XDocument.Parse(xmlString).Root;
-			LoadSettings(rootPath, xmlRootElement, ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
+			LoadSettings(fileSourceDir, xmlRootElement);
 		}
 
-		void LoadSettings(string rootFolder, XElement xmlRootElement, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		void LoadSettings(string rootFolder, XElement xmlRootElement)
 		{
 			foreach(var schematicsContainer in xmlRootElement.Descendants("schematics"))
 			{
@@ -47,48 +61,48 @@ namespace WorldForge.Builders.PostProcessors
 
 			foreach(var splatXml in xmlRootElement.Element("postprocess").Elements())
 			{
-				LoadGenerator(splatXml, false, rootFolder, ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
+				LoadGenerator(splatXml, false, rootFolder);
 			}
 		}
 
-		void LoadGenerator(XElement splatXml, bool fromInclude, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		void LoadGenerator(XElement splatXml, bool fromInclude, string rootPath)
 		{
 			var name = splatXml.Name.LocalName.ToLower();
-			if(name == "splat")
+			if(name == "map")
 			{
-				stack.Add(new WeightmappedTerrainGenerator(splatXml, rootPath, ditherLimit, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new WeightmappedTerrainGenerator(splatXml, rootPath, ditherLimit, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "water")
 			{
-				stack.Add(new WaterLevelGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new WaterLevelGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "ores")
 			{
-				stack.Add(new OreGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new OreGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "snow")
 			{
-				stack.Add(new SnowPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new SnowPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
-			else if(name == "deice")
+			else if(name == "thaw")
 			{
-				stack.Add(new ThawingPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new ThawingPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "naturalize")
 			{
-				stack.Add(new NaturalSurfaceGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new NaturalSurfaceGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "vegetation")
 			{
-				stack.Add(new VegetationGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new VegetationGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "caves")
 			{
-				stack.Add(new CaveGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new CaveGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "bedrock")
 			{
-				stack.Add(new BedrockGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new BedrockGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
 			}
 			else if(name == "include")
 			{
@@ -125,7 +139,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public bool ContinsGeneratorOfType(Type type)
 		{
-			foreach(var g in stack)
+			foreach(var g in processors)
 			{
 				if(g.GetType() == type)
 				{
@@ -150,7 +164,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public void Process(PostProcessContext context)
 		{
-			foreach(var post in stack)
+			foreach(var post in processors)
 			{
 				post.Process(context);
 			}
@@ -158,7 +172,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public void OnCreateWorldFiles(string worldFolder)
 		{
-			foreach(var post in stack)
+			foreach(var post in processors)
 			{
 				post.OnCreateWorldFiles(worldFolder);
 			}

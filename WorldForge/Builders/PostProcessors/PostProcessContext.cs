@@ -6,8 +6,10 @@
 		public SchematicsDatabase Schematics { get; private set; }
 		public Boundary Boundary { get; private set; }
 
+
 		//Uses world seed by default
 		public long BaseSeed { get; set; }
+		public int DitherLimit { get; set; } = 0;
 
 		public PostProcessor CurrentPostProcessor { get; set; }
 		public int CurrentPassIndex { get; set; }
