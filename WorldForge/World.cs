@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using WorldForge.Biomes;
-using WorldForge.Chunks;
+using SixLabors.ImageSharp;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 using WorldForge.NBT;
-using WorldForge.Regions;
-using WorldForge.TileEntities;
 
 namespace WorldForge
 {
@@ -85,9 +78,15 @@ namespace WorldForge
 
 		}
 
-		public void PlaceSpawnpoint(int x, int z)
+		public void PlaceSpawnpoint(int x, int z, bool throwException = false)
 		{
-			LevelData.spawnpoint = new LevelData.Spawnpoint(x, Overworld.GetHighestBlock(x, z, HeightmapType.AllBlocks), z);
+			short y = Overworld.GetHighestBlock(x, z, HeightmapType.AllBlocks);
+			if(y == short.MinValue)
+			{
+				if(throwException) throw new InvalidOperationException("Could not find any blocks at the given spawn location");
+				y = 64;
+			}
+			LevelData.spawnpoint = new LevelData.Spawnpoint(x, y, z);
 		}
 
 		public void MakeSurvival(bool forcePlayerGamemode = false)
@@ -133,7 +132,7 @@ namespace WorldForge
 			}
 		}
 
-		public void WriteWorldSave(string path)
+		public void WriteWorldSave(string path, bool createSpawnpointMapIcon = true)
 		{
 			Directory.CreateDirectory(path);
 
@@ -152,6 +151,14 @@ namespace WorldForge
 			if(HasTheEnd)
 			{
 				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion);
+			}
+
+			if(createSpawnpointMapIcon)
+			{
+				var spawnX = LevelData.spawnpoint.spawnX;
+				var spawnZ = LevelData.spawnpoint.spawnZ;
+				var icon = SurfaceMapGenerator.GenerateSurfaceMap(Overworld, new Boundary(spawnX - 32, spawnZ - 32, spawnX + 32, spawnZ + 32), HeightmapType.AllBlocks, true);
+				icon.SaveAsPng(Path.Combine(path, "icon.png"));
 			}
 		}
 
