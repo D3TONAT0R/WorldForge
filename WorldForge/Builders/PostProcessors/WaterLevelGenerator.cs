@@ -19,15 +19,13 @@ namespace WorldForge.Builders.PostProcessors
 			waterLevel = level;
 		}
 
-		public WaterLevelGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public WaterLevelGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
-			worldOriginOffsetX = offsetX;
-			worldOriginOffsetZ = offsetZ;
 			var fileXml = xml.Element("file");
 			if(fileXml != null)
 			{
 				string path = Path.Combine(rootPath, xml.Element("file").Value);
-				waterSurfaceMap = Heightmap.FromImage(path, 0, 0, sizeX, sizeZ);
+				waterSurfaceMap = Heightmap.FromImage(path);
 			}
 			xml.TryParseInt("waterlevel", ref waterLevel);
 			if(xml.Element("waterblock") != null) waterBlock = xml.Element("waterblock").Value;

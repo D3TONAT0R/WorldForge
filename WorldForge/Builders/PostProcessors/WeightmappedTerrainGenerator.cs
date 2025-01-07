@@ -20,10 +20,11 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public WeightmappedTerrainGenerator(XElement xml, string rootPath, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
-			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public WeightmappedTerrainGenerator(XElement xml, string rootPath)
+			: base(rootPath, xml)
 		{
 			string mapFileName = Path.Combine(rootPath, xml.Attribute("file").Value);
+			int ditherLimit = int.Parse(xml.Attribute("ditherLimit")?.Value ?? "0");
 			foreach(var layer in xml.Elements("layer"))
 			{
 				XAttribute colorAttr = layer.Attribute("color");
@@ -57,7 +58,7 @@ namespace WorldForge.Builders.PostProcessors
 				mappedColors[i] = layers[i].layerColor;
 			}
 
-			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit, 0, 0, sizeX, sizeZ);
+			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit);
 		}
 
 		Rgba32 ParseColor(string input)

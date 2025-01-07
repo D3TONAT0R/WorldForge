@@ -35,7 +35,7 @@ namespace WorldForge.Builders.PostProcessors
 			Surface = surface;
 		}
 
-		public NaturalSurfaceGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public NaturalSurfaceGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 			WaterLevel = int.Parse(xml.Element("waterlevel")?.Value ?? "-1");
 		}

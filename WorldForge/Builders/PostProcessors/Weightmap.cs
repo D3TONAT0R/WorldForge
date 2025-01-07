@@ -3,12 +3,20 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Threading.Tasks;
 using WorldForge;
+using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
 	public class Weightmap<T>
 	{
 		private T[][,] channels;
+
+		private int lengthX;
+		private int lengthZ;
+
+		//TODO: use corner pos
+		public BlockCoord LowerCornerPos { get; set; }
+		public BlockCoord UpperCornerPos => LowerCornerPos + new BlockCoord(lengthX, 0, lengthZ);
 
 		private Weightmap(int channelCount)
 		{
@@ -25,28 +33,32 @@ namespace WorldForge.Builders.PostProcessors
 			channels[channel][x, y] = value;
 		}
 
-		public static Weightmap<float> CreateSingleChannelMap(string path, ColorChannel channel, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public static Weightmap<float> CreateSingleChannelMap(string path, ColorChannel channel, Boundary? bounds = null)
 		{
 			var map = new Weightmap<float>(1);
 			var image = Image.Load<Rgba32>(path);
-			map.channels[0] = GetMask(image, channel, offsetX, offsetZ, sizeX, sizeZ);
+			map.channels[0] = GetMask(image, channel, bounds);
 			return map;
 		}
 
-		public static Weightmap<float> CreateRGBAMap(string path, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public static Weightmap<float> CreateRGBAMap(string path, Boundary? bounds = null)
 		{
 			var map = new Weightmap<float>(4);
 			var image = Image.Load<Rgba32>(path);
-			map.channels[0] = GetMask(image, ColorChannel.Red, offsetX, offsetZ, sizeX, sizeZ);
-			map.channels[1] = GetMask(image, ColorChannel.Green, offsetX, offsetZ, sizeX, sizeZ);
-			map.channels[2] = GetMask(image, ColorChannel.Blue, offsetX, offsetZ, sizeX, sizeZ);
-			map.channels[3] = GetMask(image, ColorChannel.Alpha, offsetX, offsetZ, sizeX, sizeZ);
+			map.channels[0] = GetMask(image, ColorChannel.Red, bounds);
+			map.channels[1] = GetMask(image, ColorChannel.Green, bounds);
+			map.channels[2] = GetMask(image, ColorChannel.Blue, bounds);
+			map.channels[3] = GetMask(image, ColorChannel.Alpha, bounds);
 			return map;
 		}
 
-		public static Weightmap<byte> GetFixedWeightmap(string path, Rgba32[] mappings, int ditherLimit, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		public static Weightmap<byte> GetFixedWeightmap(string path, Rgba32[] mappings, int ditherLimit, Boundary? bounds = null)
 		{
 			var image = Image.Load<Rgba32>(path);
+			int sizeX = bounds?.LengthX ?? image.Width;
+			int sizeZ = bounds?.LengthZ ?? image.Height;
+			int offsetX = bounds?.xMin ?? 0;
+			int offsetZ = bounds?.zMin ?? 0;
 			byte[,] map = new byte[sizeX, sizeZ];
 			Parallel.For(0, sizeX, x =>
 			{
@@ -85,8 +97,12 @@ namespace WorldForge.Builders.PostProcessors
 			return weightmap;
 		}
 
-		private static float[,] GetMask(Image<Rgba32> image, ColorChannel channel, int offsetX, int offsetZ, int sizeX, int sizeZ)
+		private static float[,] GetMask(Image<Rgba32> image, ColorChannel channel, Boundary? bounds)
 		{
+			int sizeX = bounds?.LengthX ?? image.Width;
+			int sizeZ = bounds?.LengthZ ?? image.Height;
+			int offsetX = bounds?.xMin ?? 0;
+			int offsetZ = bounds?.zMin ?? 0;
 			float[,] mask = new float[sizeX, sizeZ];
 			Parallel.For(0, sizeX, x =>
 			{

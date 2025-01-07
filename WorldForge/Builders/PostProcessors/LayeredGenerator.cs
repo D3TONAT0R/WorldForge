@@ -13,8 +13,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		protected LayeredGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
-			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		protected LayeredGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 
 		}

@@ -61,10 +61,8 @@ namespace WorldForge.Builders.PostProcessors
 			typeHash = GetType().GetHashCode();
 		}
 
-		protected PostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : this()
+		protected PostProcessor(string rootPath, XElement xml) : this()
 		{
-			worldOriginOffsetX = offsetX;
-			worldOriginOffsetZ = offsetZ;
 			var maskElem = xml.Element("mask");
 			if(maskElem != null && rootPath != null)
 			{
@@ -84,17 +82,17 @@ namespace WorldForge.Builders.PostProcessors
 					case "alpha": channel = ColorChannel.Alpha; break;
 					default: channel = ColorChannel.Red; break;
 				}
-				mask = Weightmap<float>.CreateSingleChannelMap(maskPath, channel, 0, 0, sizeX, sizeZ);
+				mask = Weightmap<float>.CreateSingleChannelMap(maskPath, channel);
 			}
 		}
 
-		protected Weightmap<float> LoadWeightmap(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ, out XElement weightmapXml)
+		protected Weightmap<float> LoadWeightmap(string rootPath, XElement xml, out XElement weightmapXml)
 		{
 			weightmapXml = xml.Element("weightmap");
 			if(weightmapXml != null)
 			{
 				string mapFileName = Path.Combine(rootPath, weightmapXml.Attribute("file").Value);
-				var weightmap = Weightmap<float>.CreateRGBAMap(mapFileName, offsetX, offsetZ, sizeX, sizeZ);
+				var weightmap = Weightmap<float>.CreateRGBAMap(mapFileName);
 				return weightmap;
 			}
 			else

@@ -158,7 +158,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public VegetationGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public VegetationGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 			GrassDensity = float.Parse(xml.Element("grass")?.Value ?? "0.2");
 			GeneralTreesPerChunk = float.Parse(xml.Element("trees")?.Value ?? "0.3") / 128f;

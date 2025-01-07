@@ -49,8 +49,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public SnowPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
-			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public SnowPostProcessor(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 			xml.TryParseBool("top-only", ref topOnly);
 			xml.TryParseBool("check-biomes", ref biomeCheck);

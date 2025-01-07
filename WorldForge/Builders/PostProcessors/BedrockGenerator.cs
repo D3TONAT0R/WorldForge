@@ -21,8 +21,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public BedrockGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ)
-			: base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public BedrockGenerator(string rootPath, XElement xml)
+			: base(rootPath, xml)
 		{
 
 		}

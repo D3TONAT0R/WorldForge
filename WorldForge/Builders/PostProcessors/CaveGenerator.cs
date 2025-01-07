@@ -357,9 +357,9 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public CaveGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public CaveGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
-			weightmap = LoadWeightmap(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, out var weightmapXml);
+			weightmap = LoadWeightmap(rootPath, xml, out var weightmapXml);
 			if(weightmapXml != null)
 			{
 				LoadLayers(weightmapXml.Elements(), CreateCaveGenLayer);

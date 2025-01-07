@@ -79,6 +79,18 @@ namespace WorldForge.Structures
 			return structure;
 		}
 
+		public static Schematic FromXML(string xmlFilePath)
+		{
+			//TODO: load file contents
+			var schematic = new Schematic();
+			return schematic;
+		}
+
+		public Schematic()
+		{
+
+		}
+
 		private static Dictionary<BlockCoord, int> Parse3DArray(int[,,] indices, BlockCoord originOffset, bool yzxOrder)
 		{
 			var data = new Dictionary<BlockCoord, int>();

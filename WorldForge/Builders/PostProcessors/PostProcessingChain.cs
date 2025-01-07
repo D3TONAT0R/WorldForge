@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
+using WorldForge.Structures;
 
 namespace WorldForge.Builders.PostProcessors
 {
@@ -11,6 +12,8 @@ namespace WorldForge.Builders.PostProcessors
 		public PostProcessContext Context { get; private set; }
 
 		public List<PostProcessor> processors = new List<PostProcessor>();
+
+		public SchematicsDatabase schematics = new SchematicsDatabase();
 
 		public void CreateFromXML(string xmlFilePath, string fileSourceDirectory)
 		{
@@ -70,39 +73,39 @@ namespace WorldForge.Builders.PostProcessors
 			var name = splatXml.Name.LocalName.ToLower();
 			if(name == "map")
 			{
-				processors.Add(new WeightmappedTerrainGenerator(splatXml, rootPath, ditherLimit, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new WeightmappedTerrainGenerator(splatXml, rootPath));
 			}
 			else if(name == "water")
 			{
-				processors.Add(new WaterLevelGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new WaterLevelGenerator(rootPath, splatXml));
 			}
 			else if(name == "ores")
 			{
-				processors.Add(new OreGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new OreGenerator(rootPath, splatXml));
 			}
 			else if(name == "snow")
 			{
-				processors.Add(new SnowPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new SnowPostProcessor(rootPath, splatXml));
 			}
 			else if(name == "thaw")
 			{
-				processors.Add(new ThawingPostProcessor(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new ThawingPostProcessor(rootPath, splatXml));
 			}
 			else if(name == "naturalize")
 			{
-				processors.Add(new NaturalSurfaceGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new NaturalSurfaceGenerator(rootPath, splatXml));
 			}
 			else if(name == "vegetation")
 			{
-				processors.Add(new VegetationGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new VegetationGenerator(rootPath, splatXml));
 			}
 			else if(name == "caves")
 			{
-				processors.Add(new CaveGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new CaveGenerator(rootPath, splatXml));
 			}
 			else if(name == "bedrock")
 			{
-				processors.Add(new BedrockGenerator(rootPath, splatXml, offsetX, offsetZ, sizeX, sizeZ));
+				processors.Add(new BedrockGenerator(rootPath, splatXml));
 			}
 			else if(name == "include")
 			{
@@ -131,13 +134,13 @@ namespace WorldForge.Builders.PostProcessors
 					}
 					else
 					{
-						LoadGenerator(elem, true, Path.GetDirectoryName(includePath), ditherLimit, offsetX, offsetZ, sizeX, sizeZ);
+						LoadGenerator(elem, true, Path.GetDirectoryName(includePath));
 					}
 				}
 			}
 		}
 
-		public bool ContinsGeneratorOfType(Type type)
+		public bool ContainsGeneratorOfType(Type type)
 		{
 			foreach(var g in processors)
 			{
@@ -149,16 +152,15 @@ namespace WorldForge.Builders.PostProcessors
 			return false;
 		}
 
-		private void RegisterStructure(string filename, string key)
+		private void RegisterStructure(string xmlFilePath, string key)
 		{
 			try
 			{
-				//TODO
-				//context.Schematics.Add(key, new Schematic(filename));
+				schematics.Add(key, Schematic.FromXML(xmlFilePath));
 			}
 			catch
 			{
-				throw new Exception("Failed to import structure '" + filename + "'");
+				throw new Exception("Failed to import structure '" + xmlFilePath + "'");
 			}
 		}
 

@@ -40,7 +40,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public ThawingPostProcessor(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public ThawingPostProcessor(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 
 		}

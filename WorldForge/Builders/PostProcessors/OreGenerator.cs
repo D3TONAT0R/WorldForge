@@ -102,11 +102,11 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public OreGenerator(string rootPath, XElement xml, int offsetX, int offsetZ, int sizeX, int sizeZ) : base(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ)
+		public OreGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
 			rarityMul = float.Parse(xml.Element("multiplier")?.Value ?? "1");
 			var map = xml.Element("map");
-			weightmap = LoadWeightmap(rootPath, xml, offsetX, offsetZ, sizeX, sizeZ, out var weightXml);
+			weightmap = LoadWeightmap(rootPath, xml, out var weightXml);
 			if(weightXml != null)
 			{
 				LoadLayers(weightXml.Elements(), xe => CreateLayer(xe));
