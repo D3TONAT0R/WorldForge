@@ -1,6 +1,9 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Xml.Linq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
@@ -10,7 +13,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		int waterLevel = 62;
 		public string waterBlock = "minecraft:water";
-		Heightmap waterSurfaceMap;
+		Map<byte> waterSurfaceMap;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
@@ -24,8 +27,12 @@ namespace WorldForge.Builders.PostProcessors
 			var fileXml = xml.Element("file");
 			if(fileXml != null)
 			{
-				string path = Path.Combine(rootPath, xml.Element("file").Value);
-				waterSurfaceMap = Heightmap.FromImage(path);
+				string path = Path.Combine(rootPath, fileXml.Value);
+				waterSurfaceMap = Map<byte>.CreateByteMap(path);
+				if(fileXml.TryGetAttribute("origin", out var origin))
+				{
+					waterSurfaceMap.LowerCornerPos = BlockCoord2D.Parse(origin.Value);
+				}
 			}
 			xml.TryParseInt("waterlevel", ref waterLevel);
 			if(xml.Element("waterblock") != null) waterBlock = xml.Element("waterblock").Value;
@@ -36,7 +43,12 @@ namespace WorldForge.Builders.PostProcessors
 			int start = waterLevel;
 			if(waterSurfaceMap != null)
 			{
-				start = Math.Max(waterSurfaceMap?.heights[pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ] ?? (short)-1, waterLevel);
+				short h = -1;
+				if(waterSurfaceMap.TryGetValue(pos, 0, out var hb))
+				{
+					h = hb;
+				}
+				start = Math.Max(h, waterLevel);
 			}
 			for(int y2 = start; y2 > pos.y; y2--)
 			{

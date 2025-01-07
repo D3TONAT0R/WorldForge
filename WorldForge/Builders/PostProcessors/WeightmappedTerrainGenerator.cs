@@ -10,7 +10,7 @@ namespace WorldForge.Builders.PostProcessors
 	public class WeightmappedTerrainGenerator : PostProcessor
 	{
 
-		public Weightmap<byte> map;
+		public Map<byte> map;
 		public List<SurfaceLayer> layers = new List<SurfaceLayer>();
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
@@ -58,7 +58,11 @@ namespace WorldForge.Builders.PostProcessors
 				mappedColors[i] = layers[i].layerColor;
 			}
 
-			map = Weightmap<byte>.GetFixedWeightmap(mapFileName, mappedColors, ditherLimit);
+			map = Map<byte>.CreateFixedMap(mapFileName, mappedColors, ditherLimit);
+			if(xml.TryGetElement("origin", out var origin))
+			{
+				map.LowerCornerPos = BlockCoord2D.Parse(origin.Value);
+			}
 		}
 
 		Rgba32 ParseColor(string input)
@@ -82,7 +86,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord topPos, int pass, float mask)
 		{
-			byte i = map.GetValue(topPos.x - worldOriginOffsetX, topPos.z - worldOriginOffsetZ);
+			byte i = map.GetValueOrDefault(topPos, 0, 255);
 			if(i < 255)
 			{
 				layers[i].RunGenerator(dimension, topPos, Seed);

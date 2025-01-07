@@ -32,7 +32,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		public Weightmap<float> weightmap;
+		public Map<float> map;
 		public float rarityMul = 1;
 
 		public static readonly List<OreVeinGenerator> vanillaOres_pre_1_17 = new List<OreVeinGenerator>()
@@ -106,12 +106,12 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			rarityMul = float.Parse(xml.Element("multiplier")?.Value ?? "1");
 			var map = xml.Element("map");
-			weightmap = LoadWeightmap(rootPath, xml, out var weightXml);
+			this.map = LoadWeightmap(rootPath, xml, out var weightXml);
 			if(weightXml != null)
 			{
 				LoadLayers(weightXml.Elements(), xe => CreateLayer(xe));
 			}
-			if(weightmap != null)
+			if(this.map != null)
 			{
 				var gen = new OreGenLayer
 				{
@@ -162,7 +162,7 @@ namespace WorldForge.Builders.PostProcessors
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord topPos, int pass, float mask)
 		{
 			//if (topPos.y < 4) return;
-			ProcessWeightmapLayersSurface(layers, weightmap, dimension, topPos, pass, mask);
+			ProcessWeightmapLayersSurface(layers, map, dimension, topPos, pass, mask);
 		}
 	}
 }

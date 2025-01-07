@@ -346,7 +346,7 @@ namespace WorldForge.Builders.PostProcessors
 		public override int BlockProcessYMin => 8;
 		public override int BlockProcessYMax => 92;
 
-		private Weightmap<float> weightmap;
+		private Map<float> map;
 		private Dictionary<int, Layer> caveGenLayers = new Dictionary<int, Layer>();
 
 		public CaveGenerator(bool useDefaultGenerators)
@@ -359,7 +359,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public CaveGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
-			weightmap = LoadWeightmap(rootPath, xml, out var weightmapXml);
+			map = LoadWeightmap(rootPath, xml, out var weightmapXml);
 			if(weightmapXml != null)
 			{
 				LoadLayers(weightmapXml.Elements(), CreateCaveGenLayer);
@@ -416,7 +416,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
-			ProcessWeightmapLayersSurface(caveGenLayers, weightmap, dimension, pos, pass, mask);
+			ProcessWeightmapLayersSurface(caveGenLayers, map, dimension, pos, pass, mask);
 		}
 	}
 }

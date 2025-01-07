@@ -49,10 +49,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		private readonly int typeHash;
 
-		protected int worldOriginOffsetX;
-		protected int worldOriginOffsetZ;
-
-		public Weightmap<float> mask;
+		public Map<float> mask;
 
 		public PostProcessContext Context { get; private set; }
 
@@ -82,17 +79,17 @@ namespace WorldForge.Builders.PostProcessors
 					case "alpha": channel = ColorChannel.Alpha; break;
 					default: channel = ColorChannel.Red; break;
 				}
-				mask = Weightmap<float>.CreateSingleChannelMap(maskPath, channel);
+				mask = Map<float>.CreateSingleChannelMap(maskPath, channel);
 			}
 		}
 
-		protected Weightmap<float> LoadWeightmap(string rootPath, XElement xml, out XElement weightmapXml)
+		protected Map<float> LoadWeightmap(string rootPath, XElement xml, out XElement weightmapXml)
 		{
 			weightmapXml = xml.Element("weightmap");
 			if(weightmapXml != null)
 			{
 				string mapFileName = Path.Combine(rootPath, weightmapXml.Attribute("file").Value);
-				var weightmap = Weightmap<float>.CreateRGBAMap(mapFileName);
+				var weightmap = Map<float>.CreateRGBAMap(mapFileName);
 				return weightmap;
 			}
 			else
@@ -103,7 +100,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		public void ProcessBlock(BlockCoord pos, int pass)
 		{
-			float maskValue = mask != null ? mask.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) : 1;
+			float maskValue = 0;
+			if(!mask?.TryGetValue(pos, 0, out maskValue) ?? true) maskValue = 1;
 			if(maskValue > 0)
 			{
 				OnProcessBlock(Context.Dimension, pos, pass, maskValue);
@@ -112,7 +110,8 @@ namespace WorldForge.Builders.PostProcessors
 
 		public void ProcessSurface(BlockCoord pos, int pass)
 		{
-			float maskValue = mask?.GetValue(pos.x - worldOriginOffsetX, pos.z - worldOriginOffsetZ) ?? 1;
+			float maskValue = 0;
+			if(!mask?.TryGetValue(pos, 0, out maskValue) ?? true) maskValue = 1; 
 			if(maskValue > 0)
 			{
 				OnProcessSurface(Context.Dimension, pos, pass, maskValue);
@@ -124,14 +123,14 @@ namespace WorldForge.Builders.PostProcessors
 			OnProcessRegion(reg, pass);
 		}
 
-		protected void ProcessWeightmapLayersSurface(Dictionary<int, Layer> layers, Weightmap<float> weightmap, Dimension dim, BlockCoord pos, int pass, float mask)
+		protected void ProcessWeightmapLayersSurface(Dictionary<int, Layer> layers, Map<float> map, Dimension dim, BlockCoord pos, int pass, float mask)
 		{
 			foreach(var l in layers)
 			{
 				float layerMask = mask;
 				if(l.Key > -1)
 				{
-					layerMask *= weightmap.GetValue(pos.x, pos.z, l.Key);
+					layerMask *= map.GetValue(pos, l.Key);
 				}
 				if(layerMask > 0.001f)
 				{

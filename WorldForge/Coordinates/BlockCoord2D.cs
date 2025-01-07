@@ -117,5 +117,13 @@ namespace WorldForge.Coordinates
 				return hash;
 			}
 		}
+
+		public static BlockCoord2D Parse(string value)
+		{
+			var split = value.Split(',');
+			int x = int.Parse(split[0].Trim());
+			int z = int.Parse(split[1].Trim());
+			return new BlockCoord2D(x, z);
+		}
 	}
 }
