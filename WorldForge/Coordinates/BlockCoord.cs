@@ -27,6 +27,8 @@ namespace WorldForge.Coordinates
 		public BlockCoord North => new BlockCoord(x, y, z - 1);
 		public BlockCoord South => new BlockCoord(x, y, z + 1);
 
+		public BlockCoord2D XZ => new BlockCoord2D(x, z);
+
 		public BlockCoord(int x, int y, int z)
 		{
 			this.x = x;
