@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using SixLabors.ImageSharp;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 using WorldForge.NBT;
