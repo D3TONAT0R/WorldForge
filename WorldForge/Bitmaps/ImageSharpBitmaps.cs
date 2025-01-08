@@ -44,7 +44,7 @@ namespace WorldForgeConsole
 
 		public void SetPixel(int x, int y, BitmapColor c)
 		{
-			bmp[x, y] = new Rgba32(c.a, c.r, c.g, c.b);
+			bmp[x, y] = new Rgba32(c.r, c.g, c.b, c.a);
 		}
 
 		public BitmapColor GetPixel(int x, int y)
