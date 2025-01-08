@@ -88,28 +88,16 @@ namespace WorldForge
 			LevelData.spawnpoint = new LevelData.Spawnpoint(x, y, z);
 		}
 
-		public void MakeSurvival(bool forcePlayerGamemode = false)
+		public void SetGameMode(Player.GameMode gameMode, bool forceAllPlayers = false)
 		{
-			LevelData.gameTypeAndDifficulty.gameType = Player.GameMode.Survival;
-			LevelData.gameTypeAndDifficulty.allowCommands = false;
-			if(forcePlayerGamemode)
-			{
-				foreach(var player in playerData.Values)
-				{
-					player.player.playerGameType = Player.GameMode.Survival;
-				}
-			}
-		}
-
-		public void MakeCreative(bool forcePlayerGamemode = false)
-		{
-			LevelData.gameTypeAndDifficulty.gameType = Player.GameMode.Creative;
+			LevelData.gameTypeAndDifficulty.gameType = gameMode;
 			LevelData.gameTypeAndDifficulty.allowCommands = true;
-			if(forcePlayerGamemode)
+			if(forceAllPlayers)
 			{
+				LevelData.player.playerGameType = gameMode;
 				foreach(var player in playerData.Values)
 				{
-					player.player.playerGameType = Player.GameMode.Creative;
+					player.player.playerGameType = gameMode;
 				}
 			}
 		}
