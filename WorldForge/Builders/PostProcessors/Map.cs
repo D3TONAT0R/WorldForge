@@ -1,6 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using WorldForge.Coordinates;
 
@@ -92,7 +90,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public static Map<float> CreateSingleChannelMap(string path, ColorChannel channel, Boundary? bounds = null)
 		{
-			var image = Image.Load<Rgba32>(path);
+			var image = Bitmaps.Load(path);
 			var map = new Map<float>(-1, -1, 1);
 			map.data[0] = CreateMask(image, channel, bounds);
 			return map;
@@ -101,7 +99,7 @@ namespace WorldForge.Builders.PostProcessors
 		public static Map<float> CreateRGBAMap(string path, Boundary? bounds = null)
 		{
 			var map = new Map<float>(-1, -1, 4);
-			var image = Image.Load<Rgba32>(path);
+			var image = Bitmaps.Load(path);
 			map.data[0] = CreateMask(image, ColorChannel.Red, bounds);
 			map.data[1] = CreateMask(image, ColorChannel.Green, bounds);
 			map.data[2] = CreateMask(image, ColorChannel.Blue, bounds);
@@ -109,9 +107,9 @@ namespace WorldForge.Builders.PostProcessors
 			return map;
 		}
 
-		public static Map<byte> CreateFixedMap(string path, Rgba32[] mappings, int ditherLimit, Boundary? bounds = null)
+		public static Map<byte> CreateFixedMap(string path, BitmapColor[] mappings, int ditherLimit, Boundary? bounds = null)
 		{
-			var image = Image.Load<Rgba32>(path);
+			var image = Bitmaps.Load(path);
 			int sizeX = bounds?.LengthX ?? image.Width;
 			int sizeZ = bounds?.LengthZ ?? image.Height;
 			int offsetX = bounds?.xMin ?? 0;
@@ -121,7 +119,7 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				for(int y = 0; y < sizeZ; y++)
 				{
-					var c = image[offsetX + x, offsetZ + y];
+					var c = image.GetPixel(offsetX + x, offsetZ + y);
 					byte mapping;
 					if(ditherLimit > 1)
 					{
@@ -140,7 +138,7 @@ namespace WorldForge.Builders.PostProcessors
 		public static Map<byte> CreateByteMap(string path, ColorChannel channel = ColorChannel.Red, Boundary? bounds = null)
 		{
 			var map = new Map<byte>(-1, -1, 1);
-			var image = Image.Load<Rgba32>(path);
+			var image = Bitmaps.Load(path);
 			map.data[0] = GetByteMask(image, channel, bounds);
 			return map;
 		}
@@ -148,12 +146,12 @@ namespace WorldForge.Builders.PostProcessors
 		public static Map<bool> CreateBitMap(string path, float threshold, ColorChannel channel = ColorChannel.Red, Boundary? bounds = null)
 		{
 			var map = new Map<bool>(-1, -1, 1);
-			var image = Image.Load<Rgba32>(path);
+			var image = Bitmaps.Load(path);
 			map.data[0] = CreateBitArray(image, threshold, channel, bounds);
 			return map;
 		}
 
-		private static bool[,] CreateBitArray(Image<Rgba32> image, float threshold, ColorChannel channel, Boundary? bounds = null)
+		private static bool[,] CreateBitArray(IBitmap image, float threshold, ColorChannel channel, Boundary? bounds = null)
 		{
 			int sizeX = bounds?.LengthX ?? image.Width;
 			int sizeZ = bounds?.LengthZ ?? image.Height;
@@ -165,23 +163,23 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				for(int y = 0; y < sizeZ; y++)
 				{
-					var c = image[offsetX + x, offsetZ + y];
+					var c = image.GetPixel(offsetX + x, offsetZ + y);
 					bool v = false;
 					if(channel == ColorChannel.Red)
 					{
-						v = c.R > thresholdByte;
+						v = c.r > thresholdByte;
 					}
 					else if(channel == ColorChannel.Green)
 					{
-						v = c.G > thresholdByte;
+						v = c.g > thresholdByte;
 					}
 					else if(channel == ColorChannel.Blue)
 					{
-						v = c.B > thresholdByte;
+						v = c.b > thresholdByte;
 					}
 					else if(channel == ColorChannel.Alpha)
 					{
-						v = c.A > thresholdByte;
+						v = c.a > thresholdByte;
 					}
 					mask[x, y] = v;
 				}
@@ -189,7 +187,7 @@ namespace WorldForge.Builders.PostProcessors
 			return mask;
 		}
 
-		private static byte[,] GetByteMask(Image<Rgba32> image, ColorChannel channel, Boundary? bounds = null)
+		private static byte[,] GetByteMask(IBitmap image, ColorChannel channel, Boundary? bounds = null)
 		{
 			int sizeX = bounds?.LengthX ?? image.Width;
 			int sizeZ = bounds?.LengthZ ?? image.Height;
@@ -200,23 +198,23 @@ namespace WorldForge.Builders.PostProcessors
 			{
 				for(int y = 0; y < sizeZ; y++)
 				{
-					var c = image[offsetX + x, offsetZ + y];
+					var c = image.GetPixel(offsetX + x, offsetZ + y);
 					byte v = 0;
 					if(channel == ColorChannel.Red)
 					{
-						v = c.R;
+						v = c.r;
 					}
 					else if(channel == ColorChannel.Green)
 					{
-						v = c.G;
+						v = c.g;
 					}
 					else if(channel == ColorChannel.Blue)
 					{
-						v = c.B;
+						v = c.b;
 					}
 					else if(channel == ColorChannel.Alpha)
 					{
-						v = c.A;
+						v = c.a;
 					}
 					mask[x, y] = v;
 				}
@@ -224,7 +222,7 @@ namespace WorldForge.Builders.PostProcessors
 			return mask;
 		}
 
-		private static float[,] CreateMask(Image<Rgba32> image, ColorChannel channel, Boundary? bounds)
+		private static float[,] CreateMask(IBitmap image, ColorChannel channel, Boundary? bounds)
 		{
 			var byteMask = GetByteMask(image, channel, bounds);
 			float[,] mask = new float[byteMask.GetLength(0), byteMask.GetLength(1)];
@@ -238,14 +236,14 @@ namespace WorldForge.Builders.PostProcessors
 			return mask;
 		}
 
-		static byte GetClosestMapping(Rgba32 c, Rgba32[] mappings)
+		static byte GetClosestMapping(BitmapColor c, BitmapColor[] mappings)
 		{
 			int[] deviations = new int[mappings.Length];
 			for(int i = 0; i < mappings.Length; i++)
 			{
-				deviations[i] += Math.Abs(c.R - mappings[i].R);
-				deviations[i] += Math.Abs(c.G - mappings[i].G);
-				deviations[i] += Math.Abs(c.B - mappings[i].B);
+				deviations[i] += Math.Abs(c.r - mappings[i].r);
+				deviations[i] += Math.Abs(c.g - mappings[i].g);
+				deviations[i] += Math.Abs(c.b - mappings[i].b);
 			}
 			byte index = 255;
 			int closest = 999;
@@ -260,15 +258,15 @@ namespace WorldForge.Builders.PostProcessors
 			return index;
 		}
 
-		static byte GetDitheredMapping(int x, int y, Rgba32 c, Rgba32[] mappings, int ditherLimit)
+		static byte GetDitheredMapping(int x, int y, BitmapColor c, BitmapColor[] mappings, int ditherLimit)
 		{
 			float[] probs = new float[mappings.Length];
 			for(int i = 0; i < mappings.Length; i++)
 			{
 				int deviation = 0;
-				deviation += Math.Abs(c.R - mappings[i].R);
-				deviation += Math.Abs(c.G - mappings[i].G);
-				deviation += Math.Abs(c.B - mappings[i].B);
+				deviation += Math.Abs(c.r - mappings[i].r);
+				deviation += Math.Abs(c.g - mappings[i].g);
+				deviation += Math.Abs(c.b - mappings[i].b);
 				if(deviation >= ditherLimit)
 				{
 					probs[i] = 0;

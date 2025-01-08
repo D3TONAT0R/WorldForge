@@ -72,6 +72,8 @@ namespace WorldForge
 			"purple"
 		};
 
+		internal static BitmapColor[,] colormap;
+
 		public static bool IsBlockForMap(BlockID b, HeightmapType type)
 		{
 			if(b == null || IsAir(b)) return false;

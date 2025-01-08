@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using SimpleNoise;
-using SixLabors.ImageSharp.PixelFormats;
-using WorldForge;
 using WorldForge.Biomes;
-using WorldForge.Builders;
 using WorldForge.Coordinates;
 using WorldForge.Structures;
 
@@ -155,10 +152,10 @@ namespace WorldForge.Builders.PostProcessors
 	{
 
 		public string name;
-		public Rgba32 layerColor;
+		public BitmapColor layerColor;
 		public List<SurfaceLayerGenerator> generators = new List<SurfaceLayerGenerator>();
 
-		public SurfaceLayer(Rgba32 color, string name = null)
+		public SurfaceLayer(BitmapColor color, string name = null)
 		{
 			layerColor = color;
 			this.name = name;

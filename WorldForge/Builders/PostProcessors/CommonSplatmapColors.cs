@@ -1,25 +1,23 @@
 using System;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace WorldForge.Builders.PostProcessors
 {
 	public class CommonWeightmapColors
 	{
-		public static Color white = Color.FromRgb(255, 255, 255);
-		public static Color black = Color.FromRgb(0, 0, 0);
+		public static BitmapColor white = new BitmapColor(255, 255, 255);
+		public static BitmapColor black = new BitmapColor(0, 0, 0);
 
 		//Primary colors
-		public static Color red = Color.FromRgb(255, 0, 0);
-		public static Color green = Color.FromRgb(0, 255, 0);
-		public static Color blue = Color.FromRgb(0, 0, 255);
+		public static BitmapColor red = new BitmapColor(255, 0, 0);
+		public static BitmapColor green = new BitmapColor(0, 255, 0);
+		public static BitmapColor blue = new BitmapColor(0, 0, 255);
 
 		//Secondary colors
-		public static Color yellow = Color.FromRgb(255, 255, 0);
-		public static Color cyan = Color.FromRgb(0, 255, 255);
-		public static Color magenta = Color.FromRgb(255, 0, 255);
+		public static BitmapColor yellow = new BitmapColor(255, 255, 0);
+		public static BitmapColor cyan = new BitmapColor(0, 255, 255);
+		public static BitmapColor magenta = new BitmapColor(255, 0, 255);
 
-		public static Color NameToColor(string s)
+		public static BitmapColor NameToColor(string s)
 		{
 			switch(s.ToLower())
 			{

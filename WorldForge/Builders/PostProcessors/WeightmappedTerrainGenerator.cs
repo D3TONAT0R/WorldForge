@@ -1,5 +1,4 @@
-﻿using SixLabors.ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
@@ -52,7 +51,7 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 
-			Rgba32[] mappedColors = new Rgba32[layers.Count];
+			BitmapColor[] mappedColors = new BitmapColor[layers.Count];
 			for(int i = 0; i < layers.Count; i++)
 			{
 				mappedColors[i] = layers[i].layerColor;
@@ -65,9 +64,9 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		Rgba32 ParseColor(string input)
+		BitmapColor ParseColor(string input)
 		{
-			Rgba32 c;
+			BitmapColor c;
 			if(input.Contains(","))
 			{
 				//It's a manually defined color
@@ -75,7 +74,7 @@ namespace WorldForge.Builders.PostProcessors
 				var r = byte.Parse(cs[0]);
 				var g = byte.Parse(cs[1]);
 				var b = byte.Parse(cs[2]);
-				c = new Rgba32(r, g, b);
+				c = new BitmapColor(r, g, b);
 			}
 			else
 			{

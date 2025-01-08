@@ -158,7 +158,7 @@ namespace WorldForge
 				var spawnX = LevelData.spawnpoint.spawnX;
 				var spawnZ = LevelData.spawnpoint.spawnZ;
 				var icon = SurfaceMapGenerator.GenerateSurfaceMap(Overworld, new Boundary(spawnX - 32, spawnZ - 32, spawnX + 32, spawnZ + 32), HeightmapType.AllBlocks, true);
-				icon.SaveAsPng(Path.Combine(path, "icon.png"));
+				icon.Save(Path.Combine(path, "icon.png"));
 			}
 		}
 

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
 using WorldForge.Items;
+using WorldForgeConsole;
 
 namespace WorldForge
 {
@@ -29,6 +30,10 @@ namespace WorldForge
 			BlockList.Initialize(GetResourceAsText("blocks.csv"), GetResourceAsText("block_remappings.csv"));
 			ItemList.Initialize(GetResourceAsText("items.csv"));
 			BiomeIDs.Initialize(GetResourceAsText("biomes.csv"));
+
+#if !IMAGESHARP_DISABLED
+			Bitmaps.BitmapFactory = new ImageSharpBitmapFactory();
+#endif
 			Initialized = true;
 		}
 

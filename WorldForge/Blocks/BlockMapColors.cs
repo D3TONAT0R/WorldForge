@@ -1,6 +1,4 @@
-﻿using SixLabors.ImageSharp.PixelFormats;
-using System.Collections.Generic;
-using SixLabors.ImageSharp;
+﻿using System.Collections.Generic;
 using System;
 using System.Linq;
 
@@ -11,12 +9,12 @@ namespace WorldForge
 		public class ColorTone
 		{
 			public readonly string name;
-			public readonly Color baseColor;
-			public readonly Color shade1;
-			public readonly Color shade2;
-			public readonly Color shade3;
+			public readonly BitmapColor baseColor;
+			public readonly BitmapColor shade1;
+			public readonly BitmapColor shade2;
+			public readonly BitmapColor shade3;
 
-			public ColorTone(string name, Color baseColor)
+			public ColorTone(string name, BitmapColor baseColor)
 			{
 				this.name = name;
 				this.baseColor = baseColor;
@@ -31,26 +29,26 @@ namespace WorldForge
 				var channels = baseColor.Split(',').Select(byte.Parse).ToArray();
 				if(channels.Length > 3)
 				{
-					this.baseColor = new Rgba32(channels[0], channels[1], channels[2], channels[3]);
+					this.baseColor = new BitmapColor(channels[0], channels[1], channels[2], channels[3]);
 				}
 				else
 				{
-					this.baseColor = new Rgba32(channels[0], channels[1], channels[2]);
+					this.baseColor = new BitmapColor(channels[0], channels[1], channels[2]);
 				}
 				shade1 = Shade(this.baseColor, 220);
 				shade2 = Shade(this.baseColor, 180);
 				shade3 = Shade(this.baseColor, 135);
 			}
 
-			private static Color Shade(Rgba32 c, byte multiplier)
+			private static BitmapColor Shade(BitmapColor c, byte multiplier)
 			{
-				byte r = (byte)(c.R / 255f * multiplier);
-				byte g = (byte)(c.G / 255f * multiplier);
-				byte b = (byte)(c.B / 255f * multiplier);
-				return Color.FromRgba(r, g, b, 255);
+				byte r = (byte)(c.r / 255f * multiplier);
+				byte g = (byte)(c.g / 255f * multiplier);
+				byte b = (byte)(c.b / 255f * multiplier);
+				return new BitmapColor(r, g, b, 255);
 			}
 
-			public Color this[int i]
+			public BitmapColor this[int i]
 			{
 				get
 				{
@@ -112,7 +110,7 @@ namespace WorldForge
 			{new NamespacedID("frosted_ice"),       5 }
 		};
 
-		private static ColorTone invalidColor = new ColorTone("INVALID", new Rgba32(255, 0, 255));
+		private static ColorTone invalidColor = new ColorTone("INVALID", new BitmapColor(255, 0, 255));
 		private static ColorTone[] mapColorPalette;
 
 		private static void InitializeColorMap()
@@ -127,7 +125,7 @@ namespace WorldForge
 			}
 		}
 
-		public static Color GetColor(BlockID block, int shade)
+		public static BitmapColor GetColor(BlockID block, int shade)
 		{
 			if(mapColorPalette == null)
 			{
@@ -144,7 +142,7 @@ namespace WorldForge
 			}
 			else
 			{
-				return Color.FromRgba(0, 0, 0, 0);
+				return new BitmapColor(0, 0, 0, 0);
 			}
 		}
 	}

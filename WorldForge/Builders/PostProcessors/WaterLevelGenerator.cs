@@ -1,9 +1,6 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Xml.Linq;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors

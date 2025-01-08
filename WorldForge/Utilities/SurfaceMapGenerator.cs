@@ -1,16 +1,18 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
+﻿using System;
 using WorldForge.Coordinates;
 
 namespace WorldForge
 {
 	public static class SurfaceMapGenerator
 	{
-		public static Image<Rgba32> GenerateHeightMap(Dimension dim, Boundary boundary, HeightmapType surfaceType)
+		public static IBitmap GenerateHeightMap(Dimension dim, Boundary boundary, HeightmapType surfaceType)
 		{
 			var heightmap = dim.GetHeightmap(boundary, surfaceType, true);
-			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1));
+			if(Bitmaps.BitmapFactory == null)
+			{
+				throw new ArgumentNullException("No bitmap factory was provided.");
+			}
+			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
 			for(int z = boundary.zMin; z < boundary.zMax; z++)
 			{
 				for(int x = boundary.xMin; x < boundary.xMax; x++)
@@ -18,20 +20,24 @@ namespace WorldForge
 					int y = heightmap[x - boundary.xMin, z - boundary.zMin];
 					if(y < 0) continue;
 					byte brt = (byte)Math.Max(Math.Min(y, 255), 0);
-					image[x - boundary.xMin, z - boundary.zMin] = new Rgba32(brt, brt, brt);
+					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, new BitmapColor(brt, brt, brt));
 				}
 			}
-			return image;
+			return bmp;
 		}
 
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public static Image<Rgba32> GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
+		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
 		{
 			//TODO: beta regions are not loaded
 			var heightmap = dim.GetHeightmap(boundary, surfaceType);
-			var image = new Image<Rgba32>(heightmap.GetLength(0), heightmap.GetLength(1), new Rgba32(0, 0, 0, 0));
+			if(Bitmaps.BitmapFactory == null)
+			{
+				throw new ArgumentNullException("No bitmap factory was provided.");
+			}
+			var bmp = Bitmaps.BitmapFactory.Create(heightmap.GetLength(0), heightmap.GetLength(1));
 			for(int z = boundary.zMin; z < boundary.zMax; z++)
 			{
 				for(int x = boundary.xMin; x < boundary.xMax; x++)
@@ -49,10 +55,10 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					image[x - boundary.xMin, z - boundary.zMin] = BlockMapColors.GetColor(block, shade);
+					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, BlockMapColors.GetColor(block, shade));
 				}
 			}
-			return image;
+			return bmp;
 		}
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)

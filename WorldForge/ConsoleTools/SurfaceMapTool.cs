@@ -1,9 +1,5 @@
-﻿using SixLabors.ImageSharp;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Text;
-using WorldForge.Utilities;
 
 namespace WorldForge.ConsoleTools
 {
@@ -23,7 +19,7 @@ namespace WorldForge.ConsoleTools
 			int zMax = int.Parse(Console.ReadLine());
 			World w = World.Load(path);
 			string mapPath = Path.Combine(path, "surface_map.png");
-			SurfaceMapGenerator.GenerateSurfaceMap(w.Overworld, new Boundary(xMin, zMin, xMax, zMax), HeightmapType.SolidBlocks, true).SaveAsPng(mapPath);
+			SurfaceMapGenerator.GenerateSurfaceMap(w.Overworld, new Boundary(xMin, zMin, xMax, zMax), HeightmapType.SolidBlocks, true).Save(mapPath);
 			Console.WriteLine("Map written to " + mapPath);
 		}
 	}
