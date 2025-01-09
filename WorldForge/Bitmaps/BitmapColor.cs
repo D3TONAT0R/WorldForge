@@ -47,5 +47,57 @@ namespace WorldForge
 			this.b = b;
 			a = 255;
 		}
+
+		public static int GetClosestMapping(BitmapColor c, BitmapColor[] colorPalette)
+		{
+			int[] deviations = new int[colorPalette.Length];
+			for(int i = 0; i < colorPalette.Length; i++)
+			{
+				deviations[i] += Math.Abs(c.r - colorPalette[i].r);
+				deviations[i] += Math.Abs(c.g - colorPalette[i].g);
+				deviations[i] += Math.Abs(c.b - colorPalette[i].b);
+			}
+			int index = 0;
+			int closest = 999;
+			for(byte i = 0; i < colorPalette.Length; i++)
+			{
+				if(deviations[i] < closest)
+				{
+					index = i;
+					closest = deviations[i];
+				}
+			}
+			return index;
+		}
+
+		public static int GetDitheredMapping(int x, int y, BitmapColor c, BitmapColor[] colorPalette, int ditherLimit)
+		{
+			float[] probs = new float[colorPalette.Length];
+			for(int i = 0; i < colorPalette.Length; i++)
+			{
+				int deviation = 0;
+				deviation += Math.Abs(c.r - colorPalette[i].r);
+				deviation += Math.Abs(c.g - colorPalette[i].g);
+				deviation += Math.Abs(c.b - colorPalette[i].b);
+				if(deviation >= ditherLimit)
+				{
+					probs[i] = 0;
+				}
+				else
+				{
+					probs[i] = 1 - (deviation / (float)ditherLimit);
+				}
+			}
+			float max = 0;
+			foreach(float p in probs) max += p;
+			double d = SeededRandom.Double(x, y, 0) * max;
+			double v = 0;
+			for(byte i = 0; i < probs.Length; i++)
+			{
+				v += probs[i];
+				if(d < v) return i;
+			}
+			return 255;
+		}
 	}
 }

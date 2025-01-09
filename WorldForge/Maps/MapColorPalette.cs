@@ -62,6 +62,17 @@ namespace WorldForge.Maps
 					}
 				}
 			}
+
+			public BitmapColor[] GetColors()
+			{
+				return new BitmapColor[]
+				{
+					baseColor,
+					shade1,
+					shade2,
+					shade3
+				};
+			}
 		}
 
 		public static readonly ColorTone InvalidTone = new ColorTone("INVALID", new BitmapColor(255, 0, 255));

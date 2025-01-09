@@ -123,11 +123,11 @@ namespace WorldForge.Builders.PostProcessors
 					byte mapping;
 					if(ditherLimit > 1)
 					{
-						mapping = GetDitheredMapping(x, y, c, mappings, ditherLimit);
+						mapping = (byte)BitmapColor.GetDitheredMapping(x, y, c, mappings, ditherLimit);
 					}
 					else
 					{
-						mapping = GetClosestMapping(c, mappings);
+						mapping = (byte)BitmapColor.GetClosestMapping(c, mappings);
 					}
 					map.data[0][x, y] = mapping;
 				}
@@ -234,58 +234,6 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 			return mask;
-		}
-
-		static byte GetClosestMapping(BitmapColor c, BitmapColor[] mappings)
-		{
-			int[] deviations = new int[mappings.Length];
-			for(int i = 0; i < mappings.Length; i++)
-			{
-				deviations[i] += Math.Abs(c.r - mappings[i].r);
-				deviations[i] += Math.Abs(c.g - mappings[i].g);
-				deviations[i] += Math.Abs(c.b - mappings[i].b);
-			}
-			byte index = 255;
-			int closest = 999;
-			for(byte i = 0; i < mappings.Length; i++)
-			{
-				if(deviations[i] < closest)
-				{
-					index = i;
-					closest = deviations[i];
-				}
-			}
-			return index;
-		}
-
-		static byte GetDitheredMapping(int x, int y, BitmapColor c, BitmapColor[] mappings, int ditherLimit)
-		{
-			float[] probs = new float[mappings.Length];
-			for(int i = 0; i < mappings.Length; i++)
-			{
-				int deviation = 0;
-				deviation += Math.Abs(c.r - mappings[i].r);
-				deviation += Math.Abs(c.g - mappings[i].g);
-				deviation += Math.Abs(c.b - mappings[i].b);
-				if(deviation >= ditherLimit)
-				{
-					probs[i] = 0;
-				}
-				else
-				{
-					probs[i] = 1 - (deviation / (float)ditherLimit);
-				}
-			}
-			float max = 0;
-			foreach(float p in probs) max += p;
-			double d = SeededRandom.Double(x, y, 0) * max;
-			double v = 0;
-			for(byte i = 0; i < probs.Length; i++)
-			{
-				v += probs[i];
-				if(d < v) return i;
-			}
-			return 255;
 		}
 	}
 }
