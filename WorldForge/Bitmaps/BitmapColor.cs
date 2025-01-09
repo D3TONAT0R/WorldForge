@@ -32,6 +32,12 @@ namespace WorldForge
 			}
 		}
 
+		public byte this[int i]
+		{
+			get => this[(ColorChannel)i];
+			set => this[(ColorChannel)i] = value;
+		}
+
 		public BitmapColor(byte r, byte g, byte b, byte a)
 		{
 			this.r = r;
