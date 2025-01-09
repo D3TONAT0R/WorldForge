@@ -55,7 +55,7 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, BlockMapColors.GetColor(block, shade));
+					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, MapColors.GetColor(block, shade));
 				}
 			}
 			return bmp;

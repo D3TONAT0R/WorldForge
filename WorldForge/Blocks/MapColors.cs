@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace WorldForge
 {
-	public static class BlockMapColors
+	public static class MapColors
 	{
 		public class ColorTone
 		{

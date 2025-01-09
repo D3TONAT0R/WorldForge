@@ -36,6 +36,13 @@ namespace WorldForge.Coordinates
 			this.z = z;
 		}
 
+		public BlockCoord(int[] pos)
+		{
+			x = pos[0];
+			y = pos[1];
+			z = pos[2];
+		}
+
 		public override string ToString()
 		{
 			return $"[{x},{y},{z}]";

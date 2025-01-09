@@ -10,6 +10,7 @@ namespace WorldForge
 
 		public string ID { get; private set; }
 
+		public static readonly DimensionID Unknown = new DimensionID(null);
 		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld");
 		public static readonly DimensionID Nether = new DimensionID("minecraft:the_nether");
 		public static readonly DimensionID TheEnd = new DimensionID("minecraft:the_end");
@@ -40,7 +41,7 @@ namespace WorldForge
 				case 0: return Overworld;
 				case -1: return Nether;
 				case 1: return TheEnd;
-				default: throw new ArgumentException(nameof(index), "Unknown dimension index: " + index);
+				default: return Unknown;
 			}
 		}
 
