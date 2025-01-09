@@ -1,9 +1,10 @@
 ﻿using System;
 using WorldForge.Coordinates;
+using WorldForge.Maps;
 
 namespace WorldForge
 {
-	public static class SurfaceMapGenerator
+    public static class SurfaceMapGenerator
 	{
 		public static IBitmap GenerateHeightMap(Dimension dim, Boundary boundary, HeightmapType surfaceType)
 		{
@@ -29,7 +30,7 @@ namespace WorldForge
 		/// <summary>
 		/// Generates a colored overview map from the specified area (With Z starting from top)
 		/// </summary>
-		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
+		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette)
 		{
 			//TODO: beta regions are not loaded
 			var heightmap = dim.GetHeightmap(boundary, surfaceType);
@@ -55,10 +56,15 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, MapColors.GetColor(block, shade));
+					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, MapColorPalette.Modern.GetColor(block, shade));
 				}
 			}
 			return bmp;
+		}
+
+		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
+		{
+			return GenerateSurfaceMap(dim, boundary, surfaceType, shading, MapColorPalette.Modern);
 		}
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)

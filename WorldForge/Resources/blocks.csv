@@ -1093,3 +1093,7 @@ chiseled_tuff;;;;1.20;chiseled_stone_bricks;
 chiseled_tuff_bricks;;;;1.20;chiseled_stone_bricks;
 trial_spawner;;;;1.20;spawner;
 vault;;;;1.20;end_portal_frame;
+pale_oak_log;;;;1.21.2;oak_log;
+pale_oak_wood;;;;1.21.2;oak_wood;
+pale_moss_carpet;;;;1.21.2;moss_carpet;
+pale_moss_block;;;;1.21.2;moss_block;

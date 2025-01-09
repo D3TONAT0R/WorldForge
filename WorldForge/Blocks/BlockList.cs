@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace WorldForge
 {
@@ -155,6 +157,23 @@ namespace WorldForge
 		{
 			return Find(new NamespacedID(id), throwErrorIfNotFound);
 		}
+
+		public static BlockID[] Search(string searchTerm, bool includeNonVanilla = false, bool throwIfNoResults = false)
+		{
+			List<BlockID> results = new List<BlockID>();
+			//searchTerm = "^" + searchTerm.Replace("*", @"\**") + "$";
+			searchTerm = "^" + searchTerm.Replace("*", @"\**");
+			foreach(var b in allBlocks.Keys)
+			{
+				if(b.HasCustomNamespace && !includeNonVanilla) continue;
+				if(Regex.IsMatch(b.id, searchTerm))
+				{
+					results.Add(allBlocks[b]);
+				}
+			}
+			if(results.Count == 0 && throwIfNoResults) throw new ArgumentException($"Block ID search returned no results: {searchTerm}");
+			return results.ToArray();
+        }
 
 		public static bool TryGetPreviousID(BlockID id, GameVersion targetVersion, out BlockID previous)
 		{

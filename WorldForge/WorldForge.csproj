@@ -25,7 +25,7 @@
     <None Remove="Resources\block_remappings.csv" />
     <None Remove="Resources\colormap.png" />
     <None Remove="Resources\items.csv" />
-    <None Remove="Resources\mapcolors.csv" />
+    <None Remove="Resources\mapcolors_modern.csv" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +42,7 @@
     <EmbeddedResource Include="Resources\items.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\mapcolors.csv">
+    <EmbeddedResource Include="Resources\mapcolors_modern.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
