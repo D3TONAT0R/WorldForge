@@ -29,6 +29,8 @@ namespace WorldForge
 			}
 		}
 
+		public bool Exists => ID != null;
+
 		public DimensionID(string id)
 		{
 			ID = id;

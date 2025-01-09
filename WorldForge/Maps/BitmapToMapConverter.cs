@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace WorldForge.Maps
 {
+	//TODO: converted images look very bad compared to online tools such as https://mc-map.djfun.de/
 	public static class BitmapToMapConverter
 	{
 		public static MapData GenerateMap(IBitmap bitmap, Boundary? boundary = null, MapColorPalette palette = null, int dithering = 0)
