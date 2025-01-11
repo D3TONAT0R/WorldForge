@@ -147,7 +147,7 @@ namespace WorldForge
 
 			WorldData.Save(path, GameVersion);
 
-			if(createSpawnpointMapIcon)
+			if(createSpawnpointMapIcon && Overworld != null)
 			{
 				var spawnX = LevelData.spawnpoint.spawnX;
 				var spawnZ = LevelData.spawnpoint.spawnZ;
