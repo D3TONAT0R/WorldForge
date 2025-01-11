@@ -8,11 +8,6 @@ namespace WorldForge
 {
 	public class WorldData
 	{
-		public interface IData
-		{
-			void Save(string path, GameVersion version);
-		}
-
 		public class RaidsData : IData
 		{
 			[NBT("Raids")]
@@ -39,15 +34,23 @@ namespace WorldForge
 				return file;
 			}
 
-			public void Save(string path, GameVersion version)
+			public void Save(string worldRoot, int id, GameVersion version)
 			{
+				string path;
+				switch(id)
+				{
+					case 0: path = Path.Combine(worldRoot, "data", "raids.dat"); break;
+					case -1: path = Path.Combine(worldRoot, "DIM-1", "data", "raids.dat"); break;
+					case 1: path = Path.Combine(worldRoot, "DIM1", "data", "raids_end.dat"); break;
+					default: path = Path.Combine(worldRoot, "data", $"raids_DIM{id}.dat"); break;
+				}
 				Directory.CreateDirectory(Path.GetDirectoryName(path));
 				var file = ToNBT(version);
-				file.SaveToFile(path);
+				file.Save(path);
 			}
 		}
 
-		public Dictionary<int, MapData> maps = new Dictionary<int, MapData>();
+		public Dictionary<int, IMapData> maps = new Dictionary<int, IMapData>();
 
 		public RaidsData overworldRaids;
 		public RaidsData netherRaids;
@@ -55,21 +58,53 @@ namespace WorldForge
 
 		public static WorldData FromWorldSave(string worldSaveDir)
 		{
+			if(!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
 			var wd = new WorldData();
 			if(TryLoad(Path.Combine(worldSaveDir, "data", "raids.dat"), out var file)) wd.overworldRaids = RaidsData.Load(file);
 			if(TryLoad(Path.Combine(worldSaveDir, "DIM-1", "data", "raids.dat"), out file)) wd.netherRaids = RaidsData.Load(file);
 			if(TryLoad(Path.Combine(worldSaveDir, "DIM1", "data", "raids_end.dat"), out file)) wd.endRaids = RaidsData.Load(file);
-			//TODO: load maps
+			foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
+			{
+				int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
+				wd.maps.Add(id, new UnloadedMapData(worldSaveDir, id));
+			}
 			return wd;
 		}
+
+		public bool HasMap(int id) => maps.ContainsKey(id);
+
+		public MapData GetMap(int id)
+		{
+			if(maps.TryGetValue(id, out var i))
+			{
+				MapData map;
+				if(i is UnloadedMapData u)
+				{
+					map = u.Load();
+				}
+				else
+				{
+					map = (MapData)i;
+				}
+				return map;
+			}
+			return null;
+		}
+
+		public void SetMap(int id, IMapData map) => maps[id] = map;
+
+		public void RemoveMap(int id) => maps.Remove(id);
 
 		public void Save(string worldSaveDir, GameVersion version)
 		{
 			if(!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
-			TrySave(overworldRaids, Path.Combine(worldSaveDir, "data", "raids.dat"), version);
-			TrySave(netherRaids, Path.Combine(worldSaveDir, "DIM-1", "data", "raids.dat"), version);
-			TrySave(endRaids, Path.Combine(worldSaveDir, "DIM1", "data", "raids_end.dat"), version);
-			//TODO: save maps
+			TrySave(overworldRaids, worldSaveDir, 0, version);
+			TrySave(netherRaids, worldSaveDir, -1, version);
+			TrySave(endRaids, worldSaveDir, 1, version);
+			foreach(var map in maps)
+			{
+				map.Value.Save(worldSaveDir, map.Key, version);
+			}
 		}
 
 		private static bool TryLoad(string path, out NBTFile file)
@@ -83,10 +118,10 @@ namespace WorldForge
 			return false;
 		}
 
-		private static void TrySave(IData d, string path, GameVersion version)
+		private static void TrySave(IData d, string worldSaveRoot, int id, GameVersion version)
 		{
 			if(d == null) return;
-			d.Save(path, version);
+			d.Save(worldSaveRoot, id, version);
 		}
 	}
 }

@@ -67,7 +67,7 @@ namespace WorldForge.NBT
 		}
 
 		///<summary>Writes the content of this NBT structure to a file using Zlib compression.</summary>
-		public void SaveToFile(string filePath)
+		public void Save(string filePath)
 		{
 			File.WriteAllBytes(filePath, WriteBytesGZip());
 		}

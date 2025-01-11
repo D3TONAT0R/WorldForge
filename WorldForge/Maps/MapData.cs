@@ -6,8 +6,43 @@ using WorldForge.NBT;
 
 namespace WorldForge.Maps
 {
+	public interface IMapData : IData
+	{
+
+	}
+
+	public class UnloadedMapData : IMapData
+	{
+		public string sourceWorldSaveDir;
+		public int mapId;
+
+		public UnloadedMapData(string sourceWorldSaveDir, int mapId)
+		{
+			this.sourceWorldSaveDir = sourceWorldSaveDir;
+			this.mapId = mapId;
+		}
+
+		public MapData Load()
+		{
+			return MapData.Load(new NBTFile(Path.Combine(sourceWorldSaveDir, "data", $"map_{mapId}.dat")));
+		}
+
+		public void Save(string worldSaveRoot, int id, GameVersion version)
+		{
+			if(worldSaveRoot == sourceWorldSaveDir && mapId == id)
+			{
+				//Maps are at identical locations, no need to copy
+				return;
+			}
+			string src = Path.Combine(sourceWorldSaveDir, "data", $"map_{mapId}.dat");
+			string dest = Path.Combine(worldSaveRoot, "data", $"map_{id}.dat");
+			Directory.CreateDirectory(Path.GetDirectoryName(dest));
+			File.Copy(src, dest);
+		}
+	}
+
 	//TODO: saved maps crash the game when loading the world
-	public class MapData
+	public class MapData : IMapData
 	{
 		public class BannerMarker : INBTConverter
 		{
@@ -135,21 +170,15 @@ namespace WorldForge.Maps
 			return z * 128 + x;
 		}
 
-		public void Save(string path, GameVersion targetVersion, bool allowOverwrite = true)
+		public void Save(string worldSaveRoot, int id, GameVersion targetVersion)
 		{
-			if(File.Exists(path) && !allowOverwrite) throw new IOException("File already exists: " + path);
+			Directory.CreateDirectory(Path.Combine(worldSaveRoot, "data"));
 			var file = new NBTFile();
 			var dv = targetVersion.GetDataVersion();
 			if(dv.HasValue) file.contents.Add("DataVersion", dv);
 			file.contents.Add("data", ToNBT(GameVersion.LastSupportedVersion));
-			file.SaveToFile(path);
-		}
-
-		public void SaveMapFile(string worldRoot, int mapId, GameVersion targetVersion, bool allowOverwrite = true)
-		{
-			if(!Directory.Exists(worldRoot)) throw new DirectoryNotFoundException("World root directory not found");
-			Directory.CreateDirectory(Path.Combine(worldRoot, "data"));
-			Save(Path.Combine(worldRoot, "data", $"map_{mapId}.dat"), targetVersion, allowOverwrite);
+			string path = Path.Combine(worldSaveRoot, "data", $"map_{id}.dat");
+			file.Save(path);
 		}
 
 		public NBTCompound ToNBT(GameVersion version)
