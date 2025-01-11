@@ -9,11 +9,23 @@ namespace WorldForge.IO
 {
 	public static class NBTSerializer
 	{
-		public static void Deserialize(NBTFile file, Stream uncompressedStream)
+		[ThreadStatic]
+		private static bool buffersInitialized;
+		[ThreadStatic]
+		private static byte[] buffer8;
+		[ThreadStatic]
+		private static float[] floatBuffer;
+		[ThreadStatic]
+		private static double[] doubleBuffer;
+
+		private static void EnsureBuffers()
 		{
-			while(uncompressedStream.Position < uncompressedStream.Length)
+			if(!buffersInitialized)
 			{
-				RegisterTag(uncompressedStream, file.contents);
+				buffer8 = new byte[8];
+				floatBuffer = new float[1];
+				doubleBuffer = new double[1];
+				buffersInitialized = true;
 			}
 		}
 
@@ -32,6 +44,7 @@ namespace WorldForge.IO
 		///<summary>Generates an uncompressed byte array from the content of this NBT structure.</summary>
 		public static MemoryStream Serialize(NBTFile file, bool writeSubContainerAndDataVersion)
 		{
+			EnsureBuffers();
 			NBTCompound final;
 			if(writeSubContainerAndDataVersion)
 			{
@@ -48,9 +61,19 @@ namespace WorldForge.IO
 			return stream;
 		}
 
+		public static void Deserialize(NBTFile file, Stream uncompressedStream)
+		{
+			EnsureBuffers();
+			while(uncompressedStream.Position < uncompressedStream.Length)
+			{
+				RegisterTag(uncompressedStream, file.contents);
+			}
+		}
+
 		///<summary>Finds and reads the heightmap data stored in a chunk NBT structure.</summary>
 		public static short[,] GetHeightmapFromChunkNBT(NBTFile file, HeightmapType type, GameVersion version, Dimension parent)
 		{
+			EnsureBuffers();
 			try
 			{
 				if(file.contents.Contains("Heightmaps"))
@@ -109,6 +132,7 @@ namespace WorldForge.IO
 		///<summary>Reads the heightmap stored in the given long array.</summary>
 		public static short[,] GetHeightmap(long[] hmlongs, GameVersion gameVersion, bool overworld)
 		{
+			EnsureBuffers();
 			if(hmlongs == null) return null;
 			short[,] hm = new short[16, 16];
 			try
@@ -193,7 +217,7 @@ namespace WorldForge.IO
 			{
 				tag = expectedTag;
 			}
-			object value;
+
 			if(tag != NBTTag.TAG_End)
 			{
 				string name = "";
@@ -210,6 +234,8 @@ namespace WorldForge.IO
 						name += (char)ReadNext(stream);
 					}
 				}
+
+				object value;
 				if(tag == NBTTag.TAG_Byte)
 				{
 					value = Get<byte>(stream);
@@ -298,23 +324,23 @@ namespace WorldForge.IO
 			}
 			else if(typeof(T) == typeof(short))
 			{
-				ret = BitConverter.ToInt16(ReadNext(stream, 2), 0);
+				ret = ReadShort(stream);
 			}
 			else if(typeof(T) == typeof(int))
 			{
-				ret = BitConverter.ToInt32(ReadNext(stream, 4), 0);
+				ret = ReadInt(stream);
 			}
 			else if(typeof(T) == typeof(long))
 			{
-				ret = BitConverter.ToInt64(ReadNext(stream, 8), 0);
+				ret = ReadLong(stream);
 			}
 			else if(typeof(T) == typeof(float))
 			{
-				ret = BitConverter.ToSingle(ReadNext(stream, 4), 0);
+				ret = ReadFloat(stream);
 			}
 			else if(typeof(T) == typeof(double))
 			{
-				ret = BitConverter.ToDouble(ReadNext(stream, 8), 0);
+				ret = ReadDouble(stream);
 			}
 			else if(typeof(T) == typeof(byte[]))
 			{
@@ -432,10 +458,7 @@ namespace WorldForge.IO
 
 			var tag = NBTMappings.GetTag(o.GetType());
 			stream.WriteByte((byte)tag);
-			byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-			byte[] lengthBytes = BitUtils.ToBigEndian(BitConverter.GetBytes((short)nameBytes.Length));
-			stream.Write(lengthBytes, 0, lengthBytes.Length);
-			stream.Write(nameBytes, 0, nameBytes.Length);
+			WriteString(stream, name);
 			WriteValue(stream, tag, o);
 		}
 
@@ -449,23 +472,23 @@ namespace WorldForge.IO
 			}
 			else if(tag == NBTTag.TAG_Short)
 			{
-				WriteToStream(stream, BitUtils.ToBigEndian(BitConverter.GetBytes((short)o)));
+				WriteShort(stream, (short)o);
 			}
 			else if(tag == NBTTag.TAG_Int)
 			{
-				WriteToStream(stream, BitUtils.ToBigEndian(BitConverter.GetBytes((int)o)));
+				WriteInt(stream, (int)o);
 			}
 			else if(tag == NBTTag.TAG_Long)
 			{
-				WriteToStream(stream, BitUtils.ToBigEndian(BitConverter.GetBytes((long)o)));
+				WriteLong(stream, (long)o);
 			}
 			else if(tag == NBTTag.TAG_Float)
 			{
-				WriteToStream(stream, BitUtils.ToBigEndian(BitConverter.GetBytes((float)o)));
+				WriteFloat(stream, (float)o);
 			}
 			else if(tag == NBTTag.TAG_Double)
 			{
-				WriteToStream(stream, BitUtils.ToBigEndian(BitConverter.GetBytes((double)o)));
+				WriteDouble(stream, (double)o);
 			}
 			else if(tag == NBTTag.TAG_Byte_Array)
 			{
@@ -521,6 +544,160 @@ namespace WorldForge.IO
 		private static void WriteToStream(MemoryStream stream, byte[] bytes)
 		{
 			stream.Write(bytes, 0, bytes.Length);
+		}
+
+		private static void WriteByte(MemoryStream stream, byte b)
+		{
+			stream.WriteByte(b);
+		}
+
+		private static void WriteShort(MemoryStream stream, short s)
+		{
+			unchecked
+			{
+				byte b0 = (byte)s;
+				byte b1 = (byte)(s >> 8);
+				stream.WriteByte(b1);
+				stream.WriteByte(b0);
+			}
+		}
+
+		private static void WriteInt(MemoryStream stream, int i)
+		{
+			unchecked
+			{
+				byte b0 = (byte)i;
+				byte b1 = (byte)(i >> 8);
+				byte b2 = (byte)(i >> 16);
+				byte b3 = (byte)(i >> 24);
+				stream.WriteByte(b3);
+				stream.WriteByte(b2);
+				stream.WriteByte(b1);
+				stream.WriteByte(b0);
+			}
+		}
+
+		private static void WriteLong(MemoryStream stream, long l)
+		{
+			unchecked
+			{
+				byte b0 = (byte)l;
+				byte b1 = (byte)(l >> 8);
+				byte b2 = (byte)(l >> 16);
+				byte b3 = (byte)(l >> 24);
+				byte b4 = (byte)(l >> 32);
+				byte b5 = (byte)(l >> 40);
+				byte b6 = (byte)(l >> 48);
+				byte b7 = (byte)(l >> 56);
+				stream.WriteByte(b7);
+				stream.WriteByte(b6);
+				stream.WriteByte(b5);
+				stream.WriteByte(b4);
+				stream.WriteByte(b3);
+				stream.WriteByte(b2);
+				stream.WriteByte(b1);
+				stream.WriteByte(b0);
+			}
+		}
+
+		private static void WriteFloat(MemoryStream stream, float f)
+		{
+			floatBuffer[0] = f;
+			Buffer.BlockCopy(floatBuffer, 0, buffer8, 0, 4);
+			stream.WriteByte(buffer8[3]);
+			stream.WriteByte(buffer8[2]);
+			stream.WriteByte(buffer8[1]);
+			stream.WriteByte(buffer8[0]);
+		}
+
+		private static void WriteDouble(MemoryStream stream, double d)
+		{
+			doubleBuffer[0] = d;
+			Buffer.BlockCopy(doubleBuffer, 0, buffer8, 0, 8);
+			stream.WriteByte(buffer8[7]);
+			stream.WriteByte(buffer8[6]);
+			stream.WriteByte(buffer8[5]);
+			stream.WriteByte(buffer8[4]);
+			stream.WriteByte(buffer8[3]);
+			stream.WriteByte(buffer8[2]);
+			stream.WriteByte(buffer8[1]);
+			stream.WriteByte(buffer8[0]);
+		}
+
+		private static void WriteString(MemoryStream stream, string s)
+		{
+			byte[] utf8 = Encoding.UTF8.GetBytes(s);
+			WriteShort(stream, (short)utf8.Length);
+			WriteToStream(stream, utf8);
+		}
+
+		private static byte ReadByte(Stream stream)
+		{
+			return (byte)stream.ReadByte();
+		}
+
+		private static short ReadShort(Stream stream)
+		{
+			byte b0 = ReadByte(stream);
+			byte b1 = ReadByte(stream);
+			return (short)(b0 << 8 | b1);
+		}
+
+		private static int ReadInt(Stream stream)
+		{
+			byte b0 = ReadByte(stream);
+			byte b1 = ReadByte(stream);
+			byte b2 = ReadByte(stream);
+			byte b3 = ReadByte(stream);
+			return b0 << 24 | b1 << 16 | b2 << 8 | b3;
+		}
+
+		private static long ReadLong(Stream stream)
+		{
+			byte b0 = ReadByte(stream);
+			byte b1 = ReadByte(stream);
+			byte b2 = ReadByte(stream);
+			byte b3 = ReadByte(stream);
+			byte b4 = ReadByte(stream);
+			byte b5 = ReadByte(stream);
+			byte b6 = ReadByte(stream);
+			byte b7 = ReadByte(stream);
+			return (long)b0 << 56 | (long)b1 << 48 | (long)b2 << 40 | (long)b3 << 32 | (long)b4 << 24 | (long)b5 << 16 | (long)b6 << 8 | (long)b7;
+		}
+
+		private static float ReadFloat(Stream stream)
+		{
+			buffer8[3] = ReadByte(stream);
+			buffer8[2] = ReadByte(stream);
+			buffer8[1] = ReadByte(stream);
+			buffer8[0] = ReadByte(stream);
+			Buffer.BlockCopy(buffer8, 0, floatBuffer, 0, 4);
+			return floatBuffer[0];
+		}
+
+		private static double ReadDouble(Stream stream)
+		{
+			buffer8[7] = ReadByte(stream);
+			buffer8[6] = ReadByte(stream);
+			buffer8[5] = ReadByte(stream);
+			buffer8[4] = ReadByte(stream);
+			buffer8[3] = ReadByte(stream);
+			buffer8[2] = ReadByte(stream);
+			buffer8[1] = ReadByte(stream);
+			buffer8[0] = ReadByte(stream);
+			Buffer.BlockCopy(buffer8, 0, doubleBuffer, 0, 8);
+			return doubleBuffer[0];
+		}
+
+		private static string ReadString(Stream stream)
+		{
+			short length = ReadShort(stream);
+			byte[] utf8 = new byte[length];
+			for(int i = 0; i < length; i++)
+			{
+				utf8[i] = ReadByte(stream);
+			}
+			return Encoding.UTF8.GetString(utf8);
 		}
 	}
 }
