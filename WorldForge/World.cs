@@ -130,7 +130,7 @@ namespace WorldForge
 
 			var level = CreateLevelDAT(true);
 
-			File.WriteAllBytes(Path.Combine(path, "level.dat"), level.WriteBytesGZip());
+			File.WriteAllBytes(Path.Combine(path, "level.dat"), level.WriteBytesGZip(false));
 
 			if(HasOverworld)
 			{

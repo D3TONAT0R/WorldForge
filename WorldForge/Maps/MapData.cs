@@ -173,10 +173,7 @@ namespace WorldForge.Maps
 		public void Save(string worldSaveRoot, int id, GameVersion targetVersion)
 		{
 			Directory.CreateDirectory(Path.Combine(worldSaveRoot, "data"));
-			var file = new NBTFile();
-			var dv = targetVersion.GetDataVersion();
-			if(dv.HasValue) file.contents.Add("DataVersion", dv);
-			file.contents.Add("data", ToNBT(GameVersion.LastSupportedVersion));
+			var file = new NBTFile(ToNBT(targetVersion), targetVersion.GetDataVersion());
 			string path = Path.Combine(worldSaveRoot, "data", $"map_{id}.dat");
 			file.Save(path);
 		}

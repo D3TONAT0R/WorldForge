@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace WorldForge.NBT
@@ -17,10 +18,17 @@ namespace WorldForge.NBT
 		///</summary>
 		public int? dataVersion;
 
-		///<summary>Instantiates an empty NBT structure.</summary>
+		///<summary>Creates an empty NBT structure.</summary>
 		public NBTFile()
 		{
 			contents = new NBTCompound();
+		}
+
+		///<summary>Creates an NBT structure with the given data.</summary>
+		public NBTFile(NBTCompound contents, int? dataVersion)
+		{
+			this.contents = contents;
+			this.dataVersion = dataVersion;
 		}
 
 		///<summary>Creates an NBT structure from the given file.</summary>
@@ -55,33 +63,49 @@ namespace WorldForge.NBT
 			{
 				contents = root;
 			}
-			if(contents.Contains("DataVersion")) dataVersion = (int)contents.Get("DataVersion");
+			if(contents.Contains("DataVersion")) dataVersion = (int)contents.Take("DataVersion");
+			//Drop the root compound if the only child is a compound itself
+			if(contents.ItemCount == 1 && contents.TryGet<NBTCompound>("data", out var data))
+			{
+				contents = data;
+			}
 		}
 
 		///<summary>Generates an uncompressed byte array from the content of this NBT structure.</summary>
-		public byte[] WriteBytesUncompressed()
+		public byte[] WriteBytesUncompressed(bool writeSubContainerAndDataVersion)
 		{
+			NBTCompound final;
+			if(writeSubContainerAndDataVersion)
+			{
+				final = new NBTCompound();
+				if(dataVersion.HasValue) final.Add("DataVersion", dataVersion.Value);
+				final.Add("data", contents);
+			}
+			else
+			{
+				final = contents;
+			}
 			var bytes = new List<byte>();
-			Write(bytes, "", contents);
+			Write(bytes, "", final);
 			return bytes.ToArray();
 		}
 
 		///<summary>Writes the content of this NBT structure to a file using Zlib compression.</summary>
-		public void Save(string filePath)
+		public void Save(string filePath, bool createSubContainer = true)
 		{
-			File.WriteAllBytes(filePath, WriteBytesGZip());
+			File.WriteAllBytes(filePath, WriteBytesGZip(createSubContainer));
 		}
 
 		///<summary>Generates a GZip compressed byte array from the content of this NBT structure. GZip is used to compress NBT data (*.dat) files.</summary>
-		public byte[] WriteBytesGZip()
+		public byte[] WriteBytesGZip(bool createSubContainer)
 		{
-			return Compression.CompressGZipBytes(WriteBytesUncompressed());
+			return Compression.CompressGZipBytes(WriteBytesUncompressed(createSubContainer));
 		}
 
 		///<summary>Generates a Zlib compressed byte array from the content of this NBT structure. Zlib is used only within region files to store chunks.</summary>
-		public byte[] WriteBytesZlib()
+		public byte[] WriteBytesZlib(bool createSubContainer)
 		{
-			return Compression.CompressZlibBytes(WriteBytesUncompressed());
+			return Compression.CompressZlibBytes(WriteBytesUncompressed(createSubContainer));
 		}
 
 		public void AddLevelRootCompound()
@@ -257,27 +281,27 @@ namespace WorldForge.NBT
 			return b;
 		}
 
-		NBTTag RegisterTag(Stream stream, AbstractNBTContainer c, NBTTag predef = NBTTag.UNSPECIFIED)
+		NBTTag RegisterTag(Stream stream, AbstractNBTContainer c, NBTTag expectedTag = NBTTag.UNSPECIFIED)
 		{
 			NBTTag tag;
 			/*if(compound.GetType() == typeof(ListContainer)) {
 				tag = ((ListContainer)compound).containerType;
 				i++;
 			} else {*/
-			if(predef == NBTTag.UNSPECIFIED)
+			if(expectedTag == NBTTag.UNSPECIFIED)
 			{
 				tag = (NBTTag)ReadNext(stream);
 			}
 			else
 			{
-				tag = predef;
+				tag = expectedTag;
 			}
 			//}
 			object value;
 			if(tag != NBTTag.TAG_End)
 			{
 				string name = "";
-				if(predef == NBTTag.UNSPECIFIED)
+				if(expectedTag == NBTTag.UNSPECIFIED)
 				{
 					short nameLength = BitConverter.ToInt16(BitUtils.ToBigEndian(ReadNext(stream, 2)), 0);
 					if(nameLength > 64)
@@ -340,7 +364,7 @@ namespace WorldForge.NBT
 				}
 				else
 				{
-					throw new ArgumentException("Unrecognized nbt tag: " + tag);
+					throw new ArgumentException("Unrecognized NBT tag: " + tag);
 				}
 
 				if(c is NBTCompound comp)

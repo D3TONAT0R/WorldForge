@@ -46,7 +46,7 @@ namespace WorldForge.IO
 						var dv = version.GetDataVersion();
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
-						byte[] compressed = chunkData.WriteBytesZlib();
+						byte[] compressed = chunkData.WriteBytesZlib(false);
 						var cLength = BitUtils.ToBigEndian(BitConverter.GetBytes(compressed.Length));
 						memoryStream.Write(cLength, 0, cLength.Length);
 						memoryStream.WriteByte(2);

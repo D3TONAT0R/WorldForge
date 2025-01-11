@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using WorldForge.Maps;
 using WorldForge.NBT;
 
@@ -24,14 +25,9 @@ namespace WorldForge
 				return data;
 			}
 
-			public NBTFile ToNBT(GameVersion version)
+			public NBTCompound ToNBT(GameVersion version)
 			{
-				var file = new NBTFile();
-				var comp = NBTConverter.WriteToNBT(this, new NBTCompound(), version);
-				var dv = version.GetDataVersion();
-				if(dv.HasValue) file.contents.Add("DataVersion", version.GetDataVersion());
-				file.contents.Add("data", comp);
-				return file;
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
 			}
 
 			public void Save(string worldRoot, int id, GameVersion version)
@@ -45,7 +41,7 @@ namespace WorldForge
 					default: path = Path.Combine(worldRoot, "data", $"raids_DIM{id}.dat"); break;
 				}
 				Directory.CreateDirectory(Path.GetDirectoryName(path));
-				var file = ToNBT(version);
+				var file = new NBTFile(ToNBT(version), version.GetDataVersion());
 				file.Save(path);
 			}
 		}
@@ -108,7 +104,13 @@ namespace WorldForge
 			{
 				map.Value.Save(worldSaveDir, map.Key, version);
 			}
-			//TODO: save idcounts.dat
+			if(maps.Keys.Count > 0)
+			{
+				int lastMap = maps.Keys.Max();
+				var file = new NBTFile();
+				file.contents.Add("map", lastMap);
+				file.Save(Path.Combine(worldSaveDir, "data", "idcounts.dat"));
+			}
 		}
 
 		private static bool TryLoad(string path, out NBTFile file)
