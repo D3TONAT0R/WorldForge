@@ -63,10 +63,13 @@ namespace WorldForge
 			if(TryLoad(Path.Combine(worldSaveDir, "data", "raids.dat"), out var file)) wd.overworldRaids = RaidsData.Load(file);
 			if(TryLoad(Path.Combine(worldSaveDir, "DIM-1", "data", "raids.dat"), out file)) wd.netherRaids = RaidsData.Load(file);
 			if(TryLoad(Path.Combine(worldSaveDir, "DIM1", "data", "raids_end.dat"), out file)) wd.endRaids = RaidsData.Load(file);
-			foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
+			if(Directory.Exists(Path.Combine(worldSaveDir, "data")))
 			{
-				int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
-				wd.maps.Add(id, new UnloadedMapData(worldSaveDir, id));
+				foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
+				{
+					int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
+					wd.maps.Add(id, new UnloadedMapData(worldSaveDir, id));
+				}
 			}
 			return wd;
 		}
@@ -105,6 +108,7 @@ namespace WorldForge
 			{
 				map.Value.Save(worldSaveDir, map.Key, version);
 			}
+			//TODO: save idcounts.dat
 		}
 
 		private static bool TryLoad(string path, out NBTFile file)

@@ -22,9 +22,8 @@ namespace WorldForge
 		public Dictionary<string, PlayerData> playerData = new Dictionary<string, PlayerData>();
 
 		public Dictionary<string, NBTCompound> commandStorage = new Dictionary<string, NBTCompound>();
-		public NBTCompound idCounts;
-		public NBTCompound raids;
-		public Dictionary<int, NBTFile> maps = new Dictionary<int, NBTFile>();
+
+		public WorldData WorldData { get; private set; }
 
 		public string WorldName
 		{
@@ -38,11 +37,14 @@ namespace WorldForge
 
 		public bool HasTheEnd => TheEnd != null;
 
-		public static World CreateNew(GameVersion version, string worldName)
+		public static World CreateNew(GameVersion version, string worldName, bool createOverworld = true)
 		{
-			var world = new World(version, LevelData.CreateNew());
+			var world = new World(version, LevelData.CreateNew(), new WorldData());
 			world.LevelData.worldName = worldName;
-			world.Overworld = Dimension.CreateOverworld(world);
+			if(createOverworld)
+			{
+				world.Overworld = Dimension.CreateOverworld(world);
+			}
 			return world;
 		}
 
@@ -63,13 +65,16 @@ namespace WorldForge
 				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.TheEnd, versionHint, throwOnRegionLoadFail);
 			}
 
+			world.WorldData = WorldData.FromWorldSave(worldSaveDir);
+
 			return world;
 		}
 
-		private World(GameVersion targetVersion, LevelData levelData)
+		private World(GameVersion targetVersion, LevelData levelData, WorldData worldData)
 		{
 			GameVersion = targetVersion;
-			this.LevelData = levelData;
+			LevelData = levelData;
+			WorldData = worldData;
 		}
 
 		private World()
@@ -139,6 +144,8 @@ namespace WorldForge
 			{
 				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion);
 			}
+
+			WorldData.Save(path, GameVersion);
 
 			if(createSpawnpointMapIcon)
 			{
