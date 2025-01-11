@@ -92,6 +92,19 @@ namespace WorldForge
 
 		public void SetMap(int id, IMapData map) => maps[id] = map;
 
+		public int AddMap(IMapData map)
+		{
+			for(int i = 0; i < int.MaxValue; i++)
+			{
+				if(!maps.ContainsKey(i))
+				{
+					maps.Add(i, map);
+					return i;
+				}
+			}
+			throw new InvalidOperationException("Maximum number of maps reached.");
+		}
+
 		public void RemoveMap(int id) => maps.Remove(id);
 
 		public void Save(string worldSaveDir, GameVersion version)
@@ -107,7 +120,7 @@ namespace WorldForge
 			if(maps.Keys.Count > 0)
 			{
 				int lastMap = maps.Keys.Max();
-				var file = new NBTFile();
+				var file = new NBTFile(version.GetDataVersion());
 				file.contents.Add("map", lastMap);
 				file.Save(Path.Combine(worldSaveDir, "data", "idcounts.dat"));
 			}

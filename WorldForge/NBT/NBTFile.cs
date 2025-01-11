@@ -19,9 +19,10 @@ namespace WorldForge.NBT
 		public int? dataVersion;
 
 		///<summary>Creates an empty NBT structure.</summary>
-		public NBTFile()
+		public NBTFile(int? dataVersion = null)
 		{
 			contents = new NBTCompound();
+			this.dataVersion = dataVersion;
 		}
 
 		///<summary>Creates an NBT structure with the given data.</summary>
