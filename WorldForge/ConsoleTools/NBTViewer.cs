@@ -45,7 +45,7 @@ namespace WorldForge.ConsoleTools
 		int cursorChildPos = 0;
 		List<int> indexTree = new List<int>();
 
-		AbstractNBTContainer currentContainer;
+		INBTContainer currentContainer;
 		string[] currentContentKeys;
 
 		int cursorBufferLoc = 0;
@@ -225,7 +225,7 @@ namespace WorldForge.ConsoleTools
 
 		bool IsContainer(object obj)
 		{
-			return obj is AbstractNBTContainer;
+			return obj is INBTContainer;
 		}
 
 		NBTTag GetTag(object obj)
@@ -287,11 +287,11 @@ namespace WorldForge.ConsoleTools
 					{
 						if(currentContainer is NBTCompound comp)
 						{
-							currentContainer = (AbstractNBTContainer)comp.Get(s);
+							currentContainer = (INBTContainer)comp.Get(s);
 						}
 						else
 						{
-							currentContainer = (AbstractNBTContainer)((NBTList)currentContainer).Get(int.Parse(s));
+							currentContainer = (INBTContainer)((NBTList)currentContainer).Get(int.Parse(s));
 						}
 					}
 				}

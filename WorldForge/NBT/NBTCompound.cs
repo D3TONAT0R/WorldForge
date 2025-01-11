@@ -5,13 +5,9 @@ using System.Collections.Generic;
 namespace WorldForge.NBT
 {
 	///<summary>A container for the TAG_Compound tag.</summary>
-	public class NBTCompound : AbstractNBTContainer, IEnumerable<KeyValuePair<string, object>>
+	public class NBTCompound : INBTContainer, IEnumerable<KeyValuePair<string, object>>
 	{
-
-		public override NBTTag containerType
-		{
-			get { return NBTTag.TAG_Compound; }
-		}
+		public NBTTag ContainerType => NBTTag.TAG_Compound;
 
 		public int ItemCount => contents.Count;
 
@@ -264,7 +260,7 @@ namespace WorldForge.NBT
 			return true;
 		}
 
-		public override string[] GetContentKeys(string prefix = null)
+		public string[] GetContentKeys(string prefix = null)
 		{
 			string[] k = new string[contents.Count];
 			int i = 0;
@@ -289,6 +285,11 @@ namespace WorldForge.NBT
 		public NBTCompound Clone()
 		{
 			return new NBTCompound(contents);
+		}
+
+		public override string ToString()
+		{
+			return $"{ContainerType}[{ItemCount}]";
 		}
 	}
 }

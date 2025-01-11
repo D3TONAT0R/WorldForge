@@ -11,12 +11,12 @@ namespace WorldForge.Maps
 
 	}
 
-	public class UnloadedMapData : IMapData
+	public class MapDataFile : IMapData
 	{
 		public string sourceWorldSaveDir;
 		public int mapId;
 
-		public UnloadedMapData(string sourceWorldSaveDir, int mapId)
+		public MapDataFile(string sourceWorldSaveDir, int mapId)
 		{
 			this.sourceWorldSaveDir = sourceWorldSaveDir;
 			this.mapId = mapId;

@@ -5,24 +5,18 @@ using System.Collections.Generic;
 namespace WorldForge.NBT
 {
 	///<summary>A container for the TAG_List tag.</summary>
-	public class NBTList : AbstractNBTContainer, IEnumerable<object>
+	public class NBTList : INBTContainer, IEnumerable<object>
 	{
+		public NBTTag ContainerType => NBTTag.TAG_List;
 
-		public override NBTTag containerType => NBTTag.TAG_List;
+		public NBTTag ContentsType { get; private set; }
+		public int Length => listContent.Count;
 
-		public NBTTag contentsType;
-		public int Length
-		{
-			get
-			{
-				return listContent.Count;
-			}
-		}
 		public List<object> listContent = new List<object>();
 
 		public NBTList(NBTTag baseType) : base()
 		{
-			contentsType = baseType;
+			ContentsType = baseType;
 		}
 
 		public NBTList(NBTTag baseType, IEnumerable<object> contents) : this(baseType)
@@ -69,7 +63,7 @@ namespace WorldForge.NBT
 				value = i.ToNBT(GameVersion.FirstVersion);
 			}
 
-			if(NBTMappings.GetTag(value.GetType()) != contentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{contentsType}'.");
+			if(NBTMappings.GetTag(value.GetType()) != ContentsType) throw new InvalidOperationException($"This ListContainer may only contain items of type '{ContentsType}'.");
 			listContent.Add(value);
 			//return value;
 		}
@@ -99,7 +93,7 @@ namespace WorldForge.NBT
 			set { listContent[i] = value; }
 		}
 
-		public override string[] GetContentKeys(string prefix = null)
+		public string[] GetContentKeys(string prefix = null)
 		{
 			string[] k = new string[listContent.Count];
 			for(int i = 0; i < listContent.Count; i++) k[i] = prefix + i.ToString();
@@ -135,6 +129,11 @@ namespace WorldForge.NBT
 				list.Add(item);
 			}
 			return list;
+		}
+
+		public override string ToString()
+		{
+			return $"{ContainerType}({ContainerType})[{Length}]";
 		}
 	}
 }

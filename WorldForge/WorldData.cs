@@ -21,7 +21,7 @@ namespace WorldForge
 			public static RaidsData Load(NBTFile file)
 			{
 				var data = new RaidsData();
-				NBTConverter.LoadFromNBT(file.contents.GetAsCompound("data"), data);
+				NBTConverter.LoadFromNBT(file.contents, data);
 				return data;
 			}
 
@@ -64,7 +64,7 @@ namespace WorldForge
 				foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
 				{
 					int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
-					wd.maps.Add(id, new UnloadedMapData(worldSaveDir, id));
+					wd.maps.Add(id, new MapDataFile(worldSaveDir, id));
 				}
 			}
 			return wd;
@@ -77,7 +77,7 @@ namespace WorldForge
 			if(maps.TryGetValue(id, out var i))
 			{
 				MapData map;
-				if(i is UnloadedMapData u)
+				if(i is MapDataFile u)
 				{
 					map = u.Load();
 				}

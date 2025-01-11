@@ -99,7 +99,7 @@ namespace WorldForge.IO
 			if(chunkNBT.Contains("TileEntities"))
 			{
 				var tileEntList = chunkNBT.GetAsList("TileEntities");
-				if(tileEntList != null && tileEntList.contentsType == NBTTag.TAG_Compound)
+				if(tileEntList != null && tileEntList.ContentsType == NBTTag.TAG_Compound)
 				{
 					for(int i = 0; i < tileEntList.Length; i++)
 					{
@@ -129,7 +129,7 @@ namespace WorldForge.IO
 			c.Entities.Clear();
 			if(chunkNBT.TryGet<NBTList>("Entities", out var entList))
 			{
-				if(entList.contentsType == NBTTag.TAG_Compound)
+				if(entList.ContentsType == NBTTag.TAG_Compound)
 				{
 					for(int i = 0; i < entList.Length; i++)
 					{

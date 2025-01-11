@@ -505,7 +505,7 @@ namespace WorldForge
 							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
 							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
 							var file = alphaSerializer.CreateChunkNBT(c);
-							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), file.WriteBytesGZip(false));
+							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), NBTSerializer.SerializeAsGzip(file, false));
 						}
 					}
 				});
