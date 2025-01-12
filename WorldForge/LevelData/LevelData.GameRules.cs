@@ -163,7 +163,7 @@ namespace WorldForge
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine($"Failed to load GameRule '{f.Name}': {e.Message}");
+							Logger.Error($"Failed to load GameRule '{f.Name}': {e.Message}");
 						}
 					}
 				}

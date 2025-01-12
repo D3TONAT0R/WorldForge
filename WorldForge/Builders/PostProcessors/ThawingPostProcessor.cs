@@ -58,8 +58,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				//TODO: logger
-				Console.WriteLine($"Biome at [{pos.x},{pos.z}] was null");
+				Logger.Warning($"Biome at [{pos.x},{pos.z}] was null");
 			}
 		}
 

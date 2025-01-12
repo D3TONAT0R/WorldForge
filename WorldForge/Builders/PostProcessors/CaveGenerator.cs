@@ -366,7 +366,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				Console.WriteLine("Using default settings for cave gen.");
+				Logger.Info("Using default settings for cave gen.");
 				AddDefaultCaveGenerators();
 			}
 		}
@@ -408,8 +408,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			if(layer.carvers.Count == 0)
 			{
-				//TODO: create logger system
-				Console.WriteLine($"The layer '{elem.Name.LocalName}' is defined but has no carvers added to it.");
+				Logger.Warning($"The layer '{elem.Name.LocalName}' is defined but has no carvers added to it.");
 			}
 			return layer;
 		}

@@ -224,10 +224,6 @@ namespace WorldForge.IO
 				if(expectedTag == NBTTag.UNSPECIFIED)
 				{
 					short nameLength = BitConverter.ToInt16(ReadNext(stream, 2), 0);
-					if(nameLength > 64)
-					{
-						Console.WriteLine("NL=" + nameLength + "! Something is going wrong");
-					}
 					for(int j = 0; j < nameLength; j++)
 					{
 						//TODO: Reading List with TAG_End throws IndexOutOfRangeException

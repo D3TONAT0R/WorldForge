@@ -73,7 +73,7 @@ namespace WorldForge.IO
 		{
 			if(!RegionLocation.TryGetFromFileName(filePath, out var loc))
 			{
-				Console.WriteLine("Unable to interpret region location from file name: " + filePath);
+				Logger.Error("Unable to interpret region location from file name: " + filePath);
 			}
 			Region region = Region.CreateExisting(loc, parent, filePath);
 			region.versionHint = worldSaveVersion;

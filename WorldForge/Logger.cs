@@ -9,6 +9,8 @@ namespace WorldForge
 		void Warning(string message);
 
 		void Error(string message);
+
+		void Exception(string message, Exception e);
 	}
 
 	public class ConsoleLogHandler : ILogHandler
@@ -31,6 +33,14 @@ namespace WorldForge
 			Console.WriteLine(message);
 			Console.ResetColor();
 		}
+
+		public void Exception(string message, Exception e)
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(message);
+			Console.WriteLine(e);
+			Console.ResetColor();
+		}
 	}
 
 	public static class Logger
@@ -39,10 +49,12 @@ namespace WorldForge
 
 		private static ConsoleLogHandler defaultHandler = new ConsoleLogHandler();
 
-		public static void Log(string message) => (LogHandler ?? defaultHandler).Log(message);
+		public static void Info(string message) => (LogHandler ?? defaultHandler).Log(message);
 
 		public static void Warning(string message) => (LogHandler ?? defaultHandler).Warning(message);
 
 		public static void Error(string message) => (LogHandler ?? defaultHandler).Error(message);
+
+		public static void Exception(string message, Exception e) => (LogHandler ?? defaultHandler).Exception(message, e);
 	}
 }

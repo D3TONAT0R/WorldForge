@@ -37,7 +37,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine($"Failed to read chunk at {chunk.WorldSpaceCoord}: " + e.Message);
+				Logger.Warning($"Failed to read chunk at {chunk.WorldSpaceCoord}: " + e.Message);
 			}
 		}
 

@@ -37,7 +37,7 @@ namespace WorldForge.Builders.PostProcessors
 				case "cyan": return cyan;
 				case "m":
 				case "magenta": return magenta;
-				default: Console.WriteLine("Unknown common color: " + s); return black;
+				default: Logger.Error("Unknown common color: " + s); return black;
 			}
 		}
 	} 

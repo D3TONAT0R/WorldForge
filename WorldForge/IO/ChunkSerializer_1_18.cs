@@ -53,7 +53,7 @@ namespace WorldForge.IO
 						}
 						else
 						{
-							Console.WriteLine($"Unrecognized biome '{id}', adding to list.");
+							Logger.Warning($"Unrecognized biome '{id}', adding to list.");
 							BiomeID newBiome = BiomeIDs.GetOrCreate(id);
 							palette[i] = newBiome;
 						}

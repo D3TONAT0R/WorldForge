@@ -127,7 +127,7 @@ namespace WorldForge
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
 				{
-					Console.WriteLine($"Failed to load region '{filename}': {e.Message}");
+					Logger.Exception($"Failed to load region '{filename}'", e);
 				}
 			}
 		}
@@ -146,12 +146,12 @@ namespace WorldForge
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
-						Console.WriteLine($"Failed to preload region '{filename}': {e.Message}");
+						Logger.Exception($"Failed to preload region '{filename}'", e.Message);
 					}
 				}
 				else
 				{
-					Console.WriteLine($"Invalid file '{filename}' in region folder.");
+					Logger.Error($"Invalid file '{filename}' in region folder.");
 				}
 			}
 		}
