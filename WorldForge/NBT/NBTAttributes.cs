@@ -29,8 +29,8 @@ namespace WorldForge.NBT
 
 		public NBTAttribute(string name, string addedInVersion, string removedInVersion) : this(name)
 		{
-			addedIn = GameVersion.Parse(addedInVersion);
-			removedIn = GameVersion.Parse(removedInVersion);
+			addedIn = !string.IsNullOrWhiteSpace(addedInVersion) ? GameVersion.Parse(addedInVersion) : GameVersion.FirstVersion;
+			removedIn = !string.IsNullOrWhiteSpace(removedInVersion) ? GameVersion.Parse(removedInVersion) : GameVersion.FirstVersion;
 		}
 	}
 
