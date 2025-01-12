@@ -449,12 +449,12 @@ namespace WorldForge
 		{
 			[NBT("DragonKilled")]
 			public bool dragonKilled = false;
-			[NBT("NeedsStateScanning")]
-			public bool needsStateScanning = true;
 			[NBT("PreviouslyKilled")]
 			public bool previouslyKilled = false;
 			//[NBT("Gateways")]
 			public List<int> gateways = new List<int> { 18, 8, 10, 13, 14, 5, 15, 1, 0, 7, 11, 17, 3, 19, 6, 2, 9, 12, 4, 16 };
+			[NBT("NeedsStateScanning", "1.17")]
+			public bool needsStateScanning = true;
 
 			public DragonFight()
 			{

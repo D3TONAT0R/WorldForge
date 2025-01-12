@@ -129,7 +129,7 @@ namespace WorldForge
 
 		//[NBT("Dimension")]
 		//This needs to be loaded manually because it can be either a string or an int
-		public string dimension = "minecraft:overworld";
+		public DimensionID dimension = DimensionID.Overworld;
 		[NBT("Pos")]
 		public Vector3 position = new Vector3(0, 0, 0);
 		[NBT("Rotation")]
@@ -140,6 +140,8 @@ namespace WorldForge
 		public bool onGround = false;
 		[NBT("FallDistance")]
 		public float fallDistance = 0;
+		[NBT("FallFlying", "1.10")]
+		public bool fallFlying = false;
 		[NBT("Fire")]
 		public short fire = -20;
 
@@ -154,10 +156,10 @@ namespace WorldForge
 		public GameMode playerGameType = GameMode.Survival;
 		[NBT("recipeBook", "1.12")]
 		public RecipeBook recipeBook = new RecipeBook();
-		[NBT("WardenSpawnTracker", "1.19")]
+		[NBT("warden_spawn_tracker", "1.19")]
 		public WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker();
 
-		[NBT("AttackTime")]
+		[NBT("AttackTime", null, "1.8")]
 		public short attackTime = 0;
 		[NBT("DeathTime")]
 		public short deathTime = 0;
@@ -166,14 +168,16 @@ namespace WorldForge
 		[NBT("Invulnerable", "1.0.0")]
 		public bool invulnerable = false;
 		//[NBT("Health")]
-		public short health = 20;
-		//TODO: find out when this was added
-		[NBT("HealF", "1.0.0")]
-		public float healF = 20;
+		//public short health = 20;
+		//[NBT("HealF", "1.0.0")]
+		public float health = 20;
 		[NBT("HurtTime")]
 		public short hurtTime = 0;
+		//TODO: determine exact version (somewhere between 1.7.10 and 1.9)
+		[NBT("HurtByTimestamp", "1.9")]
+		public int hurtByTimestamp = 0;
 
-		[NBT("Sleeping")]
+		[NBT("Sleeping", null, "1.14")]
 		public bool sleeping;
 		[NBT("SleepTimer")]
 		public short sleepTimer = 0;
@@ -232,8 +236,8 @@ namespace WorldForge
 			object dim = nbt.Get("Dimension");
 			if(dim != null)
 			{
-				if(dim is string dimString) dimension = dimString;
-				else dimension = DimensionIndexToID((int)dim);
+				if(dim is string dimString) dimension = new DimensionID(dimString);
+				else dimension = DimensionID.FromIndex((int)dim);
 			}
 			object healthValue = nbt.Get("Health");
 			if(healthValue != null)
@@ -246,27 +250,23 @@ namespace WorldForge
 		public NBTCompound ToNBT(GameVersion version)
 		{
 			NBTCompound nbt = new NBTCompound();
-			if(version < GameVersion.Release_1(3))
-			{
-				position.y += 1.62f;
-			}
+			//Versions prior to 1.3 used the head position as the player position
+			if(version < GameVersion.Release_1(3)) position.y += 1.62f;
 			NBTConverter.WriteToNBT(this, nbt, version);
-			if(version < GameVersion.Release_1(3))
-			{
-				position.y -= 1.62f;
-			}
-			return nbt;
-		}
+			//Restore position
+			if(version < GameVersion.Release_1(3)) position.y -= 1.62f;
 
-		public static string DimensionIndexToID(int index)
-		{
-			switch(index)
+			if(version >= GameVersion.Release_1(16)) nbt.Add("Dimension", dimension.ID);
+			else nbt.Add("Dimension", dimension.DimensionIndex);
+
+			if(version >= GameVersion.Release_1(9)) nbt.Add("Health", health);
+			else
 			{
-				case -1: return "minecraft:the_nether";
-				case 0: return "minecraft:overworld";
-				case 1: return "minecraft:the_end";
-				default: return "minecraft:overworld";
+				nbt.Add("Health", (short)health);
+				nbt.Add("HealF", health);
 			}
+
+			return nbt;
 		}
 	}
 }

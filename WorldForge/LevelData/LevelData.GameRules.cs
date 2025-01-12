@@ -62,8 +62,7 @@ namespace WorldForge
 			public int maxCommandChainLength = 65536;
 			[NBT(null, "1.12")]
 			public bool announceAdvancements = true;
-
-			[NBT(null, "1.13")]
+			[NBT(null, "1.12", "1.13")]
 			public string gameLoopFunction = "";
 
 			[NBT(null, "1.14.3")]
