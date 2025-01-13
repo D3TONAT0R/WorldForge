@@ -7,6 +7,12 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
+	public enum SaveMode
+	{
+		Clean = 0,
+		Overwrite = 1
+	}
+
 	public class World
 	{
 
@@ -124,44 +130,47 @@ namespace WorldForge
 			}
 		}
 
-		public void WriteWorldSave(string path, bool createSpawnpointMapIcon = true)
+		public void Save(string worldSaveDir, bool createSpawnpointMapIcon = true, SaveMode saveMode = SaveMode.Clean)
 		{
-			Directory.CreateDirectory(path);
+			if(Directory.Exists(worldSaveDir) && saveMode == SaveMode.Clean)
+			{
+				Directory.Delete(worldSaveDir, true);
+			}
 
-			var level = CreateLevelDAT(true);
+			Directory.CreateDirectory(worldSaveDir);
 
-			File.WriteAllBytes(Path.Combine(path, "level.dat"), NBTSerializer.SerializeAsGzip(level, false));
+			SaveLevelData(worldSaveDir);
 
 			if(HasOverworld)
 			{
-				Overworld.WriteData(path, GameVersion);
+				Overworld.WriteData(worldSaveDir, GameVersion);
 			}
 			if(HasNether)
 			{
-				Nether.WriteData(Path.Combine(path, "DIM-1"), GameVersion);
+				Nether.WriteData(Path.Combine(worldSaveDir, "DIM-1"), GameVersion);
 			}
 			if(HasTheEnd)
 			{
-				TheEnd.WriteData(Path.Combine(path, "DIM1"), GameVersion);
+				TheEnd.WriteData(Path.Combine(worldSaveDir, "DIM1"), GameVersion);
 			}
 
-			WorldData.Save(path, GameVersion);
+			WorldData.Save(worldSaveDir, GameVersion);
 
 			if(createSpawnpointMapIcon && Overworld != null)
 			{
 				var spawnX = LevelData.spawnpoint.spawnX;
 				var spawnZ = LevelData.spawnpoint.spawnZ;
 				var icon = SurfaceMapGenerator.GenerateSurfaceMap(Overworld, new Boundary(spawnX - 32, spawnZ - 32, spawnX + 32, spawnZ + 32), HeightmapType.AllBlocks, true);
-				icon.Save(Path.Combine(path, "icon.png"));
+				icon.Save(Path.Combine(worldSaveDir, "icon.png"));
 			}
 		}
 
-		private NBTFile CreateLevelDAT(bool creativeModeWithCheats)
+		private void SaveLevelData(string worldSaveDir)
 		{
 			var serializer = LevelDATSerializer.CreateForVersion(GameVersion);
 			var nbt = new NBTFile();
-			serializer.WriteLevelDAT(this, nbt, creativeModeWithCheats);
-			return nbt;
+			serializer.WriteLevelData(this, nbt);
+			nbt.Save(Path.Combine(worldSaveDir, "level.dat"), false);
 		}
 	}
 }

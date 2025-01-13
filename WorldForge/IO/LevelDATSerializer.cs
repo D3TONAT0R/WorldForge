@@ -14,7 +14,7 @@ namespace WorldForge.IO
 
 		private LevelDATSerializer() { }
 
-		public virtual void WriteLevelDAT(World world, NBTFile levelDatNBT, bool creativeMode)
+		public virtual void WriteLevelData(World world, NBTFile levelDatNBT)
 		{
 			var nbt = levelDatNBT.contents.AddCompound("Data");
 
