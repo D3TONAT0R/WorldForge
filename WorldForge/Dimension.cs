@@ -477,7 +477,7 @@ namespace WorldForge
 			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
 		}
 
-		public void WriteData(string rootDir, GameVersion gameVersion)
+		public void SaveFiles(string rootDir, GameVersion gameVersion)
 		{
 			Directory.CreateDirectory(rootDir);
 			var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };

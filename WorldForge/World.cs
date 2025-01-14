@@ -7,10 +7,24 @@ using WorldForge.NBT;
 
 namespace WorldForge
 {
-	public enum SaveMode
+	public enum SaveFileOption
 	{
-		Clean = 0,
-		Overwrite = 1
+		/// <summary>
+		/// Creates new save files without overwriting.
+		/// </summary>
+		CreateNew = 0,
+		/// <summary>
+		/// Creates a new save file or replaces existing saves.
+		/// </summary>
+		Replace = 1,
+		/// <summary>
+		/// Creates a new save file or replaces existing files (including non-save files).
+		/// </summary>
+		ReplaceAny = 2,
+		/// <summary>
+		/// Creates a new save file or overwrites existing files, keeping the original save intact.
+		/// </summary>
+		Update = 3
 	}
 
 	public class World
@@ -76,6 +90,11 @@ namespace WorldForge
 			return world;
 		}
 
+		public static bool IsWorldSaveDirectory(string directory)
+		{
+			return File.Exists(Path.Combine(directory, "level.dat")) || Directory.Exists(Path.Combine(directory, "region"));
+		}
+
 		private World(GameVersion targetVersion, LevelData levelData, WorldData worldData)
 		{
 			GameVersion = targetVersion;
@@ -130,9 +149,25 @@ namespace WorldForge
 			}
 		}
 
-		public void Save(string worldSaveDir, bool createSpawnpointMapIcon = true, SaveMode saveMode = SaveMode.Clean)
+		public void Save(string worldSaveDir, bool createSpawnpointMapIcon = true, SaveFileOption saveFileOption = SaveFileOption.Replace)
 		{
-			if(Directory.Exists(worldSaveDir) && saveMode == SaveMode.Clean)
+			bool exists = Directory.Exists(worldSaveDir);
+			bool hasFiles = exists && Directory.GetFiles(worldSaveDir, "*", SearchOption.AllDirectories).Length > 0;
+
+			if(saveFileOption == SaveFileOption.CreateNew && hasFiles)
+			{
+				throw new InvalidOperationException("Target directory already contains files.");
+			}
+			else if(saveFileOption == SaveFileOption.Replace && hasFiles)
+			{
+				//Check if the destination folder is a world folder to avoid unintended deletions
+				if(!IsWorldSaveDirectory(worldSaveDir))
+				{
+					throw new ArgumentException("Target directory already contains files and is not a world save.");
+				}
+				Directory.Delete(worldSaveDir, true);
+			}
+			else if(saveFileOption == SaveFileOption.ReplaceAny)
 			{
 				Directory.Delete(worldSaveDir, true);
 			}
@@ -143,15 +178,15 @@ namespace WorldForge
 
 			if(HasOverworld)
 			{
-				Overworld.WriteData(worldSaveDir, GameVersion);
+				Overworld.SaveFiles(worldSaveDir, GameVersion);
 			}
 			if(HasNether)
 			{
-				Nether.WriteData(Path.Combine(worldSaveDir, "DIM-1"), GameVersion);
+				Nether.SaveFiles(Path.Combine(worldSaveDir, "DIM-1"), GameVersion);
 			}
 			if(HasTheEnd)
 			{
-				TheEnd.WriteData(Path.Combine(worldSaveDir, "DIM1"), GameVersion);
+				TheEnd.SaveFiles(Path.Combine(worldSaveDir, "DIM1"), GameVersion);
 			}
 
 			WorldData.Save(worldSaveDir, GameVersion);
@@ -168,8 +203,7 @@ namespace WorldForge
 		private void SaveLevelData(string worldSaveDir)
 		{
 			var serializer = LevelDATSerializer.CreateForVersion(GameVersion);
-			var nbt = new NBTFile();
-			serializer.WriteLevelData(this, nbt);
+			var nbt = serializer.CreateNBTFile(this);
 			nbt.Save(Path.Combine(worldSaveDir, "level.dat"), false);
 		}
 	}
