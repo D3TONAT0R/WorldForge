@@ -146,7 +146,7 @@ namespace WorldForge
 					}
 					catch(Exception e) when(!throwOnRegionLoadFail)
 					{
-						Logger.Exception($"Failed to preload region '{filename}'", e.Message);
+						Logger.Exception($"Failed to preload region '{filename}'", e);
 					}
 				}
 				else
@@ -220,14 +220,6 @@ namespace WorldForge
 				throw new ArgumentException("Region already exists in dimension.");
 			}
 			return added;
-		}
-
-		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
-		public bool IsDefaultBlock(BlockCoord pos)
-		{
-			var b = GetBlock(pos);
-			if(b == null) return false;
-			return b == World.DEFAULT_BLOCK;
 		}
 
 		///<summary>Returns true if the block at the given location is air or null.</summary>

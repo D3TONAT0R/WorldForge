@@ -307,7 +307,7 @@ namespace WorldForge.Builders.PostProcessors
 
 			private bool CanGenerateSpring(Dimension dim, BlockCoord pos)
 			{
-				if(!dim.IsDefaultBlock(pos)) return false;
+				if(dim.GetBlock(pos) != Blocks.stone) return false;
 				int openSides = 0;
 				if(dim.IsAirNotNull(pos.West)) openSides++;
 				if(dim.IsAirNotNull(pos.East)) openSides++;
@@ -338,7 +338,6 @@ namespace WorldForge.Builders.PostProcessors
 				}
 			}
 		}
-
 
 		public override Priority OrderPriority => Priority.AfterFirst;
 

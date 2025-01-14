@@ -29,9 +29,6 @@ namespace WorldForge
 
 	public class World
 	{
-
-		public static readonly BlockID DEFAULT_BLOCK = BlockList.Find("minecraft:stone");
-
 		public GameVersion GameVersion { get; set; }
 		public LevelData LevelData { get; private set; }
 

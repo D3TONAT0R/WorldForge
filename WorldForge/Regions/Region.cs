@@ -97,14 +97,6 @@ namespace WorldForge.Regions
 			return b == null || b.IsAir;
 		}
 
-		///<summary>Returns true if the block at the given location is the default block (normally minecraft:stone).</summary>
-		public bool IsDefaultBlock(BlockCoord pos)
-		{
-			var b = GetBlock(pos);
-			if (b == null) return false;
-			return b == World.DEFAULT_BLOCK;
-		}
-
 		///<summary>Gets the block type at the given location.</summary>
 		public BlockID GetBlock(BlockCoord pos)
 		{

@@ -45,7 +45,7 @@ namespace WorldForge
 
 	public static class Logger
 	{
-		public static ILogHandler LogHandler { get; set; };
+		public static ILogHandler LogHandler { get; set; }
 
 		private static ConsoleLogHandler defaultHandler = new ConsoleLogHandler();
 
