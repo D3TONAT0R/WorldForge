@@ -14,9 +14,6 @@ namespace WorldForge.Regions
 		public readonly RegionLocation regionPos;
 		public readonly string sourceFilePath;
 
-		public RegionPOI poiStorage;
-		public RegionEntities entityStorage;
-
 		public GameVersion? versionHint;
 		public ChunkData[,] chunks;
 		public List<ChunkData> orphanChunks;
@@ -341,14 +338,15 @@ namespace WorldForge.Regions
 			}
 		}
 
-		public void WriteToFile(string destinationDirectory, GameVersion gameVersion, string name = null)
+		public void WriteToFile(string destinationDirectory, GameVersion gameVersion, string name = null, FileMode fileMode = FileMode.Create)
 		{
 			LoadIfRequired();
 			if (name == null) name = regionPos.ToFileName();
-			using (var stream = new FileStream(Path.Combine(destinationDirectory, name), FileMode.Create))
-			{
-				RegionSerializer.WriteRegionToStream(this, stream, gameVersion);
-			}
+			bool separateFiles = gameVersion >= GameVersion.Release_1(13);
+			var mainRegionStream = new FileStream(Path.Combine(destinationDirectory, "region", name), fileMode);
+			var entitiesStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "entities", name), fileMode) : null;
+			var poiStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "poi", name), fileMode) : null;
+			RegionSerializer.WriteRegionToStream(this, mainRegionStream, entitiesStream, poiStream, gameVersion);
 		}
 	}
 }

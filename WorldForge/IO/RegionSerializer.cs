@@ -13,19 +13,20 @@ namespace WorldForge.IO
 		/// Serializes a region in region file format to the given stream.
 		/// </summary>
 		/// <param name="region">The region to serialize.</param>
-		/// <param name="stream">The stream to which the serialized data should be written to.</param>
+		/// <param name="main">The stream to which the serialized data should be written to.</param>
 		/// <param name="version">The target game version.</param>
 		/// <param name="progressReportCallback">If set, regularly reports back the number of chunks that were serialized. Maximum progress is 1024.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		public static void WriteRegionToStream(Region region, FileStream stream, GameVersion version, Action<int> progressReportCallback = null)
+		public static void WriteRegionToStream(Region region, FileStream main, FileStream entities, FileStream poi, GameVersion version, Action<int> progressReportCallback = null)
 		{
+			//TODO: incorporate entities and poi files
 			Stopwatch stopwatch = Stopwatch.StartNew();
 
 			int[] locations = new int[1024];
 			byte[] sizes = new byte[1024];
 			for(int i = 0; i < 8192; i++)
 			{
-				stream.WriteByte(0);
+				main.WriteByte(0);
 			}
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(version);
@@ -57,25 +58,25 @@ namespace WorldForge.IO
 			}
 			progressReportCallback?.Invoke(1024);
 
-			stream.Position = 8192;
+			main.Position = 8192;
 			for(int i = 0; i < 1024; i++)
 			{
 				if (serializedChunks[i] == null) continue;
 				var serialized = serializedChunks[i];
 
-				locations[i] = (int)(stream.Position / 4096);
+				locations[i] = (int)(main.Position / 4096);
 				byte size = (byte)Math.Ceiling(serialized.Length / 4096d);
 				if(size == 0) throw new InvalidOperationException("Blank serialized chunk data detected.");
 				sizes[i] = size;
 
 				serialized.Position = 0;
-				serialized.CopyTo(stream);
+				serialized.CopyTo(main);
 				var padding = serialized.Length % 4096;
 				//Pad the data to the next 4096 byte mark
 				if(padding > 0)
 				{
 					byte[] paddingBytes = new byte[4096 - padding];
-					stream.Write(paddingBytes, 0, paddingBytes.Length);
+					main.Write(paddingBytes, 0, paddingBytes.Length);
 				}
 			}
 
@@ -85,20 +86,20 @@ namespace WorldForge.IO
 			int unixTime32 = (int)((DateTimeOffset)currentTime).ToUnixTimeSeconds();
 			byte[] timestampBytes = BitUtils.ToBigEndian(BitConverter.GetBytes(unixTime32));
 
-			stream.Position = 0;
+			main.Position = 0;
 
 			for(int i = 0; i < 1024; i++)
 			{
 				//3 byte offset, 1 byte size
 				byte[] offsetBytes = BitUtils.ToBigEndian(BitConverter.GetBytes(locations[i]));
-				stream.Write(offsetBytes, 1, 3);
-				stream.WriteByte(sizes[i]);
+				main.Write(offsetBytes, 1, 3);
+				main.WriteByte(sizes[i]);
 			}
 
-			stream.Position = 4096;
+			main.Position = 4096;
 			for(int i = 0; i < 1024; i++)
 			{
-				stream.Write(timestampBytes, 0, 4);
+				main.Write(timestampBytes, 0, 4);
 			}
 
 			stopwatch.Stop();

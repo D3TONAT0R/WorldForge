@@ -481,7 +481,7 @@ namespace WorldForge
 				Parallel.ForEach(regions, parallelOptions, region =>
 				{
 					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
-					region.Value.WriteToFile(Path.Combine(rootDir, "region"), gameVersion, name);
+					region.Value.WriteToFile(Path.Combine(rootDir), gameVersion, name);
 				});
 			}
 			else
