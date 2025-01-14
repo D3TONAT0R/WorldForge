@@ -34,7 +34,7 @@ namespace WorldForge.NBT
 		///<summary>Creates an NBT structure from the given file.</summary>
 		public NBTFile(string filePath) : this()
 		{
-			using(var stream = Compression.CreateGZipDecompressionStream(File.ReadAllBytes(filePath)))
+			using(var stream = Compression.CreateGZipDecompressionStream(File.OpenRead(filePath)))
 			{
 				NBTSerializer.Deserialize(this, stream);
 				PostLoad();
@@ -66,7 +66,12 @@ namespace WorldForge.NBT
 		///<summary>Writes the content of this NBT structure to a file using Zlib compression.</summary>
 		public void Save(string filePath, bool createSubContainer = true)
 		{
-			File.WriteAllBytes(filePath, NBTSerializer.SerializeAsGzip(this, createSubContainer));
+			var stream = NBTSerializer.Serialize(this, createSubContainer);
+			using(var fs = File.Create(filePath))
+			{
+				stream.CopyTo(fs);
+				if(fs.Length == 0) throw new Exception("Output stream has 0 length");
+			}
 		}
 
 		public void AddLevelRootCompound()

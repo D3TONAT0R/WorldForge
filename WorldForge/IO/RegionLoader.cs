@@ -99,7 +99,7 @@ namespace WorldForge.IO
 			{
 				if(rd.compressedChunks[i] != null)
 				{
-					using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[i].compressedChunk))
+					using(var chunkStream = Compression.CreateZlibDecompressionStream(new MemoryStream(rd.compressedChunks[i].compressedChunk)))
 					{
 						var coord = new ChunkCoord(i % 32, i / 32);
 						int x = i % 32;
@@ -152,7 +152,7 @@ namespace WorldForge.IO
 			{
 				rd = new RegionData(stream, filepath);
 			}
-			using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[index].compressedChunk))
+			using(var chunkStream = Compression.CreateZlibDecompressionStream(new MemoryStream(rd.compressedChunks[index].compressedChunk)))
 			{
 				return new NBTFile(chunkStream);
 			}

@@ -46,11 +46,11 @@ namespace WorldForge.IO
 						var dv = version.GetDataVersion();
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
-						byte[] compressed = NBTSerializer.SerializeAsZlib(chunkData, false);
+						var compressed = NBTSerializer.SerializeAsZlib(chunkData, false);
 						var cLength = BitUtils.ToBigEndian(BitConverter.GetBytes(compressed.Length));
 						memoryStream.Write(cLength, 0, cLength.Length);
 						memoryStream.WriteByte(2);
-						memoryStream.Write(compressed, 0, compressed.Length);
+						compressed.CopyTo(memoryStream);
 					}
 				});
 				progressReportCallback?.Invoke(z * 32);

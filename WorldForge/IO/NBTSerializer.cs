@@ -30,15 +30,15 @@ namespace WorldForge.IO
 		}
 
 		///<summary>Generates a GZip compressed byte array from the content of this NBT structure. GZip is used to compress NBT data (*.dat) files.</summary>
-		public static byte[] SerializeAsGzip(NBTFile file, bool createSubContainer)
+		public static Stream SerializeAsGzip(NBTFile file, bool createSubContainer)
 		{
-			return Compression.CompressGZipBytes(Serialize(file, createSubContainer).ToArray());
+			return Compression.CreateGZipCompressionStream(Serialize(file, createSubContainer));
 		}
 
 		///<summary>Generates a Zlib compressed byte array from the content of this NBT structure. Zlib is used only within region files to store chunks.</summary>
-		public static byte[] SerializeAsZlib(NBTFile file, bool createSubContainer)
+		public static Stream SerializeAsZlib(NBTFile file, bool createSubContainer)
 		{
-			return Compression.CompressZlibBytes(Serialize(file, createSubContainer).ToArray());
+			return Compression.CreateZlibCompressionStream(Serialize(file, createSubContainer));
 		}
 
 		///<summary>Generates an uncompressed byte array from the content of this NBT structure.</summary>
@@ -58,6 +58,7 @@ namespace WorldForge.IO
 			}
 			var stream = new MemoryStream();
 			Write(stream, "", final);
+			stream.Position = 0;
 			return stream;
 		}
 
