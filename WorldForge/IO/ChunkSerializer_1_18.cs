@@ -6,7 +6,7 @@ using WorldForge.NBT;
 
 namespace WorldForge.IO
 {
-	public class ChunkSerializer_1_18 : ChunkSerializer_1_16
+	public class ChunkSerializer_1_18 : ChunkSerializer_1_17
 	{
 		public override bool AddRootLevelCompound => false;
 		public override string SectionsCompName => "sections";

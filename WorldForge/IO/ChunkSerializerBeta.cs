@@ -177,5 +177,10 @@ namespace WorldForge.IO
 		{
 			//Do nothing, tile ticks were not implemented in old regions.
 		}
+
+		public override void WritePointsOfInterest(ChunkData c, NBTCompound chunkNBT)
+		{
+			//Do nothing, POIs were not implemented in old regions.
+		}
 	}
 }

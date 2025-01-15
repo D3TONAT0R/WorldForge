@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using WorldForge.Chunks;
-using WorldForge.Coordinates;
 using WorldForge.NBT;
 using WorldForge.Regions;
 
 namespace WorldForge.IO
 {
+	//TODO: load from separate entities and poi files
 	public abstract class ChunkSerializer
 	{
 		private static readonly List<ChunkSerializer> serializerCache = new List<ChunkSerializer>();
@@ -108,14 +108,18 @@ namespace WorldForge.IO
 
 		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
+		public virtual void LoadPointsOfInterest(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
+
 		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
 		public virtual void CreateChunkNBTs(ChunkData c, out NBTFile mainFile, out NBTFile entitiesFile, out NBTFile poiFile)
 		{
 			CreateNBTFile(out mainFile, out var mainComp);
-			if(SeparateEntitiesData) CreateNBTFile(out entitiesFile, out var entitiesComp);
+			NBTCompound entitiesComp = null;
+			if(SeparateEntitiesData) CreateNBTFile(out entitiesFile, out entitiesComp);
 			else entitiesFile = null;
-			if(SeparatePOIData) CreateNBTFile(out poiFile, out var poiComp);
+			NBTCompound poiComp = null;
+			if(SeparatePOIData) CreateNBTFile(out poiFile, out poiComp);
 			else poiFile = null;
 
 			WriteCommonData(c, mainComp);
@@ -123,7 +127,9 @@ namespace WorldForge.IO
 			WriteBiomes(c, mainComp);
 			WriteTileEntities(c, mainComp);
 			WriteTileTicks(c, mainComp);
-			if(SeparateEntitiesData) WriteEntities(c, mainComp);
+			//TODO: check
+			WriteEntities(c, entitiesComp ?? mainComp);
+			WritePointsOfInterest(c, poiComp ?? mainComp);
 
 			PostWrite(c, mainComp);
 		}
@@ -131,15 +137,16 @@ namespace WorldForge.IO
 		protected void CreateNBTFile(out NBTFile file, out NBTCompound root)
 		{
 			file = new NBTFile();
-			NBTCompound chunkNBT;
 			if(AddRootLevelCompound)
 			{
-				chunkNBT = file.contents.AddCompound("Level");
+				root = file.contents.AddCompound("Level");
 			}
 			else
 			{
-				chunkNBT = file.contents;
+				root = file.contents;
 			}
+			var dv = TargetVersion.GetDataVersion();
+			if(dv.HasValue) file.contents.Add("DataVersion", dv.Value);
 		}
 
 		public abstract void WriteCommonData(ChunkData c, NBTCompound chunkNBT);
@@ -153,6 +160,8 @@ namespace WorldForge.IO
 		public abstract void WriteBiomes(ChunkData c, NBTCompound chunkNBT);
 
 		public abstract void WriteTileTicks(ChunkData c, NBTCompound chunkNBT);
+
+		public virtual void WritePointsOfInterest(ChunkData c, NBTCompound chunkNBT) { }
 
 		protected virtual void PostWrite(ChunkData c, NBTCompound chunkNBT) { }
 	}

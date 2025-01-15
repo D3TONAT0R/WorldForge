@@ -464,11 +464,6 @@ namespace WorldForge
 			}
 		}
 
-		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ, GameVersion gameVersion)
-		{
-			RegionSerializer.WriteRegionToStreams(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
-		}
-
 		public void SaveFiles(string rootDir, GameVersion gameVersion)
 		{
 			Directory.CreateDirectory(rootDir);
@@ -481,7 +476,7 @@ namespace WorldForge
 				Parallel.ForEach(regions, parallelOptions, region =>
 				{
 					string name = $"r.{region.Key.x}.{region.Key.z}.{extension}";
-					region.Value.WriteToFile(Path.Combine(rootDir), gameVersion, name);
+					region.Value.SaveToFiles(Path.Combine(rootDir), gameVersion, name);
 				});
 			}
 			else
@@ -496,7 +491,7 @@ namespace WorldForge
 						{
 							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
 							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
-							var file = alphaSerializer.CreateChunkNBTs(c);
+							alphaSerializer.CreateChunkNBTs(c, out var file, out _, out _);
 							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), NBTSerializer.SerializeAsGzip(file, false));
 						}
 					}

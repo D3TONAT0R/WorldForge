@@ -5,7 +5,7 @@ using WorldForge.NBT;
 
 namespace WorldForge.IO
 {
-	public class ChunkSerializer_1_15 : ChunkSerializer_1_13
+	public class ChunkSerializer_1_15 : ChunkSerializer_1_14
 	{
 		public ChunkSerializer_1_15(GameVersion version) : base(version) { }
 

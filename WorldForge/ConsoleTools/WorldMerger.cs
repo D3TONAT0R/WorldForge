@@ -120,7 +120,8 @@ namespace WorldForge.ConsoleTools
 
 				WorldForgeConsole.WriteLine("Writing file...");
 				FileStream stream = new FileStream(Path.Combine(outputPath, r.filename), FileMode.Create);
-				RegionSerializer.WriteRegionToStreams(mergedRegion, stream, GameVersion.DefaultVersion);
+				//TODO: support entity files
+				RegionSerializer.WriteRegionFiles(mergedRegion, GameVersion.DefaultVersion, Path.Combine(outputPath, r.filename), null, null);
 				stream.Close();
 			}
 		}

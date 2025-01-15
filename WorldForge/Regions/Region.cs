@@ -338,15 +338,22 @@ namespace WorldForge.Regions
 			}
 		}
 
-		public void WriteToFile(string destinationDirectory, GameVersion gameVersion, string name = null, FileMode fileMode = FileMode.Create)
+		public void SaveToFiles(string destinationDirectory, GameVersion gameVersion, string name = null, FileMode fileMode = FileMode.Create)
 		{
 			LoadIfRequired();
 			if (name == null) name = regionPos.ToFileName();
 			bool separateFiles = gameVersion >= GameVersion.Release_1(13);
-			var mainRegionStream = new FileStream(Path.Combine(destinationDirectory, "region", name), fileMode);
-			var entitiesStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "entities", name), fileMode) : null;
-			var poiStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "poi", name), fileMode) : null;
-			RegionSerializer.WriteRegionToStreams(this, mainRegionStream, entitiesStream, poiStream, gameVersion);
+			var mainPath = Path.Combine(destinationDirectory, "region", name);
+			var entitiesPath = separateFiles ? Path.Combine(destinationDirectory, "entities", name) : null;
+			var poiPath = separateFiles ? Path.Combine(destinationDirectory, "poi", name) : null;
+			RegionSerializer.WriteRegionFiles(this, gameVersion, mainPath, entitiesPath, poiPath);
+		}
+
+		public void SaveMainRegionFile(string rootDirectory, GameVersion gameVersion, string name = null, FileMode fileMode = FileMode.Create)
+		{
+			LoadIfRequired();
+			var path = Path.Combine(rootDirectory, name);
+			RegionSerializer.WriteRegionFiles(this, gameVersion, path, null, null);
 		}
 	}
 }

@@ -23,9 +23,10 @@ namespace WorldForge.ConsoleTools
 			region = Region.CreateNew(new RegionLocation(0, 0), null);
 			FillWithRandomBlocks(GameVersion.DefaultVersion);
 			WorldForgeConsole.WriteLine("Writing file...");
-			FileStream stream = new FileStream(savepath, FileMode.Create);
-			RegionSerializer.WriteRegionToStreams(region, stream, GameVersion.DefaultVersion);
-			stream.Close();
+			using(var streams = new RegionFileStreams(savepath, null, null))
+			{
+				RegionSerializer.WriteRegionToStreams(region, GameVersion.DefaultVersion, streams);
+			}
 			WorldForgeConsole.WriteLine("Done");
 		}
 
