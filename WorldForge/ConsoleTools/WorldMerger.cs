@@ -120,7 +120,7 @@ namespace WorldForge.ConsoleTools
 
 				WorldForgeConsole.WriteLine("Writing file...");
 				FileStream stream = new FileStream(Path.Combine(outputPath, r.filename), FileMode.Create);
-				RegionSerializer.WriteRegionToStream(mergedRegion, stream, GameVersion.DefaultVersion);
+				RegionSerializer.WriteRegionToStreams(mergedRegion, stream, GameVersion.DefaultVersion);
 				stream.Close();
 			}
 		}

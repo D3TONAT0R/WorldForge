@@ -41,7 +41,7 @@ namespace WorldForge.ConsoleTools
 			var mergedRegion = merger.Merge();
 			WorldForgeConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
-			RegionSerializer.WriteRegionToStream(mergedRegion, stream, GameVersion.DefaultVersion);
+			RegionSerializer.WriteRegionToStreams(mergedRegion, stream, GameVersion.DefaultVersion);
 			stream.Close();
 			WorldForgeConsole.WriteLine("Done");
 		}

@@ -346,7 +346,7 @@ namespace WorldForge.Regions
 			var mainRegionStream = new FileStream(Path.Combine(destinationDirectory, "region", name), fileMode);
 			var entitiesStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "entities", name), fileMode) : null;
 			var poiStream = separateFiles ? new FileStream(Path.Combine(destinationDirectory, "poi", name), fileMode) : null;
-			RegionSerializer.WriteRegionToStream(this, mainRegionStream, entitiesStream, poiStream, gameVersion);
+			RegionSerializer.WriteRegionToStreams(this, mainRegionStream, entitiesStream, poiStream, gameVersion);
 		}
 	}
 }

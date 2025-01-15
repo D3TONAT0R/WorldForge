@@ -13,6 +13,10 @@ namespace WorldForge.IO
 
 		private static object lockObj = new object();
 
+		public virtual bool SeparateEntitiesData => false;
+
+		public virtual bool SeparatePOIData => false;
+
 		public static ChunkSerializer GetOrCreateSerializer<T>(GameVersion version) where T : ChunkSerializer
 		{
 			lock(lockObj)
@@ -106,28 +110,36 @@ namespace WorldForge.IO
 
 		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
-		public virtual NBTFile CreateChunkNBT(ChunkData c)
+		public virtual void CreateChunkNBTs(ChunkData c, out NBTFile mainFile, out NBTFile entitiesFile, out NBTFile poiFile)
 		{
-			var chunkRootNBT = new NBTFile();
+			CreateNBTFile(out mainFile, out var mainComp);
+			if(SeparateEntitiesData) CreateNBTFile(out entitiesFile, out var entitiesComp);
+			else entitiesFile = null;
+			if(SeparatePOIData) CreateNBTFile(out poiFile, out var poiComp);
+			else poiFile = null;
+
+			WriteCommonData(c, mainComp);
+			WriteBlocks(c, mainComp);
+			WriteBiomes(c, mainComp);
+			WriteTileEntities(c, mainComp);
+			WriteTileTicks(c, mainComp);
+			if(SeparateEntitiesData) WriteEntities(c, mainComp);
+
+			PostWrite(c, mainComp);
+		}
+		
+		protected void CreateNBTFile(out NBTFile file, out NBTCompound root)
+		{
+			file = new NBTFile();
 			NBTCompound chunkNBT;
 			if(AddRootLevelCompound)
 			{
-				chunkNBT = chunkRootNBT.contents.AddCompound("Level");
+				chunkNBT = file.contents.AddCompound("Level");
 			}
 			else
 			{
-				chunkNBT = chunkRootNBT.contents;
+				chunkNBT = file.contents;
 			}
-
-			WriteCommonData(c, chunkNBT);
-			WriteBlocks(c, chunkNBT);
-			WriteBiomes(c, chunkNBT);
-			WriteTileEntities(c, chunkNBT);
-			WriteTileTicks(c, chunkNBT);
-			WriteEntities(c, chunkNBT);
-			PostWrite(c, chunkNBT);
-
-			return chunkRootNBT;
 		}
 
 		public abstract void WriteCommonData(ChunkData c, NBTCompound chunkNBT);

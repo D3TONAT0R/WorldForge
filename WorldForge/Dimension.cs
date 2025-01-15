@@ -466,7 +466,7 @@ namespace WorldForge
 
 		public void WriteRegionFile(FileStream stream, int regionPosX, int regionPosZ, GameVersion gameVersion)
 		{
-			RegionSerializer.WriteRegionToStream(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
+			RegionSerializer.WriteRegionToStreams(regions[new RegionLocation(regionPosX, regionPosZ)], stream, gameVersion);
 		}
 
 		public void SaveFiles(string rootDir, GameVersion gameVersion)
@@ -496,7 +496,7 @@ namespace WorldForge
 						{
 							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
 							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));
-							var file = alphaSerializer.CreateChunkNBT(c);
+							var file = alphaSerializer.CreateChunkNBTs(c);
 							File.WriteAllBytes(Path.Combine(rootDir, folder1, folder2, fileName), NBTSerializer.SerializeAsGzip(file, false));
 						}
 					}

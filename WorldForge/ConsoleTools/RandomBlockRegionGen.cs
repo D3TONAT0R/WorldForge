@@ -24,7 +24,7 @@ namespace WorldForge.ConsoleTools
 			FillWithRandomBlocks(GameVersion.DefaultVersion);
 			WorldForgeConsole.WriteLine("Writing file...");
 			FileStream stream = new FileStream(savepath, FileMode.Create);
-			RegionSerializer.WriteRegionToStream(region, stream, GameVersion.DefaultVersion);
+			RegionSerializer.WriteRegionToStreams(region, stream, GameVersion.DefaultVersion);
 			stream.Close();
 			WorldForgeConsole.WriteLine("Done");
 		}

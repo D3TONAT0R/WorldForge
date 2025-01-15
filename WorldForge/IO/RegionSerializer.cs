@@ -17,7 +17,7 @@ namespace WorldForge.IO
 		/// <param name="version">The target game version.</param>
 		/// <param name="progressReportCallback">If set, regularly reports back the number of chunks that were serialized. Maximum progress is 1024.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		public static void WriteRegionToStream(Region region, FileStream main, FileStream entities, FileStream poi, GameVersion version, Action<int> progressReportCallback = null)
+		public static void WriteRegionToStreams(Region region, RegionFileStreams streams, GameVersion version, Action<int> progressReportCallback = null)
 		{
 			//TODO: incorporate entities and poi files
 			Stopwatch stopwatch = Stopwatch.StartNew();
@@ -43,7 +43,7 @@ namespace WorldForge.IO
 						var memoryStream = new MemoryStream(4096);
 						serializedChunks[i] = memoryStream;
 
-						var chunkData = chunkSerializer.CreateChunkNBT(chunk);
+						var chunkData = chunkSerializer.CreateChunkNBTs(chunk);
 						var dv = version.GetDataVersion();
 						if(dv.HasValue) chunkData.contents.Add("DataVersion", dv.Value);
 
