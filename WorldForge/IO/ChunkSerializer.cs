@@ -108,7 +108,7 @@ namespace WorldForge.IO
 
 		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
 
-		public virtual void LoadPointsOfInterest(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
+		public virtual void LoadPOIs(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
 		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
 
@@ -129,7 +129,7 @@ namespace WorldForge.IO
 			WriteTileTicks(c, mainComp);
 			//TODO: check
 			WriteEntities(c, entitiesComp ?? mainComp);
-			WritePointsOfInterest(c, poiComp ?? mainComp);
+			WritePOIs(c, poiComp ?? mainComp);
 
 			PostWrite(c, mainComp);
 		}
@@ -161,7 +161,7 @@ namespace WorldForge.IO
 
 		public abstract void WriteTileTicks(ChunkData c, NBTCompound chunkNBT);
 
-		public virtual void WritePointsOfInterest(ChunkData c, NBTCompound chunkNBT) { }
+		public virtual void WritePOIs(ChunkData c, NBTCompound chunkNBT) { }
 
 		protected virtual void PostWrite(ChunkData c, NBTCompound chunkNBT) { }
 	}

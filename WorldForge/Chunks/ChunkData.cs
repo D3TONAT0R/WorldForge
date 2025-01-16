@@ -41,6 +41,7 @@ namespace WorldForge.Chunks
 		public List<Entity> Entities { get; private set; }
 		public Dictionary<BlockCoord, TileEntity> TileEntities { get; private set; }
 		public List<BlockCoord> PostProcessTicks { get; private set; }
+		public List<POI> POIs { get; private set; }
 		public long InhabitedTime { get; set; } = 0;
 		public GameVersion? ChunkGameVersion { get; private set; } = default;
 
@@ -283,6 +284,30 @@ namespace WorldForge.Chunks
 			{
 				PostProcessTicks.Remove(pos);
 			}
+		}
+
+		public void SetPOI(BlockCoord pos, POI poi)
+		{
+			if(!IsLoaded) Load();
+			int i = GetPOIIndex(pos);
+			if(i >= 0) POIs[i] = poi;
+			else POIs.Add(poi);
+		}
+
+		public POI GetPOIAt(BlockCoord pos)
+		{
+			if(!IsLoaded) Load();
+			int i = GetPOIIndex(pos);
+			return i >= 0 ? POIs[i] : null;
+		}
+
+		private int GetPOIIndex(BlockCoord pos)
+		{
+			for (int i = 0; i < POIs.Count; i++)
+			{
+				if(POIs[i].position == pos) return i;
+			}
+			return -1;
 		}
 
 		public short GetHighestBlock(int x, int z, HeightmapType type = HeightmapType.AllBlocks)

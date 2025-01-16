@@ -63,6 +63,16 @@ namespace WorldForge.Coordinates
 			return new BlockCoord(tuple.Item1, tuple.Item2, tuple.Item3);
 		}
 
+		public static bool operator ==(BlockCoord l, BlockCoord r)
+		{
+			return l.x == r.x && l.y == r.y && l.z == r.z;
+		}
+
+		public static bool operator !=(BlockCoord l, BlockCoord r)
+		{
+			return l.x != r.x || l.y != r.y || l.z != r.z;
+		}
+
 		public BlockCoord Shift(int dx, int dy, int dz)
 		{
 			return new BlockCoord(x + dx, y + dy, z + dz);
