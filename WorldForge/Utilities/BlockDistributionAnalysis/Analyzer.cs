@@ -19,7 +19,7 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			YMax = yMax;
 		}
 
-		public void AnalyzeChunk(ChunkData chunk)
+		public void AnalyzeChunk(Chunk chunk)
 		{
 			try
 			{

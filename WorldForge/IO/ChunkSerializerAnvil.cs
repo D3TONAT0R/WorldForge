@@ -30,7 +30,7 @@ namespace WorldForge.IO
 		}
 
 		#region Blocks
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, GameVersion? version)
+		public override void LoadBlocks(Chunk c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach(var o in sectionsList.listContent)
@@ -42,7 +42,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		protected void ParseNumericIDBlocks(ChunkData c, NBTCompound nbtCompound, sbyte sectionY)
+		protected void ParseNumericIDBlocks(Chunk c, NBTCompound nbtCompound, sbyte sectionY)
 		{
 			byte[] blocks = nbtCompound.Get<byte[]>(BlocksCompName);
 
@@ -85,12 +85,12 @@ namespace WorldForge.IO
 			return sectionNBT.Contains(BlocksCompName);
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadCommonData(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 
 		}
 
-		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteCommonData(Chunk c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("xPos", c.WorldSpaceCoord.x);
 			chunkNBT.Add("zPos", c.WorldSpaceCoord.z);
@@ -108,7 +108,7 @@ namespace WorldForge.IO
 			chunkNBT.Add("HeightMap", hm);
 		}
 
-		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBlocks(Chunk c, NBTCompound chunkNBT)
 		{
 			var sectionList = chunkNBT.Add(SectionsCompName, new NBTList(NBTTag.TAG_Compound));
 			for(sbyte secY = c.LowestSection; secY <= c.HighestSection; secY++)
@@ -162,7 +162,7 @@ namespace WorldForge.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			c.TileEntities.Clear();
 			if(chunkNBT.Contains(TileEntitiesCompName))
@@ -179,7 +179,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteTileEntities(Chunk c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList(TileEntitiesCompName, NBTTag.TAG_Compound);
 			foreach(var k in c.TileEntities.Keys)
@@ -193,7 +193,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
+		public override void LoadEntities(Chunk c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
 		{
 			c.Entities.Clear();
 			if(chunkNBT.Contains("Entities"))
@@ -209,7 +209,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteEntities(Chunk c, NBTCompound chunkNBT)
 		{
 			var list = chunkNBT.AddList("Entities", NBTTag.TAG_Compound);
 			foreach(var e in c.Entities)
@@ -219,7 +219,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			if(chunkNBT.TryGet<byte[]>("Biomes", out var biomeData))
 			{
@@ -230,7 +230,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBiomes(Chunk c, NBTCompound chunkNBT)
 		{
 			byte[] biomeData = new byte[256];
 			for(int i = 0; i < 256; i++)
@@ -241,12 +241,12 @@ namespace WorldForge.IO
 			chunkNBT.Add("Biomes", biomeData);
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileTicks(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//TODO
 		}
 
-		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteTileTicks(Chunk c, NBTCompound chunkNBT)
 		{
 			var tickList = chunkNBT.Add("TileTicks", new NBTList(NBTTag.TAG_Compound));
 			foreach(var t in c.PostProcessTicks)

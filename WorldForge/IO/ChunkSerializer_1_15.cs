@@ -9,7 +9,7 @@ namespace WorldForge.IO
 	{
 		public ChunkSerializer_1_15(GameVersion version) : base(version) { }
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData))
 			{
@@ -32,7 +32,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBiomes(Chunk c, NBTCompound chunkNBT)
 		{
 			//TODO: check if the biomes exists in the target version & replace them if necessary
 			int[] biomeData = new int[1024];

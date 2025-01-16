@@ -10,12 +10,12 @@ namespace WorldForge.IO
 
 		public ChunkSerializer_1_14(GameVersion version) : base(version) { }
 
-		public override void LoadPOIs(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadPOIs(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//TODO: load POI data
 		}
 
-		public override void WritePOIs(ChunkData c, NBTCompound chunkNBT)
+		public override void WritePOIs(Chunk c, NBTCompound chunkNBT)
 		{
 			NBTCompound sections = new NBTCompound();
 			Dictionary<int, NBTList> recordsPerSection = new Dictionary<int, NBTList>();

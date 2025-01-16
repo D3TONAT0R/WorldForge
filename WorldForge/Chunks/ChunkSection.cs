@@ -9,7 +9,7 @@ namespace WorldForge.Chunks
 {
 	public class ChunkSection
 	{
-		public readonly ChunkData containingChunk;
+		public readonly Chunk containingChunk;
 
 		public ushort[] blocks = new ushort[4096];
 		public List<BlockState> palette;
@@ -23,7 +23,7 @@ namespace WorldForge.Chunks
 
 		//private readonly object lockObj = new object();
 
-		public ChunkSection(ChunkData chunk)
+		public ChunkSection(Chunk chunk)
 		{
 			containingChunk = chunk;
 			palette = new List<BlockState>

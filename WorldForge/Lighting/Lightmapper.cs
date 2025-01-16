@@ -8,7 +8,7 @@ namespace WorldForge.Lighting
 	public class Lightmapper
 	{
 
-		public void BakeChunkLight(ChunkData chunk)
+		public void BakeChunkLight(Chunk chunk)
 		{
 			BakeSkyLight(chunk);
 		}
@@ -57,7 +57,7 @@ namespace WorldForge.Lighting
 			return lm;
 		}
 
-		private void BakeSkyLight(ChunkData chunk)
+		private void BakeSkyLight(Chunk chunk)
 		{
 			var maxY = chunk.HighestSection * 16 + 15;
 			//var hs = chunk.sections[chunk.HighestSection];
@@ -74,7 +74,7 @@ namespace WorldForge.Lighting
 			}
 		}
 
-		private void BakeBlockLight(ChunkData chunk)
+		private void BakeBlockLight(Chunk chunk)
 		{
 			List<(BlockCoord pos, byte l)> lightSources = new List<(BlockCoord pos, byte l)>();
 			foreach(var sY in chunk.Sections.Keys)
@@ -93,7 +93,7 @@ namespace WorldForge.Lighting
 			}
 		}
 
-		private void SpreadHorizontal(BlockCoord pos, LightValue l, ChunkData limitChunk)
+		private void SpreadHorizontal(BlockCoord pos, LightValue l, Chunk limitChunk)
 		{
 			if(l.IsDark) return;
 			LightValue oxn = ApplyOcclusion(l, GetOcclusionLevelAtLocationChunkOnly(limitChunk, pos.West)).Attenuated;
@@ -106,7 +106,7 @@ namespace WorldForge.Lighting
 			TrySpreadTo(pos.South, limitChunk, ozp);
 		}
 
-		private void Spread(BlockCoord pos, LightValue l, ChunkData limitChunk)
+		private void Spread(BlockCoord pos, LightValue l, Chunk limitChunk)
 		{
 			if(l.IsDark) return;
 			SpreadHorizontal(pos, l, limitChunk);
@@ -116,7 +116,7 @@ namespace WorldForge.Lighting
 			TrySpreadTo(pos.Above, limitChunk, oyp);
 		}
 
-		private void TrySpreadTo(BlockCoord pos, ChunkData limitChunk, LightValue l)
+		private void TrySpreadTo(BlockCoord pos, Chunk limitChunk, LightValue l)
 		{
 			if(pos.x < 0 || pos.x > 15 || pos.z < 0 || pos.z > 15 || pos.y < limitChunk.LowestSection * 16 || pos.y > limitChunk.HighestSection * 16 + 15) return;
 			var existingLight = limitChunk.GetChunkSectionForYCoord(pos.y, false)?.GetLightAt(pos.LocalSectionCoords) ?? LightValue.FullBright;
@@ -135,7 +135,7 @@ namespace WorldForge.Lighting
 			else return 15;
 		}
 
-		public byte GetOcclusionLevelAtLocationChunkOnly(ChunkData c, BlockCoord pos)
+		public byte GetOcclusionLevelAtLocationChunkOnly(Chunk c, BlockCoord pos)
 		{
 			if(pos.x < 0 || pos.x > 15 || pos.z < 0 || pos.z > 15 || pos.y < c.LowestSection * 16 || pos.y > c.HighestSection * 16 + 15)
 			{

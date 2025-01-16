@@ -12,7 +12,7 @@ namespace WorldForge.IO
 
 		public virtual bool UseFull64BitRange => true;
 
-		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteCommonData(Chunk c, NBTCompound chunkNBT)
 		{
 			base.WriteCommonData(c, chunkNBT);
 
@@ -47,7 +47,7 @@ namespace WorldForge.IO
 			comp.Add(BlocksCompName, BitUtils.PackBits(GetBlockIndexArray(section), bitsPerBlock, UseFull64BitRange));
 		}
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadCommonData(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			if(chunkNBT.TryGet("Status", out string statusString))
 			{
@@ -66,7 +66,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, GameVersion? version)
+		public override void LoadBlocks(Chunk c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
 			foreach(var o in sectionsList.listContent)
@@ -124,7 +124,7 @@ namespace WorldForge.IO
 			return sectionNBT.Get<long[]>("BlockStates");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			if(chunkNBT.TryGet<int[]>("Biomes", out var biomeData) && biomeData.Length > 0)
 			{
@@ -139,7 +139,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBiomes(Chunk c, NBTCompound chunkNBT)
 		{
 			int[] biomeData = new int[256];
 			for(int i = 0; i < 256; i++)
@@ -150,12 +150,12 @@ namespace WorldForge.IO
 			chunkNBT.Add("Biomes", biomeData);
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileTicks(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//TODO
 		}
 
-		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteTileTicks(Chunk c, NBTCompound chunkNBT)
 		{
 			//Add "post processing" positions (i.e. block positions that need an update)
 			var ppList = chunkNBT.Add("PostProcessing", new NBTList(NBTTag.TAG_List));

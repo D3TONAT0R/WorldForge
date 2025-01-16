@@ -107,7 +107,7 @@ namespace WorldForge.Coordinates
 			return ChunkToRegionSpace(localChunk).RegionToWorldSpace(localRegion);
 		}
 
-		public BlockCoord ChunkToWorldSpace(ChunkData chunk)
+		public BlockCoord ChunkToWorldSpace(Chunk chunk)
 		{
 			return this + chunk.WorldSpaceCoord.BlockCoord;
 		}

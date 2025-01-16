@@ -122,8 +122,8 @@ namespace WorldForge
 					}
 					//TODO: find a way to enable late loading of alpha chunks
 					var nbt = new NBTFile(f);
-					var chunk = ChunkData.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), nbt);
-					cs.ReadChunkNBT(chunk, version);
+					var chunk = Chunk.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), nbt);
+					cs.ReadMainChunkNBT(chunk, version);
 				}
 				catch(Exception e) when(!throwOnRegionLoadFail)
 				{
@@ -434,7 +434,7 @@ namespace WorldForge
 			return GetRegionAtBlock(new BlockCoord(x, 0, z))?.GetHighestBlock(x & 511, z & 511, heightmapType) ?? short.MinValue;
 		}
 
-		public IEnumerable<ChunkData> EnumerateChunks()
+		public IEnumerable<Chunk> EnumerateChunks()
 		{
 			foreach(var region in regions.Values)
 			{
@@ -448,7 +448,7 @@ namespace WorldForge
 			}
 		}
 
-		public IEnumerable<ChunkData> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive)
+		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive)
 		{
 			foreach(var region in regions.Values)
 			{

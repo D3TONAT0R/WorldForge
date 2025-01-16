@@ -104,7 +104,7 @@ namespace WorldForge.IO
 						var coord = new ChunkCoord(i % 32, i / 32);
 						int x = i % 32;
 						int z = i / 32;
-						region.chunks[i % 32, i / 32] = ChunkData.CreateFromNBT(region, coord, new NBTFile(chunkStream), region.versionHint, loadChunks);
+						region.chunks[i % 32, i / 32] = Chunk.CreateFromNBT(region, coord, new NBTFile(chunkStream), region.versionHint, loadChunks);
 					}
 				}
 			});
@@ -138,7 +138,7 @@ namespace WorldForge.IO
 				//TODO: not sure if path is correct
 				var path = c.Item2;
 				var regionSpacePos = new ChunkCoord(coord.x & 31, coord.z & 31);
-				var chunk = ChunkData.CreateFromNBT(reg, regionSpacePos, new NBTFile(path));
+				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new NBTFile(path));
 				reg.chunks[regionSpacePos.x, regionSpacePos.z] = chunk;
 			});
 			return reg;
@@ -206,7 +206,7 @@ namespace WorldForge.IO
 				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
 				else serializer = new ChunkSerializerAnvil(GameVersion.Release_1(8));
 
-				var chunk = ChunkData.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, null, true);
+				var chunk = Chunk.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, null, true);
 				//serializer.ReadChunkNBT(chunk, serializer.TargetVersion);
 				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
 				/*for (int x = 0; x < 16; x++)

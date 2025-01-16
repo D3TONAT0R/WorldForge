@@ -34,7 +34,7 @@ namespace WorldForge.IO
 			return sectionNBT.GetAsCompound("block_states").Get<long[]>("data");
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			var sectionsList = chunkNBT.GetAsList(SectionsCompName);
 			foreach(var s in sectionsList.listContent)
@@ -109,7 +109,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteCommonData(Chunk c, NBTCompound chunkNBT)
 		{
 			base.WriteCommonData(c, chunkNBT);
 			chunkNBT.Add("yPos", (sbyte)-4);

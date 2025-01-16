@@ -11,12 +11,12 @@ namespace WorldForge.IO
 	{
 		public ChunkSerializerBeta(GameVersion version) : base(version) { }
 
-		public override void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadCommonData(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 
 		}
 
-		public override void WriteCommonData(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteCommonData(Chunk c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("xPos", c.WorldSpaceCoord.x);
 			chunkNBT.Add("zPos", c.WorldSpaceCoord.z);
@@ -39,7 +39,7 @@ namespace WorldForge.IO
 			return x * 2048 + z * 128 + y;
 		}
 
-		public override void LoadBlocks(ChunkData c, NBTCompound nbtCompound, GameVersion? version)
+		public override void LoadBlocks(Chunk c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			if(nbtCompound.TryGet<byte[]>("Blocks", out var blocks))
 			{
@@ -62,7 +62,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteBlocks(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBlocks(Chunk c, NBTCompound chunkNBT)
 		{
 			byte[] blocks = new byte[32768];
 			byte[] metaNibbles = new byte[32768];
@@ -93,7 +93,7 @@ namespace WorldForge.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			c.TileEntities.Clear();
 			if(chunkNBT.Contains("TileEntities"))
@@ -110,7 +110,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void WriteTileEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteTileEntities(Chunk c, NBTCompound chunkNBT)
 		{
 			var comp = chunkNBT.AddList("TileEntities", NBTTag.TAG_Compound);
 			foreach(var k in c.TileEntities.Keys)
@@ -124,7 +124,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		public override void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
+		public override void LoadEntities(Chunk c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version)
 		{
 			c.Entities.Clear();
 			if(chunkNBT.TryGet<NBTList>("Entities", out var entList))
@@ -139,7 +139,7 @@ namespace WorldForge.IO
 			}
 		}
 
-		protected override void PostWrite(ChunkData c, NBTCompound chunkNBT)
+		protected override void PostWrite(Chunk c, NBTCompound chunkNBT)
 		{
 			var hm = new byte[256];
 			for(int z = 0; z < 16; z++)
@@ -152,33 +152,33 @@ namespace WorldForge.IO
 			chunkNBT.Add("HeightMap", hm);
 		}
 
-		public override void WriteEntities(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteEntities(Chunk c, NBTCompound chunkNBT)
 		{
 			chunkNBT.Add("Entities", new NBTList(NBTTag.TAG_Compound));
 			//TODO
 		}
 
-		public override void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
 
-		public override void WriteBiomes(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteBiomes(Chunk c, NBTCompound chunkNBT)
 		{
 			//Do nothing, saved biomes were not implemented back then, they were generated on the fly by the game (based on the world seed)
 		}
 
-		public override void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileTicks(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
 			//Do nothing, tile ticks were not implemented in old regions.
 		}
 
-		public override void WriteTileTicks(ChunkData c, NBTCompound chunkNBT)
+		public override void WriteTileTicks(Chunk c, NBTCompound chunkNBT)
 		{
 			//Do nothing, tile ticks were not implemented in old regions.
 		}
 
-		public override void WritePOIs(ChunkData c, NBTCompound chunkNBT)
+		public override void WritePOIs(Chunk c, NBTCompound chunkNBT)
 		{
 			//Do nothing, POIs were not implemented in old regions.
 		}

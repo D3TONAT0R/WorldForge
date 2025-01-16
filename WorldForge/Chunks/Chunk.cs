@@ -11,7 +11,7 @@ using WorldForge.TileEntities;
 
 namespace WorldForge.Chunks
 {
-    public class ChunkData
+    public class Chunk
 	{
 		public ChunkCoord WorldSpaceCoord
 		{
@@ -45,33 +45,31 @@ namespace WorldForge.Chunks
 		public long InhabitedTime { get; set; } = 0;
 		public GameVersion? ChunkGameVersion { get; private set; } = default;
 
-		public NBTFile sourceNBT;
+		public ChunkSourceData sourceData;
 
 		public bool IsLoaded => Sections != null;
 		public bool HasTerrain => Status >= ChunkStatus.surface;
 		public bool HasFullyGeneratedTerrain => Status >= ChunkStatus.light;
 
-		private readonly object lockObj = new object();
-
-		public static ChunkData CreateNew(Region region, ChunkCoord regionSpacePos)
+		public static Chunk CreateNew(Region region, ChunkCoord regionSpacePos)
 		{
-			var c = new ChunkData(region, regionSpacePos);
+			var c = new Chunk(region, regionSpacePos);
 			c.InitializeNewChunk();
 			return c;
 		}
 
-		public static ChunkData CreateFromNBT(Region region, ChunkCoord regionSpacePos, NBTFile nbt, GameVersion? versionHint = null, bool loadContent = false)
+		public static Chunk CreateFromNBT(Region region, ChunkCoord regionSpacePos, ChunkSourceData data, GameVersion? versionHint = null, bool loadContent = false)
 		{
-			var c = new ChunkData(region, regionSpacePos)
+			var c = new Chunk(region, regionSpacePos)
 			{
-				sourceNBT = nbt,
+				sourceData = data,
 				ChunkGameVersion = versionHint
 			};
 			if(loadContent) c.Load();
 			return c;
 		}
 
-		private ChunkData(Region containingRegion, ChunkCoord localPos)
+		private Chunk(Region containingRegion, ChunkCoord localPos)
 		{
 			ParentRegion = containingRegion;
 			RegionSpaceCoord = localPos;
@@ -92,9 +90,9 @@ namespace WorldForge.Chunks
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
 
-			if(sourceNBT != null && sourceNBT.dataVersion.HasValue)
+			if(sourceData != null && sourceData.main.dataVersion.HasValue)
 			{
-				ChunkGameVersion = GameVersion.FromDataVersion(sourceNBT.dataVersion.Value).Value;
+				ChunkGameVersion = GameVersion.FromDataVersion(sourceData.main.dataVersion.Value).Value;
 			}
 			else
 			{
@@ -107,7 +105,7 @@ namespace WorldForge.Chunks
 			InitializeNewChunk();
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
-			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion);
+			chunkSerializer.ReadMainChunkNBT(this, ChunkGameVersion);
 		}
 
 		/// <summary>
@@ -326,9 +324,9 @@ namespace WorldForge.Chunks
 		public short[,] GetHeightmap(HeightmapType type, bool forceManualCalculation = false)
 		{
 			short[,] hm = null;
-			if(!forceManualCalculation && sourceNBT != null)
+			if(!forceManualCalculation && sourceData != null)
 			{
-				hm = NBTSerializer.GetHeightmapFromChunkNBT(sourceNBT, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+				hm = NBTSerializer.GetHeightmapFromChunkNBT(sourceData, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			}
 			if(hm == null)
 			{
@@ -376,8 +374,8 @@ namespace WorldForge.Chunks
 
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
-			if (sourceNBT == null) return false;
-			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(sourceNBT, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+			if (sourceData == null) return false;
+			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(sourceData, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			if (chunkHM == null) return false;
 			for (int x = 0; x < 16; x++)
 			{

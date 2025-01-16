@@ -79,40 +79,61 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual void ReadChunkNBT(ChunkData c, GameVersion? version)
+		public virtual void ReadChunkNBT(Chunk c, GameVersion? version)
 		{
-			var chunkNBT = GetRootCompound(c.sourceNBT);
+			var s = c.sourceData;
+			ReadMainChunkNBT(c, GetRootCompound(s.main), version);
+			if(s.entities != null)
+			{
+				ReadEntitiesChunkNBT(c, GetRootCompound(s.entities), version);
+			}
+			if(s.poi != null)
+			{
+				ReadPOIChunkNBT(c, GetRootCompound(s.poi), version);
+			}
+		}
 
-			LoadCommonData(c, chunkNBT, version);
-			LoadBlocks(c, chunkNBT, version);
-			LoadTileEntities(c, chunkNBT, version);
-			LoadTileTicks(c, chunkNBT, version);
-			LoadBiomes(c, chunkNBT, version);
-			LoadEntities(c, chunkNBT, c.ParentRegion, version);
-			PostLoad(c, chunkNBT, version);
-
+		public virtual void ReadMainChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		{
+			LoadCommonData(c, nbt, version);
+			LoadBlocks(c, nbt, version);
+			LoadTileEntities(c, nbt, version);
+			LoadTileTicks(c, nbt, version);
+			LoadBiomes(c, nbt, version);
+			LoadEntities(c, nbt, c.ParentRegion, version);
+			PostLoad(c, nbt, version);
 			c.RecalculateSectionRange();
+		}
+
+		public virtual void ReadEntitiesChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		{
+			LoadEntities(c, nbt, c.ParentRegion, version);
+		}
+
+		public virtual void ReadPOIChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		{
+			LoadPOIs(c, nbt, version);
 		}
 
 		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");
 
-		public abstract void LoadCommonData(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadCommonData(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadBlocks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadBlocks(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadTileEntities(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadEntities(ChunkData c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version);
+		public abstract void LoadEntities(Chunk c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version);
 
-		public abstract void LoadBiomes(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadBiomes(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadTileTicks(ChunkData c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadTileTicks(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public virtual void LoadPOIs(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
+		public virtual void LoadPOIs(Chunk c, NBTCompound chunkNBT, GameVersion? version) { }
 
-		protected virtual void PostLoad(ChunkData c, NBTCompound chunkNBT, GameVersion? version) { }
+		protected virtual void PostLoad(Chunk c, NBTCompound chunkNBT, GameVersion? version) { }
 
-		public virtual void CreateChunkNBTs(ChunkData c, out NBTFile mainFile, out NBTFile entitiesFile, out NBTFile poiFile)
+		public virtual void CreateChunkNBTs(Chunk c, out NBTFile mainFile, out NBTFile entitiesFile, out NBTFile poiFile)
 		{
 			CreateNBTFile(out mainFile, out var mainComp);
 			NBTCompound entitiesComp = null;
@@ -149,20 +170,20 @@ namespace WorldForge.IO
 			if(dv.HasValue) file.contents.Add("DataVersion", dv.Value);
 		}
 
-		public abstract void WriteCommonData(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteCommonData(Chunk c, NBTCompound chunkNBT);
 
-		public abstract void WriteBlocks(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteBlocks(Chunk c, NBTCompound chunkNBT);
 
-		public abstract void WriteTileEntities(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteTileEntities(Chunk c, NBTCompound chunkNBT);
 
-		public abstract void WriteEntities(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteEntities(Chunk c, NBTCompound chunkNBT);
 
-		public abstract void WriteBiomes(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteBiomes(Chunk c, NBTCompound chunkNBT);
 
-		public abstract void WriteTileTicks(ChunkData c, NBTCompound chunkNBT);
+		public abstract void WriteTileTicks(Chunk c, NBTCompound chunkNBT);
 
-		public virtual void WritePOIs(ChunkData c, NBTCompound chunkNBT) { }
+		public virtual void WritePOIs(Chunk c, NBTCompound chunkNBT) { }
 
-		protected virtual void PostWrite(ChunkData c, NBTCompound chunkNBT) { }
+		protected virtual void PostWrite(Chunk c, NBTCompound chunkNBT) { }
 	}
 }

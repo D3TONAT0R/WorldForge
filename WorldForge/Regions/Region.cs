@@ -15,8 +15,8 @@ namespace WorldForge.Regions
 		public readonly string sourceFilePath;
 
 		public GameVersion? versionHint;
-		public ChunkData[,] chunks;
-		public List<ChunkData> orphanChunks;
+		public Chunk[,] chunks;
+		public List<Chunk> orphanChunks;
 
 		public Dimension Parent { get; internal set; }
 		public World ParentWorld => Parent?.ParentWorld;
@@ -47,7 +47,7 @@ namespace WorldForge.Regions
 
 		public void InitializeChunks()
 		{
-			chunks = new ChunkData[32, 32];
+			chunks = new Chunk[32, 32];
 		}
 
 		public void Load(bool loadChunks = false, bool loadOrphanChunks = false)
@@ -150,18 +150,18 @@ namespace WorldForge.Regions
 		/// <summary>
 		/// Gets the chunk containing the block's position
 		/// </summary>
-		public ChunkData GetChunkAtBlock(BlockCoord coord, bool allowNewChunks)
+		public Chunk GetChunkAtBlock(BlockCoord coord, bool allowNewChunks)
 		{
 			LoadIfRequired();
 			var chunk = coord.Chunk.LocalRegionPos;
 			if (allowNewChunks && chunks[chunk.x, chunk.z] == null)
 			{
-				chunks[chunk.x, chunk.z] = ChunkData.CreateNew(this, new ChunkCoord(chunk.x, chunk.z));
+				chunks[chunk.x, chunk.z] = Chunk.CreateNew(this, new ChunkCoord(chunk.x, chunk.z));
 			}
 			return chunks[chunk.x, chunk.z];
 		}
 
-		public bool TryGetChunkAtBlock(BlockCoord coord, out ChunkData chunk)
+		public bool TryGetChunkAtBlock(BlockCoord coord, out Chunk chunk)
 		{
 			LoadIfRequired();
 			var c = coord.Chunk.LocalRegionPos;
@@ -169,13 +169,13 @@ namespace WorldForge.Regions
 			return chunk != null;
 		}
 
-		public ChunkData GetChunk(int x, int z)
+		public Chunk GetChunk(int x, int z)
 		{
 			LoadIfRequired();
 			return chunks[x, z];
 		}
 
-		public bool TryGetChunk(int x, int z, out ChunkData chunk)
+		public bool TryGetChunk(int x, int z, out Chunk chunk)
 		{
 			LoadIfRequired();
 			chunk = chunks[x, z];
@@ -191,7 +191,7 @@ namespace WorldForge.Regions
 			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
 			if (chunks[chunkX, chunkZ] == null && allowNewChunks)
 			{
-				chunks[chunkX, chunkZ] = ChunkData.CreateNew(this, new ChunkCoord(chunkX, chunkZ));
+				chunks[chunkX, chunkZ] = Chunk.CreateNew(this, new ChunkCoord(chunkX, chunkZ));
 			}
 			var c = chunks[chunkX, chunkZ];
 			if (c != null) c.SetDefaultBlockAt(pos.LocalChunkCoords);

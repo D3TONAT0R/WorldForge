@@ -66,7 +66,7 @@ namespace WorldForge.ConsoleTools
 					{
 						if(r.chunks[x, z] != null)
 						{
-							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceNBT.contents);
+							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceData.contents);
 						}
 					}
 				}
