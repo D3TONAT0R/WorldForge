@@ -12,7 +12,21 @@ namespace WorldForge.IO
 
 		public override void LoadPOIs(Chunk c, NBTCompound chunkNBT, GameVersion? version)
 		{
-			//TODO: load POI data
+			if(chunkNBT.TryGet("Sections", out NBTCompound sections))
+			{
+				foreach(var section in sections)
+				{
+					var sectionComp = (NBTCompound)section.Value;
+					if(sectionComp.TryGet("Valid", out bool valid) && !valid) return;
+					if(sectionComp.TryGet("Records", out NBTList records))
+					{
+						foreach(var record in records)
+						{
+							c.POIs.Add(new POI((NBTCompound)record));
+						}
+					}
+				}
+			}
 		}
 
 		public override void WritePOIs(Chunk c, NBTCompound chunkNBT)

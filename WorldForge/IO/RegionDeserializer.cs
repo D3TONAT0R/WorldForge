@@ -115,13 +115,18 @@ namespace WorldForge.IO
 			region.InitializeChunks();
 			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
-				if(main.compressedChunks[i] != null)
-				{
-					var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
-					var coord = new ChunkCoord(i % 32, i / 32);
-					region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks);
-				}
+				LoadChunk(region, loadChunks, i, main, entities, poi);
 			});
+		}
+
+		private static void LoadChunk(Region region, bool loadChunks, int i, RegionData main, RegionData entities, RegionData poi)
+		{
+			if(main.compressedChunks[i] != null)
+			{
+				var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
+				var coord = new ChunkCoord(i % 32, i / 32);
+				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks);
+			}
 		}
 
 		public static Region LoadRegionAlphaChunks(string worldSaveDir, RegionLocation location)

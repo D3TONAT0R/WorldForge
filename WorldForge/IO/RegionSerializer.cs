@@ -27,19 +27,19 @@ namespace WorldForge.IO
 		/// <param name="version">The target game version.</param>
 		/// <param name="progressReportCallback">If set, regularly reports back the number of chunks that were serialized. Maximum progress is 1024.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		public static void WriteRegionToStreams(Region region, GameVersion version, RegionFileStreams streams, Action<int> progressReportCallback = null)
+		public static void WriteRegionToStreams(Region region, GameVersion version, RegionFileStreams streams)
 		{
 			//TODO: incorporate entities and poi files
 			Stopwatch stopwatch = Stopwatch.StartNew();
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(version);
 			var serializedMainChunks = new MemoryStream[1024];
-			var serializedEntitiesChunks = chunkSerializer.SeparateEntitiesData ? new MemoryStream[1024] : null;
-			var serializedPOIChunks = chunkSerializer.SeparatePOIData ? new MemoryStream[1024] : null;
+			var serializedEntitiesChunks = chunkSerializer.SeparateEntitiesData && HasEntities(region) ? new MemoryStream[1024] : null;
+			var serializedPOIChunks = chunkSerializer.SeparatePOIData && HasPOIs(region) ? new MemoryStream[1024] : null;
 
-			for(int z = 0; z < 32; z++)
+			Parallel.For(0, 32, WorldForgeManager.ParallelOptions, z =>
 			{
-				Parallel.For(0, 32, WorldForgeManager.ParallelOptions, x =>
+				for(int x = 0; x < 32; x++)
 				{
 					int i = z * 32 + x;
 					var chunk = region.chunks[x, z];
@@ -47,19 +47,47 @@ namespace WorldForge.IO
 					{
 						chunkSerializer.CreateChunkNBTs(chunk, out var mainFile, out var entitiesFile, out var poiFile);
 						serializedMainChunks[i] = ToZlibStream(mainFile);
-						if(entitiesFile != null) serializedEntitiesChunks[i] = ToZlibStream(entitiesFile);
-						if(poiFile != null) serializedPOIChunks[i] = ToZlibStream(poiFile);
+						if(entitiesFile != null && serializedEntitiesChunks != null)
+						{
+							serializedEntitiesChunks[i] = ToZlibStream(entitiesFile);
+						}
+						if(poiFile != null && serializedPOIChunks != null)
+						{
+							serializedPOIChunks[i] = ToZlibStream(poiFile);
+						}
 					}
-				});
-				progressReportCallback?.Invoke(z * 32);
-			}
-			progressReportCallback?.Invoke(1024);
+				}
+			});
 
 			WriteRegionFile(streams.main, serializedMainChunks);
 
 			stopwatch.Stop();
 			var duration = stopwatch.Elapsed.TotalSeconds;
 			WorldForgeConsole.WriteLine($"Generating Region file took {duration:F2} seconds.");
+		}
+
+		private static bool HasEntities(Region r)
+		{
+			for(int z = 0; z < 32; z++)
+			{
+				for(int x = 0; x < 32; x++)
+				{
+					if(r.chunks[x, z]?.Entities?.Count > 0) return true;
+				}
+			}
+			return false;
+		}
+
+		private static bool HasPOIs(Region r)
+		{
+			for(int z = 0; z < 32; z++)
+			{
+				for(int x = 0; x < 32; x++)
+				{
+					if(r.chunks[x, z]?.POIs?.Count > 0) return true;
+				}
+			}
+			return false;
 		}
 
 		private static MemoryStream ToZlibStream(NBTFile file)
