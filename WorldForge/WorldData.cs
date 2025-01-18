@@ -9,6 +9,50 @@ namespace WorldForge
 {
 	public class WorldData
 	{
+		public class Raid : INBTConverter
+		{
+			[NBT("Id")]
+			public int id;
+			[NBT("Active")]
+			public bool active;
+			[NBT("Started")]
+			public bool started;
+			[NBT("Status")]
+			public string status;
+			[NBT("GroupsSpawned")]
+			public int groupsSpawned;
+			[NBT("BadOmenLevel")]
+			public int badOmenLevel;
+			[NBT("PreRaidTicks")]
+			public int preRaidTicks;
+			[NBT("PostRaidTicks")]
+			public int postRaidTicks;
+			[NBT("CX")]
+			public int cx;
+			[NBT("CY")]
+			public int cy;
+			[NBT("CZ")]
+			public int cz;
+			[NBT("NumGroups")]
+			public int numGroups;
+			[NBT("TicksActive")]
+			public int ticksActive;
+			[NBT("TotalHealth")]
+			public float totalHealth;
+			[NBT("HeroesOfTheVillage", "1.14")]
+			public List<UUID> heroesOfTheVillage = new List<UUID>();
+
+			public object ToNBT(GameVersion version)
+			{
+				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+			}
+
+			public void FromNBT(object nbtData)
+			{
+				NBTConverter.LoadFromNBT(nbtData as NBTCompound, this);
+			}
+		}
+
 		public class RaidsData : IData
 		{
 			[NBT("Raids")]

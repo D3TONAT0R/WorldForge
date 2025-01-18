@@ -43,21 +43,53 @@ namespace WorldForge
 
 		public object ToNBT(GameVersion version)
 		{
-			//TODO: version differences
-			return new int[] { i0, i1, i2, i3 };
+			if(version >= GameVersion.Release_1(16))
+			{
+				return new int[] { i0, i1, i2, i3 };
+			}
+			else
+			{
+				return new NBTCompound
+				{
+					{ "UUIDLeast", ((long)i2 << 32) | i3 },
+					{ "UUIDMost", ((long)i0 << 32) | i1 }
+				};
+			}
 		}
 
 		public void FromNBT(object nbtData)
 		{
-			var ints = (int[])nbtData;
-			if(ints.Length != 4)
+			if(nbtData is int[] ints)
 			{
-				throw new ArgumentException("UUID must have 4 integers");
+				if(ints.Length != 4)
+				{
+					throw new ArgumentException("UUID must have 4 integers");
+				}
+				i0 = ints[0];
+				i1 = ints[1];
+				i2 = ints[2];
+				i3 = ints[3];
 			}
-			i0 = ints[0];
-			i1 = ints[1];
-			i2 = ints[2];
-			i3 = ints[3];
+			else if(nbtData is long[] longs)
+			{
+				if(longs.Length != 2)
+				{
+					throw new ArgumentException("UUID must have 2 longs");
+				}
+				i0 = (int)(longs[0] >> 32);
+				i1 = (int)longs[0];
+				i2 = (int)(longs[1] >> 32);
+				i3 = (int)longs[1];
+			}
+			else if(nbtData is NBTCompound comp)
+			{
+				long least = comp.Get<long>("UUIDLeast");
+				long most = comp.Get<long>("UUIDMost");
+				i0 = (int)(most >> 32);
+				i1 = (int)most;
+				i2 = (int)(least >> 32);
+				i3 = (int)least;
+			}
 		}
 	}
 }
