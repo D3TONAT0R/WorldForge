@@ -102,7 +102,7 @@ namespace WorldForge.NBT
 			}
 			else
 			{
-				WorldForgeConsole.WriteError("Key '" + key + "' does not exist!");
+				Logger.Error("Key '" + key + "' does not exist!");
 				return null;
 			}
 		}

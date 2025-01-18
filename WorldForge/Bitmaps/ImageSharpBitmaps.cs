@@ -3,9 +3,8 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using WorldForge;
 
-namespace WorldForgeConsole
+namespace WorldForge
 {
 	public class ImageSharpBitmapFactory : IBitmapFactory
 	{

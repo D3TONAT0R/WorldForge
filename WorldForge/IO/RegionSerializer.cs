@@ -63,7 +63,7 @@ namespace WorldForge.IO
 
 			stopwatch.Stop();
 			var duration = stopwatch.Elapsed.TotalSeconds;
-			WorldForgeConsole.WriteLine($"Generating Region file took {duration:F2} seconds.");
+			Logger.Info($"Generating Region file took {duration:F2} seconds.");
 		}
 
 		private static bool HasEntities(Region r)
