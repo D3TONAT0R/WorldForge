@@ -81,6 +81,7 @@ namespace WorldForge.Chunks
 			TileEntities = new Dictionary<BlockCoord, TileEntity>();
 			Entities = new List<Entity>();
 			PostProcessTicks = new List<BlockCoord>();
+			POIs = new List<POI>();
 		}
 
 		/// <summary>
@@ -105,7 +106,7 @@ namespace WorldForge.Chunks
 			InitializeNewChunk();
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
-			chunkSerializer.ReadMainChunkNBT(this, ChunkGameVersion);
+			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion);
 		}
 
 		/// <summary>
@@ -326,7 +327,7 @@ namespace WorldForge.Chunks
 			short[,] hm = null;
 			if(!forceManualCalculation && sourceData != null)
 			{
-				hm = NBTSerializer.GetHeightmapFromChunkNBT(sourceData, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+				hm = NBTSerializer.GetHeightmapFromChunkNBT(sourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			}
 			if(hm == null)
 			{
@@ -375,7 +376,7 @@ namespace WorldForge.Chunks
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
 			if (sourceData == null) return false;
-			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(sourceData, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(sourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			if (chunkHM == null) return false;
 			for (int x = 0; x < 16; x++)
 			{

@@ -47,16 +47,6 @@ namespace WorldForge
 				WriteLine("- analyzedist        Analyzes a world's block/ore distribution and creates a CSV report");
 				WriteLine("- map                Generates an overview map of the given world");
 				input = GetInput();
-				if(input.StartsWith("mergeregions"))
-				{
-					var m = new RegionMergerConsoleTool();
-					m.Run(args);
-				}
-				if(input.StartsWith("mergeworlds"))
-				{
-					var m = new WorldMerger();
-					m.Run(args);
-				}
 				if(input.StartsWith("randomblocks"))
 				{
 					var g = new RandomBlockRegionGen();
@@ -72,8 +62,8 @@ namespace WorldForge
 					string path = Console.ReadLine();
 					int x = int.Parse(Console.ReadLine());
 					int z = int.Parse(Console.ReadLine());
-					var r = RegionDeserializer.LoadRegion(path, null);
-					var v = new NBTViewer(r.chunks[x, z].sourceData);
+					var r = RegionDeserializer.LoadRegion(new RegionFilePaths(path, null, null), null);
+					var v = new NBTViewer(r.chunks[x, z].sourceData.main);
 					v.Run(args);
 				}
 				if(input.StartsWith("analyzedist")) {

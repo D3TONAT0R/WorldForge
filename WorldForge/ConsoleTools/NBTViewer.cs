@@ -59,14 +59,14 @@ namespace WorldForge.ConsoleTools
 			if(path.EndsWith(".mca"))
 			{
 				content = new NBTFile();
-				Region r = RegionDeserializer.LoadRegion(path, null);
+				Region r = RegionDeserializer.LoadRegion(new RegionFilePaths(path, null, null), null);
 				for(int z = 0; z < 32; z++)
 				{
 					for(int x = 0; x < 32; x++)
 					{
 						if(r.chunks[x, z] != null)
 						{
-							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceData.contents);
+							content.contents.Add($"Chunk [{x},{z}]", r.chunks[x, z].sourceData.main.contents);
 						}
 					}
 				}

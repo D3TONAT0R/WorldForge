@@ -85,11 +85,11 @@ namespace WorldForge.IO
 			ReadMainChunkNBT(c, GetRootCompound(s.main), version);
 			if(s.entities != null)
 			{
-				ReadEntitiesChunkNBT(c, GetRootCompound(s.entities), version);
+				ReadEntitiesChunkNBT(c, s.entities.contents, version);
 			}
 			if(s.poi != null)
 			{
-				ReadPOIChunkNBT(c, GetRootCompound(s.poi), version);
+				ReadPOIChunkNBT(c, s.poi.contents, version);
 			}
 		}
 

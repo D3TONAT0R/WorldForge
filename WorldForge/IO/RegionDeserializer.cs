@@ -31,6 +31,7 @@ namespace WorldForge.IO
 			{
 				RegionLocation.TryGetFromFileName(filepath, out position);
 
+				if(stream.Length < 4096) return;
 				for(uint i = 0; i < 1024; i++)
 				{
 					chunkLocations[i] = Read3ByteInt(stream);
@@ -67,45 +68,58 @@ namespace WorldForge.IO
 					}
 				}
 			}
+
+			public NBTFile GetFile(int i)
+			{
+				if(compressedChunks[i] == null) return null;
+				using(var chunkStream = Compression.CreateZlibDecompressionStream(compressedChunks[i].compressedChunk))
+				{
+					return new NBTFile(chunkStream);
+				}
+			}
 		}
 
-		public static Region PreloadRegion(string filePath, Dimension parent, GameVersion? worldSaveVersion = null)
+		public static Region PreloadRegion(RegionFilePaths filePaths, Dimension parent, GameVersion? worldSaveVersion = null)
 		{
-			if(!RegionLocation.TryGetFromFileName(filePath, out var loc))
+			if(!RegionLocation.TryGetFromFileName(filePaths.mainPath, out var loc))
 			{
-				Logger.Error("Unable to interpret region location from file name: " + filePath);
+				Logger.Error("Unable to interpret region location from file name: " + filePaths.mainPath);
 			}
-			Region region = Region.CreateExisting(loc, parent, filePath);
+			Region region = Region.CreateExisting(loc, parent, filePaths);
 			region.versionHint = worldSaveVersion;
 			return region;
 		}
 
-		public static Region LoadRegion(string filePath, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
+		public static Region LoadRegion(RegionFilePaths filePaths, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
 		{
-			var r = PreloadRegion(filePath, parent, worldSaveVersion);
+			var r = PreloadRegion(filePaths, parent, worldSaveVersion);
 			LoadRegionContent(r, loadChunks, loadOrphanChunks);
 			return r;
 		}
 
+		public static Region LoadMainRegion(string file, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
+		{
+			var paths = new RegionFilePaths(file, null, null);
+			return LoadRegion(paths, parent, worldSaveVersion, loadChunks, loadOrphanChunks);
+		}
+
 		public static void LoadRegionContent(Region region, bool loadChunks = false, bool loadOrphanChunks = false)
 		{
-			RegionData rd;
-			using(var stream = File.Open(region.sourceFilePath, FileMode.Open))
+			RegionData main, entities, poi;
+			using(var streams = region.sourceFilePaths.OpenStreams(FileMode.Open))
 			{
-				rd = new RegionData(stream, region.sourceFilePath);
+				main = new RegionData(streams.main, region.sourceFilePaths.mainPath);
+				entities = streams.entities != null ? new RegionData(streams.entities, region.sourceFilePaths.entitiesPath) : null;
+				poi = streams.poi != null ? new RegionData(streams.poi, region.sourceFilePaths.poiPath) : null;
 			}
 			region.InitializeChunks();
-			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, (int i) =>
+			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
-				if(rd.compressedChunks[i] != null)
+				if(main.compressedChunks[i] != null)
 				{
-					using(var chunkStream = Compression.CreateZlibDecompressionStream(rd.compressedChunks[i].compressedChunk))
-					{
-						var coord = new ChunkCoord(i % 32, i / 32);
-						int x = i % 32;
-						int z = i / 32;
-						region.chunks[i % 32, i / 32] = Chunk.CreateFromNBT(region, coord, new NBTFile(chunkStream), region.versionHint, loadChunks);
-					}
+					var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
+					var coord = new ChunkCoord(i % 32, i / 32);
+					region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks);
 				}
 			});
 		}
@@ -138,7 +152,7 @@ namespace WorldForge.IO
 				//TODO: not sure if path is correct
 				var path = c.Item2;
 				var regionSpacePos = new ChunkCoord(coord.x & 31, coord.z & 31);
-				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new NBTFile(path));
+				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new ChunkSourceData(new NBTFile(path), null, null));
 				reg.chunks[regionSpacePos.x, regionSpacePos.z] = chunk;
 			});
 			return reg;
@@ -194,50 +208,6 @@ namespace WorldForge.IO
 			return b;
 		}
 
-		private static void WriteChunkToHeightmap(short[,] heightmap, NBTFile nbt, int localChunkX, int localChunkZ, HeightmapType mapType)
-		{
-			//int chunkDataX = (int)nbt.contents.Get("xPos") - regionPos.x * 32;
-			//int chunkDataZ = (int)nbt.contents.Get("zPos") - regionPos.z * 32;
-			//var chunkHM = nbt.GetHeightmapFromChunkNBT(mapType);
-			try
-			{
-				//TODO: not global chunk coords
-				ChunkSerializer serializer;
-				if(nbt.dataVersion.HasValue) serializer = ChunkSerializer.CreateForDataVersion(nbt);
-				else serializer = new ChunkSerializerAnvil(GameVersion.Release_1(8));
-
-				var chunk = Chunk.CreateFromNBT(null, new ChunkCoord(localChunkX, localChunkZ), nbt, null, true);
-				//serializer.ReadChunkNBT(chunk, serializer.TargetVersion);
-				chunk.WriteToHeightmap(heightmap, localChunkX, localChunkZ, mapType);
-				/*for (int x = 0; x < 16; x++)
-				{
-					for (int z = 0; z < 16; z++)
-					{
-						byte y = (chunkHM != null) ? (byte)Math.Max(chunkHM[x, z] - 1, 0) : (byte)255;
-						if (y > 1)
-						{
-							while (y > 0 && !Blocks.IsBlockForMap(chunk.GetBlockAt(x, y, z).block, mapType))
-							{
-								y--;
-							}
-						}
-						heightmap[localChunkX * 16 + x, localChunkZ * 16 + z] = y;
-					}
-				}
-				*/
-			}
-			catch
-			{
-
-			}
-		}
-
-		private static byte GetPositive2sComplement(sbyte b)
-		{
-			unchecked
-			{
-				return (byte)b;
-			}
-		}
+		private static byte GetPositive2sComplement(sbyte b) => unchecked((byte)b);
 	}
 }

@@ -12,7 +12,7 @@ namespace WorldForge.Regions
 	public class Region
 	{
 		public readonly RegionLocation regionPos;
-		public readonly string sourceFilePath;
+		public readonly RegionFilePaths sourceFilePaths;
 
 		public GameVersion? versionHint;
 		public Chunk[,] chunks;
@@ -25,11 +25,11 @@ namespace WorldForge.Regions
 
 		public RegionFileDataPositions RegionFileInfo { get; internal set; }
 
-		private Region(RegionLocation loc, Dimension parent, string sourcePath)
+		private Region(RegionLocation loc, Dimension parent, RegionFilePaths sourceFilePaths)
 		{
 			regionPos = loc;
 			Parent = parent;
-			sourceFilePath = sourcePath;
+			this.sourceFilePaths = sourceFilePaths;
 		}
 
 		public static Region CreateNew(RegionLocation loc, Dimension parent)
@@ -39,9 +39,15 @@ namespace WorldForge.Regions
 			return r;
 		}
 
-		public static Region CreateExisting(RegionLocation loc, Dimension parent, string sourceFilePath)
+		public static Region CreateExisting(RegionLocation loc, Dimension parent, RegionFilePaths paths)
 		{
-			Region r = new Region(loc, parent, sourceFilePath);
+			Region r = new Region(loc, parent, paths);
+			return r;
+		}
+
+		public static Region CreateExisting1(RegionLocation loc, Dimension parent, string path)
+		{
+			Region r = new Region(loc, parent, new RegionFilePaths(path, null, null));
 			return r;
 		}
 
