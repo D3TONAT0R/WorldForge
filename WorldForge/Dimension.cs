@@ -97,6 +97,34 @@ namespace WorldForge
 			return dim;
 		}
 
+		public static Dimension FromRegionFolder(World world, string regionFolder, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		{
+			var dim = new Dimension(world, id, BiomeID.TheVoid);
+			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
+			foreach(var mainFileName in Directory.GetFiles(regionFolder, "*.mc*"))
+			{
+				var filename = Path.GetFileName(mainFileName);
+				if(Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
+				{
+					try
+					{
+						var paths = new RegionFilePaths(mainFileName, null, null);
+						var region = RegionDeserializer.PreloadRegion(paths, dim, gameVersion);
+						dim.AddRegion(region, true);
+					}
+					catch(Exception e) when(!throwOnRegionLoadFail)
+					{
+						Logger.Exception($"Failed to preload region '{filename}'", e);
+					}
+				}
+				else
+				{
+					Logger.Error($"Invalid file '{filename}' in region folder.");
+				}
+			}
+			return dim;
+		}
+
 		private static void LoadAlphaChunkFiles(string chunksRootDir, GameVersion? version, bool throwOnRegionLoadFail, Dimension dim)
 		{
 			var cs = ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
