@@ -61,7 +61,6 @@ namespace WorldForge.IO
 							//Can it be safely ignored? NBTExplorer doesn't read that chunk either and it often
 							//seems to be located in non-generated areas of the region.
 
-							//Console.WriteLine($"Fail at chunk [{i % 32},{i / 32}]: {e.Message}");
 							//throw new FileLoadException($"Failed to load chunk at [{i % 32},{i / 32}].");
 						}
 						expectedEOF = (chunkLocations[i] + chunkSizes[i]) * 4096;

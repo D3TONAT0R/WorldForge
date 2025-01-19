@@ -45,7 +45,7 @@ namespace WorldForge.Regions
 			return r;
 		}
 
-		public static Region CreateExisting1(RegionLocation loc, Dimension parent, string path)
+		public static Region CreateExisting(RegionLocation loc, Dimension parent, string path)
 		{
 			Region r = new Region(loc, parent, new RegionFilePaths(path, null, null));
 			return r;
@@ -106,7 +106,7 @@ namespace WorldForge.Regions
 			var chunk = GetChunkAtBlock(pos, false);
 			if (chunk != null)
 			{
-				return chunk.GetBlockAt(pos.LocalChunkCoords)?.Block ?? BlockList.Find("minecraft:air");
+				return chunk.GetBlockAt(pos.LocalChunkCoords)?.Block ?? Blocks.air;
 			}
 			else
 			{

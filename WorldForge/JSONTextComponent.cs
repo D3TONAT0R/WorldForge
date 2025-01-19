@@ -70,6 +70,10 @@ namespace WorldForge
 
 		public static JSONTextComponent ParseSingle(string json)
 		{
+			if(json.StartsWith("\""))
+			{
+				return new JSONTextComponent(json.Substring(1, json.Length - 2));
+			}
 			return new JSONTextComponent
 			{
 				data = new List<Dictionary<string, object>>()

@@ -1,6 +1,8 @@
 ﻿using System;
+using WorldForge.Biomes;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
+using WorldForge.Regions;
 
 namespace WorldForge
 {
@@ -65,6 +67,15 @@ namespace WorldForge
 		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading)
 		{
 			return GenerateSurfaceMap(dim, boundary, surfaceType, shading, MapColorPalette.Modern);
+		}
+
+		public static IBitmap GenerateSurfaceMap(Region r, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette)
+		{
+			var dim = Dimension.CreateNew(null, DimensionID.Unknown, BiomeID.TheVoid);
+			dim.AddRegion(r, true);
+			var pos = r.regionPos;
+			var boundary = new Boundary(pos.x * 512, pos.z * 512, pos.x * 512 + 512, pos.z * 512 + 512);
+			return GenerateSurfaceMap(dim, boundary, surfaceType, shading);
 		}
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)

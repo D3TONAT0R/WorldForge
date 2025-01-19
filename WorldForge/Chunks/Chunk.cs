@@ -203,6 +203,7 @@ namespace WorldForge.Chunks
 		{
 			if (!IsLoaded) Load();
 			if (TileEntities == null) return null;
+			pos += WorldSpaceCoord.BlockCoord;
 			if (TileEntities.ContainsKey(pos))
 			{
 				return TileEntities[pos];
