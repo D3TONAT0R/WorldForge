@@ -7,20 +7,13 @@ namespace WorldForge
 {
 	public class BlockState : INBTConverter
 	{
-
+		public static readonly BlockState Unknown = new BlockState();
 		public static readonly BlockState Air = new BlockState(BlockList.Find("air"));
 		public static readonly BlockState Water = new BlockState(BlockList.Find("water"));
 		public static readonly BlockState Lava = new BlockState(BlockList.Find("lava"));
 
-		public static BlockState Unknown
-		{
-			get
-			{
-				if(unknown == null) unknown = new BlockState();
-				return unknown;
-			}
-		}
-		private static BlockState unknown;
+		[ThreadStatic]
+		private static Dictionary<BlockID, BlockState> simpleStateCache;
 
 		public BlockID Block { get; private set; }
 
@@ -67,6 +60,21 @@ namespace WorldForge
 		{
 			this.properties = properties?.Clone();
 			InitializeHash();
+		}
+
+		public static BlockState Simple(BlockID b)
+		{
+			if(simpleStateCache == null) simpleStateCache = new Dictionary<BlockID, BlockState>();
+			if(simpleStateCache.TryGetValue(b, out var s))
+			{
+				return s;
+			}
+			else
+			{
+				s = new BlockState(b);
+				simpleStateCache.Add(b, s);
+				return s;
+			}
 		}
 
 		public bool HasProperty(string key)
