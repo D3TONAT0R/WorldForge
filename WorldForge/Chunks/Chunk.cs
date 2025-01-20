@@ -318,6 +318,29 @@ namespace WorldForge.Chunks
 			return short.MinValue;
 		}
 
+		public bool FindBlock(BlockState block, out BlockCoord pos)
+		{
+			foreach(var s in Sections)
+			{
+				if(s.Value == null) continue;
+				var index = s.Value.GetPaletteIndex(block);
+				if(index >= 0)
+				{
+					for(int i = 0; i < s.Value.blocks.Length; i++)
+					{
+						if(s.Value.blocks[i] == index)
+						{
+							pos = ChunkSection.GetPosition(i);
+							pos.y += s.Key * 16;
+							return true;
+						}
+					}
+				}
+			}
+			pos = BlockCoord.Zero;
+			return false;
+		}
+
 		public short[,] GetHeightmap(HeightmapType type, bool forceManualCalculation = false)
 		{
 			short[,] hm = null;

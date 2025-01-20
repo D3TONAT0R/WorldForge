@@ -6,6 +6,8 @@ namespace WorldForge.Coordinates
 {
 	public struct BlockCoord : INBTConverter, IEquatable<BlockCoord>
 	{
+		public static readonly BlockCoord Zero = new BlockCoord(0, 0, 0);
+
 		public int x;
 		public int y;
 		public int z;

@@ -72,6 +72,14 @@ namespace WorldForge.Chunks
 			return z * 256 + y * 16 + x;
 		}
 
+		public static BlockCoord GetPosition(int i)
+		{
+			int x = i % 16;
+			int y = (i / 16) % 16;
+			int z = i / 256;
+			return new BlockCoord(x, y, z);
+		}
+
 		private ushort AddBlockToPalette(BlockState block)
 		{
 			if (block == null) throw new NullReferenceException("Attempted to add a null BlockState to the palette.");
