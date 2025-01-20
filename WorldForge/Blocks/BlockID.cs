@@ -130,6 +130,11 @@ namespace WorldForge
 			return !(l == r);
 		}
 
+		public static implicit operator BlockID(string id)
+		{
+			return BlockList.Find(id, true);
+		}
+
 		protected bool Equals(BlockID other)
 		{
 			return this == other;

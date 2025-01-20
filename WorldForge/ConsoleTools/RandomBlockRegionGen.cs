@@ -50,7 +50,7 @@ namespace WorldForge.ConsoleTools
 								for(int k = 0; k < size; k++)
 								{
 									var pos = new BlockCoord(x + i, y + j, z + k);
-									if(region.ContainsPosition(pos.x, pos.z))
+									if(region.ContainsPosition(pos.XZ))
 									{
 										region.SetBlock(pos, block);
 									}

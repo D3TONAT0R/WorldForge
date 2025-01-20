@@ -51,6 +51,8 @@ namespace WorldForge.Chunks
 		public bool HasTerrain => Status >= ChunkStatus.surface;
 		public bool HasFullyGeneratedTerrain => Status >= ChunkStatus.light;
 
+		#region Creation methods
+
 		public static Chunk CreateNew(Region region, ChunkCoord regionSpacePos)
 		{
 			var c = new Chunk(region, regionSpacePos);
@@ -109,13 +111,68 @@ namespace WorldForge.Chunks
 			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion);
 		}
 
+		#endregion
+
+		#region Block related methods
+
+		///<summary>Gets the block at the given chunk coordinate</summary>
+		public BlockState GetBlock(BlockCoord pos)
+		{
+			if(!HasTerrain) return null;
+			if(!IsLoaded) Load();
+			var sec = GetChunkSectionForYCoord(pos.y, false);
+			if(sec == null) return null;
+			return sec.GetBlockAt(pos.x, pos.y & 0xF, pos.z);
+		}
+
 		/// <summary>
 		/// Sets the block at the given chunk coordinate
 		/// </summary>
-		public void SetBlockAt(BlockCoord pos, BlockState block)
+		public void SetBlock(BlockCoord pos, BlockState block)
 		{
 			if(!IsLoaded) Load();
 			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, block);
+		}
+
+		public void SetBlock(BlockCoord pos, BlockID block)
+		{
+			if(!IsLoaded) Load();
+			var state = new BlockState(block);
+			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, state);
+		}
+
+		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
+		public TileEntity GetTileEntity(BlockCoord pos)
+		{
+			if(!IsLoaded) Load();
+			if(TileEntities == null) return null;
+			pos += WorldSpaceCoord.BlockCoord;
+			if(TileEntities.ContainsKey(pos))
+			{
+				return TileEntities[pos];
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
+		public void SetTileEntity(BlockCoord pos, TileEntity te)
+		{
+			if(!IsLoaded) Load();
+			if (TileEntities == null)
+			{
+				TileEntities = new Dictionary<BlockCoord, TileEntity>();
+			}
+			TileEntities.Add(pos, te);
+		}
+
+		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te)
+		{
+			SetBlock(pos, block);
+			SetTileEntity(pos, te);
+			return true;
 		}
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
@@ -136,82 +193,35 @@ namespace WorldForge.Chunks
 			return null;
 		}
 
-		///<summary>Sets the default bock (normally minecraft:stone) at the given chunk coordinate. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlockAt(BlockCoord pos)
-		{
-			if(!IsLoaded) Load();
-			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, 1); //1 is always the default block in a region generated from scratch
-		}
+		#endregion
 
-		///<summary>Gets the block at the given chunk coordinate</summary>
-		public BlockState GetBlockAt(BlockCoord pos)
-		{
-			if (!HasTerrain) return null;
-			if(!IsLoaded) Load();
-			var sec = GetChunkSectionForYCoord(pos.y, false);
-			if (sec == null) return null;
-			return sec.GetBlockAt(pos.x, pos.y & 0xF, pos.z);
-		}
+		#region Biome related methods
 
-		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
+		///<summary>Gets the biome at the given chunk coordinate</summary>
+		public BiomeID GetBiomeAt(BlockCoord pos)
 		{
-			if (!HasTerrain) return 0;
 			if(!IsLoaded) Load();
-			int countedBlocks = 0;
-			foreach (var kv in Sections)
+			var section = GetChunkSectionForYCoord(pos.y, false);
+			if(section != null)
 			{
-				var section = kv.Value;
-				short baseY = (short)(kv.Key * 16);
-				if (baseY > yMax || baseY + 15 < yMin) continue;
-
-				for (byte y = 0; y < 16; y++)
-				{
-					short worldY = (short)(baseY + y);
-					if (worldY < yMin || worldY >= yMax) continue;
-					for (byte z = 0; z < 16; z++)
-					{
-						for (byte x = 0; x < 16; x++)
-						{
-							var b = section.GetBlockAt(x, y, z);
-							action.Invoke(new BlockCoord(x, baseY + y, z), b);
-							countedBlocks++;
-						}
-					}
-				}
-			}
-			return countedBlocks;
-		}
-
-		public int ForEachBlock(Action<BlockCoord, BlockState> action)
-		{
-			return ForEachBlock((short)(LowestSection * 16), (short)(HighestSection * 16 + 15), action);
-		}
-
-		///<summary>Sets the tile entity for the block at the given chunk coordinate.</summary>
-		public void SetTileEntity(BlockCoord pos, TileEntity te)
-		{
-			if(!IsLoaded) Load();
-			if (TileEntities == null)
-			{
-				TileEntities = new Dictionary<BlockCoord, TileEntity>();
-			}
-			TileEntities.Add(pos, te);
-		}
-
-		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
-		public TileEntity GetTileEntity(BlockCoord pos)
-		{
-			if (!IsLoaded) Load();
-			if (TileEntities == null) return null;
-			pos += WorldSpaceCoord.BlockCoord;
-			if (TileEntities.ContainsKey(pos))
-			{
-				return TileEntities[pos];
+				return section.GetBiomeAt(pos.x, pos.y & 0xF, pos.z);
 			}
 			else
 			{
 				return null;
 			}
+		}
+
+		///<summary>Gets the biome at the given chunk coordinate</summary>
+		public BiomeID GetBiomeAt(int x, int z)
+		{
+			if(!IsLoaded) Load();
+			sbyte highestSectionWithBiomeData = HighestSection;
+			while(highestSectionWithBiomeData > 0 && (!Sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
+			{
+				highestSectionWithBiomeData--;
+			}
+			return GetBiomeAt((x, highestSectionWithBiomeData * 16 + 15, z));
 		}
 
 		///<summary>Sets the biome at the given chunk coordinate</summary>
@@ -235,32 +245,9 @@ namespace WorldForge.Chunks
 			}
 		}
 
-		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID GetBiomeAt(BlockCoord pos)
-		{
-			if(!IsLoaded) Load();
-			var section = GetChunkSectionForYCoord(pos.y, false);
-			if (section != null)
-			{
-				return section.GetBiomeAt(pos.x, pos.y & 0xF, pos.z);
-			}
-			else
-			{
-				return null;
-			}
-		}
+		#endregion
 
-		///<summary>Gets the biome at the given chunk coordinate</summary>
-		public BiomeID GetBiomeAt(int x, int z)
-		{
-			if(!IsLoaded) Load();
-			sbyte highestSectionWithBiomeData = HighestSection;
-			while (highestSectionWithBiomeData > 0 && (!Sections.TryGetValue(highestSectionWithBiomeData, out var s) || !s.HasBiomesDefined))
-			{
-				highestSectionWithBiomeData--;
-			}
-			return GetBiomeAt((x, highestSectionWithBiomeData * 16 + 15, z));
-		}
+		#region Tick update related methods
 
 		/// <summary>
 		/// Marks the given chunk coordinate to be ticked when this chunk is loaded.
@@ -286,6 +273,10 @@ namespace WorldForge.Chunks
 			}
 		}
 
+		#endregion
+
+		#region POI related methods
+
 		public void SetPOI(BlockCoord pos, POI poi)
 		{
 			if(!IsLoaded) Load();
@@ -310,13 +301,17 @@ namespace WorldForge.Chunks
 			return -1;
 		}
 
+		#endregion
+
+		#region Convenience methods
+
 		public short GetHighestBlock(int x, int z, HeightmapType type = HeightmapType.AllBlocks)
 		{
 			if(!IsLoaded) Load();
 			short y = (short)(HighestSection * 16 + 15);
 			while (y >= LowestSection * 16)
 			{
-				var blockState = GetBlockAt((x & 0xF, y, z & 0xF));
+				var blockState = GetBlock((x & 0xF, y, z & 0xF));
 				if (blockState != null && Blocks.IsBlockForMap(blockState.Block, type)) return y;
 				y--;
 			}
@@ -374,6 +369,42 @@ namespace WorldForge.Chunks
 			HighestSection = highest ?? 0;
 		}
 
+		public int ForEachBlock(short yMin, short yMax, Action<BlockCoord, BlockState> action)
+		{
+			if(!HasTerrain) return 0;
+			if(!IsLoaded) Load();
+			int countedBlocks = 0;
+			foreach(var kv in Sections)
+			{
+				var section = kv.Value;
+				short baseY = (short)(kv.Key * 16);
+				if(baseY > yMax || baseY + 15 < yMin) continue;
+
+				for(byte y = 0; y < 16; y++)
+				{
+					short worldY = (short)(baseY + y);
+					if(worldY < yMin || worldY >= yMax) continue;
+					for(byte z = 0; z < 16; z++)
+					{
+						for(byte x = 0; x < 16; x++)
+						{
+							var b = section.GetBlockAt(x, y, z);
+							action.Invoke(new BlockCoord(x, baseY + y, z), b);
+							countedBlocks++;
+						}
+					}
+				}
+			}
+			return countedBlocks;
+		}
+
+		public int ForEachBlock(Action<BlockCoord, BlockState> action)
+		{
+			return ForEachBlock((short)(LowestSection * 16), (short)(HighestSection * 16 + 15), action);
+		}
+
+		#endregion
+
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
 			if (sourceData == null) return false;
@@ -391,59 +422,13 @@ namespace WorldForge.Chunks
 
 		private void WriteHeightmapFromBlocks(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
-			/*sbyte highestSection = 127;
-			while (highestSection > -127 && !sections.ContainsKey(highestSection))
-			{
-				highestSection--;
-			}
-			if (highestSection == -127) return;
-			var sec = sections[highestSection];
-			*/
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
 					hm[localChunkX * 16 + x, localChunkZ * 16 + z] = GetHighestBlock(x, z, type);
-					/*
-					short yTop;
-					if (hm[x, z] != 0)
-					{
-						//The heightmap is already present, proceed from provided y value
-						yTop = hm[x, z];
-					}
-					else
-					{
-						yTop = (short)(highestSection * 16 + 15);
-					}
-					for (short y = yTop; y > 0; y--)
-					{
-						var block = sec.GetBlockAt(x, y.Mod(16), z);
-						if (Blocks.IsBlockForMap(block.block, type))
-						{
-							if (block.block.Compare("minecraft:snow"))
-							{
-								//Go down to grass level in case of a snow layer
-								y--;
-							}
-							hm[localChunkX * 16 + x, 511 - (localChunkZ * 16 + z)] = y;
-							break;
-						}
-					}
-					*/
 				}
 			}
-		}
-
-		//TODO: How to deal with negative section Y values? (Minecraft 1.17+)
-		private NBTCompound GetSectionCompound(NBTList sectionsList, sbyte y)
-		{
-			foreach (var o in sectionsList.listContent)
-			{
-				var compound = (NBTCompound)o;
-				if (!compound.Contains("Y") || !compound.Contains("Palette")) continue;
-				if ((byte)compound.Get("Y") == y) return compound;
-			}
-			return null;
 		}
 	}
 }

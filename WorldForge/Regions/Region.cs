@@ -25,12 +25,7 @@ namespace WorldForge.Regions
 
 		public RegionFileDataPositions RegionFileInfo { get; internal set; }
 
-		private Region(RegionLocation loc, Dimension parent, RegionFilePaths sourceFilePaths)
-		{
-			regionPos = loc;
-			Parent = parent;
-			this.sourceFilePaths = sourceFilePaths;
-		}
+		#region Creation methods
 
 		public static Region CreateNew(RegionLocation loc, Dimension parent)
 		{
@@ -49,6 +44,13 @@ namespace WorldForge.Regions
 		{
 			Region r = new Region(loc, parent, new RegionFilePaths(path, null, null));
 			return r;
+		}
+
+		private Region(RegionLocation loc, Dimension parent, RegionFilePaths sourceFilePaths)
+		{
+			regionPos = loc;
+			Parent = parent;
+			this.sourceFilePaths = sourceFilePaths;
 		}
 
 		public void InitializeChunks()
@@ -86,72 +88,10 @@ namespace WorldForge.Regions
 			}
 		}
 
-		public bool ContainsPosition(int x, int z)
-		{
-			int localX = x - regionPos.x * 512;
-			int localZ = z - regionPos.z * 512;
-			return x >= 0 && x < 512 && z >= 0 && z < 512;
-		}
+		#endregion
 
-		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
-		public bool IsAir(BlockCoord pos)
-		{
-			var b = GetBlock(pos);
-			return b == null || b.IsAir;
-		}
+		#region Chunk related methods
 
-		///<summary>Gets the block type at the given location.</summary>
-		public BlockID GetBlock(BlockCoord pos)
-		{
-			var chunk = GetChunkAtBlock(pos, false);
-			if (chunk != null)
-			{
-				return chunk.GetBlockAt(pos.LocalChunkCoords)?.Block ?? Blocks.air;
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		///<summary>Gets the full block state at the given location.</summary>
-		public BlockState GetBlockState(BlockCoord pos)
-		{
-			return GetChunkAtBlock(pos, false)?.GetBlockAt(pos.LocalChunkCoords);
-		}
-
-		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
-		public TileEntity GetTileEntity(BlockCoord pos)
-		{
-			return GetChunkAtBlock(pos, true)?.GetTileEntity(pos.LocalChunkCoords);
-		}
-
-		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
-		{
-			GetChunkAtBlock(pos, allowNewChunks)?.SetBlockAt(pos.LocalChunkCoords, block);
-			return true;
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(block), allowNewChunks);
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, BlockList.Find(block), allowNewChunks);
-		}
-
-		///<summary>Sets the tile entity at the given location.</summary>
-		public bool SetTileEntity(BlockCoord pos, TileEntity te)
-		{
-			var chunk = GetChunkAtBlock(pos, true);
-			chunk?.SetTileEntity(pos.LocalChunkCoords, te);
-			return chunk != null;
-		}
 
 		/// <summary>
 		/// Gets the chunk containing the block's position
@@ -160,7 +100,7 @@ namespace WorldForge.Regions
 		{
 			LoadIfRequired();
 			var chunk = coord.Chunk.LocalRegionPos;
-			if (allowNewChunks && chunks[chunk.x, chunk.z] == null)
+			if(allowNewChunks && chunks[chunk.x, chunk.z] == null)
 			{
 				chunks[chunk.x, chunk.z] = Chunk.CreateNew(this, new ChunkCoord(chunk.x, chunk.z));
 			}
@@ -188,21 +128,88 @@ namespace WorldForge.Regions
 			return chunk != null;
 		}
 
-		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
+		#endregion
+
+		#region Block related methods
+
+		///<summary>Returns true if the given locations contains air or the section has not been generated yet</summary>
+		public bool IsAir(BlockCoord pos)
 		{
-			LoadIfRequired();
-			int chunkX = (int)Math.Floor(pos.x / 16.0);
-			int chunkZ = (int)Math.Floor(pos.z / 16.0);
-			if (chunkX < 0 || chunkX > 31 || chunkZ < 0 || chunkZ > 31) return;
-			if (chunks[chunkX, chunkZ] == null && allowNewChunks)
-			{
-				chunks[chunkX, chunkZ] = Chunk.CreateNew(this, new ChunkCoord(chunkX, chunkZ));
-			}
-			var c = chunks[chunkX, chunkZ];
-			if (c != null) c.SetDefaultBlockAt(pos.LocalChunkCoords);
+			var b = GetBlock(pos);
+			return b == null || b.IsAir;
 		}
 
+		///<summary>Gets the block type at the given location.</summary>
+		public BlockID GetBlock(BlockCoord pos)
+		{
+			var chunk = GetChunkAtBlock(pos, false);
+			if (chunk != null)
+			{
+				return chunk.GetBlock(pos.LocalChunkCoords)?.Block ?? Blocks.air;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		///<summary>Gets the full block state at the given location.</summary>
+		public BlockState GetBlockState(BlockCoord pos)
+		{
+			return GetChunkAtBlock(pos, false)?.GetBlock(pos.LocalChunkCoords);
+		}
+
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
+		{
+			var chunk = GetChunkAtBlock(pos, allowNewChunks);
+			if(chunk != null)
+			{
+				chunk.SetBlock(pos.LocalChunkCoords, block);
+				return true;
+			}
+			return false;
+		}
+
+		///<summary>Sets the block state at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
+		{
+			var chunk = GetChunkAtBlock(pos, allowNewChunks);
+			if(chunk != null)
+			{
+				chunk.SetBlock(pos.LocalChunkCoords, block);
+				return true;
+			}
+			return false;
+		}
+
+		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
+		public TileEntity GetTileEntity(BlockCoord pos)
+		{
+			return GetChunkAtBlock(pos, true)?.GetTileEntity(pos.LocalChunkCoords);
+		}
+
+		///<summary>Sets the tile entity at the given location.</summary>
+		public bool SetTileEntity(BlockCoord pos, TileEntity te)
+		{
+			var chunk = GetChunkAtBlock(pos, true);
+			chunk?.SetTileEntity(pos.LocalChunkCoords, te);
+			return chunk != null;
+		}
+
+		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks)
+		{
+			var chunk = GetChunkAtBlock(pos, allowNewChunks);
+			if(chunk != null)
+			{
+				return chunk.SetBlockWithTileEntity(pos.LocalChunkCoords, block, te);
+			}
+			return false;
+		}
+
+		#endregion
+
+		#region Biome related methods
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiomeAt(int x, int z)
 		{
@@ -254,6 +261,10 @@ namespace WorldForge.Regions
 			}
 		}
 
+		#endregion
+
+		#region Tick update related methods
+
 		/// <summary>
 		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
 		/// </summary>
@@ -277,6 +288,10 @@ namespace WorldForge.Regions
 				chunk.UnmarkForTickUpdate(pos.LocalChunkCoords);
 			}
 		}
+
+		#endregion
+
+		#region Convenience methods
 
 		/// <summary>
 		/// Gets the highest block at the given location.
@@ -343,6 +358,15 @@ namespace WorldForge.Regions
 				}
 			}
 		}
+
+		public bool ContainsPosition(BlockCoord2D pos)
+		{
+			int localX = pos.x - regionPos.x * 512;
+			int localZ = pos.z - regionPos.z * 512;
+			return pos.x >= 0 && pos.x < 512 && pos.z >= 0 && pos.z < 512;
+		}
+
+		#endregion
 
 		public void SaveToFiles(string destinationDirectory, GameVersion gameVersion, string name = null, FileMode fileMode = FileMode.Create)
 		{

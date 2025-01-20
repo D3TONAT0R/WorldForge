@@ -60,7 +60,7 @@ namespace WorldForge.IO
 						var block = BlockState.FromNumericID(new NumericID(blocks[i], meta[i]));
 						if(block != null)
 						{
-							c.SetBlockAt((x, y + sectionY * 16, z), block);
+							c.SetBlock((x, y + sectionY * 16, z), block);
 						}
 					}
 				}
@@ -252,7 +252,7 @@ namespace WorldForge.IO
 			foreach(var t in c.PostProcessTicks)
 			{
 				NBTCompound tick = new NBTCompound();
-				var numID = c.GetBlockAt(t).Block.numericID;
+				var numID = c.GetBlock(t).Block.numericID;
 				tick.Add("i", numID.HasValue ? (byte)numID.Value.id : 0);
 				tick.Add("p", 0);
 				tick.Add("t", 0);

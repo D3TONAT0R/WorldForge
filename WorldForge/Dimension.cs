@@ -26,10 +26,11 @@ namespace WorldForge
 			set => defaultBiome = value ?? throw new NullReferenceException("Default biome cannot be null.");
 		}
 
-		private BiomeID defaultBiome;
+		private BiomeID defaultBiome = BiomeID.TheVoid;
 
 		public ConcurrentDictionary<RegionLocation, Region> regions = new ConcurrentDictionary<RegionLocation, Region>();
 
+		#region Creation methods
 		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
 			return new Dimension(parentWorld, id, defaultBiome);
@@ -212,6 +213,18 @@ namespace WorldForge
 			}
 		}
 
+		public void LoadAllChunks()
+		{
+			foreach(var r in regions)
+			{
+				r.Value.LoadAllChunks();
+			}
+		}
+
+		#endregion
+
+		#region Region and chunk related methods
+
 		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed.</summary>
 		public void InitializeArea(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
@@ -261,13 +274,55 @@ namespace WorldForge
 			return added;
 		}
 
-		public void LoadAllChunks()
+		public bool CreateRegionIfMissing(RegionLocation loc)
 		{
-			foreach(var r in regions)
+			if(!regions.ContainsKey(loc))
 			{
-				r.Value.LoadAllChunks();
+				var r = Region.CreateNew(loc, this);
+				return AddRegion(r, false);
+			}
+			return false;
+		}
+
+		public bool HasRegion(RegionLocation loc)
+		{
+			return regions.ContainsKey(loc);
+		}
+
+
+		public IEnumerable<Chunk> EnumerateChunks()
+		{
+			foreach(var region in regions.Values)
+			{
+				foreach(var chunk in region.chunks)
+				{
+					if(chunk != null)
+					{
+						yield return chunk;
+					}
+				}
 			}
 		}
+
+		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive)
+		{
+			foreach(var region in regions.Values)
+			{
+				foreach(var chunk in region.chunks)
+				{
+					if(chunk == null) continue;
+					var c = chunk.WorldSpaceCoord;
+					if(c.x >= minInclusive.x && c.x < maxExclusive.x && c.z >= minInclusive.z && c.z < maxExclusive.z)
+					{
+						yield return chunk;
+					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region Block related methods
 
 		///<summary>Returns true if the block at the given location is air or null.</summary>
 		public bool IsAirOrNull(BlockCoord pos)
@@ -295,11 +350,59 @@ namespace WorldForge
 			return GetRegionAtBlock(pos)?.GetBlockState(pos.LocalRegionCoords);
 		}
 
+		///<summary>Sets the block type at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
+		{
+			return SetBlock(pos, new BlockState(block), allowNewChunks);
+		}
+
+		///<summary>Sets the block state at the given location.</summary>
+		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
+		{
+			//TODO: Check for varying build limits
+			//if (pos.y < 0 || pos.y > 255) return false;
+			var r = GetRegionAtBlock(pos);
+			if(r != null)
+			{
+				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
 		{
 			return GetRegionAtBlock(pos)?.GetTileEntity(pos.LocalRegionCoords);
 		}
+
+		///<summary>Sets the tile entity at the given location.</summary>
+		public bool SetTileEntity(BlockCoord pos, TileEntity te)
+		{
+			if(TryGetRegionAtBlock(pos, out var region))
+			{
+				return region.SetTileEntity(pos, te);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
+		{
+			if(TryGetRegionAtBlock(pos, out var region))
+			{
+				region.SetBlockWithTileEntity(pos, block, te, allowNewChunks);
+			}
+			return false;
+		}
+
+		#endregion
+
+		#region Biome related methods
 
 		///<summary>Gets the biome at the given location.</summary>
 		public BiomeID GetBiome(int x, int z)
@@ -325,6 +428,10 @@ namespace WorldForge
 			GetRegionAtBlock(pos)?.SetBiomeAt(pos.LocalRegionCoords, biome);
 		}
 
+		#endregion
+
+		#region Tick update methods
+
 		/// <summary>
 		/// Marks the given coordinate to be ticked when the respective chunk is loaded.
 		/// </summary>
@@ -341,95 +448,9 @@ namespace WorldForge
 			GetRegionAtBlock(pos)?.UnmarkForTickUpdate(pos.LocalRegionCoords);
 		}
 
-		public bool CreateRegionIfMissing(RegionLocation loc)
-		{
-			if(!regions.ContainsKey(loc))
-			{
-				var r = Region.CreateNew(loc, this);
-				return AddRegion(r, false);
-			}
-			return false;
-		}
+		#endregion
 
-		public bool HasRegion(int rx, int rz)
-		{
-			return regions.ContainsKey(new RegionLocation(rx, rz));
-		}
-
-		public void InitializeChunks(int blockXMin, int blockZMin, int blockXMax, int blockZMax, bool replaceExistingChunks)
-		{
-			//TODO
-			throw new NotImplementedException();
-		}
-
-		///<summary>Sets the block state at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockState block, bool allowNewChunks = false)
-		{
-			//TODO: Check for varying build limits
-			//if (pos.y < 0 || pos.y > 255) return false;
-			var r = GetRegionAtBlock(pos);
-			if(r != null)
-			{
-				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(block), allowNewChunks);
-		}
-
-		///<summary>Sets the block type at the given location.</summary>
-		public bool SetBlock(BlockCoord pos, string block, bool allowNewChunks = false)
-		{
-			return SetBlock(pos, new BlockState(BlockList.Find(block)), allowNewChunks);
-		}
-
-		///<summary>Sets the default bock (normally minecraft:stone) at the given location. This method is faster than SetBlockAt.</summary>
-		public void SetDefaultBlock(BlockCoord pos, bool allowNewChunks = false)
-		{
-			//TODO: Check for variying build limits (-64 to 256) in 1.18+, 128 in older versions, etc..
-			//if (pos.y < 0 || pos.y > 255) return;
-			var r = GetRegionAtBlock(pos);
-			if(r != null)
-			{
-				r.SetDefaultBlock(pos.LocalRegionCoords, allowNewChunks);
-			}
-			else
-			{
-				throw new ArgumentException($"The location was outside of the world: {pos}");
-			}
-		}
-
-		///<summary>Sets the tile entity at the given location.</summary>
-		public bool SetTileEntity(BlockCoord pos, TileEntity te)
-		{
-			if(TryGetRegionAtBlock(pos, out var region))
-			{
-				return region.SetTileEntity(pos, te);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
-		{
-			if(SetBlock(pos, block, allowNewChunks))
-			{
-				return SetTileEntity(pos, te);
-			}
-			else
-			{
-				return false;
-			}
-		}
+		#region Convenience methods
 
 		/// <summary>
 		/// Generates a Heightmap from the specified area (With Z starting from top)
@@ -481,35 +502,7 @@ namespace WorldForge
 			return GetRegionAtBlock(new BlockCoord(x, 0, z))?.GetHighestBlock(x & 511, z & 511, heightmapType) ?? short.MinValue;
 		}
 
-		public IEnumerable<Chunk> EnumerateChunks()
-		{
-			foreach(var region in regions.Values)
-			{
-				foreach(var chunk in region.chunks)
-				{
-					if(chunk != null)
-					{
-						yield return chunk;
-					}
-				}
-			}
-		}
-
-		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive)
-		{
-			foreach(var region in regions.Values)
-			{
-				foreach(var chunk in region.chunks)
-				{
-					if(chunk == null) continue;
-					var c = chunk.WorldSpaceCoord;
-					if(c.x >= minInclusive.x && c.x < maxExclusive.x && c.z >= minInclusive.z && c.z < maxExclusive.z)
-					{
-						yield return chunk;
-					}
-				}
-			}
-		}
+		#endregion
 
 		public void SaveFiles(string rootDir, GameVersion gameVersion)
 		{

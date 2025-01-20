@@ -8,16 +8,7 @@ namespace WorldForge
 	public class BlockState : INBTConverter
 	{
 
-		public static BlockState Air
-		{
-			get
-			{
-				if(air == null) air = new BlockState(BlockList.Find("air"));
-				return air;
-			}
-		}
-		private static BlockState air;
-
+		public static readonly BlockState Air = new BlockState(BlockList.Find("air"));
 		public static readonly BlockState Water = new BlockState(BlockList.Find("water"));
 		public static readonly BlockState Lava = new BlockState(BlockList.Find("lava"));
 
