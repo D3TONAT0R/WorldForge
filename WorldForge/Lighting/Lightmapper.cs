@@ -119,10 +119,10 @@ namespace WorldForge.Lighting
 		private void TrySpreadTo(BlockCoord pos, Chunk limitChunk, LightValue l)
 		{
 			if(pos.x < 0 || pos.x > 15 || pos.z < 0 || pos.z > 15 || pos.y < limitChunk.LowestSection * 16 || pos.y > limitChunk.HighestSection * 16 + 15) return;
-			var existingLight = limitChunk.GetChunkSectionForYCoord(pos.y, false)?.GetLightAt(pos.LocalSectionCoords) ?? LightValue.FullBright;
+			var existingLight = limitChunk.GetChunkSectionForYCoord(pos.y, false)?.GetLight(pos.LocalSectionCoords) ?? LightValue.FullBright;
 			if(!l.IsDark && l.HasStrongerLightThan(existingLight))
 			{
-				limitChunk.GetChunkSectionForYCoord(pos.y, false)?.SetLightAt(pos.LocalSectionCoords, l);
+				limitChunk.GetChunkSectionForYCoord(pos.y, false)?.SetLight(pos.LocalSectionCoords, l);
 				Spread(pos, l, limitChunk);
 			}
 		}

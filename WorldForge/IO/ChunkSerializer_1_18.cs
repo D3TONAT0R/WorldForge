@@ -80,7 +80,7 @@ namespace WorldForge.IO
 								{
 									int i = y * 16 + z * 4 + x;
 									var paletteIndex = indices[i];
-									chunkSection.SetBiome3D4x4At(x * 4, y * 4, z * 4, palette[paletteIndex]);
+									chunkSection.SetBiome3D4x4(x * 4, y * 4, z * 4, palette[paletteIndex]);
 								}
 							}
 						}
@@ -95,7 +95,7 @@ namespace WorldForge.IO
 								{
 									for(int x = 0; x < 16; x += 4)
 									{
-										chunkSection.SetBiome3D4x4At(x, y, z, palette[0]);
+										chunkSection.SetBiome3D4x4(x, y, z, palette[0]);
 									}
 								}
 							}
@@ -119,7 +119,7 @@ namespace WorldForge.IO
 		{
 			WriteSectionBlocks(section, comp);
 			WriteSectionBiomes(section, comp);
-			if(section.lightmap != null)
+			if(section.lighting != null)
 			{
 				//TODO: write light information and find a way to omit sky or block light
 				//WriteSectionLightmaps(section, comp);
@@ -182,7 +182,7 @@ namespace WorldForge.IO
 			else
 			{
 				//Write default biome
-				var defaultBiome = section.containingChunk?.ParentDimension?.DefaultBiome ?? BiomeID.Plains;
+				var defaultBiome = section.chunk?.ParentDimension?.DefaultBiome ?? BiomeID.Plains;
 				biomePalette.Add(defaultBiome.ResolveIDForVersion(TargetVersion));
 			}
 		}

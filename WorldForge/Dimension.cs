@@ -353,7 +353,7 @@ namespace WorldForge
 		///<summary>Sets the block type at the given location.</summary>
 		public bool SetBlock(BlockCoord pos, BlockID block, bool allowNewChunks = false)
 		{
-			return SetBlock(pos, new BlockState(block), allowNewChunks);
+			return SetBlock(pos, BlockState.Simple(block), allowNewChunks);
 		}
 
 		///<summary>Sets the block state at the given location.</summary>

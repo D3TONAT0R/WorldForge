@@ -24,7 +24,7 @@ namespace WorldForge.IO
 							var section = c.GetChunkSectionForYCoord(y * 4, false);
 							if(section != null)
 							{
-								section.SetBiome3D4x4At(x * 4, y * 4, z * 4, biome);
+								section.SetBiome3D4x4(x * 4, y * 4, z * 4, biome);
 							}
 						}
 					}
@@ -64,7 +64,7 @@ namespace WorldForge.IO
 							else
 							{
 								//Write the default biome
-								biomeData[i] = (int)(section.containingChunk.ParentDimension?.DefaultBiome.numericId ?? BiomeID.TheVoid.numericId);
+								biomeData[i] = (int)(section.chunk.ParentDimension?.DefaultBiome.numericId ?? BiomeID.TheVoid.numericId);
 							}
 						}
 					}

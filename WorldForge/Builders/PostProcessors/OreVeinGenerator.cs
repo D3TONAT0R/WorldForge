@@ -32,9 +32,9 @@ namespace WorldForge.Builders.PostProcessors
 			deepslate = BlockList.Find("minecraft:deepslate");
 		}
 
-		public OreVeinGenerator(string block, int veinSize, float spawnsPerChunk, int yMin, int yMax, float falloff, float falloffCenter)
+		public OreVeinGenerator(BlockID block, int veinSize, float spawnsPerChunk, int yMin, int yMax, float falloff, float falloffCenter)
 		{
-			this.block = new BlockState(BlockList.Find(block));
+			this.block = BlockState.Simple(block);
 			veinSizeMax = veinSize;
 			SpawnsPerChunk = spawnsPerChunk;
 			heightMin = yMin;
@@ -51,7 +51,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public OreVeinGenerator(XElement elem)
 		{
-			block = new BlockState(BlockList.Find(elem.Element("block").Value));
+			block = BlockState.Simple(elem.Element("block").Value);
 			elem.TryParseInt("size", ref veinSizeMax);
 			float rarity = 4;
 			elem.TryParseFloat("rarity", ref rarity);

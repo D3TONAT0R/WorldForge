@@ -102,7 +102,7 @@ namespace WorldForge.IO
 						{
 							for(int x = 0; x < 16; x++)
 							{
-								section.blocks[ChunkSection.GetIndex(x, y, z)] = indices[y * 256 + z * 16 + x];
+								section.blocks[ChunkSection.GetArrayIndex(x, y, z)] = indices[y * 256 + z * 16 + x];
 							}
 						}
 					}
@@ -185,7 +185,7 @@ namespace WorldForge.IO
 				{
 					for(int x = 0; x < 16; x++)
 					{
-						blockData[y * 256 + z * 16 + x] = section.blocks[ChunkSection.GetIndex(x, y, z)];
+						blockData[y * 256 + z * 16 + x] = section.blocks[ChunkSection.GetArrayIndex(x, y, z)];
 					}
 				}
 			}

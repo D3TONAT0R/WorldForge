@@ -8,9 +8,9 @@ namespace WorldForge
 	public class BlockState : INBTConverter
 	{
 		public static readonly BlockState Unknown = new BlockState();
-		public static readonly BlockState Air = new BlockState(BlockList.Find("air"));
-		public static readonly BlockState Water = new BlockState(BlockList.Find("water"));
-		public static readonly BlockState Lava = new BlockState(BlockList.Find("lava"));
+		public static readonly BlockState Air = Simple("air");
+		public static readonly BlockState Water = Simple("water");
+		public static readonly BlockState Lava = Simple("lava");
 
 		[ThreadStatic]
 		private static Dictionary<BlockID, BlockState> simpleStateCache;

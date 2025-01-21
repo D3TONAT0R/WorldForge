@@ -122,7 +122,7 @@ namespace WorldForge.Chunks
 			if(!IsLoaded) Load();
 			var sec = GetChunkSectionForYCoord(pos.y, false);
 			if(sec == null) return null;
-			return sec.GetBlockAt(pos.x, pos.y & 0xF, pos.z);
+			return sec.GetBlock(pos.x, pos.y & 0xF, pos.z);
 		}
 
 		/// <summary>
@@ -131,14 +131,14 @@ namespace WorldForge.Chunks
 		public void SetBlock(BlockCoord pos, BlockState block)
 		{
 			if(!IsLoaded) Load();
-			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, block);
+			GetChunkSectionForYCoord(pos.y, true).SetBlock(pos.x, pos.y & 0xF, pos.z, block);
 		}
 
 		public void SetBlock(BlockCoord pos, BlockID block)
 		{
 			if(!IsLoaded) Load();
-			var state = new BlockState(block);
-			GetChunkSectionForYCoord(pos.y, true).SetBlockAt(pos.x, pos.y & 0xF, pos.z, state);
+			var state = BlockState.Simple(block);
+			GetChunkSectionForYCoord(pos.y, true).SetBlock(pos.x, pos.y & 0xF, pos.z, state);
 		}
 
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
@@ -204,7 +204,7 @@ namespace WorldForge.Chunks
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if(section != null)
 			{
-				return section.GetBiomeAt(pos.x, pos.y & 0xF, pos.z);
+				return section.GetBiome(pos.x, pos.y & 0xF, pos.z);
 			}
 			else
 			{
@@ -231,7 +231,7 @@ namespace WorldForge.Chunks
 			var section = GetChunkSectionForYCoord(pos.y, false);
 			if (section != null)
 			{
-				section.SetBiomeAt(pos.x, pos.y & 0xF, pos.z, biome);
+				section.SetBiome(pos.x, pos.y & 0xF, pos.z, biome);
 			}
 		}
 
@@ -241,7 +241,7 @@ namespace WorldForge.Chunks
 			if(!IsLoaded) Load();
 			foreach (var sec in Sections)
 			{
-				sec.Value.SetBiomeColumnAt(x, z, biome);
+				sec.Value.SetBiomeColumn(x, z, biome);
 			}
 		}
 
@@ -330,7 +330,7 @@ namespace WorldForge.Chunks
 					{
 						if(s.Value.blocks[i] == index)
 						{
-							pos = ChunkSection.GetPosition(i);
+							pos = ChunkSection.GetPositionFromArrayIndex(i);
 							pos.y += s.Key * 16;
 							return true;
 						}
@@ -411,7 +411,7 @@ namespace WorldForge.Chunks
 					{
 						for(byte x = 0; x < 16; x++)
 						{
-							var b = section.GetBlockAt(x, y, z);
+							var b = section.GetBlock(x, y, z);
 							action.Invoke(new BlockCoord(x, baseY + y, z), b);
 							countedBlocks++;
 						}

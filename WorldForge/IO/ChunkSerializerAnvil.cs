@@ -136,7 +136,7 @@ namespace WorldForge.IO
 					for(int x = 0; x < 16; x++)
 					{
 						int i = GetIndex(x, y, z);
-						var blockState = c.GetBlockAt(x, y, z);
+						var blockState = c.GetBlock(x, y, z);
 						BlockState.ResolveBlockState(TargetVersion, ref blockState);
 						if(blockState != null)
 						{
