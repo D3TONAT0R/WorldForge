@@ -20,6 +20,11 @@ namespace NetheriteFinder
 			{
 				return $"{pos} (Vein of {count})";
 			}
+
+			public override int GetHashCode()
+			{
+				return pos.GetHashCode() + count;
+			}
 		}
 
 		static void Main(string[] args)
@@ -28,6 +33,10 @@ namespace NetheriteFinder
 
 			Console.WriteLine("Enter path to region cache");
 			var cache = Console.ReadLine();
+
+			List<int> reportedVeinHashes = new List<int>();
+			BlockCoord lastVeinPos = BlockCoord.Zero;
+			int lastRadius = 1;
 
 			while(true)
 			{
@@ -44,12 +53,38 @@ namespace NetheriteFinder
 				}
 
 				var dim = Dimension.FromRegionFolder(null, tempPath, DimensionID.Unknown, GameVersion.Release_1(21, 3));
-				Console.WriteLine("Enter player position (x,z):");
-				var pos = Console.ReadLine().Split(',');
-				var px = int.Parse(pos[0].Trim());
-				var pz = int.Parse(pos[1].Trim());
-				Console.WriteLine("Search radius:");
-				var radius = int.Parse(Console.ReadLine());
+				Console.WriteLine("Enter player position (x z):");
+				if(lastVeinPos != BlockCoord.Zero)
+				{
+					Console.WriteLine("or 'r' to repeat search from last reported ore vein");
+				}
+				var read = Console.ReadLine();
+				int px;
+				int pz;
+				bool repeatLast = false;
+				if(read.ToLower().StartsWith("r"))
+				{
+					repeatLast = true;
+					px = lastVeinPos.x;
+					pz = lastVeinPos.z;
+				}
+				else
+				{
+					var pos = read.Split(' ');
+					px = int.Parse(pos[0].Trim());
+					pz = int.Parse(pos[1].Trim());
+				}
+				int radius;
+				if(!repeatLast)
+				{
+					Console.WriteLine("Search radius:");
+					radius = int.Parse(Console.ReadLine());
+				}
+				else
+				{
+					radius = lastRadius;
+				}
+				lastRadius = radius;
 				List<BlockCoord> positions = new List<BlockCoord>();
 				var block = BlockList.Find("ancient_debris");
 				for(int x = px - radius; x <= px + radius; x++)
@@ -69,12 +104,23 @@ namespace NetheriteFinder
 				var player = new BlockCoord2D(px, pz);
 				
 				var veins = ToVeins(positions, 5);
+				//Remove veins that were already reported
+				var rm = veins.RemoveAll(v => reportedVeinHashes.Contains(v.GetHashCode()));
+				foreach(var v in veins)
+				{
+					reportedVeinHashes.Add(v.GetHashCode());
+				}
+				if(rm > 0)
+				{
+					Console.WriteLine($"Removed {rm} already logged veins");
+				}
 
 				var sorted = veins.OrderBy(v => BlockCoord2D.Distance(player, v.pos.XZ)).ToArray();
 				for(int i = 0; i < Math.Min(30, sorted.Length); i++)
 				{
-					var p = sorted.ElementAt(i);
+					var p = sorted[i];
 					Console.WriteLine($"{block.ID.id} at {p}");
+					lastVeinPos = p.pos;
 				}
 				if(sorted.Length > 30)
 				{
