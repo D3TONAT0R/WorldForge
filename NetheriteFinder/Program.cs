@@ -91,7 +91,7 @@ namespace NetheriteFinder
 				{
 					for(int z = pz - radius; z <= pz + radius; z++)
 					{
-						for(int y = 10; y < 18; y++)
+						for(int y = 7; y < 20; y++)
 						{
 							var bc = new BlockCoord(x, y, z);
 							if(dim.GetBlock(bc) == block)
@@ -119,7 +119,9 @@ namespace NetheriteFinder
 				for(int i = 0; i < Math.Min(30, sorted.Length); i++)
 				{
 					var p = sorted[i];
-					Console.WriteLine($"{block.ID.id} at {p}");
+					var fromPos = lastVeinPos != BlockCoord.Zero ? lastVeinPos : new BlockCoord(player.x, 0, player.z);
+					GetBearing(fromPos, p.pos, out var angle, out var distance);
+					Console.WriteLine($"{block.ID.id} at {p} [{angle:000}°{distance:00}m]");
 					lastVeinPos = p.pos;
 				}
 				if(sorted.Length > 30)
@@ -167,6 +169,15 @@ namespace NetheriteFinder
 				}
 			}
 			return c;
+		}
+
+		static void GetBearing(BlockCoord from, BlockCoord to, out int angle, out int distance)
+		{
+			var dx = to.x - from.x;
+			var dz = to.z - from.z;
+			angle = (int)(Math.Atan2(-dz, -dx) * 57.2958f) - 90;
+			while(angle < 0) angle += 360;
+			distance = (int)Math.Sqrt(dx * dx + dz * dz);
 		}
 	}
 }
