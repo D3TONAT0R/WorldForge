@@ -7,7 +7,7 @@ using WorldForge.Coordinates;
 
 namespace WorldForge.Builders.PostProcessors
 {
-	class ThawingPostProcessor : PostProcessor
+	public class ThawingPostProcessor : PostProcessor
 	{
 		public static Dictionary<BiomeID, BiomeID> biomeDeIcingTable = new Dictionary<BiomeID, BiomeID>()
 		{
