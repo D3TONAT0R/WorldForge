@@ -8,11 +8,24 @@ namespace WorldForge.Builders.PostProcessors
 {
 	public class WeightmappedTerrainGenerator : PostProcessor
 	{
+		public class WeightmapChannel
+		{
+			public string name;
+			public BitmapColor layerColor;
+			public PostProcessingChain chain = new PostProcessingChain();
+
+			public WeightmapChannel(BitmapColor color, string name = null)
+			{
+				layerColor = color;
+				this.name = name;
+			}
+		}
+
 
 		public Map<byte> map;
-		public List<SurfaceLayer> layers = new List<SurfaceLayer>();
+		public List<WeightmapChannel> channels = new List<WeightmapChannel>();
 
-		public override PostProcessType PostProcessorType => PostProcessType.Surface;
+		public override PostProcessType PostProcessorType => PostProcessType.Surface | PostProcessType.Block;
 
 		public WeightmappedTerrainGenerator()
 		{
@@ -32,29 +45,15 @@ namespace WorldForge.Builders.PostProcessors
 					throw new ArgumentException("layer is missing required attribute 'color': " + layer.ToString().Trim());
 				}
 				var color = ParseColor(colorAttr.Value);
-				var surfaceLayer = new SurfaceLayer(color, layer.Attribute("name")?.Value);
-				layers.Add(surfaceLayer);
-				foreach(var elem in layer.Elements())
-				{
-					if(elem.Name.LocalName == "surface")
-					{
-						surfaceLayer.AddSurfaceGenerator(elem);
-					}
-					else if(elem.Name.LocalName == "gen")
-					{
-						surfaceLayer.AddSchematicGenerator(this, elem);
-					}
-					else if(elem.Name.LocalName == "biome")
-					{
-						surfaceLayer.AddBiomeGenerator(elem);
-					}
-				}
+				var channel = new WeightmapChannel(color, layer.Attribute("name")?.Value);
+				channels.Add(channel);
+				channel.chain.LoadSettings(rootPath, layer);
 			}
 
-			BitmapColor[] mappedColors = new BitmapColor[layers.Count];
-			for(int i = 0; i < layers.Count; i++)
+			BitmapColor[] mappedColors = new BitmapColor[channels.Count];
+			for(int i = 0; i < channels.Count; i++)
 			{
-				mappedColors[i] = layers[i].layerColor;
+				mappedColors[i] = channels[i].layerColor;
 			}
 
 			map = Map<byte>.CreateFixedMap(mapFileName, mappedColors, ditherLimit);
@@ -85,10 +84,35 @@ namespace WorldForge.Builders.PostProcessors
 
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord topPos, int pass, float mask)
 		{
-			byte i = map.GetValueOrDefault(topPos, 0, 255);
+			byte i = map.GetValueOrDefault(topPos.XZ, 0, 255);
 			if(i < 255)
 			{
-				layers[i].RunGenerator(dimension, topPos, Seed);
+				var chunk = dimension.GetRegionAtBlock(topPos).GetChunkAtBlock(topPos, false);
+				var x = topPos.x & 15;
+				var z = topPos.z & 15;
+				var bx = topPos.x - x;
+				var bz = topPos.z - z;
+				foreach(var gen in channels[i].chain.processors)
+				{
+					gen.TryProcessSurface(chunk, x, z, bx, bz, pass);
+				}
+			}
+		}
+
+		protected override void OnProcessBlock(Dimension dimension, BlockCoord pos, int pass, float mask)
+		{
+			byte i = map.GetValueOrDefault(pos.XZ, 0, 255);
+			if(i < 255)
+			{
+				var chunk = dimension.GetRegionAtBlock(pos).GetChunkAtBlock(pos, false);
+				var x = pos.x & 15;
+				var z = pos.z & 15;
+				var bx = pos.x - x;
+				var bz = pos.z - z;
+				foreach(var gen in channels[i].chain.processors)
+				{
+					gen.TryProcessBlock(chunk, x, z, bx, bz, pass);
+				}
 			}
 		}
 	}

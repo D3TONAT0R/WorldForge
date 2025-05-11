@@ -342,8 +342,8 @@ namespace WorldForge.Builders.PostProcessors
 		public override Priority OrderPriority => Priority.AfterFirst;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
-		public override int BlockProcessYMin => 8;
-		public override int BlockProcessYMax => 92;
+		public override int LowerHeightLimit => 8;
+		public override int UpperHeightLimit => 92;
 
 		private Map<float> map;
 		private Dictionary<int, Layer> caveGenLayers = new Dictionary<int, Layer>();

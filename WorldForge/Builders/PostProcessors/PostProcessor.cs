@@ -5,18 +5,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using WorldForge.Chunks;
 using WorldForge.Coordinates;
 using WorldForge.Regions;
 
 namespace WorldForge.Builders.PostProcessors
 {
-
+	[Flags]
 	public enum PostProcessType
 	{
-		RegionOnly,
-		Block,
-		Surface,
-		Both
+		None = 0,
+		Block = 1 << 0,
+		Surface = 1 << 1
 	}
 
 	public enum Priority
@@ -36,12 +36,12 @@ namespace WorldForge.Builders.PostProcessors
 
 		public virtual Priority OrderPriority => Priority.Default;
 
-		public virtual bool Multithreading => true;
+		public virtual bool UseMultithreading => true;
 
 		public abstract PostProcessType PostProcessorType { get; }
 
-		public virtual int BlockProcessYMin => 0;
-		public virtual int BlockProcessYMax => 255;
+		public virtual int LowerHeightLimit => int.MinValue;
+		public virtual int UpperHeightLimit => int.MaxValue;
 
 		public virtual int PassCount => 1;
 
@@ -169,7 +169,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		}
 
-		public void Process(PostProcessContext context)
+		public virtual void Process(PostProcessContext context)
 		{
 			Context = context;
 			GenerateSeed(context, 0);
@@ -179,11 +179,11 @@ namespace WorldForge.Builders.PostProcessors
 			var chunkMax = new BlockCoord(boundary.xMax, 0, boundary.zMax).Chunk;
 			chunkMax.x++;
 			chunkMax.z++;
-			var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Multithreading ? -1 : 1 };
+			var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = UseMultithreading ? -1 : 1 };
 			for(int pass = 0; pass < PassCount; pass++)
 			{
 				GenerateSeed(context, pass);
-				if(PostProcessorType == PostProcessType.Block || PostProcessorType == PostProcessType.Both)
+				if(PostProcessorType.HasFlag(PostProcessType.Block))
 				{
 					//Iterate the postprocessors over every block
 					//Run parallel tasks for each chunk to avoid locking
@@ -195,17 +195,14 @@ namespace WorldForge.Builders.PostProcessors
 						{
 							for(int x = 0; x < 16; x++)
 							{
-								for(int y = BlockProcessYMin; y <= BlockProcessYMax; y++)
-								{
-									ProcessBlock(new BlockCoord(bx + x, y, bz + z), pass);
-								}
+								TryProcessBlock(chunk, bx, x, bz, z, pass);
 							}
 						}
 					});
 				}
 
 				GenerateSeed(context, pass + 313);
-				if(PostProcessorType == PostProcessType.Surface || PostProcessorType == PostProcessType.Both)
+				if(PostProcessorType.HasFlag(PostProcessType.Surface))
 				{
 					//Iterate the postprocessors over every surface block
 					//Run parallel tasks for each chunk to avoid locking
@@ -217,8 +214,7 @@ namespace WorldForge.Builders.PostProcessors
 						{
 							for(int x = 0; x < 16; x++)
 							{
-								//TODO: remember height so each processor uses the same height
-								ProcessSurface(new BlockCoord(bx + x, chunk.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid), bz + z), pass);
+								TryProcessSurface(chunk, x, z, bx, bz, pass);
 							}
 						}
 					});
@@ -235,6 +231,25 @@ namespace WorldForge.Builders.PostProcessors
 			OnFinish();
 			Context = null;
 		}
+
+		public void TryProcessSurface(Chunk chunk, int x, int z, int bx, int bz, int pass)
+		{
+			//TODO: remember height so each processor uses the same height
+			var y = chunk.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid);
+			if(y < LowerHeightLimit || y > UpperHeightLimit) return;
+			ProcessSurface(new BlockCoord(bx + x, y, bz + z), pass);
+		}
+
+		public void TryProcessBlock(Chunk chunk, int bx, int x, int bz, int z, int pass)
+		{
+			int min = Math.Max(chunk.LowestSection * 16, LowerHeightLimit);
+			int max = Math.Min(chunk.HighestSection * 16 + 15, UpperHeightLimit);
+			for(int y = min; y <= max; y++)
+			{
+				ProcessBlock(new BlockCoord(bx + x, y, bz + z), pass);
+			}
+		}
+
 
 		private void GenerateSeed(PostProcessContext context, int offset)
 		{

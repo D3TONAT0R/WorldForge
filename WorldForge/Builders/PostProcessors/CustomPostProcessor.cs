@@ -16,23 +16,20 @@ namespace WorldForge.Builders.PostProcessors
 		{
 			get
 			{
-				if(surfaceProcessor != null && blockProcessor != null)
-				{
-					return PostProcessType.Both;
-				}
+				var type = PostProcessType.None;
 				if(surfaceProcessor != null)
 				{
-					return PostProcessType.Surface;
+					type |= PostProcessType.Surface;
 				}
 				if(blockProcessor != null)
 				{
-					return PostProcessType.Block;
+					type |= PostProcessType.Block;
 				}
-				return PostProcessType.RegionOnly;
+				return type;
 			}
 		}
 
-		public override bool Multithreading => multiThreaded;
+		public override bool UseMultithreading => multiThreaded;
 
 		public CustomPostProcessor(Action<Dimension, BlockCoord> surfaceProcessor, Action<Dimension, BlockCoord> blockProcessor, Action<Region> regionProcessor)
 		{

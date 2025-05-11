@@ -1,13 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WorldForge.Builders.PostProcessors;
 using WorldForge.Coordinates;
 using WorldForge.NBT;
 using WorldForge.TileEntities;
 
 namespace WorldForge.Structures
 {
-	public class Schematic
+	public interface ISchematic
+	{
+		Schematic GetSchematic(PostProcessContext context);
+	}
+
+	public class SchematicRef : ISchematic
+	{
+		public string schematicName;
+
+		public SchematicRef(string schematicName)
+		{
+			this.schematicName = schematicName;
+		}
+
+		public Schematic GetSchematic(PostProcessContext context)
+		{
+			if(context.Schematics.TryGet(schematicName, out var schematic))
+			{
+				return schematic;
+			}
+			else
+			{
+				throw new ArgumentException($"Could not find schematic named '{schematicName}'");
+			}
+		}
+	}
+
+	public class Schematic : ISchematic
 	{
 		public struct Block : INBTConverter
 		{
@@ -47,6 +75,8 @@ namespace WorldForge.Structures
 		public Dictionary<BlockCoord, int> treeTrunk = new Dictionary<BlockCoord, int>();
 		public int trunkMinHeight = 0;
 		public int trunkMaxHeight = 0;
+
+		public Schematic GetSchematic(PostProcessContext context) => this;
 
 		public static Schematic From3DArray(IStructurePalette<Block> palette, int[,,] indices, bool yzxOrder, BlockCoord originOffset)
 		{

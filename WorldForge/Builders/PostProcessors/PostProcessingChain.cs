@@ -52,7 +52,7 @@ namespace WorldForge.Builders.PostProcessors
 			LoadSettings(fileSourceDir, xmlRootElement);
 		}
 
-		void LoadSettings(string rootFolder, XElement xmlRootElement)
+		public void LoadSettings(string rootFolder, XElement xmlRootElement)
 		{
 			foreach(var schematicsContainer in xmlRootElement.Descendants("schematics"))
 			{
@@ -68,44 +68,44 @@ namespace WorldForge.Builders.PostProcessors
 			}
 		}
 
-		void LoadGenerator(XElement splatXml, bool fromInclude, string rootPath)
+		void LoadGenerator(XElement element, bool fromInclude, string rootPath)
 		{
-			var name = splatXml.Name.LocalName.ToLower();
+			var name = element.Name.LocalName.ToLower();
 			if(name == "map")
 			{
-				processors.Add(new WeightmappedTerrainGenerator(splatXml, rootPath));
+				processors.Add(new WeightmappedTerrainGenerator(element, rootPath));
 			}
 			else if(name == "water")
 			{
-				processors.Add(new WaterLevelGenerator(rootPath, splatXml));
+				processors.Add(new WaterLevelGenerator(rootPath, element));
 			}
 			else if(name == "ores")
 			{
-				processors.Add(new OreGenerator(rootPath, splatXml));
+				processors.Add(new OreGenerator(rootPath, element));
 			}
 			else if(name == "snow")
 			{
-				processors.Add(new SnowPostProcessor(rootPath, splatXml));
+				processors.Add(new SnowPostProcessor(rootPath, element));
 			}
 			else if(name == "thaw")
 			{
-				processors.Add(new ThawingPostProcessor(rootPath, splatXml));
+				processors.Add(new ThawingPostProcessor(rootPath, element));
 			}
 			else if(name == "naturalize")
 			{
-				processors.Add(new NaturalSurfaceGenerator(rootPath, splatXml));
+				processors.Add(new NaturalSurfaceGenerator(rootPath, element));
 			}
 			else if(name == "vegetation")
 			{
-				processors.Add(new VegetationGenerator(rootPath, splatXml));
+				processors.Add(new VegetationGenerator(rootPath, element));
 			}
 			else if(name == "caves")
 			{
-				processors.Add(new CaveGenerator(rootPath, splatXml));
+				processors.Add(new CaveGenerator(rootPath, element));
 			}
 			else if(name == "bedrock")
 			{
-				processors.Add(new BedrockGenerator(rootPath, splatXml));
+				processors.Add(new BedrockGenerator(rootPath, element));
 			}
 			else if(name == "include")
 			{
@@ -114,7 +114,7 @@ namespace WorldForge.Builders.PostProcessors
 					throw new InvalidOperationException("Recursive includes are not allowed");
 				}
 				//Include external xml
-				var includePathElem = splatXml.Attribute("file");
+				var includePathElem = element.Attribute("file");
 				if(includePathElem == null)
 				{
 					throw new KeyNotFoundException("The include's file must be specified with a 'file' attribute");

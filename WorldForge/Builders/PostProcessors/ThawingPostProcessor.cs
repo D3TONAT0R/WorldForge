@@ -33,7 +33,7 @@ namespace WorldForge.Builders.PostProcessors
 			{BlockList.Find("powder_snow"), BlockList.Find("air")}
 		};
 
-		public override PostProcessType PostProcessorType => PostProcessType.Both;
+		public override PostProcessType PostProcessorType => PostProcessType.Surface | PostProcessType.Block;
 
 		public ThawingPostProcessor()
 		{
