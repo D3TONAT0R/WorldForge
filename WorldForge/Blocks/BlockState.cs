@@ -77,6 +77,39 @@ namespace WorldForge
 			}
 		}
 
+		/// <summary>
+		/// Creates a BlockState from a string in the format "<c>block_id[property1=value,property2=value,...]</c>".
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <exception cref="FormatException"></exception>
+		public static BlockState Parse(string value)
+		{
+			if(string.IsNullOrWhiteSpace(value)) return null;
+			//Value is in the format "block[properties]"
+			BlockState state;
+			//Find the first '['
+			int bracketIndex = value.IndexOf('[');
+			if(bracketIndex != 0 && value.IndexOf(']') != value.Length - 1)
+			{
+				throw new FormatException("Invalid block state format: " + value);
+			}
+			if(bracketIndex < 0) state = new BlockState(value);
+			else
+			{
+				var id = value.Substring(0, bracketIndex);
+				state = new BlockState(id);
+				var propertiesString = value.Substring(bracketIndex + 1, value.Length - bracketIndex - 2);
+				var properties = propertiesString.Split(',');
+				foreach(var property in properties)
+				{
+					var kv = property.Split('=');
+					state.SetProperty(kv[0].Trim(), kv[1].Trim());
+				}
+			}
+			return state;
+		}
+
 		public bool HasProperty(string key)
 		{
 			if(properties == null) return false;

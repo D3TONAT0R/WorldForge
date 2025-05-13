@@ -94,6 +94,7 @@ namespace WorldForge.Builders.PostProcessors
 				var bz = topPos.z - z;
 				foreach(var gen in channels[i].chain.processors)
 				{
+					gen.Context = Context;
 					gen.TryProcessSurface(chunk, x, z, bx, bz, pass);
 				}
 			}
@@ -111,6 +112,7 @@ namespace WorldForge.Builders.PostProcessors
 				var bz = pos.z - z;
 				foreach(var gen in channels[i].chain.processors)
 				{
+					gen.Context = Context;
 					gen.TryProcessBlock(chunk, x, z, bx, bz, pass);
 				}
 			}

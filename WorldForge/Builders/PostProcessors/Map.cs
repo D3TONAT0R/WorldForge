@@ -8,11 +8,11 @@ namespace WorldForge.Builders.PostProcessors
 	{
 		private T[][,] data;
 
-		private int lengthX;
-		private int lengthZ;
+		private int LengthX => data[0].GetLength(0);
+		private int LengthZ => data[0].GetLength(1);
 
 		public BlockCoord2D LowerCornerPos { get; set; }
-		public BlockCoord2D UpperCornerPos => LowerCornerPos + new BlockCoord2D(lengthX, lengthZ);
+		public BlockCoord2D UpperCornerPos => LowerCornerPos + new BlockCoord2D(LengthX, LengthZ);
 
 		public Map(int width, int height, int channelCount)
 		{
@@ -63,7 +63,7 @@ namespace WorldForge.Builders.PostProcessors
 			}
 			else
 			{
-				throw new ArgumentException("Position is out of bounds of the map");
+				throw new ArgumentException($"Position is out of bounds of the map: {pos}");
 			}
 		}
 
@@ -79,9 +79,9 @@ namespace WorldForge.Builders.PostProcessors
 
 		public bool ToMapPosition(BlockCoord2D pos, out int x, out int y)
 		{
-			x = pos.x + LowerCornerPos.x;
-			y = pos.z + LowerCornerPos.z;
-			if(x >= 0 && x < lengthX && y >= 0 && y < lengthZ)
+			x = pos.x - LowerCornerPos.x;
+			y = pos.z - LowerCornerPos.z;
+			if(x >= 0 && x < LengthX && y >= 0 && y < LengthZ)
 			{
 				return true;
 			}

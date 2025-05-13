@@ -8,26 +8,26 @@ namespace WorldForge.Builders.PostProcessors
 {
 	public class SurfaceBlocksGenerator : PostProcessor
 	{
-		public List<string> blocks = new List<string>();
+		public List<BlockID> blocks = new List<BlockID>();
 
 		public NoiseParameters noiseParameters;
 		public float noiseThreshold = 0;
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public SurfaceBlocksGenerator(IEnumerable<string> blockLayer)
+		public SurfaceBlocksGenerator(IEnumerable<BlockID> blockLayer)
 		{
 			blocks.AddRange(blockLayer);
 		}
 
-		public SurfaceBlocksGenerator(params string[] blockLayer) : this((IEnumerable<string>)blockLayer)
+		public SurfaceBlocksGenerator(params BlockID[] blockLayer) : this((IEnumerable<BlockID>)blockLayer)
 		{
 
 		}
 
 		public SurfaceBlocksGenerator(string rootPath, XElement xml) : base(rootPath, xml)
 		{
-			blocks = xml.Attribute("blocks").Value.Split(',').ToList();
+			blocks = xml.Attribute("blocks").Value.Split(',').Select(v => BlockList.Find(v)).ToList();
 			var noise = xml.TryGetElement("noise", out var noiseElem);
 			if(noise)
 			{

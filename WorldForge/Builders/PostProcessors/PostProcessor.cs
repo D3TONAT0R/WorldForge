@@ -51,7 +51,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public Map<float> mask;
 
-		public PostProcessContext Context { get; private set; }
+		public PostProcessContext Context { get; set; }
 
 		protected PostProcessor()
 		{
