@@ -214,7 +214,7 @@ namespace WorldForge.Builders.PostProcessors
 						{
 							for(int x = 0; x < 16; x++)
 							{
-								TryProcessSurface(chunk, x, z, bx, bz, pass);
+								TryProcessSurface(chunk, bx, x, bz, z, pass);
 							}
 						}
 					});
@@ -232,7 +232,7 @@ namespace WorldForge.Builders.PostProcessors
 			Context = null;
 		}
 
-		public void TryProcessSurface(Chunk chunk, int x, int z, int bx, int bz, int pass)
+		public void TryProcessSurface(Chunk chunk, int bx, int x, int bz, int z, int pass)
 		{
 			//TODO: remember height so each processor uses the same height
 			var y = chunk.GetHighestBlock(x, z, HeightmapType.SolidBlocksNoLiquid);
