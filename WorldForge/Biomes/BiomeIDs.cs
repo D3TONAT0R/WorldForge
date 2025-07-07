@@ -76,6 +76,10 @@ namespace WorldForge.Biomes
 				}
 			}
 			var newBiome = new BiomeID(id);
+			if(newBiome.id.StartsWith("minecraft:"))
+			{
+				Logger.Warning($"Unrecognized biome '{id}', adding to list.");
+			}
 			biomeRegistry.Add(newBiome);
 			return newBiome;
 		}

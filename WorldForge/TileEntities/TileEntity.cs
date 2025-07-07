@@ -16,19 +16,11 @@ namespace WorldForge.TileEntities
 			otherNBTData = new NBTCompound();
 		}
 
-		protected TileEntity(NBTCompound nbt, out BlockCoord blockPos, bool throwException = false)
+		protected TileEntity(NBTCompound nbt, out BlockCoord blockPos)
 		{
 			id = nbt.Take<string>("id");
 			blockPos = new BlockCoord(nbt.Take<int>("x"), nbt.Take<int>("y"), nbt.Take<int>("z"));
-			try
-			{
-				NBTConverter.LoadFromNBT(nbt, this, true);
-			}
-			catch(Exception e)
-			{
-				if(throwException) throw;
-				Logger.Exception($"Failed to load tile entity from NBT ({id} at {blockPos})", e);
-			}
+			NBTConverter.LoadFromNBT(nbt, this, true);
 			otherNBTData = nbt;
 		}
 

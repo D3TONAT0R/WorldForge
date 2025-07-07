@@ -93,7 +93,7 @@ namespace WorldForge.IO
 		#endregion
 
 		//TODO: which game version is this for?
-		public override void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version)
+		public override void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version, ExceptionHandling exceptionHandling)
 		{
 			c.TileEntities.Clear();
 			if(chunkNBT.Contains("TileEntities"))
@@ -103,8 +103,16 @@ namespace WorldForge.IO
 				{
 					for(int i = 0; i < tileEntList.Length; i++)
 					{
-						var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
-						c.TileEntities.Add(blockPos, te);
+						try
+						{
+							var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
+							c.TileEntities.Add(blockPos, te);
+						}
+						catch(Exception e)
+						{
+							if(exceptionHandling == ExceptionHandling.Throw) throw new Exception("Failed to load tile entity at " + i, e);
+							else if(exceptionHandling == ExceptionHandling.Log) Logger.Exception("Failed to load tile entity at " + i, e);
+						}
 					}
 				}
 			}

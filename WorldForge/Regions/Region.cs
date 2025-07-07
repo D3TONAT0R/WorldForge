@@ -25,6 +25,40 @@ namespace WorldForge.Regions
 
 		public RegionFileDataPositions RegionFileInfo { get; internal set; }
 
+		public int ChunkCount
+		{
+			get
+			{
+				if(chunks == null) return 0;
+				int count = 0;
+				for(int x = 0; x < 32; x++)
+				{
+					for(int z = 0; z < 32; z++)
+					{
+						if(chunks[x, z] != null) count++;
+					}
+				}
+				return count;
+			}
+		}
+		
+		public int LoadedChunkCount
+		{
+			get
+			{
+				if(chunks == null) return 0;
+				int count = 0;
+				for(int x = 0; x < 32; x++)
+				{
+					for(int z = 0; z < 32; z++)
+					{
+						if(chunks[x, z] != null && chunks[x, z].IsLoaded) count++;
+					}
+				}
+				return count;
+			}
+		}
+
 		#region Creation methods
 
 		public static Region CreateNew(RegionLocation loc, Dimension parent)

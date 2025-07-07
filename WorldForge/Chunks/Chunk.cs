@@ -89,7 +89,7 @@ namespace WorldForge.Chunks
 		/// <summary>
 		/// Loads the chunk from the region file
 		/// </summary>
-		public void Load()
+		public void Load(ExceptionHandling exceptionHandling = ExceptionHandling.Throw)
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
 
@@ -108,7 +108,7 @@ namespace WorldForge.Chunks
 			InitializeNewChunk();
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
-			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion);
+			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion, exceptionHandling);
 		}
 
 		#endregion

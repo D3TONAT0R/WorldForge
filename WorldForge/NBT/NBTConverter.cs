@@ -64,7 +64,7 @@ namespace WorldForge.NBT
 							if(removeFromCompound) value = sourceNBT.Take(name);
 							else value = sourceNBT.Get(name);
 						}
-						fi.SetValue(target, value);
+						SetValue(fi, target, value);
 					}
 					catch(Exception e)
 					{
@@ -77,8 +77,34 @@ namespace WorldForge.NBT
 				if(!typeof(INBTCollection).IsAssignableFrom(fi.FieldType)) throw new InvalidOperationException("Fields marked with NBTCollection must implement INBTCollection.");
 				var inst = (INBTCollection)Activator.CreateInstance(fi.FieldType);
 				inst.LoadFromNBT(sourceNBT, removeFromCompound);
-				fi.SetValue(target, inst);
+				SetValue(fi, target, inst);
 			}
+		}
+
+		private static void SetValue(FieldInfo f, object target, object value)
+		{
+			var fieldType = f.FieldType;
+			var valueType = value.GetType();
+			if(fieldType != valueType)
+			{
+				//Narrowing conversions for numeric types
+				//TODO: clamp values to their limits?
+				if(fieldType == typeof(short))
+				{
+					if(value is ushort us) value = Math.Min((short)us, short.MinValue);
+					else if(value is int i) value = Math.Min((short)i, short.MinValue);
+					else if(value is long l) value = Math.Min((short)l, short.MinValue);
+				}
+				else if(fieldType == typeof(int))
+				{
+					if(value is long l) value = Math.Min((int)l, int.MinValue);
+				}
+				else if(fieldType == typeof(float))
+				{
+					if(value is double d) value = (float)d;
+				}
+			}
+			f.SetValue(target, value);
 		}
 
 		public static NBTCompound WriteToNBT(object source, NBTCompound targetNBT, GameVersion targetVersion)

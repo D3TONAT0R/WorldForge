@@ -47,16 +47,8 @@ namespace WorldForge.IO
 					for(int i = 0; i < paletteNBT.Length; i++)
 					{
 						var id = paletteNBT.Get<string>(i).Replace("minecraft:", "");
-						if(BiomeIDs.TryGet(id, out var b))
-						{
-							palette[i] = b;
-						}
-						else
-						{
-							Logger.Warning($"Unrecognized biome '{id}', adding to list.");
-							BiomeID newBiome = BiomeIDs.GetOrCreate(id);
-							palette[i] = newBiome;
-						}
+						var biome = BiomeIDs.GetOrCreate(id);
+						palette[i] = biome;
 					}
 
 					sbyte secY;

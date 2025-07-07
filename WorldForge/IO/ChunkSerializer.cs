@@ -79,10 +79,10 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual void ReadChunkNBT(Chunk c, GameVersion? version)
+		public virtual void ReadChunkNBT(Chunk c, GameVersion? version, ExceptionHandling exceptionHandling)
 		{
 			var s = c.sourceData;
-			ReadMainChunkNBT(c, GetRootCompound(s.main), version);
+			ReadMainChunkNBT(c, GetRootCompound(s.main), version, exceptionHandling);
 			if(s.entities != null)
 			{
 				ReadEntitiesChunkNBT(c, s.entities.contents, version);
@@ -93,11 +93,11 @@ namespace WorldForge.IO
 			}
 		}
 
-		public virtual void ReadMainChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		public virtual void ReadMainChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version, ExceptionHandling exceptionHandling)
 		{
 			LoadCommonData(c, nbt, version);
 			LoadBlocks(c, nbt, version);
-			LoadTileEntities(c, nbt, version);
+			LoadTileEntities(c, nbt, version, exceptionHandling);
 			LoadTileTicks(c, nbt, version);
 			LoadBiomes(c, nbt, version);
 			LoadEntities(c, nbt, c.ParentRegion, version);
@@ -121,7 +121,7 @@ namespace WorldForge.IO
 
 		public abstract void LoadBlocks(Chunk c, NBTCompound chunkNBT, GameVersion? version);
 
-		public abstract void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version);
+		public abstract void LoadTileEntities(Chunk c, NBTCompound chunkNBT, GameVersion? version, ExceptionHandling exceptionHandling);
 
 		public abstract void LoadEntities(Chunk c, NBTCompound chunkNBT, Region parentRegion, GameVersion? version);
 

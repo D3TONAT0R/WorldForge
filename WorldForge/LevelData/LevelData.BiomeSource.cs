@@ -29,13 +29,30 @@ namespace WorldForge
 			{
 				var comp = (NBTCompound)nbtData;
 				string type = comp.Get<string>("type");
+				bool isVanilla = !type.Contains(":") || type.StartsWith("minecraft:");
 				if(type.StartsWith("minecraft:")) type = type.Replace("minecraft:", "");
-				if(type == "checkerboard") return new CheckerboardBiomeSource(comp);
-				else if(type == "fixed") return new FixedBiomeSource(comp.Get<string>("biome"));
-				else if(type == "multi_noise") return new MultiNoiseBiomeSource(comp);
-				else if(type == "the_end") return new TheEndBiomeSource();
-				else if(type == "vanilla_layered") return new VanillaLayeredBiomeSource(comp);
-				else throw new NotImplementedException("Unknown BiomeSource type: " + type);
+				if(isVanilla)
+				{
+					switch (type)
+					{
+						case "checkerboard":
+							return new CheckerboardBiomeSource(comp);
+						case "fixed":
+							return new FixedBiomeSource(comp.Get<string>("biome"));
+						case "multi_noise":
+							return new MultiNoiseBiomeSource(comp);
+						case "the_end":
+							return new TheEndBiomeSource();
+						case "vanilla_layered":
+							return new VanillaLayeredBiomeSource(comp);
+						default:
+							throw new NotImplementedException("Unknown BiomeSource type: " + type);
+					}
+				}
+				else
+				{
+					return new CustomBiomeSource(type, comp);
+				}
 			}
 
 			public virtual void FromNBT(object nbtData)
@@ -232,6 +249,16 @@ namespace WorldForge
 			public TheEndBiomeSource() : base("the_end")
 			{
 
+			}
+		}
+
+		public class CustomBiomeSource : BiomeSource
+		{
+			public NBTCompound data;
+
+			public CustomBiomeSource(string type, NBTCompound data) : base(type, data)
+			{
+				this.data = data;
 			}
 		}
 	}
