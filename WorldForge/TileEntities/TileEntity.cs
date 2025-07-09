@@ -111,6 +111,7 @@ namespace WorldForge.TileEntities
 					return new TileEntityBed(nbt, out blockPos);
 
 				default:
+					Logger.Verbose($"Unknown TileEntity ID: {id}. Creating generic TileEntity.");
 					return new TileEntityGeneric(nbt, out blockPos);
 			}
 		}
@@ -185,10 +186,12 @@ namespace WorldForge.TileEntities
 					case "chiseled_bookshelf":
 						return new TileEntityChiseledBookshelf();
 				}
+				Logger.Verbose($"Unknown TileEntity ID for block type {blockType.ID.id}, creating generic TileEntity.");
 				return new TileEntityGeneric(blockType.ID.id);
 			}
 			else
 			{
+				Logger.Verbose($"Modded block type {blockType.ID.id} detected, creating generic TileEntity.");
 				return new TileEntityGeneric(blockType.ID.id);
 			}
 		}

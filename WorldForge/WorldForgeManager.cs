@@ -31,6 +31,7 @@ namespace WorldForge
 			MapColorPalette.InitializePalettes();
 
 #if !IMAGESHARP_DISABLED
+			Logger.Verbose("Using ImageSharp for Bitmap processing");
 			Bitmaps.BitmapFactory = new ImageSharpBitmapFactory();
 #endif
 			Initialized = true;

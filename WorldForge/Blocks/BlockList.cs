@@ -31,6 +31,7 @@ namespace WorldForge
 
 		public static void Initialize(string blockData, string remappingsData)
 		{
+			Logger.Verbose("Initializing block list ...");
 			allBlocks = new Dictionary<NamespacedID, BlockID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();

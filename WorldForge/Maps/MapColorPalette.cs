@@ -87,6 +87,7 @@ namespace WorldForge.Maps
 
 		public static void InitializePalettes()
 		{
+			Logger.Verbose("Initializing map color palettes ...");
 			Modern = new MapColorPalette("mapcolors_modern.csv");
 			//TODO: make the other block palettes
 			/*

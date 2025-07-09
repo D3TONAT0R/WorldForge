@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using WorldForge.Chunks;
@@ -31,7 +32,13 @@ namespace WorldForge.IO
 			{
 				RegionLocation.TryGetFromFileName(filepath, out position);
 
-				if(stream.Length < 4096) return;
+				Logger.Verbose($"Getting chunk locations and sizes for '{filepath}' ...");
+				if(stream.Length < 4096)
+				{
+					//If the file is smaller than 4096 bytes, it is not a valid region file.
+					Logger.Error($"Region file {filepath} is not a valid region file. Expected at least 4096 bytes, got {stream.Length}.");
+					return;
+				}
 				for(uint i = 0; i < 1024; i++)
 				{
 					chunkLocations[i] = Read3ByteInt(stream);
@@ -40,6 +47,7 @@ namespace WorldForge.IO
 
 				//Ignore timestamps between 4096 and 8192
 
+				Logger.Verbose("Getting compressed chunk data ...");
 				expectedEOF = 8192;
 				for(int i = 0; i < 1024; i++)
 				{
@@ -60,12 +68,14 @@ namespace WorldForge.IO
 							//A partially generated region may contain a chunk whose stream position is out of range.
 							//Can it be safely ignored? NBTExplorer doesn't read that chunk either and it often
 							//seems to be located in non-generated areas of the region.
+							Logger.Verbose("Ignoring out of range chunk at index " + i);
 
 							//throw new FileLoadException($"Failed to load chunk at [{i % 32},{i / 32}].");
 						}
 						expectedEOF = (chunkLocations[i] + chunkSizes[i]) * 4096;
 					}
 				}
+				Logger.Verbose("Finished reading region data from " + filepath);
 			}
 
 			public NBTFile GetFile(int i)
@@ -80,6 +90,7 @@ namespace WorldForge.IO
 
 		public static Region PreloadRegion(RegionFilePaths filePaths, Dimension parent, GameVersion? worldSaveVersion = null)
 		{
+			Logger.Verbose($"Preloading region from {filePaths.mainPath} ...");
 			if(!RegionLocation.TryGetFromFileName(filePaths.mainPath, out var loc))
 			{
 				Logger.Error("Unable to interpret region location from file name: " + filePaths.mainPath);
@@ -104,6 +115,7 @@ namespace WorldForge.IO
 
 		public static void LoadRegionContent(Region region, bool loadChunks = false, bool loadOrphanChunks = false)
 		{
+			Logger.Verbose($"Loading region content ...");
 			RegionData main, entities, poi;
 			using(var streams = region.sourceFilePaths.OpenStreams(FileMode.Open))
 			{
@@ -112,6 +124,7 @@ namespace WorldForge.IO
 				poi = streams.poi != null ? new RegionData(streams.poi, region.sourceFilePaths.poiPath) : null;
 			}
 			region.InitializeChunks();
+			Logger.Verbose("Loading chunks ...");
 			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
 				LoadChunk(region, loadChunks, i, main, entities, poi);
@@ -122,14 +135,21 @@ namespace WorldForge.IO
 		{
 			if(main.compressedChunks[i] != null)
 			{
+				Stopwatch sw = Logger.Level == LogLevel.Verbose ? Stopwatch.StartNew() : null;
 				var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
 				var coord = new ChunkCoord(i % 32, i / 32);
 				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks);
+				if(sw != null)
+				{
+					sw.Stop();
+					Logger.Verbose($"Loading chunk [{coord.x},{coord.z}] took {sw.ElapsedMilliseconds} ms.");
+				}
 			}
 		}
 
 		public static Region LoadRegionAlphaChunks(string worldSaveDir, RegionLocation location)
 		{
+			Logger.Verbose($"Loading region at {location} from Alpha world save directory {worldSaveDir} ...");
 			List<(ChunkCoord, string)> chunkFileLocations = new List<(ChunkCoord, string)>();
 			var lowerChunkCoord = location.GetChunkCoord();
 			for(int z = lowerChunkCoord.z; z < lowerChunkCoord.z + 32; z++)
@@ -148,16 +168,23 @@ namespace WorldForge.IO
 				}
 			}
 
+			Logger.Verbose($"Found {chunkFileLocations.Count} chunk files in region {location}.");
 			var reg = Region.CreateNew(location, null);
 			var cs = new ChunkSerializerAlpha(GameVersion.Alpha_1(0));
 			Parallel.ForEach(chunkFileLocations, c =>
 			{
+				var sw = Logger.Level == LogLevel.Verbose ? Stopwatch.StartNew() : null;
 				var coord = c.Item1;
 				//TODO: not sure if path is correct
 				var path = c.Item2;
 				var regionSpacePos = new ChunkCoord(coord.x & 31, coord.z & 31);
 				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new ChunkSourceData(new NBTFile(path), null, null));
 				reg.chunks[regionSpacePos.x, regionSpacePos.z] = chunk;
+				if(sw != null)
+				{
+					sw.Stop();
+					Logger.Verbose($"Loading chunk [{coord.x},{coord.z}] took {sw.ElapsedMilliseconds} ms.");
+				}
 			});
 			return reg;
 		}

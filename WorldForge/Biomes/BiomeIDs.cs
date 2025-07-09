@@ -9,6 +9,7 @@ namespace WorldForge.Biomes
 
 		public static void Initialize(string biomeData)
 		{
+			Logger.Verbose("Initializing biome list ...");
 			biomeRegistry = new List<BiomeID>();
 			var csv = new CSV(biomeData);
 			foreach(var row in csv.data)

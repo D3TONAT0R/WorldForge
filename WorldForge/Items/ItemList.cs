@@ -11,6 +11,7 @@ namespace WorldForge.Items
 
 		public static void Initialize(string blockData)
 		{
+			Logger.Verbose("Initializing item list ...");
 			allItems = new Dictionary<NamespacedID, ItemID>();
 			numerics = new Dictionary<ItemID, NumericID>();
 			itemByNumerics = new Dictionary<NumericID, ItemID>();
