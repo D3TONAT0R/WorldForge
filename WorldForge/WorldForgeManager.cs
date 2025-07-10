@@ -40,15 +40,15 @@ namespace WorldForge
 			Initialized = true;
 		}
 
-		public static Stream GetResource(string fileName)
+		public static IBitmap GetResourceBitmap(string fileName)
 		{
 			if(CustomResourceLoader != null)
 			{
-				var stream = CustomResourceLoader.GetResourceAsStream(fileName);
-				if(stream != null) return stream;
+				var bitmap = CustomResourceLoader.GetResourceBitmap(fileName);
+				if(bitmap != null) return bitmap;
 				else Logger.Verbose($"Custom resource loader did not provide a stream for '{fileName}'. Falling back to embedded resources.");
 			}
-			return Assembly.GetExecutingAssembly().GetManifestResourceStream("WorldForge.Resources." + fileName);
+			return Bitmaps.LoadFromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("WorldForge.Resources." + fileName));
 		}
 
 		public static string GetResourceAsText(string fileName)

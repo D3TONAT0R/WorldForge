@@ -4,7 +4,7 @@ namespace WorldForge
 {
 	public interface IResourceLoader
 	{
-		Stream GetResourceAsStream(string fileName);
+		IBitmap GetResourceBitmap(string fileName);
 
 		string GetResourceAsText(string fileName);
 	}
