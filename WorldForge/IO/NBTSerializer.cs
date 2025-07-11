@@ -17,6 +17,8 @@ namespace WorldForge.IO
 		private static float[] floatBuffer;
 		[ThreadStatic]
 		private static double[] doubleBuffer;
+		[ThreadStatic]
+		private static byte[] stringByteBuffer;
 
 		private static void EnsureBuffers()
 		{
@@ -25,6 +27,7 @@ namespace WorldForge.IO
 				buffer8 = new byte[8];
 				floatBuffer = new float[1];
 				doubleBuffer = new double[1];
+				stringByteBuffer = new byte[128]; //Initial size, will grow as needed
 				buffersInitialized = true;
 			}
 		}
@@ -234,57 +237,49 @@ namespace WorldForge.IO
 				}
 
 				object value;
-				if(tag == NBTTag.TAG_Byte)
+				switch (tag)
 				{
-					value = Get<byte>(stream);
-				}
-				else if(tag == NBTTag.TAG_Short)
-				{
-					value = Get<short>(stream);
-				}
-				else if(tag == NBTTag.TAG_Int)
-				{
-					value = Get<int>(stream);
-				}
-				else if(tag == NBTTag.TAG_Long)
-				{
-					value = Get<long>(stream);
-				}
-				else if(tag == NBTTag.TAG_Float)
-				{
-					value = Get<float>(stream);
-				}
-				else if(tag == NBTTag.TAG_Double)
-				{
-					value = Get<double>(stream);
-				}
-				else if(tag == NBTTag.TAG_Byte_Array)
-				{
-					value = Get<byte[]>(stream);
-				}
-				else if(tag == NBTTag.TAG_String)
-				{
-					value = Get<string>(stream);
-				}
-				else if(tag == NBTTag.TAG_List)
-				{
-					value = Get<NBTList>(stream);
-				}
-				else if(tag == NBTTag.TAG_Compound)
-				{
-					value = Get<NBTCompound>(stream);
-				}
-				else if(tag == NBTTag.TAG_Int_Array)
-				{
-					value = Get<int[]>(stream);
-				}
-				else if(tag == NBTTag.TAG_Long_Array)
-				{
-					value = Get<long[]>(stream);
-				}
-				else
-				{
-					throw new ArgumentException("Unrecognized NBT tag: " + tag);
+					case NBTTag.TAG_Byte:
+						value = ReadByte(stream);
+						break;
+					case NBTTag.TAG_Short:
+						value = ReadShort(stream);
+						break;
+					case NBTTag.TAG_Int:
+						value = ReadInt(stream);
+						break;
+					case NBTTag.TAG_Long:
+						value = ReadLong(stream);
+						break;
+					case NBTTag.TAG_Float:
+						value = ReadFloat(stream);
+						break;
+					case NBTTag.TAG_Double:
+						value = ReadDouble(stream);
+						break;
+					case NBTTag.TAG_Byte_Array:
+						value = ReadByteArray(stream);
+						break;
+					case NBTTag.TAG_String:
+						value = ReadString(stream);
+						break;
+					case NBTTag.TAG_List:
+						value = ReadList(stream);
+						break;
+					case NBTTag.TAG_Compound:
+						value = ReadCompound(stream);
+						break;
+					case NBTTag.TAG_Int_Array:
+						value = ReadIntArray(stream);
+						break;
+					case NBTTag.TAG_Long_Array:
+						value = ReadLongArray(stream);
+						break;
+					case NBTTag.TAG_End:
+					case NBTTag.UNSPECIFIED:
+						throw new ArgumentException("Unexpected NBT tag: " + tag);
+					default:
+						throw new ArgumentException("Unrecognized NBT tag: " + tag);
 				}
 
 				if(c is NBTCompound comp)
@@ -312,89 +307,6 @@ namespace WorldForge.IO
 				RegisterTag(stream, arr, tag);
 			}
 			return arr;
-		}
-
-		private static T Get<T>(Stream stream)
-		{
-			if(typeof(T) == typeof(byte))
-			{
-				return (T)(object)ReadNext(stream);
-			}
-			else if(typeof(T) == typeof(short))
-			{
-				return (T)(object)ReadShort(stream);
-			}
-			else if(typeof(T) == typeof(int))
-			{
-				return (T)(object)ReadInt(stream);
-			}
-			else if(typeof(T) == typeof(long))
-			{
-				return (T)(object)ReadLong(stream);
-			}
-			else if(typeof(T) == typeof(float))
-			{
-				return (T)(object)ReadFloat(stream);
-			}
-			else if(typeof(T) == typeof(double))
-			{
-				return (T)(object)ReadDouble(stream);
-			}
-			else if(typeof(T) == typeof(byte[]))
-			{
-				int len = Get<int>(stream);
-				byte[] arr = new byte[len];
-				for(int j = 0; j < len; j++)
-				{
-					arr[j] = Get<byte>(stream);
-				}
-				return (T)(object)arr;
-			}
-			else if(typeof(T) == typeof(string))
-			{
-				int len = Get<short>(stream);
-				byte[] arr = new byte[len];
-				for(int j = 0; j < len; j++)
-				{
-					arr[j] = Get<byte>(stream);
-				}
-				return (T)(object)Encoding.UTF8.GetString(arr);
-			}
-			else if(typeof(T) == typeof(NBTList))
-			{
-				NBTTag type = (NBTTag)Get<byte>(stream);
-				int len = Get<int>(stream);
-				return (T)(object)GetList(type, len, stream);
-			}
-			else if(typeof(T) == typeof(NBTCompound))
-			{
-				var newCompound = new NBTCompound();
-				while(RegisterTag(stream, newCompound) != NBTTag.TAG_End)
-				{
-				}
-				return (T)(object)newCompound;
-			}
-			else if(typeof(T) == typeof(int[]))
-			{
-				int len = Get<int>(stream);
-				int[] arr = new int[len];
-				for(int j = 0; j < len; j++)
-				{
-					arr[j] = Get<int>(stream);
-				}
-				return (T)(object)arr;
-			}
-			else if(typeof(T) == typeof(long[]))
-			{
-				int len = Get<int>(stream);
-				long[] arr = new long[len];
-				for(int j = 0; j < len; j++)
-				{
-					arr[j] = Get<long>(stream);
-				}
-				return (T)(object)arr;
-			}
-			throw new NotImplementedException();
 		}
 
 		private static NBTList GenericListToNBTList(object obj)
@@ -686,15 +598,66 @@ namespace WorldForge.IO
 			return doubleBuffer[0];
 		}
 
+		private static byte[] ReadByteArray(Stream stream)
+		{
+			int len = ReadInt(stream);
+			if(len == 0) return Array.Empty<byte>();
+			var arr = new byte[len];
+			stream.Read(arr, 0, len);
+			return arr;
+		}
+
 		private static string ReadString(Stream stream)
 		{
-			short length = ReadShort(stream);
-			byte[] utf8 = new byte[length];
-			for(int i = 0; i < length; i++)
+			int len = ReadShort(stream);
+			if(len == 0) return string.Empty;
+			if(len > stringByteBuffer.Length)
 			{
-				utf8[i] = ReadByte(stream);
+				//Resize the buffer to the next power of two
+				int newSize = stringByteBuffer.Length;
+				while(newSize < len) newSize <<= 1;
+				stringByteBuffer = new byte[newSize];
 			}
-			return Encoding.UTF8.GetString(utf8);
+			stream.Read(stringByteBuffer, 0, len);
+			return Encoding.UTF8.GetString(stringByteBuffer, 0, len);
+		}
+
+		private static NBTList ReadList(Stream stream)
+		{
+			NBTTag type = (NBTTag)ReadByte(stream);
+			int len = ReadInt(stream);
+			return GetList(type, len, stream);
+		}
+
+		private static NBTCompound ReadCompound(Stream stream)
+		{
+			var newCompound = new NBTCompound();
+			while(RegisterTag(stream, newCompound) != NBTTag.TAG_End) { }
+			return newCompound;
+		}
+
+		private static int[] ReadIntArray(Stream stream)
+		{
+			int len = ReadInt(stream);
+			if(len == 0) return Array.Empty<int>();
+			var arr = new int[len];
+			for(int j = 0; j < len; j++)
+			{
+				arr[j] = ReadInt(stream);
+			}
+			return arr;
+		}
+
+		private static long[] ReadLongArray(Stream stream)
+		{
+			int len = ReadInt(stream);
+			if(len == 0) return Array.Empty<long>();
+			var arr = new long[len];
+			for(int j = 0; j < len; j++)
+			{
+				arr[j] = ReadLong(stream);
+			}
+			return arr;
 		}
 	}
 }

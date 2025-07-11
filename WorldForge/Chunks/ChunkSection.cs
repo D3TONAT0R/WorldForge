@@ -16,7 +16,7 @@ namespace WorldForge.Chunks
 
 		//Resolution: [1:4:1] for backwards compatibility
 		public byte[,,] biomes;
-		public List<BiomeID> biomePalette = new List<BiomeID>();
+		public List<BiomeID> biomePalette;
 
 		public LightValue[,,] lighting;
 
@@ -37,6 +37,7 @@ namespace WorldForge.Chunks
 
 		public void InitializeBlocks(BlockState block = null)
 		{
+			if(blocks != null && palette != null) throw new InvalidOperationException("Blocks have already been initialized for this section.");
 			block = block ?? BlockState.Air;
 			blocks = new ushort[16 * 16 * 16];
 			palette = new List<BlockState>
@@ -115,8 +116,9 @@ namespace WorldForge.Chunks
 
 		public void InitializeBiomes(BiomeID biome = null)
 		{
+			if(biomes != null && biomePalette != null) throw new InvalidOperationException("Biomes have already been initialized for this section.");
 			biome = biome ?? chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
-			biomePalette.Clear();
+			biomePalette = new List<BiomeID>();
 			biomePalette.Add(biome);
 			biomes = new byte[16, 4, 16];
 		}

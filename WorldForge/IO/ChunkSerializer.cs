@@ -79,9 +79,8 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual void ReadChunkNBT(Chunk c, GameVersion? version, ExceptionHandling exceptionHandling)
+		public virtual void ReadChunkNBT(Chunk c, ChunkSourceData s, GameVersion? version, ExceptionHandling exceptionHandling)
 		{
-			var s = c.sourceData;
 			ReadMainChunkNBT(c, GetRootCompound(s.main), version, exceptionHandling);
 			if(s.entities != null)
 			{

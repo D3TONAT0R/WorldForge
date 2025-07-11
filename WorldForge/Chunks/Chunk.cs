@@ -45,7 +45,10 @@ namespace WorldForge.Chunks
 		public long InhabitedTime { get; set; } = 0;
 		public GameVersion? ChunkGameVersion { get; private set; } = default;
 
-		public ChunkSourceData sourceData;
+		/// <summary>
+		/// Contains the raw NBT data of the chunk, if it was loaded from a file and not yet fully loaded.
+		/// </summary>
+		public ChunkSourceData SourceData { get; private set; }
 
 		public bool IsLoaded => Sections != null;
 		public bool HasTerrain => Status >= ChunkStatus.surface;
@@ -64,7 +67,7 @@ namespace WorldForge.Chunks
 		{
 			var c = new Chunk(region, regionSpacePos)
 			{
-				sourceData = data,
+				SourceData = data,
 				ChunkGameVersion = versionHint
 			};
 			if(loadContent) c.Load();
@@ -93,9 +96,9 @@ namespace WorldForge.Chunks
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
 
-			if(sourceData != null && sourceData.main.dataVersion.HasValue)
+			if(SourceData != null && SourceData.main.dataVersion.HasValue)
 			{
-				ChunkGameVersion = GameVersion.FromDataVersion(sourceData.main.dataVersion.Value).Value;
+				ChunkGameVersion = GameVersion.FromDataVersion(SourceData.main.dataVersion.Value).Value;
 			}
 			else
 			{
@@ -109,7 +112,8 @@ namespace WorldForge.Chunks
 
 			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
 			Logger.Verbose($"Loading chunk {WorldSpaceCoord} using serializer {chunkSerializer.GetType().Name} (chunk game version: {ChunkGameVersion})");
-			chunkSerializer.ReadChunkNBT(this, ChunkGameVersion, exceptionHandling);
+			chunkSerializer.ReadChunkNBT(this, SourceData, ChunkGameVersion, exceptionHandling);
+			SourceData = null;
 		}
 
 		#endregion
@@ -345,9 +349,9 @@ namespace WorldForge.Chunks
 		public short[,] GetHeightmap(HeightmapType type, bool forceManualCalculation = false)
 		{
 			short[,] hm = null;
-			if(!forceManualCalculation && sourceData != null)
+			if(!forceManualCalculation && SourceData != null)
 			{
-				hm = NBTSerializer.GetHeightmapFromChunkNBT(sourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+				hm = NBTSerializer.GetHeightmapFromChunkNBT(SourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			}
 			if(hm == null)
 			{
@@ -431,8 +435,8 @@ namespace WorldForge.Chunks
 
 		private bool WriteHeightmapFromNBT(short[,] hm, int localChunkX, int localChunkZ, HeightmapType type)
 		{
-			if(sourceData == null) return false;
-			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(sourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
+			if(SourceData == null) return false;
+			var chunkHM = NBTSerializer.GetHeightmapFromChunkNBT(SourceData.main, type, ChunkGameVersion ?? GameVersion.FirstAnvilVersion, ParentDimension);
 			if (chunkHM == null) return false;
 			for (int x = 0; x < 16; x++)
 			{

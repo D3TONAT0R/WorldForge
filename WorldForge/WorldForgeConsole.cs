@@ -63,7 +63,7 @@ namespace WorldForge
 					int x = int.Parse(Console.ReadLine());
 					int z = int.Parse(Console.ReadLine());
 					var r = RegionDeserializer.LoadRegion(new RegionFilePaths(path, null, null), null);
-					var v = new NBTViewer(r.chunks[x, z].sourceData.main);
+					var v = new NBTViewer(r.chunks[x, z].SourceData.main);
 					v.Run(args);
 				}
 				if(input.StartsWith("analyzedist")) {
