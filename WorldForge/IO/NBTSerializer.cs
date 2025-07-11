@@ -220,14 +220,16 @@ namespace WorldForge.IO
 
 			if(tag != NBTTag.TAG_End)
 			{
-				string name = "";
+				var nameBuilder = new StringBuilder(64);
+				nameBuilder.Clear();
 				if(expectedTag == NBTTag.UNSPECIFIED)
 				{
 					short nameLength = BitConverter.ToInt16(ReadNext(stream, 2), 0);
 					for(int j = 0; j < nameLength; j++)
 					{
 						//TODO: Reading List with TAG_End throws IndexOutOfRangeException
-						name += (char)ReadNext(stream);
+						char ch = (char)ReadNext(stream);
+						nameBuilder.Append(ch);
 					}
 				}
 
@@ -287,7 +289,8 @@ namespace WorldForge.IO
 
 				if(c is NBTCompound comp)
 				{
-					comp.Add(name, value);
+					//comp.Add(name, value);
+					comp.Add(nameBuilder.ToString(), value);
 				}
 				else if(c is NBTList list)
 				{
