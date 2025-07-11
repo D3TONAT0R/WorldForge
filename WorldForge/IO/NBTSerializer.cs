@@ -316,30 +316,29 @@ namespace WorldForge.IO
 
 		private static T Get<T>(Stream stream)
 		{
-			object ret = null;
 			if(typeof(T) == typeof(byte))
 			{
-				ret = ReadNext(stream);
+				return (T)(object)ReadNext(stream);
 			}
 			else if(typeof(T) == typeof(short))
 			{
-				ret = ReadShort(stream);
+				return (T)(object)ReadShort(stream);
 			}
 			else if(typeof(T) == typeof(int))
 			{
-				ret = ReadInt(stream);
+				return (T)(object)ReadInt(stream);
 			}
 			else if(typeof(T) == typeof(long))
 			{
-				ret = ReadLong(stream);
+				return (T)(object)ReadLong(stream);
 			}
 			else if(typeof(T) == typeof(float))
 			{
-				ret = ReadFloat(stream);
+				return (T)(object)ReadFloat(stream);
 			}
 			else if(typeof(T) == typeof(double))
 			{
-				ret = ReadDouble(stream);
+				return (T)(object)ReadDouble(stream);
 			}
 			else if(typeof(T) == typeof(byte[]))
 			{
@@ -349,7 +348,7 @@ namespace WorldForge.IO
 				{
 					arr[j] = Get<byte>(stream);
 				}
-				ret = arr;
+				return (T)(object)arr;
 			}
 			else if(typeof(T) == typeof(string))
 			{
@@ -359,22 +358,21 @@ namespace WorldForge.IO
 				{
 					arr[j] = Get<byte>(stream);
 				}
-				ret = Encoding.UTF8.GetString(arr);
+				return (T)(object)Encoding.UTF8.GetString(arr);
 			}
 			else if(typeof(T) == typeof(NBTList))
 			{
 				NBTTag type = (NBTTag)Get<byte>(stream);
 				int len = Get<int>(stream);
-				ret = GetList(type, len, stream);
+				return (T)(object)GetList(type, len, stream);
 			}
 			else if(typeof(T) == typeof(NBTCompound))
 			{
 				var newCompound = new NBTCompound();
 				while(RegisterTag(stream, newCompound) != NBTTag.TAG_End)
 				{
-
 				}
-				ret = newCompound;
+				return (T)(object)newCompound;
 			}
 			else if(typeof(T) == typeof(int[]))
 			{
@@ -384,7 +382,7 @@ namespace WorldForge.IO
 				{
 					arr[j] = Get<int>(stream);
 				}
-				ret = arr;
+				return (T)(object)arr;
 			}
 			else if(typeof(T) == typeof(long[]))
 			{
@@ -394,9 +392,9 @@ namespace WorldForge.IO
 				{
 					arr[j] = Get<long>(stream);
 				}
-				ret = arr;
+				return (T)(object)arr;
 			}
-			return (T)Convert.ChangeType(ret, typeof(T));
+			throw new NotImplementedException();
 		}
 
 		private static NBTList GenericListToNBTList(object obj)
