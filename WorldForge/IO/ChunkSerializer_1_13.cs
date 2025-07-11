@@ -96,6 +96,7 @@ namespace WorldForge.IO
 
 					ushort[] indices = BitUtils.UnpackBits(longs, indexBitCount, 4096, UseFull64BitRange);
 
+					section.blocks = new ushort[4096];
 					for(int y = 0; y < 16; y++)
 					{
 						for(int z = 0; z < 16; z++)
@@ -185,7 +186,7 @@ namespace WorldForge.IO
 				{
 					for(int x = 0; x < 16; x++)
 					{
-						blockData[y * 256 + z * 16 + x] = section.blocks[ChunkSection.GetArrayIndex(x, y, z)];
+						blockData[y * 256 + z * 16 + x] = section.blocks?[ChunkSection.GetArrayIndex(x, y, z)] ?? 0;
 					}
 				}
 			}

@@ -76,6 +76,12 @@
 			}
 		}
 
+		public bool Compare(BiomeID other)
+		{
+			if(other == null) return false;
+			return id == other.id;
+		}
+
 		public bool CheckID(string id)
 		{
 			if(this.id == id)

@@ -88,12 +88,7 @@ namespace WorldForge.Biomes
 
 		private static void Register(BiomeID b)
 		{
-			biomeRegistry.AddOrUpdate(b.GetHashCode(), b, UpdateValue);
-		}
-
-		private static BiomeID UpdateValue(int hash, BiomeID b)
-		{
-			return b;
+			biomeRegistry.TryAdd(b.GetHashCode(), b);
 		}
 	}
 }

@@ -11,15 +11,18 @@ namespace WorldForge.Chunks
 	{
 		public readonly Chunk chunk;
 
-		public ushort[] blocks = new ushort[4096];
+		public ushort[] blocks;
 		public List<BlockState> palette;
 
 		//Resolution: [1:4:1] for backwards compatibility
-		private BiomeID[,,] biomes;
+		public byte[,,] biomes;
+		public List<BiomeID> biomePalette = new List<BiomeID>();
 
 		public LightValue[,,] lighting;
 
-		public bool HasBiomesDefined => biomes != null;
+		public bool HasBlocksDefined => blocks != null && palette != null && palette.Count > 0;
+
+		public bool HasBiomesDefined => biomes != null && biomePalette != null && biomePalette.Count > 0;
 
 		public ChunkSection(Chunk chunk)
 		{
@@ -32,13 +35,25 @@ namespace WorldForge.Chunks
 
 		#region Block related methods
 
+		public void InitializeBlocks(BlockState block = null)
+		{
+			block = block ?? BlockState.Air;
+			blocks = new ushort[16 * 16 * 16];
+			palette = new List<BlockState>
+			{
+				block
+			};
+		}
+
 		public BlockState GetBlock(int x, int y, int z)
 		{
+			if(!HasBlocksDefined) return BlockState.Air;
 			return palette[blocks[GetArrayIndex(x, y, z)]];
 		}
 
 		public void SetBlock(int x, int y, int z, BlockState block)
 		{
+			if(!HasBlocksDefined) InitializeBlocks();
 			ushort? index = GetPaletteIndex(block);
 			if(index == null)
 			{
@@ -49,11 +64,13 @@ namespace WorldForge.Chunks
 
 		public void SetBlock(int x, int y, int z, ushort paletteIndex)
 		{
+			if(!HasBlocksDefined) InitializeBlocks();
 			blocks[GetArrayIndex(x, y, z)] = paletteIndex;
 		}
 
 		public ushort? GetPaletteIndex(BlockState state)
 		{
+			if(!HasBlocksDefined) return null;
 			for(short i = 0; i < palette.Count; i++)
 			{
 				if(palette[i].Compare(state)) return (ushort)i;
@@ -96,42 +113,19 @@ namespace WorldForge.Chunks
 
 		#region Biome related methods
 
-		public void InitializeBiomes()
+		public void InitializeBiomes(BiomeID biome = null)
 		{
-			BiomeID fallback = chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
-			var lowest = chunk.LowestSection;
-			sbyte secY = chunk.Sections.First(kv => kv.Value == this).Key;
-			ChunkSection belowSection = null;
-			while(secY > lowest)
-			{
-				secY--;
-				if(chunk.Sections.TryGetValue(secY, out var sec))
-				{
-					if(sec.HasBiomesDefined)
-					{
-						belowSection = sec;
-						break;
-					}
-				}
-			}
-			biomes = new BiomeID[16, 4, 16];
-			for(int x = 0; x < 16; x++)
-			{
-				for(int z = 0; z < 16; z++)
-				{
-					BiomeID b = belowSection?.GetBiome(x, z) ?? fallback;
-					for(int y = 0; y < 4; y++)
-					{
-						biomes[x, y, z] = b;
-					}
-				}
-			}
+			biome = biome ?? chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
+			biomePalette.Clear();
+			biomePalette.Add(biome);
+			biomes = new byte[16, 4, 16];
 		}
 
 		public BiomeID GetBiome(int x, int y, int z)
 		{
-			if(biomes == null) return null;
-			return biomes[x & 0xF, (y / 4) & 3, z & 0xF];
+			if(!HasBiomesDefined) return null;
+			var index = biomes[x & 0xF, (y / 4) & 3, z & 0xF];
+			return biomePalette[index];
 		}
 
 		public BiomeID GetBiome(int x, int z)
@@ -139,33 +133,42 @@ namespace WorldForge.Chunks
 			return GetBiome(x, 15, z);
 		}
 
+		public byte? GetBiomePaletteIndex(BiomeID biome)
+		{
+			for(byte i = 0; i < biomePalette.Count; i++)
+			{
+				if(biomePalette[i].Compare(biome)) return i;
+			}
+			return null;
+		}
+
 		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
-			Dictionary<BiomeID, byte> occurences = new Dictionary<BiomeID, byte>();
+			Dictionary<byte, byte> indexCounts = new Dictionary<byte, byte>();
 			if(!HasBiomesDefined) return chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
 			for(int x1 = 0; x1 < 4; x1++)
 			{
 				for(int z1 = 0; z1 < 4; z1++)
 				{
 					var b = biomes[x4 * 4 + x1, y4, z4 * 4 + z1];
-					if(!occurences.ContainsKey(b))
+					if(!indexCounts.ContainsKey(b))
 					{
-						occurences.Add(b, 0);
+						indexCounts.Add(b, 0);
 					}
-					occurences[b]++;
+					indexCounts[b]++;
 				}
 			}
-			BiomeID predominantBiome = BiomeID.Ocean;
-			int predominantCells = 0;
-			foreach(var k in occurences.Keys)
+			BiomeID biome = BiomeID.TheVoid;
+			int maxCells = 0;
+			foreach(var k in indexCounts.Keys)
 			{
-				if(occurences[k] > predominantCells)
+				if(indexCounts[k] > maxCells)
 				{
-					predominantCells = occurences[k];
-					predominantBiome = k;
+					maxCells = indexCounts[k];
+					biome = biomePalette[k];
 				}
 			}
-			return predominantBiome;
+			return biome;
 		}
 
 		public void SetBiome(int x, int y, int z, BiomeID biome)
@@ -175,7 +178,16 @@ namespace WorldForge.Chunks
 			x &= 0xF;
 			y &= 0xF;
 			z &= 0xF;
-			biomes[x, y / 4, z] = biome;
+			var index = GetBiomePaletteIndex(biome);
+			if(index.HasValue)
+			{
+				biomes[x, y / 4, z] = index.Value;
+			}
+			else
+			{
+				biomePalette.Add(biome);
+				biomes[x, y / 4, z] = (byte)(biomePalette.Count - 1);
+			}
 		}
 
 		public void SetBiome3D4x4(int x, int y, int z, BiomeID biome)

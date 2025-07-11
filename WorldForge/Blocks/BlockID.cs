@@ -43,7 +43,7 @@ namespace WorldForge
 				{
 					string colorBlockID = id.Replace("*", Blocks.commonColors[i]);
 					var b = new BlockID(new NamespacedID(modNamespace, id), versionAdded.Value, substitute, numericId);
-					BlockList.allBlocks.Add(b.ID, b);
+					BlockList.Register(b);
 					blocks[i] = b;
 				}
 				return blocks;
@@ -51,7 +51,7 @@ namespace WorldForge
 			else
 			{
 				var b = new BlockID(new NamespacedID(modNamespace, id), versionAdded.Value, substitute, numericId);
-				BlockList.allBlocks.Add(b.ID, b);
+				BlockList.Register(b);
 				return new BlockID[] { b };
 			}
 		}

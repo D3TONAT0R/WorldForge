@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -21,7 +22,7 @@ namespace WorldForge
 			}
 		}
 
-		public static Dictionary<NamespacedID, BlockID> allBlocks;
+		public static ConcurrentDictionary<NamespacedID, BlockID> allBlocks;
 
 		public static Dictionary<NumericID, BlockID> blockIdByNumerics;
 		public static Dictionary<BlockID, string> preFlatteningIDs;
@@ -32,7 +33,7 @@ namespace WorldForge
 		public static void Initialize(string blockData, string remappingsData)
 		{
 			Logger.Verbose("Initializing block list ...");
-			allBlocks = new Dictionary<NamespacedID, BlockID>();
+			allBlocks = new ConcurrentDictionary<NamespacedID, BlockID>();
 			blockIdByNumerics = new Dictionary<NumericID, BlockID>();
 			preFlatteningIDs = new Dictionary<BlockID, string>();
 			oldRemappings = new Dictionary<NamespacedID, Remapping>();
@@ -206,6 +207,11 @@ namespace WorldForge
 				if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find block definition with numeric ID '{numeric}'.");
 				return null;
 			}
+		}
+
+		internal static void Register(BlockID b)
+		{
+			allBlocks.TryAdd(b.ID, b);
 		}
 	}
 }
