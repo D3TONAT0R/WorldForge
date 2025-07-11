@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace WorldForge.Biomes
 {
 	public static class BiomeIDs
 	{
-		private static List<BiomeID> biomeRegistry;
+		private static ConcurrentDictionary<int, BiomeID> biomeRegistry;
 
 		public static void Initialize(string biomeData)
 		{
 			Logger.Verbose("Initializing biome list ...");
-			biomeRegistry = new List<BiomeID>();
+			biomeRegistry = new ConcurrentDictionary<int, BiomeID>();
 			var csv = new CSV(biomeData);
 			foreach(var row in csv.data)
 			{
@@ -31,13 +32,13 @@ namespace WorldForge.Biomes
 					throw new ArgumentException($"Duplicate biome ID: '{id}'");
 				}
 				var biome = new BiomeID(id, numeric, preFlatteningId, pre118Id, substitute, addedVersion);
-				biomeRegistry.Add(biome);
+				Register(biome);
 			}
 		}
 
 		public static BiomeID Get(string id, bool throwError = true)
 		{
-			foreach(var biome in biomeRegistry)
+			foreach(var biome in biomeRegistry.Values)
 			{
 				if(biome.CheckID(id))
 				{
@@ -50,7 +51,7 @@ namespace WorldForge.Biomes
 
 		public static BiomeID GetFromNumeric(byte id, bool throwError = false)
 		{
-			foreach(var biome in biomeRegistry)
+			foreach(var biome in biomeRegistry.Values)
 			{
 				if(biome.numericId == id)
 				{
@@ -69,7 +70,7 @@ namespace WorldForge.Biomes
 
 		public static BiomeID GetOrCreate(string id)
 		{
-			foreach(var biome in biomeRegistry)
+			foreach(var biome in biomeRegistry.Values)
 			{
 				if(biome.CheckID(id))
 				{
@@ -81,8 +82,18 @@ namespace WorldForge.Biomes
 			{
 				Logger.Warning($"Unrecognized biome '{id}', adding to list.");
 			}
-			biomeRegistry.Add(newBiome);
+			Register(newBiome);
 			return newBiome;
+		}
+
+		private static void Register(BiomeID b)
+		{
+			biomeRegistry.AddOrUpdate(b.GetHashCode(), b, UpdateValue);
+		}
+
+		private static BiomeID UpdateValue(int hash, BiomeID b)
+		{
+			return b;
 		}
 	}
 }
