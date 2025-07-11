@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using WorldForge.Biomes;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
@@ -109,7 +110,7 @@ namespace WorldForge.Regions
 		public void LoadAllChunks()
 		{
 			LoadIfRequired();
-			for(int x = 0; x < 32; x++)
+			Parallel.For(0, 32, WorldForgeManager.ParallelOptions, x =>
 			{
 				for(int z = 0; z < 32; z++)
 				{
@@ -119,7 +120,7 @@ namespace WorldForge.Regions
 						c.Load();
 					}
 				}
-			}
+			});
 		}
 
 		#endregion
