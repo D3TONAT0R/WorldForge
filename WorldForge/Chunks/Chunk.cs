@@ -110,7 +110,23 @@ namespace WorldForge.Chunks
 
 			InitializeNewChunk();
 
-			var chunkSerializer = ChunkSerializer.GetForVersion(ChunkGameVersion ?? GameVersion.FirstVersion);
+			ChunkSerializer chunkSerializer;
+			GameVersion? versionHint = ChunkGameVersion ?? ParentRegion?.versionHint ?? ParentWorld?.GameVersion;
+			if(versionHint.HasValue) 
+			{
+				chunkSerializer = ChunkSerializer.GetForVersion(versionHint.Value);
+			}
+			else
+			{
+				if(SourceData.main.dataVersion.HasValue)
+				{
+					chunkSerializer = ChunkSerializer.GetForDataVersion(SourceData.main.dataVersion.Value);
+				}
+				else
+				{
+					chunkSerializer = ChunkSerializer.GetForChunkNBT(SourceData.main.contents);
+				}
+			}
 			Logger.Verbose($"Loading chunk {WorldSpaceCoord} using serializer {chunkSerializer.GetType().Name} (chunk game version: {ChunkGameVersion})");
 			chunkSerializer.ReadChunkNBT(this, SourceData, ChunkGameVersion, exceptionHandling);
 			SourceData = null;

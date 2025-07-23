@@ -63,10 +63,36 @@ namespace WorldForge.IO
 			}
 		}
 
-		public static ChunkSerializer CreateForDataVersion(NBTFile nbt)
+		/// <summary>
+		/// Attempts to guess the correct version from the given NBT data.
+		/// In case the chunk NBT does not find a DataVersion tag (introduced in Release 1.9),
+		/// it will instead try to guess the version from the chunk data itself.
+		/// </summary>
+		public static ChunkSerializer GetForChunkNBT(NBTCompound chunkNBT)
 		{
-			var gv = GameVersion.FromDataVersion(nbt.dataVersion);
-			if(!gv.HasValue) throw new ArgumentException("Unable to determine game version from NBT.");
+			if(chunkNBT.TryGet<int>("DataVersion", out var dv))
+			{
+				return GetForDataVersion(dv);
+			}
+			var root = chunkNBT;
+			if(root.TryGet("Level", out NBTCompound level))
+			{
+				root = level;
+			}
+			//TODO: version determination algorithm
+			return GetOrCreateSerializer<ChunkSerializerAnvil>(GameVersion.FirstAnvilVersion);
+		}
+
+		public static ChunkSerializer GetForDataVersion(NBTFile nbt)
+		{
+			if(nbt.dataVersion == null) throw new ArgumentException("Unable to determine game version from NBT.");
+			return GetForDataVersion(nbt.dataVersion.Value);
+		}
+
+		public static ChunkSerializer GetForDataVersion(int dataVersion)
+		{
+			var gv = GameVersion.FromDataVersion(dataVersion);
+			if(!gv.HasValue) throw new ArgumentException("Unable to determine game version from data version.");
 			return GetForVersion(gv.Value);
 		}
 
