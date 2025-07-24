@@ -124,7 +124,13 @@ namespace WorldForge.Chunks
 				}
 				else
 				{
-					chunkSerializer = ChunkSerializer.GetForChunkNBT(SourceData.main.contents);
+					//TODO: how to load alpha chunks?
+					var mcr = ParentRegion?.sourceFilePaths.mainPath.ToLower().EndsWith(".mcr") ?? false;
+					chunkSerializer = mcr ?
+						//Use the beta serializer for MCR files
+						ChunkSerializer.GetOrCreateSerializer<ChunkSerializerBeta>(GameVersion.FirstMCRVersion) :
+						//Assume anvil format
+						ChunkSerializer.GetForChunkNBT(SourceData.main.contents);
 				}
 			}
 			Logger.Verbose($"Loading chunk {WorldSpaceCoord} using serializer {chunkSerializer.GetType().Name} (chunk game version: {ChunkGameVersion})");
