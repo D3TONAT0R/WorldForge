@@ -10,22 +10,22 @@ namespace WorldForge
 	{
 		public static Dictionary<string, string> legacyFormattingColorCodes = new Dictionary<string, string>()
 		{
-			{"black", "§0" },
-			{"dark_blue", "§1" },
-			{"dark_green", "§2" },
-			{"dark_aqua", "§3" },
-			{"dark_red", "§4" },
-			{"dark_purple", "§5" },
-			{"gold", "§6" },
-			{"gray", "§7" },
-			{"dark_gray", "§8" },
-			{"blue", "§9" },
-			{"green", "§a" },
-			{"aqua", "§b" },
-			{"red", "§c" },
-			{"light_purple", "§d" },
-			{"yellow", "§e" },
-			{"white", "§f" }
+			{ "black", "§0" },
+			{ "dark_blue", "§1" },
+			{ "dark_green", "§2" },
+			{ "dark_aqua", "§3" },
+			{ "dark_red", "§4" },
+			{ "dark_purple", "§5" },
+			{ "gold", "§6" },
+			{ "gray", "§7" },
+			{ "dark_gray", "§8" },
+			{ "blue", "§9" },
+			{ "green", "§a" },
+			{ "aqua", "§b" },
+			{ "red", "§c" },
+			{ "light_purple", "§d" },
+			{ "yellow", "§e" },
+			{ "white", "§f" }
 		};
 		public const string legacyObfuscationFormatKey = "§k";
 		public const string legacyBoldFormatKey = "§l";
@@ -38,7 +38,6 @@ namespace WorldForge
 
 		private JSONTextComponent()
 		{
-
 		}
 
 		public JSONTextComponent(string text)
@@ -53,7 +52,8 @@ namespace WorldForge
 		{
 			data = new List<Dictionary<string, object>>
 			{
-				new Dictionary<string, object>() {
+				new Dictionary<string, object>()
+				{
 					{ "text", text },
 					{ "color", color }
 				}
@@ -70,22 +70,30 @@ namespace WorldForge
 
 		public static JSONTextComponent ParseSingle(string json)
 		{
-			if(json.StartsWith("\""))
+			try
 			{
-				return new JSONTextComponent(json.Substring(1, json.Length - 2));
-			}
-			return new JSONTextComponent
-			{
-				data = new List<Dictionary<string, object>>()
+				if (json.StartsWith("\""))
 				{
-					JsonConvert.DeserializeObject<Dictionary<string, object>>(json)
+					return new JSONTextComponent(json.Substring(1, json.Length - 2));
 				}
-			};
+				return new JSONTextComponent
+				{
+					data = new List<Dictionary<string, object>>()
+					{
+						JsonConvert.DeserializeObject<Dictionary<string, object>>(json)
+					}
+				};
+			}
+			catch (JsonReaderException e)
+			{
+				Logger.Error("Failed to parse JSON text component '{json}':\n " + e.Message);
+				return new JSONTextComponent("");
+			}
 		}
 
 		public string ToJSON()
 		{
-			if(data.Count == 1 && data[0].Count == 1 && data[0].ContainsKey("text"))
+			if (data.Count == 1 && data[0].Count == 1 && data[0].ContainsKey("text"))
 			{
 				return $"\"{data[0]["text"]}\"";
 			}
@@ -106,9 +114,8 @@ namespace WorldForge
 			bool strikethrough = false;
 			bool obfuscated = false;
 			List<string> formatKeyQueue = new List<string>();
-			foreach(var d in data)
+			foreach (var d in data)
 			{
-
 				bool reset = false;
 				reset |= ApplyFormatting(formatKeyQueue, d, "bold", legacyBoldFormatKey, ref bold);
 				reset |= ApplyFormatting(formatKeyQueue, d, "italic", legacyItalichKey, ref italic);
@@ -116,16 +123,16 @@ namespace WorldForge
 				reset |= ApplyFormatting(formatKeyQueue, d, "strikethrough", legacyStrikethroughKey, ref strikethrough);
 				reset |= ApplyFormatting(formatKeyQueue, d, "obfuscated", legacyObfuscationFormatKey, ref obfuscated);
 
-				if(reset)
+				if (reset)
 				{
 					text.Append(legacyResetKey);
 				}
 
 				string newColorKey = null;
-				if(d.TryGetValue("color", out var obj))
+				if (d.TryGetValue("color", out var obj))
 				{
 					var color = obj as string;
-					if(!color.StartsWith("#") && legacyFormattingColorCodes.TryGetValue(color, out string key))
+					if (!color.StartsWith("#") && legacyFormattingColorCodes.TryGetValue(color, out string key))
 					{
 						newColorKey = key;
 					}
@@ -135,13 +142,13 @@ namespace WorldForge
 					newColorKey = lastColorKey;
 				}
 
-				if(newColorKey != null)
+				if (newColorKey != null)
 				{
 					text.Append(newColorKey);
 				}
 				lastColorKey = newColorKey;
 
-				if(d.TryGetValue("text", out object s))
+				if (d.TryGetValue("text", out object s))
 				{
 					text.Append(s.ToString());
 				}
@@ -152,14 +159,14 @@ namespace WorldForge
 		private bool ApplyFormatting(List<string> queue, Dictionary<string, object> d, string key, string legacyFormatKey, ref bool currentState)
 		{
 			bool reset = false;
-			if(d.TryGetValue(key, out var obj))
+			if (d.TryGetValue(key, out var obj))
 			{
 				bool b;
-				if(obj is bool b1) b = b1;
-				else if(obj is string s) b = s == "true";
+				if (obj is bool b1) b = b1;
+				else if (obj is string s) b = s == "true";
 				else b = false;
-				if(b) queue.Add(legacyFormatKey);
-				else if(currentState) reset = true;
+				if (b) queue.Add(legacyFormatKey);
+				else if (currentState) reset = true;
 				currentState = b;
 			}
 			return reset;
@@ -177,9 +184,10 @@ namespace WorldForge
 			{
 				data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
 			}
-			catch(JsonSerializationException)
+			catch (JsonSerializationException)
 			{
-				data = new List<Dictionary<string, object>>() {
+				data = new List<Dictionary<string, object>>()
+				{
 					JsonConvert.DeserializeObject<Dictionary<string, object>>(text)
 				};
 			}

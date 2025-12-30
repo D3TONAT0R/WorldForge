@@ -43,7 +43,7 @@ namespace WorldForge
 			InitializeHash();
 		}
 
-		public BlockState(NBTCompound paletteNBT) : this(BlockList.Find(paletteNBT.Get<string>("Name"), true))
+		public BlockState(NBTCompound paletteNBT) : this(BlockList.Find(paletteNBT.Get<string>("Name"), false))
 		{
 			paletteNBT.TryGet("Properties", out properties);
 			InitializeHash();

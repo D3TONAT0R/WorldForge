@@ -138,7 +138,10 @@ namespace WorldForge
 				else
 				{
 					if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with id '{id}'.");
-					return null;
+					//Future vanilla block, add it as a new block.
+					Logger.Warning("Future block ID encountered: " + id);
+					var block = BlockID.RegisterNewVanillaBlock(id.id, GameVersion.FirstVersion)[0];
+					return block;
 				}
 			}
 			else
