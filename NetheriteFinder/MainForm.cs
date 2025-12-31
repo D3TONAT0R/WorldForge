@@ -27,9 +27,21 @@ namespace NetheriteFinder
 		private float playerYaw;
 		private List<BlockCoord> previousPlayerPositions = new List<BlockCoord>();
 
-		private int yMin = 8;
-		private int yMax = 18;
-		private int zoom = 5;
+		private int YMin
+		{
+			get => (int)yMinControl.Value;
+			set => yMinControl.Value = value;
+		}
+		private int YMax
+		{
+			get => (int)yMaxControl.Value;
+			set => yMaxControl.Value = value;
+		}
+		private int Zoom
+		{
+			get => (int)zoomControl.Value;
+			set => zoomControl.Value = value;
+		}
 
 		public MainForm()
 		{
@@ -124,7 +136,7 @@ namespace NetheriteFinder
 			{
 				foreach (var vein in report.veins)
 				{
-					if(vein.pos.y < yMin || vein.pos.y > yMax)
+					if(vein.pos.y < YMin || vein.pos.y > YMax)
 					{
 						continue;
 					}
@@ -159,8 +171,8 @@ namespace NetheriteFinder
 		{
 			x = pos.x - playerPos.x;
 			y = pos.z - playerPos.z;
-			x *= zoom;
-			y *= zoom;
+			x *= Zoom;
+			y *= Zoom;
 			x += rect.Width * 0.5f;
 			y += rect.Height * 0.5f;
 		}
@@ -233,19 +245,19 @@ namespace NetheriteFinder
 
 		private void YMin_ValueChanged(object sender, EventArgs e)
 		{
-			yMin = (int)yMinControl.Value;
+			YMin = (int)yMinControl.Value;
 			canvas.Invalidate();
 		}
 
 		private void YMax_ValueChanged(object sender, EventArgs e)
 		{
-			yMax = (int)yMaxControl.Value;
+			YMax = (int)yMaxControl.Value;
 			canvas.Invalidate();
 		}
 
 		private void Zoom_ValueChanged(object sender, EventArgs e)
 		{
-			zoom = (int)zoomControl.Value;
+			Zoom = (int)zoomControl.Value;
 			canvas.Invalidate();
 		}
 	}
