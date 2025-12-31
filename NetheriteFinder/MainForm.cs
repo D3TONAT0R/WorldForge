@@ -183,7 +183,8 @@ namespace NetheriteFinder
 						//Outside of view
 						continue;
 					}
-					g.FillEllipse(Brushes.DarkOrange, vx - 6, vz - 6, 12, 12);
+					int r = 4 + Math.Min(vein.count * 2, 5);
+					g.FillEllipse(Brushes.DarkOrange, vx - r, vz - r, r + r, r + r);
 					g.DrawString(vein.count.ToString(), textFont, Brushes.Black, vx, vz, centerFormat);
 					PrintCoordinates(e, vein.pos, 8, 8);
 				}
@@ -221,7 +222,6 @@ namespace NetheriteFinder
 		}
 
 		#region Clipboard
-
 		private const int WM_CLIPBOARDUPDATE = 0x031D;
 
 		[DllImport("user32.dll", SetLastError = true)]
@@ -273,10 +273,8 @@ namespace NetheriteFinder
 						}
 					}
 				}
-				// TODO: use text (update UI, parse, etc.)
 			}
 		}
-
 		#endregion
 
 		private void zoomIn_Click(object sender, EventArgs e)
@@ -287,6 +285,11 @@ namespace NetheriteFinder
 		private void zoomOut_Click(object sender, EventArgs e)
 		{
 			Zoom = Math.Max(Zoom - 1, (int)zoomControl.Minimum);
+		}
+
+		private void FocusStrip(object sender, EventArgs e)
+		{
+			toolStrip1.Focus();
 		}
 	}
 }
