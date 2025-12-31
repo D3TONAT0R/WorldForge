@@ -22,6 +22,7 @@ namespace WorldForge.Coordinates
 
 		public BlockCoord LocalSectionCoords => new BlockCoord(x & 15, y & 15, z & 15);
 
+		public bool IsZero => x == 0 && y == 0 && z == 0;
 		public BlockCoord Below => new BlockCoord(x, y - 1, z);
 		public BlockCoord Above => new BlockCoord(x, y + 1, z);
 		public BlockCoord West => new BlockCoord(x - 1, y, z);
