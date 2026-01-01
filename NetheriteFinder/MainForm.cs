@@ -68,9 +68,14 @@ namespace NetheriteFinder
 			set => zoomControl.Value = value;
 		}
 
+		private SearchProfile ActiveSearchProfile => profileSelector.SelectedItem as SearchProfile;
+
 		public MainForm()
 		{
 			InitializeComponent();
+			profileSelector.Items.Add(SearchProfile.Netherite);
+			profileSelector.Items.Add(SearchProfile.Diamond);
+			profileSelector.SelectedIndex = 0;
 		}
 
 		private void OnOpenClick(object sender, EventArgs e)
@@ -87,9 +92,7 @@ namespace NetheriteFinder
 				if(dialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
 				{
 					regionDirectory = dialog.SelectedPath;
-					report = Report.Create(dialog.SelectedPath, PlayerPos.x, PlayerPos.z, 256);
-					report.SortVeinsByDistance(PlayerPos.x, PlayerPos.z);
-					Invalidate(true);
+					GenerateReport();
 				}
 			}
 		}
@@ -98,10 +101,15 @@ namespace NetheriteFinder
 		{
 			if(regionDirectory != null && PlayerPos.IsZero == false)
 			{
-				report = Report.Create(regionDirectory, PlayerPos.x, PlayerPos.z, 256);
-				report.SortVeinsByDistance(PlayerPos.x, PlayerPos.z);
-				Invalidate(true);
+				GenerateReport();
 			}
+		}
+
+		private void GenerateReport()
+		{
+			report = Report.Create(regionDirectory, PlayerPos.x, PlayerPos.z, 256, ActiveSearchProfile);
+			report.SortVeinsByDistance(PlayerPos.x, PlayerPos.z);
+			Invalidate(true);
 		}
 
 		private void OnExitDialog(object sender, EventArgs e)
@@ -120,6 +128,7 @@ namespace NetheriteFinder
 				}
 			}
 			PlayerPos = new BlockCoord((int)x, (int)y, (int)z);
+			yaw = (yaw % 360f) % 360f;
 			PlayerYaw = yaw;
 			report?.SortVeinsByDistance(PlayerPos.x, PlayerPos.z);
 			Invalidate(true);
@@ -184,7 +193,7 @@ namespace NetheriteFinder
 						continue;
 					}
 					int r = 4 + Math.Min(vein.count * 2, 5);
-					g.FillEllipse(Brushes.DarkOrange, vx - r, vz - r, r + r, r + r);
+					g.FillEllipse(ActiveSearchProfile.veinBrush, vx - r, vz - r, r + r, r + r);
 					g.DrawString(vein.count.ToString(), textFont, Brushes.Black, vx, vz, centerFormat);
 					PrintCoordinates(e, vein.pos, 8, 8);
 				}
@@ -259,7 +268,7 @@ namespace NetheriteFinder
 			{
 				// /execute in minecraft:the_nether run tp @s 6.94 62.00 0.47 188.29 9.75
 				string text = Clipboard.GetText().ToLower();
-				const string prefix = "/execute in minecraft:the_nether run tp @s ";
+				string prefix = $"/execute in {ActiveSearchProfile.dimensionId} run tp @s ";
 				if(text.StartsWith(prefix))
 				{
 					var parts = text.Substring(prefix.Length).Split(' ');
@@ -290,6 +299,16 @@ namespace NetheriteFinder
 		private void FocusStrip(object sender, EventArgs e)
 		{
 			toolStrip1.Focus();
+		}
+
+		private void OnProfileChanged(object sender, EventArgs e)
+		{
+			if(report != null && !PlayerPos.IsZero)
+			{
+				GenerateReport();
+			}
+			YMin = ActiveSearchProfile.displayYMin;
+			YMax = ActiveSearchProfile.displayYMax;
 		}
 	}
 }

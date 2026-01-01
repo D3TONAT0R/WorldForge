@@ -6,30 +6,36 @@ namespace NetheriteFinder
 	public class Report
 	{
 		public List<Vein> veins;
+		public SearchProfile profile;
 
-		public static Report Create(string regionDirectory, int posX, int posZ, int searchRadius)
+		public static Report Create(string regionDirectory, int posX, int posZ, int searchRadius, SearchProfile profile)
 		{
 			var tempPath = CopyRegionsToTempFolder(regionDirectory);
 
 			var dim = Dimension.FromRegionFolder(null, tempPath, DimensionID.Unknown, GameVersion.Release_1(21, 3));
 			
 			List<BlockCoord> positions = new List<BlockCoord>();
-			var block = BlockList.Find("ancient_debris");
 			for(int x = posX - searchRadius; x <= posX + searchRadius; x++)
 			{
 				for(int z = posZ - searchRadius; z <= posZ + searchRadius; z++)
 				{
-					for(int y = 7; y < 20; y++)
+					for(int y = profile.searchYMin; y < profile.searchYMax; y++)
 					{
 						var bc = new BlockCoord(x, y, z);
-						if(dim.GetBlock(bc) == block)
+						var block = dim.GetBlock(bc);
+						foreach (var b in profile.blocks)
 						{
-							positions.Add(bc);
+							if(block == b) 
+							{
+								positions.Add(bc);
+								break;
+							}
 						}
 					}
 				}
 			}
 			var report = new Report();
+			report.profile = profile;
 			report.veins = ToVeins(positions, 5);
 
 			return report;

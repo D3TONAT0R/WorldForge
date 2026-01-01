@@ -50,7 +50,7 @@ namespace NetheriteFinder
 					radius = lastRadius;
 				}
 				lastRadius = radius;
-				var report = Report.Create(regionDir, px, pz, radius);
+				var report = Report.Create(regionDir, px, pz, radius, SearchProfile.Netherite);
 
 				//Remove veins that were already reported
 				var rm = report.veins.RemoveAll(v => reportedVeinHashes.Contains(v.GetHashCode()));
