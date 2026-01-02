@@ -172,9 +172,10 @@ namespace WorldForge.IO
 				{
 					for(int i = 0; i < tileEntList.Length; i++)
 					{
+						TileEntity te;
 						try
 						{
-							var te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
+							te = TileEntity.CreateFromNBT(tileEntList.Get<NBTCompound>(i), version, out var blockPos);
 							c.TileEntities.Add(blockPos, te);
 						}
 						catch(Exception e)

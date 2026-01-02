@@ -50,7 +50,7 @@ namespace WorldForge.NBT
 								//addMethod.Invoke(list, new object[] { item });
 								if(typeof(INBTConverter).IsAssignableFrom(elementType))
 								{
-									list.Add(Cast((NBTCompound)item, elementType));
+									list.Add(Cast(item, elementType));
 								}
 								else
 								{
@@ -165,11 +165,11 @@ namespace WorldForge.NBT
 			return list;
 		}
 
-		private static INBTConverter Cast(NBTCompound comp, Type type)
+		private static INBTConverter Cast(object data, Type type)
 		{
 			if(!typeof(INBTConverter).IsAssignableFrom(type)) throw new InvalidOperationException("Target type does not implement INBTConverter");
 			var instance = (INBTConverter)Activator.CreateInstance(type, true);
-			LoadFromNBT(comp, instance);
+			instance.FromNBT(data);
 			return instance;
 		}
 	}

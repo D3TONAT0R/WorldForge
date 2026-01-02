@@ -9,6 +9,9 @@ namespace WorldForge.TileEntities
 	{
 		public class Configuration : INBTConverter
 		{
+			//If this is set, the rest of the config is ignored
+			public string configurationID = null;
+			
 			[NBT("spawn_range")]
 			public int spawnRange = 4;
 			[NBT("total_mobs")]
@@ -30,12 +33,14 @@ namespace WorldForge.TileEntities
 
 			public void FromNBT(object nbtData)
 			{
-				NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
+				if(nbtData is string s) configurationID = s;
+				else NBTConverter.LoadFromNBT((NBTCompound)nbtData, this);
 			}
 
 			public object ToNBT(GameVersion version)
 			{
-				return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
+				if(!string.IsNullOrEmpty(configurationID)) return configurationID;
+				else return NBTConverter.WriteToNBT(this, new NBTCompound(), version);
 			}
 		}
 
