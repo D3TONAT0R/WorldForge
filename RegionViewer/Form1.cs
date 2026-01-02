@@ -101,7 +101,7 @@ public partial class Form1 : Form
 				{
 					var nbt = RegionDeserializer.LoadChunkDataAtIndex(region.sourceFilePaths.mainPath, hoveredChunk.LocalRegionPos.x + hoveredChunk.LocalRegionPos.z * 32);
 					var nbtViewer = new NBTViewer();
-					nbtViewer.DisplayContent(nbt);
+					nbtViewer.DisplayContent(nbt, $"Chunk {chunk.WorldSpaceCoord}");
 					nbtViewer.Show();
 				}
 			}
