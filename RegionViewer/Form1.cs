@@ -1,14 +1,18 @@
 using WorldForge;
+using WorldForge.Coordinates;
 using WorldForge.IO;
 
 namespace RegionViewer;
 
 public partial class Form1 : Form
 {
-	private Bitmap[,] chunkMaps = new Bitmap[32,32];
+	private Bitmap[,] chunkMaps = new Bitmap[32, 32];
 	private Random random = new Random();
 	private string fileName;
-	
+	private WorldForge.Regions.Region region;
+
+	private ChunkCoord hoveredChunk = new ChunkCoord(-1, -1);
+
 	public Form1()
 	{
 		WorldForgeManager.Initialize();
@@ -16,7 +20,7 @@ public partial class Form1 : Form
 		InitializeComponent();
 		//Get file name from command line args
 		string[] args = Environment.GetCommandLineArgs();
-		if (args.Length > 1)
+		if(args.Length > 1)
 		{
 			fileName = args[1];
 		}
@@ -25,7 +29,7 @@ public partial class Form1 : Form
 			//Open file dialog to select region file
 			OpenFileDialog openFileDialog = new OpenFileDialog();
 			openFileDialog.Filter = "Region Files (*.mca;*.mcr)|*.mca;*.mcr|All Files (*.*)|*.*";
-			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			if(openFileDialog.ShowDialog() == DialogResult.OK)
 			{
 				fileName = openFileDialog.FileName;
 			}
@@ -49,9 +53,9 @@ public partial class Form1 : Form
 			}
 		}
 		//Load region file
-		var region = RegionDeserializer.LoadMainRegion(fileName, null);
+		region = RegionDeserializer.LoadMainRegion(fileName, null);
 		//Change form title to file name
-		this.Text = $"Region Viewer - {Path.GetFileName(fileName)}";
+		Text = $"Region Viewer - {Path.GetFileName(fileName)}";
 		Parallel.For(0, 1024, i =>
 		{
 			int x = i % 32;
@@ -62,7 +66,7 @@ public partial class Form1 : Form
 				var map = (WinformsBitmap)SurfaceMapGenerator.GenerateSurfaceMap(chunk, HeightmapType.AllBlocks, true, WorldForge.Maps.MapColorPalette.Modern, true);
 				chunkMaps[x, z] = map.bitmap;
 				canvas.Invalidate();
-			}	
+			}
 		});
 	}
 
@@ -79,19 +83,51 @@ public partial class Form1 : Form
 				}
 			}
 		}
+		if(hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
+		{
+			e.Graphics.DrawRectangle(Pens.Red, hoveredChunk.x * 16, hoveredChunk.z * 16, 16, 16);
+		}
 	}
 
 	private void OnCanvasClick(object sender, EventArgs e)
 	{
-		if (((MouseEventArgs)e).Button == MouseButtons.Right)
+		var mouseEvent = (MouseEventArgs)e;
+		if(mouseEvent.Button == MouseButtons.Left)
+		{
+			if(hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
+			{
+				var chunk = region.GetChunk(hoveredChunk.x, hoveredChunk.z);
+				if(chunk != null)
+				{
+					var nbt = RegionDeserializer.LoadChunkDataAtIndex(region.sourceFilePaths.mainPath, hoveredChunk.LocalRegionPos.x + hoveredChunk.LocalRegionPos.z * 32);
+					var nbtViewer = new NBTViewer();
+					nbtViewer.DisplayContent(nbt);
+					nbtViewer.Show();
+				}
+			}
+		}
+		else
+		if(mouseEvent.Button == MouseButtons.Right)
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog();
 			openFileDialog.Filter = "Region Files (*.mca;*.mcr)|*.mca;*.mcr|All Files (*.*)|*.*";
-			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			if(openFileDialog.ShowDialog() == DialogResult.OK)
 			{
 				fileName = openFileDialog.FileName;
 				Load();
 			}
 		}
+	}
+
+	private void OnMouseMove(object sender, MouseEventArgs e)
+	{
+		hoveredChunk = new ChunkCoord(e.X / 16, e.Y / 16);
+		canvas.Invalidate();
+	}
+
+	private void OnMouseExit(object sender, EventArgs e)
+	{
+		hoveredChunk = new ChunkCoord(-1, -1);
+		canvas.Invalidate();
 	}
 }

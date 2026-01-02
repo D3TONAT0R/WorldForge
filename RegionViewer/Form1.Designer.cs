@@ -28,28 +28,31 @@ partial class Form1
 	/// </summary>
 	private void InitializeComponent()
 	{
-		canvas = new RegionViewer.CanvasPanel();
+		canvas = new CanvasPanel();
 		SuspendLayout();
 		// 
 		// canvas
 		// 
-		canvas.BackColor = System.Drawing.SystemColors.AppWorkspace;
-		canvas.Location = new System.Drawing.Point(0, 0);
-		canvas.Margin = new System.Windows.Forms.Padding(0);
+		canvas.BackColor = SystemColors.AppWorkspace;
+		canvas.Location = new Point(0, 0);
+		canvas.Margin = new Padding(0);
 		canvas.Name = "canvas";
-		canvas.Size = new System.Drawing.Size(512, 512);
+		canvas.Size = new Size(512, 512);
 		canvas.TabIndex = 0;
 		canvas.Click += OnCanvasClick;
 		canvas.Paint += Draw;
+		canvas.MouseLeave += OnMouseExit;
+		canvas.MouseMove += OnMouseMove;
 		// 
 		// Form1
 		// 
-		AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-		AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
 		AutoSize = true;
-		AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-		ClientSize = new System.Drawing.Size(609, 560);
+		AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		ClientSize = new Size(609, 560);
 		Controls.Add(canvas);
+		Name = "Form1";
 		Text = "Form1";
 		ResumeLayout(false);
 	}
