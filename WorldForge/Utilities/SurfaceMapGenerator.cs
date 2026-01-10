@@ -153,7 +153,9 @@ namespace WorldForge
 				{
 					depth++;
 					pos.y--;
-					b1 = c.GetBlock(pos).Block;
+					var b2 = c.GetBlock(pos);
+					if(b2 == null) break;
+					b1 = b2.Block;
 				}
 
 				if(depth < 8) shade = 1;
