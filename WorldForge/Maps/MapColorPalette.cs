@@ -124,7 +124,7 @@ namespace WorldForge.Maps
 							}
 							else
 							{
-								Logger.Warning($"Unknown block '{resolvedBlockId}' from '{b}'");
+								Logger.Warning($"Unknown block '{r}' from '{b}'");
 							}
 						}
 					}
@@ -171,7 +171,9 @@ namespace WorldForge.Maps
 			{
 				//Variant blocks including self
 				input = input.Substring(0, input.Length - 1);
-				blocks.Add(input);
+				var self = input;
+				if (self.EndsWith("brick")) self += "s";
+				blocks.Add(self);
 				blocks.Add(input + "_stairs");
 				blocks.Add(input + "_slab");
 				blocks.Add(input + "_wall");
@@ -211,8 +213,8 @@ namespace WorldForge.Maps
 				blocks.Add("waxed_" + input + "cut_copper_stairs");
 				blocks.Add(input + "cut_copper_slab");
 				blocks.Add("waxed_" + input + "cut_copper_slab");
-				blocks.Add(input + "trapdoor");
-				blocks.Add("waxed_" + input + "trapdoor");
+				blocks.Add(input + "copper_trapdoor");
+				blocks.Add("waxed_" + input + "copper_trapdoor");
 				blocks.Add(input + "copper_bulb");
 				blocks.Add("waxed_" + input + "copper_bulb");
 				blocks.Add(input + "chiseled_copper");
