@@ -2,3 +2,4 @@ sep=;
 Old ID;New ID;Version
 grass;short_grass;1.20.3
 dirt_path;grass_path;1.17
+wall_redstone_torch;redstone_wall_torch;1.13

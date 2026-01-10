@@ -84,6 +84,8 @@ namespace WorldForge.Maps
 
 		public Dictionary<NamespacedID, int> mappings = new Dictionary<NamespacedID, int>();
 		public ColorTone[] mapColorPalette;
+		
+		public List<NamespacedID> reportedMissingBlocks = new List<NamespacedID>();
 
 		public static void InitializePalettes()
 		{
@@ -231,6 +233,11 @@ namespace WorldForge.Maps
 			if(mappings.TryGetValue(id, out int index))
 			{
 				return index;
+			}
+			if (!reportedMissingBlocks.Contains(id))
+			{
+				reportedMissingBlocks.Add(id);
+				Logger.Warning("No color mapping for block: " + id);
 			}
 			return -1;
 		}
