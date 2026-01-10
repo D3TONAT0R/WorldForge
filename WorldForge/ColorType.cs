@@ -70,7 +70,7 @@ namespace WorldForge
 
 		public static ColorType ParseColorType(this string s)
 		{
-			switch(s)
+			switch(s.ToLower())
 			{
 				case "white": return ColorType.White;
 				case "orange": return ColorType.Orange;

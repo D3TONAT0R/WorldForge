@@ -61,7 +61,11 @@ namespace WorldForge.TileEntities
 			public void FromNBT(object nbtData)
 			{
 				var comp = (NBTCompound)nbtData;
-				if(comp.TryGet("color", out int c)) colorType = (ColorTypeInt)c;
+				if (comp.TryGet("color", out string cstr) && cstr.Length > 0)
+				{
+					if (char.IsDigit(cstr[0])) colorType = (ColorTypeInt)int.Parse(cstr);
+					else colorType = (ColorTypeInt)cstr.ParseColorType();
+				}
 				if(comp.Contains("pattern")) pattern = PatternResource.CreateFromNBT(comp.Get("pattern"));
 			}
 

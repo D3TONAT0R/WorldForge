@@ -44,7 +44,7 @@ namespace WorldForge.TileEntities
 				{
 					NameOnly = false;
 					nbt.TryGet("name", out name);
-					nbt.TryGet("id", out id);
+					if (nbt.Contains("id")) id = UUID.CreateFromNBT(nbt.Get("id"));
 					nbt.TryGet("properties", out properties);
 				}
 			}

@@ -31,17 +31,7 @@ namespace WorldForge
 		public NamespacedID(string fullId, bool checkValidity = true)
 		{
 			if(checkValidity && !CheckValidity(fullId, false, out char c)) throw new System.ArgumentException($"Illegal character '{c}' in id '{fullId}'.");
-			var split = fullId.Split(':');
-			if(split.Length == 1)
-			{
-				customNamespace = null;
-				id = split[0];
-			}
-			else
-			{
-				customNamespace = split[0] != "minecraft" ? split[0] : null;
-				id = split[1];
-			}
+			Split(fullId, out customNamespace, out id);
 			hash = 0;
 			hash = FullID.GetHashCode();
 		}
@@ -68,15 +58,23 @@ namespace WorldForge
 
 		public bool Matches(string id)
 		{
-			var split = id.Split(':');
-			if(split.Length == 1)
+			Split(id, out var idNs, out var idName);
+			return customNamespace == idNs && this.id == idName;
+		}
+
+		public static void Split(string id, out string customNamespace, out string shortId)
+		{
+			int colonIndex = id.IndexOf(':');
+			if (colonIndex >= 0)
 			{
-				return id == this.id;
+				customNamespace = id.Substring(0, colonIndex);
+				if(customNamespace == "minecraft") customNamespace = null;
+				shortId = id.Substring(colonIndex + 1);
 			}
 			else
 			{
-				if(split[0] == "minecraft") split[0] = null;
-				return customNamespace == split[0] && this.id == split[1];
+				customNamespace = null;
+				shortId = id;
 			}
 		}
 

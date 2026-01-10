@@ -7,11 +7,13 @@ namespace WorldForge.Biomes
 	public static class BiomeIDs
 	{
 		private static ConcurrentDictionary<int, BiomeID> biomeRegistry;
+		private static ConcurrentDictionary<byte, BiomeID> numericIdBiomeRegistry;
 
 		public static void Initialize(string biomeData)
 		{
 			Logger.Verbose("Initializing biome list ...");
 			biomeRegistry = new ConcurrentDictionary<int, BiomeID>();
+			numericIdBiomeRegistry = new ConcurrentDictionary<byte, BiomeID>();
 			var csv = new CSV(biomeData);
 			foreach(var row in csv.data)
 			{
@@ -51,12 +53,9 @@ namespace WorldForge.Biomes
 
 		public static BiomeID GetFromNumeric(byte id, bool throwError = false)
 		{
-			foreach(var biome in biomeRegistry.Values)
+			if (numericIdBiomeRegistry.TryGetValue(id, out var biome))
 			{
-				if(biome.numericId == id)
-				{
-					return biome;
-				}
+				return biome;
 			}
 			if(throwError) throw new ArgumentException($"Unrecognized biome numeric ID: '{id}'");
 			Logger.Warning($"Unrecognized biome numeric ID detected: {id}");
@@ -92,6 +91,7 @@ namespace WorldForge.Biomes
 		private static void Register(BiomeID b)
 		{
 			biomeRegistry.TryAdd(b.GetHashCode(), b);
+			if(b.numericId.HasValue) numericIdBiomeRegistry.TryAdd((byte)b.numericId, b);
 		}
 	}
 }

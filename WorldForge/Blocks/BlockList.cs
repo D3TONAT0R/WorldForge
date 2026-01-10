@@ -213,7 +213,12 @@ namespace WorldForge
 			else
 			{
 				if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find block definition with numeric ID '{numeric}'.");
-				return null;
+				var unknownID = new NamespacedID("unknown:block_" + numeric.id);
+				var unknownBlock = new BlockID(unknownID, GameVersion.FirstVersion, null, numeric);
+				blockIdByNumerics[numeric] = unknownBlock;
+				Logger.Warning("Unrecognized block numeric ID detected: " + numeric);
+				Register(unknownBlock);
+				return unknownBlock;
 			}
 		}
 

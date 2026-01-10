@@ -35,6 +35,13 @@ namespace WorldForge
 			i2 = (int)(leastSignificant >> 32);
 			i3 = (int)leastSignificant;
 		}
+		
+		public static UUID CreateFromNBT(object nbtData)
+		{
+			UUID uuid = new UUID();
+			uuid.FromNBT(nbtData);
+			return uuid;
+		}
 
 		private UUID()
 		{

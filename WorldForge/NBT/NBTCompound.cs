@@ -112,7 +112,9 @@ namespace WorldForge.NBT
 			var v = Get(key);
 			if(v is NBTList list && typeof(T) != typeof(NBTList))
 			{
-				if(typeof(T) == typeof(List<T>))
+				//Check if T is List<> or array
+				bool isList = typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>);
+				if(isList)
 				{
 					return (T)list.ToList(typeof(T).GetGenericArguments()[0]);
 				}

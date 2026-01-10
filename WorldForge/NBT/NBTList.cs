@@ -133,7 +133,7 @@ namespace WorldForge.NBT
 
 		public override string ToString()
 		{
-			return $"{ContainerType}({ContainerType})[{Length}]";
+			return $"{ContainerType}({ContentsType})[{Length}]";
 		}
 	}
 }

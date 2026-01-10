@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using System.Xml.Linq;
+using WorldForge.Entities;
 
 namespace WorldForge.NBT
 {
@@ -51,6 +52,10 @@ namespace WorldForge.NBT
 								if(typeof(INBTConverter).IsAssignableFrom(elementType))
 								{
 									list.Add(Cast(item, elementType));
+								}
+								else if (typeof(Entity).IsAssignableFrom(elementType))
+								{
+									list.Add(Entity.CreateFromNBT((NBTCompound)item));
 								}
 								else
 								{
