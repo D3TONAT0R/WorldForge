@@ -100,6 +100,7 @@ namespace WorldForge.Maps
 
 		internal MapColorPalette(string resourceName)
 		{
+			List<string> resolvedBlocks = new List<string>();
 			var text = WorldForgeManager.GetResourceAsText(resourceName);
 			var csv = new CSV(text);
 			mapColorPalette = new ColorTone[csv.data.Count];
@@ -109,23 +110,117 @@ namespace WorldForge.Maps
 				mapColorPalette[i] = new ColorTone(line[1], line[2]);
 				if(line.ColumnCount > 3)
 				{
-					var patterns = line[3].Trim().Split(',');
-					foreach(var p in patterns)
+					var blocks = line[3].Trim().Split(',');
+					foreach(var b in blocks)
 					{
-						if(string.IsNullOrWhiteSpace(p)) continue;
-						if(p.Contains("*"))
+						if(string.IsNullOrWhiteSpace(b)) continue;
+						HandleWildcards(b, resolvedBlocks);
+						foreach(var r in resolvedBlocks)
 						{
-							foreach(var b in BlockList.Search(p, false, true))
+							var resolvedBlockId = BlockList.Find(r, false, false);
+							if(resolvedBlockId != null)
 							{
-								mappings.Add(b.ID, i);
+								mappings.Add(resolvedBlockId.ID, i);
 							}
-						}
-						else
-						{
-							mappings.Add(BlockList.Find(p, true).ID, i);
+							else
+							{
+								Logger.Warning($"Unknown block '{resolvedBlockId}' from '{b}'");
+							}
 						}
 					}
 				}
+			}
+		}
+
+		private void HandleWildcards(string input, List<string> blocks)
+		{
+			blocks.Clear();
+			if (input.EndsWith("W"))
+			{
+				//Wood variant blocks excluding logs
+				input = input.Substring(0, input.Length - 1);
+				blocks.Add(input + "_planks");
+				blocks.Add("stripped_"+ input + "_log");
+				blocks.Add("stripped_"+ input + "_wood");
+				blocks.Add(input + "_sign");
+				blocks.Add(input + "_wall_sign");
+				blocks.Add(input + "_door");
+				blocks.Add(input + "_pressure_plate");
+				blocks.Add(input + "_fence");
+				blocks.Add(input + "_fence_gate");
+				blocks.Add(input + "_trapdoor");
+				blocks.Add(input + "_stairs");
+				blocks.Add(input + "_slab");
+			}
+			else if (input.EndsWith("B"))
+			{
+				//Colorful blocks
+				input = input.Substring(0, input.Length - 1);
+				blocks.Add(input + "_wool");
+				blocks.Add(input + "_carpet");
+				blocks.Add(input + "_shulker_box");
+				blocks.Add(input + "_bed");
+				blocks.Add(input + "_stained_glass");
+				blocks.Add(input + "_stained_glass_pane");
+				blocks.Add(input + "_glazed_terracotta");
+				blocks.Add(input + "_concrete");
+				blocks.Add(input + "_concrete_powder");
+				blocks.Add(input + "_candle");
+			}
+			else if (input.EndsWith("V"))
+			{
+				//Variant blocks including self
+				input = input.Substring(0, input.Length - 1);
+				blocks.Add(input);
+				blocks.Add(input + "_stairs");
+				blocks.Add(input + "_slab");
+				blocks.Add(input + "_wall");
+			}
+			else if (input.EndsWith("O"))
+			{
+				//Stone and ore variants
+				input = input.Substring(0, input.Length - 1);
+				blocks.Add(input);
+				blocks.Add(input + "_coal_ore");
+				blocks.Add(input + "_iron_ore");
+				blocks.Add(input + "_gold_ore");
+				blocks.Add(input + "_copper_ore");
+				blocks.Add(input + "_diamond_ore");
+				blocks.Add(input + "_emerald_ore");
+				blocks.Add(input + "_redstone_ore");
+				blocks.Add(input + "_lapis_ore");
+			}
+			else if (input.EndsWith("COPPER"))
+			{
+				//Copper variants
+				input = input.Substring(0, input.Length - 6);
+				if (input.Length == 0)
+				{
+					blocks.Add("copper_block");
+					blocks.Add("waxed_copper_block");
+				}
+				else
+				{
+					blocks.Add(input + "_copper");
+					blocks.Add("waxed_" + input + "_copper");
+				}
+				if (input.Length > 0) input += "_";
+				blocks.Add(input + "cut_copper");
+				blocks.Add("waxed_" + input + "cut_copper");
+				blocks.Add(input + "cut_copper_stairs");
+				blocks.Add("waxed_" + input + "cut_copper_stairs");
+				blocks.Add(input + "cut_copper_slab");
+				blocks.Add("waxed_" + input + "cut_copper_slab");
+				blocks.Add(input + "trapdoor");
+				blocks.Add("waxed_" + input + "trapdoor");
+				blocks.Add(input + "copper_bulb");
+				blocks.Add("waxed_" + input + "copper_bulb");
+				blocks.Add(input + "chiseled_copper");
+				blocks.Add("waxed_" + input + "chiseled_copper");
+			}
+			else
+			{
+				blocks.Add(input);
 			}
 		}
 

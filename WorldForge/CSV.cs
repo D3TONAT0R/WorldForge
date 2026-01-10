@@ -106,7 +106,7 @@ namespace WorldForge
 
 		public CSV(string[] lines)
 		{
-			char delimiter = ',';
+			char delimiter = ';';
 			int lineIndex = 0;
 			if(lines[0].StartsWith("sep="))
 			{

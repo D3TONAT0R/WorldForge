@@ -128,7 +128,7 @@ namespace WorldForge
 			return null;
 		}
 
-		public static BlockID Find(NamespacedID id, bool throwErrorIfNotFound = false)
+		public static BlockID Find(NamespacedID id, bool throwErrorIfNotFound = false, bool addFutureVanillaBlocks = true)
 		{
 			if(!id.HasCustomNamespace)
 			{
@@ -144,9 +144,16 @@ namespace WorldForge
 				{
 					if(throwErrorIfNotFound) throw new KeyNotFoundException($"Unable to find a block with id '{id}'.");
 					//Future vanilla block, add it as a new block.
-					Logger.Warning("Future block ID encountered: " + id);
-					var block = BlockID.RegisterNewVanillaBlock(id.id, GameVersion.FirstVersion)[0];
-					return block;
+					if (addFutureVanillaBlocks)
+					{
+						Logger.Warning("Future block ID encountered: " + id);
+						var block = BlockID.RegisterNewVanillaBlock(id.id, GameVersion.FirstVersion)[0];
+						return block;
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 			else
