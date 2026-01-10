@@ -48,15 +48,20 @@ namespace WorldForge
 				if(split[0].Length > 0)
 				{
 					var id = new NamespacedID(split[0]);
-					if(allBlocks.ContainsKey(id))
-					{
-						//TODO: how to handle multiple equal ids (such as different facing logs) ?
-						continue;
-					}
 					string props = split[1]; //TODO: introduce default properties?
 					NumericID? numeric = NumericID.TryParse(split[2]);
 					string preFlattening = split[3];
 					GameVersion version = split[4].Length > 1 ? GameVersion.Parse(split[4]) : GameVersion.FirstVersion;
+					
+					if(allBlocks.ContainsKey(id))
+					{
+						//TODO: how to handle multiple equal ids (such as different facing logs) ?
+						if (numeric.HasValue)
+						{
+							blockIdByNumerics[numeric.Value] = allBlocks[id];
+						}
+						continue;
+					}
 					var newBlocks = BlockID.RegisterNewVanillaBlock(id.id, version, null, numeric);
 					foreach(var newBlock in newBlocks)
 					{
