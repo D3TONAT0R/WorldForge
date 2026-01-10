@@ -6,7 +6,7 @@ namespace WorldForge.Items
 	public class ItemStack : INBTConverter
 	{
 		public Item item;
-		public sbyte count;
+		public byte count;
 
 		public bool IsNull => item == null || count <= 0;
 
@@ -16,18 +16,18 @@ namespace WorldForge.Items
 
 		}
 
-		public ItemStack(Item item, sbyte count)
+		public ItemStack(Item item, byte count)
 		{
 			this.item = item;
 			this.count = count;
 		}
 
-		public ItemStack(NamespacedID itemID, sbyte count) : this(new Item(itemID), count)
+		public ItemStack(NamespacedID itemID, byte count) : this(new Item(itemID), count)
 		{
 
 		}
 
-		public ItemStack(string itemID, sbyte count) : this(new Item(new NamespacedID(itemID)), count)
+		public ItemStack(string itemID, byte count) : this(new Item(new NamespacedID(itemID)), count)
 		{
 
 		}
@@ -46,10 +46,11 @@ namespace WorldForge.Items
 		public void FromNBT(object nbtData)
 		{
 			var nbt = (NBTCompound)nbtData;
+			if(nbt.ItemCount == 0) return;
 			item = new Item(nbt);
-			if(!nbt.TryGet<sbyte>("count", out count))
+			if(!nbt.TryGet<byte>("count", out count))
 			{
-				count = nbt.Get<sbyte>("Count");
+				count = nbt.Get<byte>("Count");
 			}
 		}
 
