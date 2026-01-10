@@ -180,16 +180,49 @@ namespace WorldForge
 		public void FromNBT(object nbtData)
 		{
 			var text = (string)nbtData;
+			if (text.StartsWith("\"") && text.EndsWith("\""))
+			{
+				// Plain text component with quotes
+				data = new List<Dictionary<string, object>>
+				{
+					new Dictionary<string, object>()
+					{
+						{ "text", text.Substring(1, text.Length - 2) }
+					}
+				};
+				return;
+			}
+			if (!text.StartsWith("{") && !text.StartsWith("["))
+			{
+				// Plain text component
+				data = new List<Dictionary<string, object>>
+				{
+					new Dictionary<string, object>()
+					{
+						{ "text", text }
+					}
+				};
+				return;
+			}
 			try
 			{
-				data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
-			}
-			catch (JsonSerializationException)
-			{
-				data = new List<Dictionary<string, object>>()
+				if(text.StartsWith("["))
 				{
-					JsonConvert.DeserializeObject<Dictionary<string, object>>(text)
-				};
+					//Deserialize as array
+					data = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(text);
+				}
+				else
+				{
+					//Deserialize as single object
+					data = new List<Dictionary<string, object>>()
+					{
+						JsonConvert.DeserializeObject<Dictionary<string, object>>(text)
+					};
+				}
+			}
+			catch (JsonSerializationException e)
+			{
+				throw e;
 			}
 		}
 	}
