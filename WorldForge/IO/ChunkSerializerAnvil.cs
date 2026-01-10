@@ -234,7 +234,11 @@ namespace WorldForge.IO
 			{
 				for(int i = 0; i < 256; i++)
 				{
-					c.SetBiomeAt(i % 16, i / 16, BiomeIDs.GetFromNumeric(biomeData[i]));
+					var data = biomeData[i];
+					BiomeID biome;
+					if(data == 255) biome = BiomeID.Plains; //Undefined / unknown biome, map to Plains
+					else biome = BiomeIDs.GetFromNumeric(data);
+					c.SetBiomeAt(i % 16, i / 16, biome);
 				}
 			}
 		}

@@ -59,7 +59,10 @@ namespace WorldForge.Biomes
 				}
 			}
 			if(throwError) throw new ArgumentException($"Unrecognized biome numeric ID: '{id}'");
-			return null;
+			Logger.Warning($"Unrecognized biome numeric ID detected: {id}");
+			var unknownBiome = new BiomeID("unknown", id);
+			Register(unknownBiome);
+			return unknownBiome;
 		}
 
 		public static bool TryGet(string id, out BiomeID biome)

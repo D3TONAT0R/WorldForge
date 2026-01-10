@@ -69,6 +69,7 @@ namespace WorldForge.IO
 		public override void LoadBlocks(Chunk c, NBTCompound nbtCompound, GameVersion? version)
 		{
 			var sectionsList = GetSectionsList(nbtCompound);
+			if(sectionsList == null) return;
 			foreach(var o in sectionsList.listContent)
 			{
 				var section = new ChunkSection(c);
