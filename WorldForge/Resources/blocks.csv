@@ -345,7 +345,7 @@ acacia_stairs;STAIRS;163;acacia_stairs;1.7;oak_stairs;00
 dark_oak_stairs;STAIRS;164;dark_oak_stairs;1.7;oak_stairs;00
 slime_block;;165;slime;1.8;sponge;01
 barrier;;166;barrier;1.8;glass;00
-iron_trapdoor;TRAPDOOR;167;iron_trapdoor;1.8;trapdoor;00
+iron_trapdoor;TRAPDOOR;167;iron_trapdoor;1.8;oak_trapdoor;00
 prismarine;;168;prismarine;1.8;cobblestone;
 prismarine_bricks;;168:1;prismarine;1.8;stone_bricks;
 dark_prismarine;;168:2;prismarine;1.8;nether_bricks;
@@ -635,7 +635,7 @@ dark_prismarine_stairs;STAIRS;;;1.13;nether_brick_stairs;00
 shulker_box;SHULKER;;shulker_box;1.13;purple_shulker_box;01
 bamboo;;;;1.14;jungle_fence;00
 bamboo_sapling;;;;1.14;jungle_sapling;00
-cornflower;;;;1.14;alium;00
+cornflower;;;;1.14;allium;00
 wither_rose;;;;1.14;poppy;00
 lily_of_the_valley;;;;1.14;azure_bluet;00
 loom;;;;1.14;crafting_table;
@@ -793,7 +793,7 @@ chiseled_polished_blackstone;;;;1.16;chiseled_stone_bricks;
 cracked_nether_bricks;;;;1.16;nether_bricks;
 cracked_polished_blackstone_bricks;;;;1.16;cracked_stone_bricks;
 gilded_blackstone;;;;1.16;cobblestone;
-quartz_bricks;;;;1.16;nether_quartz_block;
+quartz_bricks;;;;1.16;quartz_block;
 soul_campfire;CAMPFIRE;;;1.16;campfire;A0
 chain;XYZ;;;1.16;iron_bars;00
 potted_crimson_fungus;;;;1.16;potted_red_mushroom;00
