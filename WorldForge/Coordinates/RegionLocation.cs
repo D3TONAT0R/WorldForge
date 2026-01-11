@@ -9,6 +9,11 @@ namespace WorldForge.Coordinates
 		public int x;
 		public int z;
 
+		public RegionLocation North => new RegionLocation(x, z - 1);
+		public RegionLocation South => new RegionLocation(x, z + 1);
+		public RegionLocation East => new RegionLocation(x + 1, z);
+		public RegionLocation West => new RegionLocation(x - 1, z);
+
 		public RegionLocation(int regionX, int regionZ)
 		{
 			x = regionX;
