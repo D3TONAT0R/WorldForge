@@ -62,9 +62,10 @@ public partial class Form1 : Form
         {
             int x = i % 32;
             int z = i / 32;
-            var chunk = region.GetChunk(x, z);
+            var chunk = region.GetChunk(x, z, ChunkLoadFlags.None);
             if(chunk != null)
             {
+                chunk.Load(ChunkLoadFlags.Blocks);
                 var map = (WinformsBitmap)SurfaceMapGenerator.GenerateSurfaceMap(chunk, HeightmapType.AllBlocks, true, WorldForge.Maps.MapColorPalette.Modern, true);
                 chunkMaps[x, z] = map.bitmap;
                 canvas.Invalidate();

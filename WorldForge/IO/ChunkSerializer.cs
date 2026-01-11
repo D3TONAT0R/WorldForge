@@ -105,39 +105,45 @@ namespace WorldForge.IO
 			TargetVersion = version;
 		}
 
-		public virtual void ReadChunkNBT(Chunk c, ChunkSourceData s, GameVersion? version, ExceptionHandling exceptionHandling)
+		public virtual void ReadChunkNBT(Chunk c, ChunkSourceData s, GameVersion? version, ChunkLoadFlags loadFlags, ExceptionHandling exceptionHandling)
 		{
-			ReadMainChunkNBT(c, GetRootCompound(s.main), version, exceptionHandling);
+			ReadMainChunkNBT(c, GetRootCompound(s.main), version, loadFlags, exceptionHandling);
 			if(s.entities != null)
 			{
-				ReadEntitiesChunkNBT(c, s.entities.contents, version);
+				ReadEntitiesChunkNBT(c, s.entities.contents, loadFlags, version);
 			}
 			if(s.poi != null)
 			{
-				ReadPOIChunkNBT(c, s.poi.contents, version);
+				ReadPOIChunkNBT(c, s.poi.contents, loadFlags, version);
 			}
+			c.LoadFlags = loadFlags;
 		}
 
-		public virtual void ReadMainChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version, ExceptionHandling exceptionHandling)
+		public virtual void ReadMainChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version, ChunkLoadFlags loadFlags,
+			ExceptionHandling exceptionHandling)
 		{
 			LoadCommonData(c, nbt, version);
-			LoadBlocks(c, nbt, version);
-			LoadTileEntities(c, nbt, version, exceptionHandling);
-			LoadTileTicks(c, nbt, version);
-			LoadBiomes(c, nbt, version);
-			LoadEntities(c, nbt, c.ParentRegion, version);
+			if(loadFlags.HasFlag(ChunkLoadFlags.Blocks))
+			{
+				LoadBlocks(c, nbt, version);
+				LoadTileTicks(c, nbt, version);
+			}
+			if(loadFlags.HasFlag(ChunkLoadFlags.TileEntities)) LoadTileEntities(c, nbt, version, exceptionHandling);
+			if(loadFlags.HasFlag(ChunkLoadFlags.Biomes)) LoadBiomes(c, nbt, version);
+			if(loadFlags.HasFlag(ChunkLoadFlags.Entities)) LoadEntities(c, nbt, c.ParentRegion, version);
 			PostLoad(c, nbt, version);
-			c.RecalculateSectionRange();
+			if(loadFlags.HasFlag(ChunkLoadFlags.Blocks)) c.RecalculateSectionRange();
 		}
 
-		public virtual void ReadEntitiesChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		public virtual void ReadEntitiesChunkNBT(Chunk c, NBTCompound nbt, ChunkLoadFlags loadFlags,
+			GameVersion? version)
 		{
-			LoadEntities(c, nbt, c.ParentRegion, version);
+			if(loadFlags.HasFlag(ChunkLoadFlags.Entities)) LoadEntities(c, nbt, c.ParentRegion, version);
 		}
 
-		public virtual void ReadPOIChunkNBT(Chunk c, NBTCompound nbt, GameVersion? version)
+		public virtual void ReadPOIChunkNBT(Chunk c, NBTCompound nbt, ChunkLoadFlags loadFlags, GameVersion? version)
 		{
-			LoadPOIs(c, nbt, version);
+			if(loadFlags.HasFlag(ChunkLoadFlags.POI)) LoadPOIs(c, nbt, version);
 		}
 
 		public virtual NBTCompound GetRootCompound(NBTFile chunkNBTData) => chunkNBTData.contents.GetAsCompound("Level");

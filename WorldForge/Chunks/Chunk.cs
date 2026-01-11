@@ -53,6 +53,7 @@ namespace WorldForge.Chunks
 		public bool IsLoaded => Sections != null;
 		public bool HasTerrain => Status >= ChunkStatus.surface;
 		public bool HasFullyGeneratedTerrain => Status >= ChunkStatus.light;
+		public ChunkLoadFlags LoadFlags { get; set; }
 
 		#region Creation methods
 
@@ -63,14 +64,15 @@ namespace WorldForge.Chunks
 			return c;
 		}
 
-		public static Chunk CreateFromNBT(Region region, ChunkCoord regionSpacePos, ChunkSourceData data, GameVersion? versionHint = null, bool loadContent = false)
+		public static Chunk CreateFromNBT(Region region, ChunkCoord regionSpacePos, ChunkSourceData data,
+			GameVersion? versionHint = null, bool loadContent = false, ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
 		{
 			var c = new Chunk(region, regionSpacePos)
 			{
 				SourceData = data,
 				ChunkGameVersion = versionHint
 			};
-			if(loadContent) c.Load();
+			if(loadContent) c.Load(loadFlags);
 			return c;
 		}
 
@@ -92,7 +94,7 @@ namespace WorldForge.Chunks
 		/// <summary>
 		/// Loads the chunk from the region file
 		/// </summary>
-		public void Load(ExceptionHandling exceptionHandling = ExceptionHandling.Throw)
+		public void Load(ChunkLoadFlags loadFlags = ChunkLoadFlags.All, ExceptionHandling exceptionHandling = ExceptionHandling.Throw)
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
 
@@ -134,7 +136,7 @@ namespace WorldForge.Chunks
 				}
 			}
 			Logger.Verbose($"Loading chunk {WorldSpaceCoord} using serializer {chunkSerializer.GetType().Name} (chunk game version: {ChunkGameVersion})");
-			chunkSerializer.ReadChunkNBT(this, SourceData, ChunkGameVersion, exceptionHandling);
+			chunkSerializer.ReadChunkNBT(this, SourceData, ChunkGameVersion, loadFlags, exceptionHandling);
 			SourceData = null;
 		}
 

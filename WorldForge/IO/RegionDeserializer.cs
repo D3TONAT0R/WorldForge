@@ -100,20 +100,22 @@ namespace WorldForge.IO
 			return region;
 		}
 
-		public static Region LoadRegion(RegionFilePaths filePaths, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
+		public static Region LoadRegion(RegionFilePaths filePaths, Dimension parent,
+			GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false,
+			ChunkLoadFlags chunkLoadFlags = ChunkLoadFlags.All)
 		{
 			var r = PreloadRegion(filePaths, parent, worldSaveVersion);
-			LoadRegionContent(r, loadChunks, loadOrphanChunks);
+			LoadRegionContent(r, loadChunks, loadOrphanChunks, chunkLoadFlags);
 			return r;
 		}
 
-		public static Region LoadMainRegion(string file, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false)
+		public static Region LoadMainRegion(string file, Dimension parent, GameVersion? worldSaveVersion = null, bool loadChunks = false, bool loadOrphanChunks = false, ChunkLoadFlags chunkLoadFlags = ChunkLoadFlags.All)
 		{
 			var paths = new RegionFilePaths(file, null, null);
-			return LoadRegion(paths, parent, worldSaveVersion, loadChunks, loadOrphanChunks);
+			return LoadRegion(paths, parent, worldSaveVersion, loadChunks, loadOrphanChunks, chunkLoadFlags);
 		}
 
-		public static void LoadRegionContent(Region region, bool loadChunks = false, bool loadOrphanChunks = false)
+		public static void LoadRegionContent(Region region, bool loadChunks = false, bool loadOrphanChunks = false, ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
 		{
 			Logger.Verbose($"Loading region content ...");
 			RegionData main, entities, poi;
@@ -127,18 +129,18 @@ namespace WorldForge.IO
 			Logger.Verbose("Loading chunks ...");
 			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
-				LoadChunk(region, loadChunks, i, main, entities, poi);
+				LoadChunk(region, loadChunks, i, main, entities, poi, loadFlags);
 			});
 		}
 
-		private static void LoadChunk(Region region, bool loadChunks, int i, RegionData main, RegionData entities, RegionData poi)
+		private static void LoadChunk(Region region, bool loadChunks, int i, RegionData main, RegionData entities, RegionData poi, ChunkLoadFlags loadFlags)
 		{
 			if(main.compressedChunks[i] != null)
 			{
 				Stopwatch sw = Logger.Level == LogLevel.Verbose ? Stopwatch.StartNew() : null;
 				var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
 				var coord = new ChunkCoord(i % 32, i / 32);
-				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks);
+				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks, loadFlags);
 				if(sw != null)
 				{
 					sw.Stop();

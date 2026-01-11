@@ -93,21 +93,24 @@ namespace WorldForge.Regions
 			chunks = new Chunk[32, 32];
 		}
 
-		public void Load(bool loadChunks = false, bool loadOrphanChunks = false)
+		public void Load(bool loadChunks = false, bool loadOrphanChunks = false, ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
 		{
 			if(IsLoaded) throw new InvalidOperationException("Region is already loaded.");
-			RegionDeserializer.LoadRegionContent(this, loadChunks, loadOrphanChunks);
+			RegionDeserializer.LoadRegionContent(this, loadChunks, loadOrphanChunks, loadFlags);
 		}
 
-		private void LoadIfRequired()
+		private void LoadIfRequired(ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
 		{
-			if(!IsLoaded) Load();
+			if(!IsLoaded)
+			{
+				Load(loadFlags: loadFlags);
+			}
 		}
 
 		/// <summary>
 		/// Loads all chunks that were previously unloaded.
 		/// </summary>
-		public void LoadAllChunks()
+		public void LoadAllChunks(ChunkLoadFlags chunkLoadFlags = ChunkLoadFlags.All)
 		{
 			LoadIfRequired();
 			Parallel.For(0, 32, WorldForgeManager.ParallelOptions, x =>
@@ -117,7 +120,7 @@ namespace WorldForge.Regions
 					var c = chunks[x, z];
 					if(c != null && !c.IsLoaded)
 					{
-						c.Load();
+						c.Load(chunkLoadFlags);
 					}
 				}
 			});
@@ -150,9 +153,9 @@ namespace WorldForge.Regions
 			return chunk != null;
 		}
 
-		public Chunk GetChunk(int x, int z)
+		public Chunk GetChunk(int x, int z, ChunkLoadFlags flags = ChunkLoadFlags.All)
 		{
-			LoadIfRequired();
+			LoadIfRequired(flags);
 			return chunks[x, z];
 		}
 
