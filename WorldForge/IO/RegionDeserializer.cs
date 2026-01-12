@@ -12,7 +12,7 @@ namespace WorldForge.IO
 {
 	public static class RegionDeserializer
 	{
-		private class RegionData
+		public class RegionData
 		{
 			public class CompressedChunkData
 			{
@@ -78,13 +78,18 @@ namespace WorldForge.IO
 				Logger.Verbose("Finished reading region data from " + filepath);
 			}
 
-			public NBTFile GetFile(int i)
+			public NBTFile GetChunkNBT(int i)
 			{
 				if(compressedChunks[i] == null) return null;
 				using(var chunkStream = Compression.CreateZlibDecompressionStream(compressedChunks[i].compressedChunk))
 				{
 					return new NBTFile(chunkStream);
 				}
+			}
+			
+			public bool HasChunkAt(int i)
+			{
+				return compressedChunks[i] != null;
 			}
 		}
 
@@ -138,7 +143,7 @@ namespace WorldForge.IO
 			if(main.compressedChunks[i] != null)
 			{
 				Stopwatch sw = Logger.Level == LogLevel.Verbose ? Stopwatch.StartNew() : null;
-				var sources = new ChunkSourceData(main.GetFile(i), entities?.GetFile(i), poi?.GetFile(i));
+				var sources = new ChunkSourceData(main.GetChunkNBT(i), entities?.GetChunkNBT(i), poi?.GetChunkNBT(i));
 				var coord = new ChunkCoord(i % 32, i / 32);
 				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks, loadFlags);
 				if(sw != null)

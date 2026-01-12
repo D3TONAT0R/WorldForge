@@ -9,14 +9,19 @@
 
 		private void OnNBTViewerClick(object sender, EventArgs e)
 		{
-			Application.Run(new NBTViewer(null));
-			Close();
+			Show(new NBTViewer(null));
 		}
 
 		private void OnRegionViewerClick(object sender, EventArgs e)
 		{
-			Application.Run(new RegionViewer(null));
-			Close();
+			Show(new RegionViewer(null));
+		}
+
+		private void Show(Form form)
+		{
+			Hide();
+			form.Closed += (s, args) => Close(); 
+			form.Show();
 		}
 	}
 }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using WorldForge.IO;
 using WorldForge.NBT;
 
 namespace WorldForgeToolbox
@@ -32,11 +33,37 @@ namespace WorldForgeToolbox
 					return;
 				}
 			}
-			var nbt = new NBTFile(file);
-			DisplayContent(nbt, Path.GetFileName(file));
+			var extension = Path.GetExtension(file).ToLower();
+			if(extension == ".mca" || extension == ".mcr")
+			{
+				var nbt = new NBTCompound();
+				var region = RegionDeserializer.LoadMainRegion(file, null);
+				for(int z = 0; z < 32; z++)
+				{
+					for(int x = 0; x < 32; x++)
+					{
+						if(region.chunks[z, x] != null)
+						{
+							nbt.Add($"Chunk[{x},{z}]", region.chunks[z, x].SourceData.main.contents);
+						}
+					}
+				}
+				DisplayContent(nbt, Path.GetFileName(file));
+			}
+			else
+			{
+				var nbt = new NBTFile(file);
+				DisplayContent(nbt, Path.GetFileName(file));
+			}
 		}
 
 		public NBTViewer(NBTFile nbt, string title)
+		{
+			InitializeComponent();
+			DisplayContent(nbt, title);
+		}
+
+		public NBTViewer(NBTCompound nbt, string title)
 		{
 			InitializeComponent();
 			DisplayContent(nbt, title);
@@ -54,6 +81,17 @@ namespace WorldForgeToolbox
 			rootNode.ImageIndex = (int)NBTTag.TAG_Compound;
 			rootNode.SelectedImageIndex = rootNode.ImageIndex;
 			PopulateTreeNode(rootNode, nbt.contents);
+			treeView.Nodes.Add(rootNode);
+		}
+
+		public void DisplayContent(NBTCompound nbt, string title)
+		{
+			Text = title;
+			treeView.Nodes.Clear();
+			var rootNode = new TreeNode("Root");
+			rootNode.ImageIndex = (int)NBTTag.TAG_Compound;
+			rootNode.SelectedImageIndex = rootNode.ImageIndex;
+			PopulateTreeNode(rootNode, nbt);
 			treeView.Nodes.Add(rootNode);
 		}
 
