@@ -2,9 +2,9 @@ using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 
-namespace RegionViewer;
+namespace WorldForgeToolbox;
 
-public partial class Form1 : Form
+public partial class RegionViewer : Form
 {
     private Bitmap[,] chunkMaps = new Bitmap[32, 32];
     private Random random = new Random();
@@ -14,18 +14,11 @@ public partial class Form1 : Form
 
     private ChunkCoord hoveredChunk = new ChunkCoord(-1, -1);
 
-    public Form1()
+    public RegionViewer(string file)
     {
-        WorldForgeManager.Initialize();
-        Bitmaps.BitmapFactory = new WinformsBitmapFactory();
         InitializeComponent();
-        //Get file name from command line args
-        string[] args = Environment.GetCommandLineArgs();
-        if(args.Length > 1)
-        {
-            fileName = args[1];
-        }
-        else
+        fileName = file;
+        if(string.IsNullOrEmpty(fileName))
         {
             //Open file dialog to select region file
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -36,7 +29,7 @@ public partial class Form1 : Form
             }
             else
             {
-                Environment.Exit(0);
+                Close();
                 return;
             }
         }
@@ -107,8 +100,7 @@ public partial class Form1 : Form
                 if(chunk != null)
                 {
                     var nbt = RegionDeserializer.LoadChunkDataAtIndex(region.sourceFilePaths.mainPath, hoveredChunk.LocalRegionPos.x + hoveredChunk.LocalRegionPos.z * 32);
-                    var nbtViewer = new NBTViewer();
-                    nbtViewer.DisplayContent(nbt, $"Chunk {chunk.WorldSpaceCoord}");
+                    var nbtViewer = new NBTViewer(nbt, $"Chunk {chunk.WorldSpaceCoord}");
                     nbtViewer.Show();
                 }
             }

@@ -1,7 +1,7 @@
 ﻿using System.Drawing.Imaging;
 using WorldForge;
 
-namespace RegionViewer
+namespace WorldForgeToolbox
 {
 	public class WinformsBitmapFactory : IBitmapFactory
 	{

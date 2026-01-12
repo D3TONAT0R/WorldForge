@@ -1,4 +1,4 @@
-﻿namespace RegionViewer
+﻿namespace WorldForgeToolbox
 {
 	partial class NBTViewer
 	{

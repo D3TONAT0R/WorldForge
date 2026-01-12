@@ -1,6 +1,6 @@
-﻿namespace RegionViewer;
+﻿namespace WorldForgeToolbox;
 
-partial class Form1
+partial class RegionViewer
 {
 	/// <summary>
 	///  Required designer variable.
@@ -28,7 +28,7 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
-        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegionViewer));
         canvas = new CanvasPanel();
         toolStrip1 = new ToolStrip();
         openFile = new ToolStripButton();
@@ -126,7 +126,7 @@ partial class Form1
         ClientSize = new Size(609, 560);
         Controls.Add(toolStrip1);
         Controls.Add(canvas);
-        Name = "Form1";
+        Name = "RegionViewer";
         Text = "Form1";
         toolStrip1.ResumeLayout(false);
         toolStrip1.PerformLayout();
@@ -134,7 +134,7 @@ partial class Form1
         PerformLayout();
     }
 
-    private RegionViewer.CanvasPanel canvas;
+    private CanvasPanel canvas;
 
     #endregion
 

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace RegionViewer
+namespace WorldForgeToolbox
 {
 	[DesignerCategory("Custom")]
 	public class CanvasPanel : Panel

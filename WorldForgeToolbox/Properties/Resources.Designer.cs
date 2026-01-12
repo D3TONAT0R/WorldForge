@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RegionViewer.Properties {
+namespace WorldForgeToolbox.Properties {
     using System;
     
     

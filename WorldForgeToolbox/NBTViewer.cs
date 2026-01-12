@@ -10,13 +10,36 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using WorldForge.NBT;
 
-namespace RegionViewer
+namespace WorldForgeToolbox
 {
 	public partial class NBTViewer : Form
 	{
-		public NBTViewer()
+		public NBTViewer(string file)
 		{
 			InitializeComponent();
+			if(string.IsNullOrEmpty(file))
+			{
+				//Open file dialog to select region file
+				OpenFileDialog openFileDialog = new OpenFileDialog();
+				openFileDialog.Filter = "Region Files (*.mca;*.mcr)|*.mca;*.mcr|All Files (*.*)|*.*";
+				if(openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					file = openFileDialog.FileName;
+				}
+				else
+				{
+					Close();
+					return;
+				}
+			}
+			var nbt = new NBTFile(file);
+			DisplayContent(nbt, Path.GetFileName(file));
+		}
+
+		public NBTViewer(NBTFile nbt, string title)
+		{
+			InitializeComponent();
+			DisplayContent(nbt, title);
 		}
 
 		public void DisplayContent(NBTFile nbt, string title)
