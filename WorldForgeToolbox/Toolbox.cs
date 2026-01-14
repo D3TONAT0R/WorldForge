@@ -20,8 +20,13 @@
 		private void Show(Form form)
 		{
 			Hide();
-			form.Closed += (s, args) => Close(); 
+			form.Closed += (s, args) => Close();
 			form.Show();
+		}
+
+		private void OnWorldViewerClick(object sender, EventArgs e)
+		{
+			Show(new WorldViewer(null));
 		}
 	}
 }

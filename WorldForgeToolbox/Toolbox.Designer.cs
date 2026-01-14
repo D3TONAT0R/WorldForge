@@ -30,9 +30,10 @@ namespace WorldForgeToolbox
 		/// </summary>
 		private void InitializeComponent()
 		{
-			panel = new System.Windows.Forms.FlowLayoutPanel();
-			regionViewer = new System.Windows.Forms.Button();
-			nbtViewer = new System.Windows.Forms.Button();
+			panel = new FlowLayoutPanel();
+			regionViewer = new Button();
+			nbtViewer = new Button();
+			button1 = new Button();
 			panel.SuspendLayout();
 			SuspendLayout();
 			// 
@@ -40,19 +41,20 @@ namespace WorldForgeToolbox
 			// 
 			panel.Controls.Add(regionViewer);
 			panel.Controls.Add(nbtViewer);
-			panel.Dock = System.Windows.Forms.DockStyle.Fill;
-			panel.Location = new System.Drawing.Point(0, 0);
+			panel.Controls.Add(button1);
+			panel.Dock = DockStyle.Fill;
+			panel.Location = new Point(0, 0);
 			panel.Name = "panel";
-			panel.Size = new System.Drawing.Size(284, 261);
+			panel.Size = new Size(284, 261);
 			panel.TabIndex = 0;
 			// 
 			// regionViewer
 			// 
-			regionViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right));
+			regionViewer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			regionViewer.AutoSize = true;
-			regionViewer.Location = new System.Drawing.Point(3, 3);
+			regionViewer.Location = new Point(3, 3);
 			regionViewer.Name = "regionViewer";
-			regionViewer.Size = new System.Drawing.Size(200, 25);
+			regionViewer.Size = new Size(200, 25);
 			regionViewer.TabIndex = 1;
 			regionViewer.Text = "Region Viewer";
 			regionViewer.UseVisualStyleBackColor = true;
@@ -61,20 +63,32 @@ namespace WorldForgeToolbox
 			// nbtViewer
 			// 
 			nbtViewer.AutoSize = true;
-			nbtViewer.Location = new System.Drawing.Point(3, 34);
+			nbtViewer.Location = new Point(3, 34);
 			nbtViewer.Name = "nbtViewer";
-			nbtViewer.Size = new System.Drawing.Size(200, 25);
+			nbtViewer.Size = new Size(200, 25);
 			nbtViewer.TabIndex = 0;
 			nbtViewer.Text = "NBT Viewer";
 			nbtViewer.UseVisualStyleBackColor = true;
 			nbtViewer.Click += OnNBTViewerClick;
 			// 
+			// button1
+			// 
+			button1.AutoSize = true;
+			button1.Location = new Point(3, 65);
+			button1.Name = "button1";
+			button1.Size = new Size(200, 25);
+			button1.TabIndex = 2;
+			button1.Text = "World Viewer";
+			button1.UseVisualStyleBackColor = true;
+			button1.Click += OnWorldViewerClick;
+			// 
 			// Toolbox
 			// 
-			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			ClientSize = new System.Drawing.Size(284, 261);
+			AutoScaleDimensions = new SizeF(7F, 15F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(284, 261);
 			Controls.Add(panel);
+			Name = "Toolbox";
 			Text = "Toolbox";
 			panel.ResumeLayout(false);
 			panel.PerformLayout();
@@ -86,5 +100,7 @@ namespace WorldForgeToolbox
 		private System.Windows.Forms.Button regionViewer;
 
 		#endregion
+
+		private Button button1;
 	}
 }

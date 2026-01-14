@@ -110,6 +110,17 @@ namespace WorldForge
 			return bmp;
 		}
 
+		public static BitmapColor GetSurfaceMapColor(Chunk c, int x, int z, HeightmapType surfaceType, MapColorPalette colorPalette)
+		{
+			var y = c.GetHighestBlock(x, z, surfaceType);
+			if(y < 0) return new BitmapColor(0, 0, 0, 0);
+			var block = c.GetBlock(new BlockCoord(x, y, z))?.Block;
+			//Check for snow above the block
+			var aboveBlock = c.GetBlock((x, y + 1, z))?.Block;
+			if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
+			return MapColorPalette.Modern.GetColor(block, 0);
+		}
+
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)
 		{
@@ -167,13 +178,12 @@ namespace WorldForge
 					if((x & 1) == (z & 1)) shade--;
 				}
 			}
-			else if(z - 1 >= 0)
+			else if(z - 1 >= 0 && heightmap != null)
 			{
 				var above = heightmap[x, z - 1];
 				if(above > y) shade = -1;
 				else if(above < y) shade = 1;
 			}
-
 			return shade;
 		}
 	}

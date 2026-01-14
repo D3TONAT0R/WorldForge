@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using WorldForge.Biomes;
+using WorldForge.Coordinates;
 using WorldForge.NBT;
 
 namespace WorldForge
@@ -36,6 +37,17 @@ namespace WorldForge
 			/// </summary>
 			[NBT("SpawnAngle", "1.16")]
 			public float spawnAngle = 0f;
+
+			public BlockCoord Position
+			{
+				get => new BlockCoord(spawnX, spawnY, spawnZ);
+				set
+				{
+					spawnX = value.x;
+					spawnY = value.y;
+					spawnZ = value.z;
+				}
+			}
 
 			public Spawnpoint()
 			{
