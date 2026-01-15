@@ -141,6 +141,7 @@ namespace WorldForgeToolbox
 
 		private void RenderRegionMap(WorldForge.Regions.Region region, IBitmap bitmap)
 		{
+			region.Load(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
 			for(int x = 0; x < 64; x++)
 			{
 				for(int z = 0; z < 64; z++)
