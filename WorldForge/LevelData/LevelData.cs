@@ -405,7 +405,7 @@ namespace WorldForge
 			/// The display name of the bossbar as a JSON text component.
 			/// </summary>
 			[NBT("Name")]
-			public string nameJson = "";
+			public JSONTextComponent nameJson = new JSONTextComponent("");
 			/// <summary>
 			/// The ID of the overlay to be shown over the health bar. Accepted values are: progress, notched_6, notched_10, notched_12, and notched_20.
 			/// </summary>

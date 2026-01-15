@@ -83,10 +83,11 @@ namespace WorldForge
 		//TODO: Danger, loads entire dimension at once
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
+			var dimensionRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
+			if(!Directory.Exists(dimensionRootDir)) return null;
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
 			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
 			bool isAlphaFormat = world.GameVersion < GameVersion.Beta_1(3);
-			var dimensionRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
 			if(isAlphaFormat)
 			{
 				LoadAlphaChunkFiles(dimensionRootDir, world.GameVersion, throwOnRegionLoadFail, dim);

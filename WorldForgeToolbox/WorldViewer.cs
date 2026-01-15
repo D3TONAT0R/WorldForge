@@ -23,12 +23,19 @@ namespace WorldForgeToolbox
 
 		private BlockCoord center;
 
-		private int zoom = 1;
+		private int zoom = 4;
+		private Point lastMousePos;
+		private bool mouseDown;
 
 		public WorldViewer(string file)
 		{
 			InitializeComponent();
 			fileName = file;
+			canvas.MouseWheel += OnCanvasScroll;
+			canvas.MouseDown += OnCanvasMouseDown;
+			canvas.MouseUp += OnCanvasMouseUp;
+			canvas.MouseMove += OnCanvasMouseMove;
+			canvas.Cursor = Cursors.SizeAll;
 			if(string.IsNullOrEmpty(fileName))
 			{
 				OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -56,10 +63,12 @@ namespace WorldForgeToolbox
 		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
 		{
 			var spawn = world.LevelData.spawnpoint;
-			pos.x -= spawn.spawnX;
-			pos.z -= spawn.spawnZ;
+			pos.x -= center.x;
+			pos.z -= center.y;
 			var x = pos.x / 8;
 			var y = pos.z / 8;
+			x *= zoom;
+			y *= zoom;
 			x += clipRectangle.Width / 2;
 			y += clipRectangle.Height / 2;
 			return new Point(x, y);
@@ -70,23 +79,34 @@ namespace WorldForgeToolbox
 			var g = e.Graphics;
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 			g.Clear(Color.Transparent);
-			var overworld = world.Overworld;
-			if(overworld != null)
+			if(world.Overworld != null) DrawDimension(e, g, world.Overworld);
+			else if(world.Nether != null) DrawDimension(e, g, world.Nether);
+			else if(world.TheEnd != null) DrawDimension(e, g, world.TheEnd);
+			else
 			{
-				var spawnPos = WorldToScreenPoint(world.LevelData.spawnpoint.Position, e.ClipRectangle);
-				g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y - 4, spawnPos.X + 4, spawnPos.Y + 4);
-				g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y + 4, spawnPos.X + 4, spawnPos.Y - 4);
-				foreach(var r in overworld.regions)
-				{
-					var pos = WorldToScreenPoint(r.Key.GetBlockCoord(0, 0, 0), e.ClipRectangle);
-					var rect = new Rectangle(pos, new Size(64, 64));
-					var bmp = RequestSurfaceMap(r.Value);
-					g.DrawImage(bmp, rect);
-					g.DrawRectangle(Pens.DarkGray, rect);
-
-				}
+				g.DrawString("No Dimensions found", Font, Brushes.Red, 10, 10);
 			}
 		}
+
+		private void DrawDimension(PaintEventArgs e, Graphics g, Dimension dim)
+		{
+			var spawnPos = WorldToScreenPoint(world.LevelData.spawnpoint.Position, e.ClipRectangle);
+			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y - 4, spawnPos.X + 4, spawnPos.Y + 4);
+			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y + 4, spawnPos.X + 4, spawnPos.Y - 4);
+			g.InterpolationMode = InterpolationMode.NearestNeighbor;
+			foreach(var r in dim.regions)
+			{
+				var pos = WorldToScreenPoint(r.Key.GetBlockCoord(0, 0, 0), e.ClipRectangle);
+				var rect = new Rectangle(pos, new Size(64 * zoom, 64 * zoom));
+				if(rect.IntersectsWith(e.ClipRectangle) == false) continue;
+				var bmp = RequestSurfaceMap(r.Value);
+				g.DrawImage(bmp, rect);
+				g.DrawRectangle(Pens.DarkGray, rect);
+
+			}
+			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
+		}
+
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
 		{
@@ -138,9 +158,34 @@ namespace WorldForgeToolbox
 			canvas.Invalidate();
 		}
 
-		private void OnCanvasScroll(object sender, ScrollEventArgs e)
+		private void OnCanvasScroll(object? sender, MouseEventArgs e)
 		{
-			MessageBox.Show("Test");
+			zoom += Math.Clamp(e.Delta, -1, 1);
+			zoom = Math.Clamp(zoom, 1, 8);
+			canvas.Invalidate();
+		}
+
+		private void OnCanvasMouseDown(object? sender, MouseEventArgs e)
+		{
+			mouseDown = true;
+			lastMousePos = e.Location;
+		}
+
+		private void OnCanvasMouseUp(object? sender, MouseEventArgs e)
+		{
+			mouseDown = false;
+		}
+
+		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
+		{
+			if(mouseDown)
+			{
+				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
+				center.x -= moveDelta.X * 8 / zoom;
+				center.y -= moveDelta.Y * 8 / zoom;
+				lastMousePos = e.Location;
+				canvas.Invalidate();
+			}
 		}
 	}
 }

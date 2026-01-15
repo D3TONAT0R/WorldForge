@@ -73,7 +73,7 @@ namespace WorldForge.NBT
 					}
 					catch(Exception e)
 					{
-						throw new Exception("Failed to set value: " + name, e);
+						throw new Exception($"Failed to set value '{name}' to field '{fi.Name}' of type {fi.FieldType.Name}'.", e);
 					}
 				}
 			}

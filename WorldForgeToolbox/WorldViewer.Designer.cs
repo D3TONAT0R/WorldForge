@@ -62,7 +62,6 @@
 			canvas.Name = "canvas";
 			canvas.Size = new Size(800, 425);
 			canvas.TabIndex = 1;
-			canvas.Scroll += OnCanvasScroll;
 			canvas.Paint += OnDraw;
 			// 
 			// WorldViewer

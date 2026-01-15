@@ -51,7 +51,7 @@ namespace WorldForge.Entities
 		public List<Entity> passengers = new List<Entity>();
 
 		[NBT("CustomName")]
-		public string customNameJSON = null;
+		public JSONTextComponent customNameJSON = null;
 		[NBT("CustomNameVisible")]
 		public bool customNameVisible = false;
 
