@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
@@ -19,13 +20,19 @@ namespace WorldForgeToolbox
 		private string fileName;
 
 		private World world;
-		private Dictionary<Region, Bitmap> regionBitmaps = new Dictionary<Region, Bitmap>();
+		private Dictionary<Region, WinformsBitmap> regionBitmaps = new Dictionary<Region, WinformsBitmap>();
+		private List<Region> currentRenders = new List<Region>();
 
 		private BlockCoord center;
 
 		private int zoom = 4;
 		private Point lastMousePos;
 		private bool mouseDown;
+
+		private List<Region> renderQueue = new List<Region>();
+		private int runningRenderTasks => currentRenders.Count;
+
+		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(128, Color.Red));
 
 		public WorldViewer(string file)
 		{
@@ -100,11 +107,36 @@ namespace WorldForgeToolbox
 				var rect = new Rectangle(pos, new Size(64 * zoom, 64 * zoom));
 				if(rect.IntersectsWith(e.ClipRectangle) == false) continue;
 				var bmp = RequestSurfaceMap(r.Value);
+				if(currentRenders.Contains(r.Value))
+				{
+					g.FillRectangle(currentRenderBrush, rect);
+				}
 				g.DrawImage(bmp, rect);
 				g.DrawRectangle(Pens.DarkGray, rect);
-
+				g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
+			ProcessRenderQueue();
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
+		}
+
+		private void ProcessRenderQueue()
+		{
+			if(runningRenderTasks < 4)
+			{
+				foreach(var region in renderQueue.OrderBy(GetRenderPriority))
+				{
+					var bitmap = regionBitmaps[region];
+					currentRenders.Add(region);
+					renderQueue.Remove(region);
+					var task = new Task(() => RenderRegionMap(region, bitmap));
+					task.ContinueWith(t => currentRenders.Remove(region));
+					task.Start();
+					if(runningRenderTasks >= 4)
+					{
+						break;
+					}
+				}
+			}
 		}
 
 
@@ -127,34 +159,48 @@ namespace WorldForgeToolbox
 		{
 			if(regionBitmaps.TryGetValue(region, out var bmp))
 			{
-				return bmp;
+				return bmp.bitmap;
 			}
 			else
 			{
 				var bitmap = Bitmaps.Create(64, 64);
-				regionBitmaps[region] = ((WinformsBitmap)bitmap).bitmap;
-				var task = new Task(() => RenderRegionMap(region, bitmap));
-				task.Start();
-				return regionBitmaps[region];
+				regionBitmaps[region] = (WinformsBitmap)bitmap;
+				renderQueue.Add(region);
+				return regionBitmaps[region].bitmap;
 			}
+		}
+
+		private int GetRenderPriority(Region region)
+		{
+			//Lower means higher
+			var location = region.regionPos;
+			var diffX = Math.Abs(location.x - center.Region.x);
+			var diffZ = Math.Abs(location.z - center.Region.z);
+			return Math.Max(diffX, diffZ);
 		}
 
 		private void RenderRegionMap(WorldForge.Regions.Region region, IBitmap bitmap)
 		{
-			region.Load(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
-			for(int x = 0; x < 64; x++)
+			try
 			{
-				for(int z = 0; z < 64; z++)
+				region.Load(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
+				for(int x = 0; x < 64; x++)
 				{
-					int bx = x * 8;
-					int bz = z * 8;
-					var chunk = region.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
-					if(chunk != null)
+					for(int z = 0; z < 64; z++)
 					{
-						var color = SurfaceMapGenerator.GetSurfaceMapColor(chunk, bx & 15, bz & 15, HeightmapType.AllBlocks, MapColorPalette.Modern);
-						bitmap.SetPixel(x, z, color);
+						int bx = x * 8;
+						int bz = z * 8;
+						var chunk = region.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
+						if(chunk != null)
+						{
+							var color = SurfaceMapGenerator.GetSurfaceMapColor(chunk, bx & 15, bz & 15, HeightmapType.AllBlocks, MapColorPalette.Modern);
+							bitmap.SetPixel(x, z, color);
+						}
 					}
 				}
+			}
+			catch 
+			{
 			}
 			canvas.Invalidate();
 		}
