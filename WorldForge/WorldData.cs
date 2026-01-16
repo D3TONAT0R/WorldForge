@@ -107,8 +107,15 @@ namespace WorldForge
 			{
 				foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
 				{
-					int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
-					wd.maps.Add(id, new MapDataFile(worldSaveDir, id));
+					try
+					{
+						int id = int.Parse(Path.GetFileNameWithoutExtension(mapFile).Substring(4));
+						wd.maps.Add(id, new MapDataFile(worldSaveDir, id));
+					}
+					catch
+					{
+
+					}
 				}
 			}
 			return wd;

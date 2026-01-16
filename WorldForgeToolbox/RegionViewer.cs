@@ -51,7 +51,7 @@ public partial class RegionViewer : Form
         region = RegionDeserializer.LoadMainRegion(fileName, null);
         //Change form title to file name
         Text = $"Region Viewer - {Path.GetFileName(fileName)}";
-        Parallel.For(0, 1024, i =>
+        var task = new Task(() => Parallel.For(0, 1024, i =>
         {
             int x = i % 32;
             int z = i / 32;
@@ -63,7 +63,8 @@ public partial class RegionViewer : Form
                 chunkMaps[x, z] = map.bitmap;
                 canvas.Invalidate();
             }
-        });
+        }));
+        task.Start();
         scrollNorth.Enabled = RegionExists(currentLocation.North, out _);
         scrollSouth.Enabled = RegionExists(currentLocation.South, out _);
         scrollWest.Enabled = RegionExists(currentLocation.West, out _);
