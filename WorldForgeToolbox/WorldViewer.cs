@@ -17,6 +17,9 @@ namespace WorldForgeToolbox
 {
 	public partial class WorldViewer : Form
 	{
+		private const int REGION_RES = 64;
+		private const int BLOCKS_PER_PIXEL = 512 / REGION_RES;
+
 		private string fileName;
 
 		private World world;
@@ -71,30 +74,29 @@ namespace WorldForgeToolbox
 
 		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
 		{
-			var spawn = world.LevelData.spawnpoint;
 			pos.x -= center.x;
 			pos.z -= center.z;
-			var x = pos.x / 8;
-			var y = pos.z / 8;
+			float x = pos.x / 8f;
+			float y = pos.z / 8f;
 			x *= zoom;
 			y *= zoom;
-			x += clipRectangle.Width / 2;
-			y += clipRectangle.Height / 2;
-			return new Point(x, y);
+			x += clipRectangle.Width * 0.5f;
+			y += clipRectangle.Height * 0.5f;
+			return new Point((int)x, (int)y);
 		}
 
-		private RegionLocation ScreenToRegion(Point screenPos, Rectangle clipRectangle)
+		private RegionLocation ScreenToRegionPoint(Point screenPos, Rectangle clipRectangle)
 		{
 			var spawn = world.LevelData.spawnpoint;
-			int x = screenPos.X - clipRectangle.Width / 2;
-			int y = screenPos.Y - clipRectangle.Height / 2;
+			float x = screenPos.X - clipRectangle.Width * 0.5f;
+			float y = screenPos.Y - clipRectangle.Height * 0.5f;
 			x /= zoom;
 			y /= zoom;
 			x *= 8;
 			y *= 8;
 			x += center.x;
 			y += center.z;
-			var blockCoord = new BlockCoord(x, 0, y);
+			var blockCoord = new BlockCoord((int)x, 0, (int)y);
 			return blockCoord.Region;
 		}
 
@@ -117,6 +119,7 @@ namespace WorldForgeToolbox
 			var spawnPos = WorldToScreenPoint(world.LevelData.spawnpoint.Position, e.ClipRectangle);
 			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y - 4, spawnPos.X + 4, spawnPos.Y + 4);
 			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y + 4, spawnPos.X + 4, spawnPos.Y - 4);
+			g.PixelOffsetMode = PixelOffsetMode.Half;
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			foreach(var r in dim.regions)
 			{
@@ -183,7 +186,7 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
-				var bitmap = Bitmaps.Create(64, 64);
+				var bitmap = Bitmaps.Create(REGION_RES, REGION_RES);
 				regionBitmaps[region.regionPos] = (WinformsBitmap)bitmap;
 				renderQueue.Add(region);
 				return regionBitmaps[region.regionPos].bitmap;
@@ -204,12 +207,12 @@ namespace WorldForgeToolbox
 			try
 			{
 				var loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
-				for(int x = 0; x < 64; x++)
+				for(int x = 0; x < REGION_RES; x++)
 				{
-					for(int z = 0; z < 64; z++)
+					for(int z = 0; z < REGION_RES; z++)
 					{
-						int bx = x * 8;
-						int bz = z * 8;
+						int bx = x * BLOCKS_PER_PIXEL;
+						int bz = z * BLOCKS_PER_PIXEL;
 						var chunk = loaded.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
 						if(chunk != null)
 						{
@@ -258,7 +261,7 @@ namespace WorldForgeToolbox
 
 		private void OnCanvasDoubleClick(object? sender, EventArgs e)
 		{
-			var pos = ScreenToRegion(mousePosition, canvas.ClientRectangle);
+			var pos = ScreenToRegionPoint(mousePosition, canvas.ClientRectangle);
 			if(world.Overworld.TryGetRegion(pos, out var r))
 			{
 				var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
