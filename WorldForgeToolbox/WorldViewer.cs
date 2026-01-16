@@ -20,14 +20,15 @@ namespace WorldForgeToolbox
 		private string fileName;
 
 		private World world;
-		private Dictionary<Region, WinformsBitmap> regionBitmaps = new Dictionary<Region, WinformsBitmap>();
+		private Dictionary<RegionLocation, WinformsBitmap> regionBitmaps = new Dictionary<RegionLocation, WinformsBitmap>();
 		private List<Region> currentRenders = new List<Region>();
 
-		private BlockCoord center;
+		private BlockCoord2D center;
 
 		private int zoom = 4;
 		private Point lastMousePos;
 		private bool mouseDown;
+		private Point mousePosition;
 
 		private List<Region> renderQueue = new List<Region>();
 		private int runningRenderTasks => currentRenders.Count;
@@ -42,6 +43,7 @@ namespace WorldForgeToolbox
 			canvas.MouseDown += OnCanvasMouseDown;
 			canvas.MouseUp += OnCanvasMouseUp;
 			canvas.MouseMove += OnCanvasMouseMove;
+			canvas.DoubleClick += OnCanvasDoubleClick;
 			canvas.Cursor = Cursors.SizeAll;
 			if(string.IsNullOrEmpty(fileName))
 			{
@@ -71,7 +73,7 @@ namespace WorldForgeToolbox
 		{
 			var spawn = world.LevelData.spawnpoint;
 			pos.x -= center.x;
-			pos.z -= center.y;
+			pos.z -= center.z;
 			var x = pos.x / 8;
 			var y = pos.z / 8;
 			x *= zoom;
@@ -79,6 +81,21 @@ namespace WorldForgeToolbox
 			x += clipRectangle.Width / 2;
 			y += clipRectangle.Height / 2;
 			return new Point(x, y);
+		}
+
+		private RegionLocation ScreenToRegion(Point screenPos, Rectangle clipRectangle)
+		{
+			var spawn = world.LevelData.spawnpoint;
+			int x = screenPos.X - clipRectangle.Width / 2;
+			int y = screenPos.Y - clipRectangle.Height / 2;
+			x /= zoom;
+			y /= zoom;
+			x *= 8;
+			y *= 8;
+			x += center.x;
+			y += center.z;
+			var blockCoord = new BlockCoord(x, 0, y);
+			return blockCoord.Region;
 		}
 
 		private void OnDraw(object sender, PaintEventArgs e)
@@ -111,9 +128,12 @@ namespace WorldForgeToolbox
 				{
 					g.FillRectangle(currentRenderBrush, rect);
 				}
-				g.DrawImage(bmp, rect);
+				else
+				{
+					g.DrawImage(bmp, rect);
+				}
 				g.DrawRectangle(Pens.DarkGray, rect);
-				g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
+				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
 			ProcessRenderQueue();
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
@@ -121,17 +141,17 @@ namespace WorldForgeToolbox
 
 		private void ProcessRenderQueue()
 		{
-			if(runningRenderTasks < 4)
+			if(runningRenderTasks < 10)
 			{
 				foreach(var region in renderQueue.OrderBy(GetRenderPriority))
 				{
-					var bitmap = regionBitmaps[region];
+					var bitmap = regionBitmaps[region.regionPos];
 					currentRenders.Add(region);
 					renderQueue.Remove(region);
 					var task = new Task(() => RenderRegionMap(region, bitmap));
 					task.ContinueWith(t => currentRenders.Remove(region));
 					task.Start();
-					if(runningRenderTasks >= 4)
+					if(runningRenderTasks >= 10)
 					{
 						break;
 					}
@@ -157,16 +177,16 @@ namespace WorldForgeToolbox
 
 		private Bitmap RequestSurfaceMap(WorldForge.Regions.Region region)
 		{
-			if(regionBitmaps.TryGetValue(region, out var bmp))
+			if(regionBitmaps.TryGetValue(region.regionPos, out var bmp))
 			{
 				return bmp.bitmap;
 			}
 			else
 			{
 				var bitmap = Bitmaps.Create(64, 64);
-				regionBitmaps[region] = (WinformsBitmap)bitmap;
+				regionBitmaps[region.regionPos] = (WinformsBitmap)bitmap;
 				renderQueue.Add(region);
-				return regionBitmaps[region].bitmap;
+				return regionBitmaps[region.regionPos].bitmap;
 			}
 		}
 
@@ -183,14 +203,14 @@ namespace WorldForgeToolbox
 		{
 			try
 			{
-				region.Load(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
+				var loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
 				for(int x = 0; x < 64; x++)
 				{
 					for(int z = 0; z < 64; z++)
 					{
 						int bx = x * 8;
 						int bz = z * 8;
-						var chunk = region.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
+						var chunk = loaded.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
 						if(chunk != null)
 						{
 							var color = SurfaceMapGenerator.GetSurfaceMapColor(chunk, bx & 15, bz & 15, HeightmapType.AllBlocks, MapColorPalette.Modern);
@@ -225,13 +245,24 @@ namespace WorldForgeToolbox
 
 		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
 		{
+			mousePosition = e.Location;
 			if(mouseDown)
 			{
 				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
 				center.x -= moveDelta.X * 8 / zoom;
-				center.y -= moveDelta.Y * 8 / zoom;
+				center.z -= moveDelta.Y * 8 / zoom;
 				lastMousePos = e.Location;
 				canvas.Invalidate();
+			}
+		}
+
+		private void OnCanvasDoubleClick(object? sender, EventArgs e)
+		{
+			var pos = ScreenToRegion(mousePosition, canvas.ClientRectangle);
+			if(world.Overworld.TryGetRegion(pos, out var r))
+			{
+				var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
+				viewer.Show();
 			}
 		}
 	}

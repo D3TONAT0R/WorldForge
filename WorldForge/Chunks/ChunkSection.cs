@@ -228,5 +228,16 @@ namespace WorldForge.Chunks
 		}
 
 		#endregion
+
+		public ChunkSection Clone()
+		{
+			var clone = new ChunkSection(chunk);
+			if(blocks != null) clone.blocks = (ushort[])blocks.Clone();
+			if(palette != null) clone.palette = new List<BlockState>(palette);
+			if(biomes != null) clone.biomes = (byte[,,])biomes.Clone();
+			if(biomePalette != null) clone.biomePalette = new List<BiomeID>(biomePalette);
+			if(lighting != null) clone.lighting = (LightValue[,,])lighting.Clone();
+			return clone;
+		}
 	}
 }

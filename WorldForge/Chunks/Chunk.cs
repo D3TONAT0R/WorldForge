@@ -82,6 +82,28 @@ namespace WorldForge.Chunks
 			RegionSpaceCoord = localPos;
 		}
 
+		public Chunk Clone()
+		{
+			var clone = new Chunk(ParentRegion, RegionSpaceCoord);
+			clone.Status = Status;
+			clone.Sections = new ConcurrentDictionary<sbyte, ChunkSection>();
+			foreach(var sec in Sections)
+			{
+				clone.Sections[sec.Key] = sec.Value.Clone();
+			}
+			clone.LowestSection = LowestSection;
+			clone.HighestSection = HighestSection;
+			clone.Entities = new List<Entity>(Entities); //TODO: clone entities
+			clone.TileEntities = new Dictionary<BlockCoord, TileEntity>(TileEntities); //TODO: clone tile entities
+			clone.PostProcessTicks = new List<BlockCoord>(PostProcessTicks);
+			clone.POIs = new List<POI>(POIs); //TODO: clone POIs
+			clone.InhabitedTime = InhabitedTime;
+			clone.ChunkGameVersion = ChunkGameVersion;
+			clone.SourceData = SourceData;
+			clone.LoadFlags = LoadFlags;
+			return clone;
+		}
+
 		public void InitializeNewChunk()
 		{
 			Sections = new ConcurrentDictionary<sbyte, ChunkSection>();

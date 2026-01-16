@@ -88,6 +88,27 @@ namespace WorldForge.Regions
 			this.sourceFilePaths = sourceFilePaths;
 		}
 
+		public Region Clone(bool cloneChunks = true)
+		{
+			var clone = new Region(regionPos, Parent, sourceFilePaths)
+			{
+				versionHint = versionHint
+			};
+			if(chunks != null)
+			{
+				clone.chunks = new Chunk[32, 32];
+				for(int z = 0; z < 32; z++)
+				{
+					for(int x = 0; x < 32; x++)
+					{
+						if(cloneChunks) clone.chunks[x,z] = chunks[x, z]?.Clone();
+						else clone.chunks[x,z] = chunks[x, z];
+					}
+				}
+			}
+			return clone;
+		}
+
 		public void InitializeChunks()
 		{
 			chunks = new Chunk[32, 32];
@@ -97,6 +118,13 @@ namespace WorldForge.Regions
 		{
 			if(IsLoaded) throw new InvalidOperationException("Region is already loaded.");
 			RegionDeserializer.LoadRegionContent(this, loadChunks, loadOrphanChunks, loadFlags);
+		}
+
+		public Region LoadClone(bool loadChunks = false, bool loadOrphanChunks = false, ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
+		{
+			var clone = Clone();
+			clone.Load(loadChunks, loadOrphanChunks, loadFlags);
+			return clone;
 		}
 
 		private void LoadIfRequired(ChunkLoadFlags loadFlags = ChunkLoadFlags.All)
