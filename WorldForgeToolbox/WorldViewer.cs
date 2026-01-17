@@ -26,7 +26,7 @@ namespace WorldForgeToolbox
 		private Dictionary<RegionLocation, WinformsBitmap> regionBitmaps = new Dictionary<RegionLocation, WinformsBitmap>();
 		private List<Region> currentRenders = new List<Region>();
 
-		private BlockCoord2D center;
+        private BlockCoord2D center;
 
 		private int zoom = 4;
 		private Point lastMousePos;
@@ -36,7 +36,7 @@ namespace WorldForgeToolbox
 		private List<Region> renderQueue = new List<Region>();
 		private int runningRenderTasks => currentRenders.Count;
 
-		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(128, Color.Red));
+		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
 
 		public WorldViewer(string file)
 		{
@@ -69,7 +69,10 @@ namespace WorldForgeToolbox
 		{
 			world = World.Load(Path.GetDirectoryName(fileName));
 			center = world.LevelData.spawnpoint.Position;
-			Invalidate(true);
+			regionBitmaps.Clear();
+			renderQueue.Clear();
+			currentRenders.Clear();
+            Invalidate(true);
 		}
 
 		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
@@ -85,7 +88,7 @@ namespace WorldForgeToolbox
 			return new Point((int)x, (int)y);
 		}
 
-		private RegionLocation ScreenToRegionPoint(Point screenPos, Rectangle clipRectangle)
+		private BlockCoord2D ScreenToBlockPos(Point screenPos, Rectangle clipRectangle)
 		{
 			var spawn = world.LevelData.spawnpoint;
 			float x = screenPos.X - clipRectangle.Width * 0.5f;
@@ -96,8 +99,7 @@ namespace WorldForgeToolbox
 			y *= 8;
 			x += center.x;
 			y += center.z;
-			var blockCoord = new BlockCoord((int)x, 0, (int)y);
-			return blockCoord.Region;
+			return new BlockCoord2D((int)x, (int)y);
 		}
 
 		private void OnDraw(object sender, PaintEventArgs e)
@@ -152,7 +154,10 @@ namespace WorldForgeToolbox
 					currentRenders.Add(region);
 					renderQueue.Remove(region);
 					var task = new Task(() => RenderRegionMap(region, bitmap));
-					task.ContinueWith(t => currentRenders.Remove(region));
+                    task.ContinueWith(t =>
+					{
+						currentRenders.Remove(region);
+                    });
 					task.Start();
 					if(runningRenderTasks >= 10)
 					{
@@ -161,7 +166,6 @@ namespace WorldForgeToolbox
 				}
 			}
 		}
-
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
 		{
@@ -211,7 +215,12 @@ namespace WorldForgeToolbox
 				{
 					for(int z = 0; z < REGION_RES; z++)
 					{
-						int bx = x * BLOCKS_PER_PIXEL;
+						if(region.ParentWorld != world)
+						{
+                            //Cancel render if world has changed
+							return;
+                        }
+                        int bx = x * BLOCKS_PER_PIXEL;
 						int bz = z * BLOCKS_PER_PIXEL;
 						var chunk = loaded.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
 						if(chunk != null)
@@ -261,7 +270,7 @@ namespace WorldForgeToolbox
 
 		private void OnCanvasDoubleClick(object? sender, EventArgs e)
 		{
-			var pos = ScreenToRegionPoint(mousePosition, canvas.ClientRectangle);
+			var pos = ScreenToBlockPos(mousePosition, canvas.ClientRectangle).Region;
 			if(world.Overworld.TryGetRegion(pos, out var r))
 			{
 				var viewer = new RegionViewer(r.sourceFilePaths.mainPath);

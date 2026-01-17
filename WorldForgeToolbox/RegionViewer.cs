@@ -46,7 +46,14 @@ public partial class RegionViewer : Form
                 return;
             }
         }
-        Load();
+        try
+        {
+            Load();
+        }
+        catch(Exception e)
+        {
+            MessageBox.Show(e.Message, "Failed to load region", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void Load()
