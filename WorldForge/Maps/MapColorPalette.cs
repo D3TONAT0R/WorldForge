@@ -117,18 +117,24 @@ namespace WorldForge.Maps
 					{
 						if(string.IsNullOrWhiteSpace(b)) continue;
 						HandleWildcards(b, resolvedBlocks);
+						int matches = 0;
 						foreach(var r in resolvedBlocks)
 						{
 							var resolvedBlockId = BlockList.Find(r, false, false);
 							if(resolvedBlockId != null)
 							{
 								mappings.Add(resolvedBlockId.ID, i);
+								matches++;
 							}
 							else
 							{
-								Logger.Warning($"Unknown block '{r}' from '{b}'");
+								//Logger.Warning($"Unknown block '{r}' from '{b}'");
 							}
 						}
+						if(matches == 0)
+						{
+                            Logger.Warning($"No blocks found for pattern '{b}'");
+                        }
 					}
 				}
 			}
@@ -147,6 +153,7 @@ namespace WorldForge.Maps
 				blocks.Add(input + "_sign");
 				blocks.Add(input + "_wall_sign");
 				blocks.Add(input + "_door");
+				blocks.Add(input + "_button");
 				blocks.Add(input + "_pressure_plate");
 				blocks.Add(input + "_fence");
 				blocks.Add(input + "_fence_gate");
@@ -174,11 +181,13 @@ namespace WorldForge.Maps
 				//Variant blocks including self
 				input = input.Substring(0, input.Length - 1);
 				var self = input;
-				if (self.EndsWith("brick")) self += "s";
+				if (self.EndsWith("brick") || self.EndsWith("tile")) self += "s";
 				blocks.Add(self);
 				blocks.Add(input + "_stairs");
 				blocks.Add(input + "_slab");
 				blocks.Add(input + "_wall");
+				blocks.Add(input + "_button");
+				blocks.Add(input + "_pressure_plate");
 			}
 			else if (input.EndsWith("O"))
 			{
@@ -221,6 +230,34 @@ namespace WorldForge.Maps
 				blocks.Add("waxed_" + input + "copper_bulb");
 				blocks.Add(input + "chiseled_copper");
 				blocks.Add("waxed_" + input + "chiseled_copper");
+				blocks.Add(input + "lightning_rod");
+				blocks.Add("waxed_" + input + "lightning_rod");
+			}
+			else if(input.StartsWith("COLOR"))
+			{
+				input = input.Substring(5);
+				blocks.Add("white" + input);
+				blocks.Add("orange" + input);
+				blocks.Add("magenta" + input);
+				blocks.Add("light_blue" + input);
+				blocks.Add("yellow" + input);
+				blocks.Add("lime" + input);
+				blocks.Add("pink" + input);
+				blocks.Add("gray" + input);
+				blocks.Add("light_gray" + input);
+				blocks.Add("cyan" + input);
+				blocks.Add("purple" + input);
+				blocks.Add("blue" + input);
+				blocks.Add("brown" + input);
+				blocks.Add("green" + input);
+				blocks.Add("red" + input);
+				blocks.Add("black" + input);
+            }
+			else if(input.StartsWith("P"))
+			{
+				input = input.Substring(1);
+				blocks.Add(input);
+				blocks.Add("potted_" + input);
 			}
 			else
 			{
