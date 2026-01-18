@@ -70,22 +70,34 @@ namespace WorldForgeToolbox
 		private void Load()
 		{
 			world = World.Load(Path.GetDirectoryName(fileName));
-			dimension = world.Overworld ?? world.Nether ?? world.TheEnd;
 			center = world.LevelData.spawnpoint.Position;
-			ClearRenderData();
 			dimensionSelector.DropDownItems.Clear();
 			CreateDimensionMenuItem(world.Overworld);
 			CreateDimensionMenuItem(world.Nether);
 			CreateDimensionMenuItem(world.TheEnd);
-            Invalidate(true);
+			ShowDimension(world.Overworld ?? world.Nether ?? world.TheEnd);
 		}
+
+		private string GetDimensionName(Dimension dim)
+		{
+            string readableName = dim.dimensionID.ID.Replace("minecraft:", "");
+            readableName = readableName.Substring(0, 1).ToUpper() + readableName.Substring(1);
+			return readableName;
+        }
+
+        private void ShowDimension(Dimension dim)
+        {
+			dimension = dim;
+			dimensionSelector.Text = GetDimensionName(dim);
+            ClearRenderData();
+            Invalidate(true);
+        }
 
         private void CreateDimensionMenuItem(Dimension dim)
         {
 			if (dim == null) return;
-			string readableName = dim.dimensionID.ID.Replace("minecraft:", "");
-			readableName = readableName.Substring(0, 1).ToUpper() + readableName.Substring(1);
-            var button = new ToolStripMenuItem(readableName)
+			
+            var button = new ToolStripMenuItem(GetDimensionName(dim))
             {
 				Tag = dim
 			};
@@ -312,8 +324,7 @@ namespace WorldForgeToolbox
 
 		private void OnDimensionSelect(object sender, ToolStripItemClickedEventArgs e)
 		{
-			dimension = (Dimension)e.ClickedItem.Tag;
-			ClearRenderData();
+			ShowDimension((Dimension)e.ClickedItem.Tag);
 		}
 	}
 }

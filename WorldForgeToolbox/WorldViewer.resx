@@ -124,10 +124,11 @@
   <data name="toolStripButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
-        J/+f6DYF0yA+yQac6Db5f6hWCmwIiE+mC0wIu2DS2Vf/F1x6DefjwlgNyNr34r/0wkdgTMgQDAOQNRNj
-        CIoBOg0rMTTDMLIhIHbriZeYBmDTiIxBGkEYxge5liQDsGGQqykyAISpZwAlmIEywMAAAAc1/Jwvt6sN
-        AAAAAElFTkSuQmCC
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADdSURBVDhP1ZAxCsIwGIXfFRwdHb2Fo7MOnsBBqEl7Ah31
+        Ak2rZxBcBT2Fu+gqKCru+pLWWmLT4iT+8JEQ3nv5/x+/r0hgH0s8LK5KopVKyksbIh/1PKFAVw1xs0Iz
+        9KepvTigCu1J7RUBEj12cn/9bBNKrE3AXKJJ4ckW6DFUAE/vIw+NfiwwIYukAz5wro0tdKEDlMCK934S
+        kJjHeVEpAgHP48xDwwSwlUsUoP0hdMAOpgzZZUvUyygSuuDIS3YdvQN8jIqELhiwJR0TwMvBjPEF9JzD
+        AWom4N8LeAJPPPUkAMCGrQAAAABJRU5ErkJggg==
 </value>
   </data>
   <data name="dimensionSelector.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

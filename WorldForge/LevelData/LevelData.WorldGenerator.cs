@@ -224,7 +224,7 @@ namespace WorldForge
 					}
 				}
 				structureOverrides = settings.Get<List<string>>("structure_overrides");
-				biome = BiomeIDs.GetOrCreate(nbt.Get<string>("biome"));
+				biome = BiomeIDs.GetOrCreate(settings.Get<string>("biome"));
 			}
 
 			protected override void WriteSettings(NBTCompound nbt, GameVersion version)
