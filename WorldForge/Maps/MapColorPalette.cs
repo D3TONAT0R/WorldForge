@@ -152,6 +152,8 @@ namespace WorldForge.Maps
 				blocks.Add("stripped_"+ input + "_wood");
 				blocks.Add(input + "_sign");
 				blocks.Add(input + "_wall_sign");
+				blocks.Add(input + "_hanging_sign");
+				blocks.Add(input + "_wall_hanging_sign");
 				blocks.Add(input + "_door");
 				blocks.Add(input + "_button");
 				blocks.Add(input + "_pressure_plate");
@@ -160,6 +162,7 @@ namespace WorldForge.Maps
 				blocks.Add(input + "_trapdoor");
 				blocks.Add(input + "_stairs");
 				blocks.Add(input + "_slab");
+				blocks.Add(input + "_shelf");
 			}
 			else if (input.EndsWith("B"))
 			{
@@ -230,9 +233,23 @@ namespace WorldForge.Maps
 				blocks.Add("waxed_" + input + "copper_bulb");
 				blocks.Add(input + "chiseled_copper");
 				blocks.Add("waxed_" + input + "chiseled_copper");
-				blocks.Add(input + "lightning_rod");
+				blocks.Add(input + "copper_door");
+				blocks.Add("waxed_" + input + "copper_door");
+                blocks.Add(input + "copper_lantern");
+                blocks.Add("waxed_" + input + "copper_lantern");
+                blocks.Add(input + "copper_bars");
+                blocks.Add("waxed_" + input + "copper_bars");
+                blocks.Add(input + "copper_grate");
+                blocks.Add("waxed_" + input + "copper_grate");
+                blocks.Add(input + "copper_chain");
+                blocks.Add("waxed_" + input + "copper_chain");
+                blocks.Add(input + "lightning_rod");
 				blocks.Add("waxed_" + input + "lightning_rod");
-			}
+				blocks.Add(input + "copper_chest");
+				blocks.Add("waxed_" + input + "copper_chest");
+                blocks.Add(input + "copper_golem_statue");
+                blocks.Add("waxed_" + input + "copper_golem_statue");
+            }
 			else if(input.StartsWith("COLOR"))
 			{
 				input = input.Substring(5);
