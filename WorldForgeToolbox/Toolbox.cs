@@ -1,25 +1,33 @@
-﻿namespace WorldForgeToolbox
+﻿using RegionViewer.DistributionAnalyzer;
+using WorldForge.ConsoleTools;
+
+namespace WorldForgeToolbox
 {
-	public partial class Toolbox : Form
-	{
-		public Toolbox()
-		{
-			InitializeComponent();
-		}
+    public partial class Toolbox : Form
+    {
+        public Toolbox()
+        {
+            InitializeComponent();
+        }
 
-		private void OnNBTViewerClick(object sender, EventArgs e)
-		{
-			Show(new NBTViewer(null));
-		}
+        private void OnNBTViewerClick(object sender, EventArgs e)
+        {
+            Show(new NBTViewer(null));
+        }
 
-		private void OnRegionViewerClick(object sender, EventArgs e)
-		{
-			Show(new RegionViewer(null));
-		}
+        private void OnRegionViewerClick(object sender, EventArgs e)
+        {
+            Show(new RegionViewer(null));
+        }
 
-		private void OnWorldViewerClick(object sender, EventArgs e)
-		{
-			Show(new WorldViewer(null));
+        private void OnWorldViewerClick(object sender, EventArgs e)
+        {
+            Show(new WorldViewer(null));
+        }
+
+        private void OnBlockDistributionClick(object sender, EventArgs e)
+        {
+            Show(new DistributionViewer());
         }
 
         private void Show(Form form)
