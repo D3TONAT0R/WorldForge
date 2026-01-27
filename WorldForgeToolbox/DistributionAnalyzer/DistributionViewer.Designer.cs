@@ -36,15 +36,16 @@
             chart = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
             SuspendLayout();
             // 
-            // cartesianChart1
+            // chart
             // 
             chart.AutoUpdateEnabled = true;
+            chart.BackColor = Color.FromArgb(32, 32, 32);
             chart.ChartTheme = null;
             chart.Dock = DockStyle.Fill;
             chart.ForceGPU = false;
             skDefaultLegend1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
             skDefaultLegend1.Content = null;
-            skDefaultLegend1.IsValid = true;
+            skDefaultLegend1.IsValid = false;
             skDefaultLegend1.Opacity = 1F;
             padding1.Bottom = 0F;
             padding1.Left = 0F;
@@ -57,13 +58,14 @@
             skDefaultLegend1.Y = 0F;
             chart.Legend = skDefaultLegend1;
             chart.Location = new Point(0, 0);
+            chart.Margin = new Padding(4, 3, 4, 3);
             chart.MatchAxesScreenDataRatio = false;
             chart.Name = "chart";
             chart.Size = new Size(800, 450);
             chart.TabIndex = 0;
             skDefaultTooltip1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
             skDefaultTooltip1.Content = null;
-            skDefaultTooltip1.IsValid = true;
+            skDefaultTooltip1.IsValid = false;
             skDefaultTooltip1.Opacity = 1F;
             padding2.Bottom = 0F;
             padding2.Left = 0F;

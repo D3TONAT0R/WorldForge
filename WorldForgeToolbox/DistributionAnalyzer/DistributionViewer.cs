@@ -14,6 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LiveChartsCore.Kernel;
+using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using WorldForge.IO;
 using WorldForge.Regions;
 using WorldForge.Utilities.BlockDistributionAnalysis;
@@ -51,6 +53,11 @@ namespace RegionViewer.DistributionAnalyzer
 
 		public DistributionViewer()
 		{
+			LiveCharts.Configure(cfg =>
+			{
+				cfg.AddDarkTheme();
+				cfg.UseDefaults();
+			});
 			InitializeComponent();
 			Test();
 		}
@@ -81,12 +88,14 @@ namespace RegionViewer.DistributionAnalyzer
 				var line = new LineSeries<ObservablePoint>()
 				{
 					Name = eval.name,
-					Values = eval.evaluationData.Select(kvp => new ObservablePoint(kvp.Key, kvp.Value * 16 * 16)).OrderBy(pt => pt.X).ToArray(),
+					Values = eval.evaluationData.Select(kvp => new ObservablePoint(kvp.Key, kvp.Value)).OrderBy(pt => pt.X).ToArray(),
+					//Add null points
 					LineSmoothness = 0,
 					GeometryFill = null,
 					GeometryStroke = null,
 					GeometrySize = 0,
-					Fill = null
+					Fill = null,
+					DataLabelsFormatter = DataLabelFormatter
 				};
 				if (chartColors.TryGetValue(eval.name, out var c)) {
 					var stroke = new SolidColorPaint(c.Item1, 2);
@@ -101,14 +110,41 @@ namespace RegionViewer.DistributionAnalyzer
 						case LineStyle.Special:
 							stroke.PathEffect = new DashEffect([2, 2]);
 							break;
-                    }
+					}
 					line.Stroke = stroke;
 				}
 				series.Add(line);
 			}
 			chart.AnimationsSpeed = TimeSpan.FromMilliseconds(0);
 			chart.Series = series;
+			var xAxis = new Axis
+			{
+				Name = "Height",
+				CrosshairPaint = new SolidColorPaint(SKColors.DarkOrange, 3),
+				CrosshairPadding = new LiveChartsCore.Drawing.Padding(4),
+				CrosshairLabelsBackground = new LiveChartsCore.Drawing.LvcColor(255, 0, 0),
+				CrosshairLabelsPaint = new SolidColorPaint(SKColors.White),
+				CrosshairSnapEnabled = true,
+				TextSize = 12,
+				NameTextSize = 12,
+			};
+			bool logarithmic = true;
+            Axis yAxis = logarithmic ? new LogarithmicAxis(10) : new Axis();
+			yAxis.Name = "Percentage";
+			yAxis.MinStep = 0.00001;
+            yAxis.MinLimit = 0;
+            yAxis.TextSize = 12;
+            yAxis.NameTextSize = 12;
+            yAxis.Labeler = d => d.ToString("P3");
 
+            chart.XAxes = [xAxis];
+			chart.YAxes = [yAxis];
 		}
-	}
+
+        private string DataLabelFormatter(ChartPoint<ObservablePoint, CircleGeometry, LabelGeometry> arg)
+        {
+			double v = arg.Coordinate.PrimaryValue;
+			return v.ToString("P3");
+        }
+    }
 }
