@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace WorldForge.Utilities.BlockDistributionAnalysis
 {
-	public static class AnalysisEvaluator
+    public static class AnalysisEvaluator
 	{
 		[Flags]
 		public enum TargetBlockTypes
@@ -16,81 +16,21 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			TerrainBlocks = 8
 		}
 
-		static readonly BlockGroup[] ores = new BlockGroup[]
-		{
-			BlockGroup.Parse("Coal;coal_ore,deepslate_coal_ore"),
-			BlockGroup.Parse("Iron;iron_ore,deepslate_iron_ore"),
-			BlockGroup.Parse("Iron Block;raw_iron_block"),
-			BlockGroup.Parse("Gold;gold_ore,deepslate_gold_ore"),
-			BlockGroup.Parse("Gold Block;raw_gold_block"),
-			BlockGroup.Parse("Copper;copper_ore,deepslate_copper_ore"),
-			BlockGroup.Parse("Copper Block;raw_copper_block"),
-			BlockGroup.Parse("Diamond;diamond_ore,deepslate_diamond_ore"),
-			BlockGroup.Parse("Emerald;emerald_ore,deepslate_emerald_ore"),
-			BlockGroup.Parse("Lapis Lazuli;lapis_ore,deepslate_lapis_ore"),
-			BlockGroup.Parse("Redstone;redstone_ore,deepslate_redstone_ore"),
-			BlockGroup.Parse("Nether Quartz;nether_quartz_ore"),
-			BlockGroup.Parse("Nether Gold;nether_gold_ore"),
-			BlockGroup.Parse("Ancient Debris;ancient_debris"),
-			BlockGroup.Parse("Amethyst;amethyst_block,budding_amethyst")
-		};
-
-		static readonly BlockGroup[] airAndLiquids = new BlockGroup[]
-		{
-			BlockGroup.Parse("Air;air,cave_air"),
-			BlockGroup.Parse("Water;water"),
-			BlockGroup.Parse("Lava;lava")
-		};
-
-		static readonly BlockGroup[] stones = new BlockGroup[]
-		{
-			BlockGroup.Parse("Stone;stone"),
-			BlockGroup.Parse("Deepslate;deepslate"),
-			BlockGroup.Parse("Sandstone;sandstone"),
-			BlockGroup.Parse("Andesite;andesite"),
-			BlockGroup.Parse("Diorite;diorite"),
-			BlockGroup.Parse("Granite;granite"),
-			BlockGroup.Parse("Tuff;tuff"),
-			BlockGroup.Parse("Calcite;calcite"),
-			BlockGroup.Parse("Basalt;basalt,smooth_basalt")
-		};
-
-		static readonly BlockGroup[] terrainBlocks = new BlockGroup[]
-		{
-			BlockGroup.Parse("Dirt;dirt,grass_block,podzol,rooted_dirt,coarse_dirt"),
-			BlockGroup.Parse("Gravel;gravel"),
-			BlockGroup.Parse("Sand;sand,red_sand"),
-			BlockGroup.Parse("Clay;clay"),
-			BlockGroup.Parse("Mud;mud")
-		};
-
-		public class BlockGroup
-		{
-			public string name;
-			public BlockID[] blocks;
-
-			public BlockGroup(string name, params BlockID[] blocks)
-			{
-				this.name = name;
-				this.blocks = blocks;
-			}
-
-			public static BlockGroup Parse(string s)
-			{
-				var split = s.Split(';');
-				var blocks = new List<BlockID>(split[1].Split(',').Select(s1 => BlockList.Find(s1)));
-				blocks.RemoveAll(b => b == null);
-				return new BlockGroup(split[0], blocks.ToArray());
-			}
-		}
-
 		public static List<BlockGroup> GetTargetBlocks(TargetBlockTypes typeFlags)
 		{
 			List<BlockGroup> groups = new List<BlockGroup>();
-			if(typeFlags.HasFlag(TargetBlockTypes.Ores)) groups.AddRange(ores);
-			if(typeFlags.HasFlag(TargetBlockTypes.AirAndLiquids)) groups.AddRange(airAndLiquids);
-			if(typeFlags.HasFlag(TargetBlockTypes.Stones)) groups.AddRange(stones);
-			if(typeFlags.HasFlag(TargetBlockTypes.TerrainBlocks)) groups.AddRange(terrainBlocks);
+			if (typeFlags.HasFlag(TargetBlockTypes.Ores))
+			{
+				groups.AddRange(AnalysisConfigurations.OverworldOres.BlockGroups);
+				groups.AddRange(AnalysisConfigurations.NetherOres.BlockGroups);
+			}
+			if (typeFlags.HasFlag(TargetBlockTypes.AirAndLiquids))
+			{
+				groups.AddRange(AnalysisConfigurations.Air.BlockGroups);
+				groups.AddRange(AnalysisConfigurations.Liquids.BlockGroups);
+			}
+			if(typeFlags.HasFlag(TargetBlockTypes.Stones)) groups.AddRange(AnalysisConfigurations.Stones.BlockGroups);
+			if(typeFlags.HasFlag(TargetBlockTypes.TerrainBlocks)) groups.AddRange(AnalysisConfigurations.TerrainBlocks.BlockGroups);
 			return groups;
 		}
 

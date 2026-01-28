@@ -83,6 +83,11 @@ namespace WorldForge
 			return ID != null ? ID.GetHashCode() : 0;
 		}
 
+		public override string ToString()
+		{
+			return ID;
+		}
+
 		public static bool operator ==(DimensionID left, DimensionID right)
 		{
 			return left.ID == right.ID;

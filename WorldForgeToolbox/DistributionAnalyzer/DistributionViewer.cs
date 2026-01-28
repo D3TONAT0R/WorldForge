@@ -62,7 +62,7 @@ namespace RegionViewer.DistributionAnalyzer
                 cfg.UseDefaults();
             });
             InitializeComponent();
-            Test();
+            //Test();
         }
 
         public void Test()
@@ -207,9 +207,11 @@ namespace RegionViewer.DistributionAnalyzer
 
         private void openButton_Click(object sender, EventArgs e)
         {
-            var browser = new CreateAnalysisForm();
-            browser.ShowDialog();
-            MessageBox.Show("Test");
-        }
+            using (var browser = new CreateAnalysisForm())
+            {
+                browser.ShowDialog();
+				//TODO: analyze based on form settings
+			}
+		}
     }
 }

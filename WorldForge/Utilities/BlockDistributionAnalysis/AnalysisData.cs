@@ -84,7 +84,6 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-
 		public void SaveToFile(string path)
 		{
 			string json = JsonConvert.SerializeObject(this);
