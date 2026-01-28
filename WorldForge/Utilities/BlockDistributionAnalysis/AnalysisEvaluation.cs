@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using static WorldForge.Utilities.BlockDistributionAnalysis.AnalysisEvaluator;
 
@@ -12,7 +13,11 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			public string name;
 			public Dictionary<short, double?> evaluationData;
 
-			public EvaluationEntry(string name, Dictionary<short, double?> data)
+			public bool HasData => evaluationData != null && evaluationData.Count > 0;
+
+			public double Maximum => HasData ? evaluationData.Max(kvp => (kvp.Value ?? 0)) : 0;
+
+            public EvaluationEntry(string name, Dictionary<short, double?> data)
 			{
 				this.name = name;
 				evaluationData = data;

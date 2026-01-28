@@ -117,44 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="toolStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
+  <metadata name="label1.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
   </metadata>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="openButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFYSURBVDhPxZI/SwNBEMVfYSeptDDfQBtBxQjBQgTBykaw
-        uVsDqfX+GFLYGEutNbm7REGsLazM3V5Cvop2KigG0hqd3exJONaTVA78GHaZ92Z2WPx/+BYeAxtf49Bd
-        37OxoUqyQwoc5MdpWNgNyCRtnCCaKrne4C+ERsmzDZoO9rxDDJLOaRo2OtKgZWOBRn5PFxB9z8WB2Idv
-        Yy04wuxipTI9zy5m6hZWSXM2msCG07QQi0IdLReFYvk8ByO8hcE/JSZ/QKk3NzKw0KV8ohMLRGeYYR2M
-        c7B4CUZ7GWbckWc5qoUP38W2Tiyo1TBFHd+k0GjnJaVoBSwc/kygEyb0hAHjL78aUNFpWjTOVRU5Kr6U
-        YwsTKeZdsOgOtMAn+QwNJB5SPsZ+WCCDZ3rGjXwK4wPK1yjf59RvyAgzLNLWX4kddTNBsHh91DncUjcT
-        BouqMKNNddIE8A0sFgkHBrAsSAAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="filterSplitButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACoSURBVDhPYxg8QFFRcQcQ/ycS74BqQwAlJaUgeXn5h8rK
-        ytpycnKS2DBQXlNBQeEekI6AakMFQJO7gJKHgIbIomuWkZGRBmreA1TTCVWOFTABFWwHKpyKbgBQbBrI
-        AKAaZohSHACoWBCo8A7QJRkwzUBDk4H4vpqamghUGX4ANEAfaMBnmAEgNkgMKk0cANr4H8kF/6HCxIPh
-        YcADkEYofgAVHn6AgQEAVdFC/cx3zakAAAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="zoomToFitButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFFSURBVDhPrZLRSgJhEIVXeoSgYCt+Xd0USqmHMdzEd5Cg
-        OzO67CbxKdJs8TJwn6Ynqe+08+PqSkR44DD7z54zM//sBntHrVbrVKvVR/junMsU4Zh82yS70e12DxDd
-        wRnGXhRFMTxS1NnyQ+nMsgmZEb/EcXwShuHhNhuNximaiYqYZQ1edOCrzMHtx2cwWH1VkvRZRkWdlbci
-        cxpdmjWH7qwxZZC42NnT59El6EdmzaFF6a4SVJLltGj09Hm0TYoszJqDRKaFbZt2kSsco1+ZNYcm4MW5
-        BJWb9GnbVMxjbpUmoMCY5J92QKN+aQck23CmLf/2Fer1+hm6N+KFWddggiEvJypS7Oxp5ind782yCf1h
-        VmRO1KdqarE8t8j11VlmmJK7MlsZ+kkQPSBawEyR88iPTaE25yWTXv8Y/oO9FNE1nHO9bx73fOd9BIGD
-        AAAAAElFTkSuQmCC
-</value>
-  </data>
-  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>78</value>
+  <metadata name="label2.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
+  <metadata name="label3.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
+  <metadata name="label5.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
+  <metadata name="label6.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
+  <metadata name="label7.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
+  <metadata name="label4.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
   </metadata>
 </root>
