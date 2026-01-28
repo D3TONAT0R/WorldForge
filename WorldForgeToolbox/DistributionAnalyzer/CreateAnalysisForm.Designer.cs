@@ -290,10 +290,10 @@
 			// cancelButton
 			// 
 			cancelButton.Dock = DockStyle.Bottom;
-			cancelButton.Location = new Point(3, 3);
+			cancelButton.Location = new Point(120, 3);
 			cancelButton.Name = "cancelButton";
 			cancelButton.Size = new Size(111, 23);
-			cancelButton.TabIndex = 9;
+			cancelButton.TabIndex = 10;
 			cancelButton.Text = "Cancel";
 			cancelButton.UseVisualStyleBackColor = true;
 			// 
@@ -303,8 +303,8 @@
 			tableLayoutPanel1.ColumnCount = 2;
 			tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 			tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-			tableLayoutPanel1.Controls.Add(startButton, 1, 0);
-			tableLayoutPanel1.Controls.Add(cancelButton, 0, 0);
+			tableLayoutPanel1.Controls.Add(cancelButton, 1, 0);
+			tableLayoutPanel1.Controls.Add(startButton, 0, 0);
 			tableLayoutPanel1.Dock = DockStyle.Bottom;
 			tableLayoutPanel1.Location = new Point(0, 344);
 			tableLayoutPanel1.Margin = new Padding(0);
@@ -318,10 +318,10 @@
 			// startButton
 			// 
 			startButton.Dock = DockStyle.Bottom;
-			startButton.Location = new Point(120, 3);
+			startButton.Location = new Point(3, 3);
 			startButton.Name = "startButton";
 			startButton.Size = new Size(111, 23);
-			startButton.TabIndex = 10;
+			startButton.TabIndex = 9;
 			startButton.Text = "Create";
 			startButton.UseVisualStyleBackColor = true;
 			// 
