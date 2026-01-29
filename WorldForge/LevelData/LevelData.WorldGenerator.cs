@@ -68,7 +68,7 @@ namespace WorldForge
 			public virtual void FromNBT(object nbtData)
 			{
 				var comp = (NBTCompound)nbtData;
-				dimensionType = new DimensionID(comp.Get<string>("type"));
+				dimensionType = DimensionID.FromID(comp.Get<string>("type"));
 				var generator = comp.Get<NBTCompound>("generator");
 				ReadGeneratorSettings(generator);
 			}
@@ -392,7 +392,7 @@ namespace WorldForge
 				{
 					foreach(var kv in dimensions)
 					{
-						var dim = new DimensionID(kv.Key);
+						var dim = DimensionID.FromID(kv.Key);
 						var dimNBT = (NBTCompound)kv.Value;
 						dimensionGenerators.Add(kv.Key, DimensionGeneratorBase.CreateFromNBT(dim, dimNBT));
 					}

@@ -149,7 +149,7 @@ namespace WorldForge.Maps
 			}
 			else if(comp.TryGet("dimension", out string s))
 			{
-				data.dimension = new DimensionID(s);
+				data.dimension = DimensionID.FromID(s);
 			}
 			return data;
 		}

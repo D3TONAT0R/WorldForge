@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using WorldForge;
+﻿using WorldForge;
+using WorldForge.Coordinates;
 using WorldForge.Utilities.BlockDistributionAnalysis;
 using WorldForgeToolbox;
 
@@ -22,7 +14,28 @@ namespace RegionViewer.DistributionAnalyzer
 			Region = 2
 		}
 
+		public string? FilePath => !string.IsNullOrWhiteSpace(filePathTextBox.Text) ? filePathTextBox.Text : null;
 
+		public DimensionID Dimension => (DimensionID)dimensionComboBox.SelectedItem;
+
+		public ScanMode WorldScanMode => (ScanMode)scanModeComboBox.SelectedItem;
+
+		public List<AnalysisConfiguration> ScanConfigurations
+		{
+			get
+			{
+				List<AnalysisConfiguration> configurations = new List<AnalysisConfiguration>();
+				foreach (var item in scanTypesList.CheckedItems)
+				{
+					configurations.Add((AnalysisConfiguration)item);
+				}
+				return configurations;
+			}
+		}
+
+		public BlockCoord2D ScanOrigin => new BlockCoord2D((int)centerXNumeric.Value, (int)centerZNumeric.Value);
+
+		public int ScanChunkRadius => (int)scanRadius.Value;
 
 		public CreateAnalysisForm()
 		{
@@ -52,7 +65,7 @@ namespace RegionViewer.DistributionAnalyzer
 
 		private void browseButton_Click(object sender, EventArgs e)
 		{
-			if (OpenFileUtility.OpenRegionOrLevelDialog(out var file))
+			if (OpenFileUtility.OpenFileDialog(out var file, OpenFileUtility.ALL_FILES_FILTER, OpenFileUtility.REGION_FILTER, OpenFileUtility.LEVEL_FILTER))
 			{
 				filePathTextBox.Text = file;
 			}
@@ -63,6 +76,7 @@ namespace RegionViewer.DistributionAnalyzer
 			var filePath = filePathTextBox.Text;
 			if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
 			{
+				createButton.Enabled = true;
 				if (Path.GetExtension(filePath).ToLower() == ".dat")
 				{
 					//Level file
@@ -80,11 +94,11 @@ namespace RegionViewer.DistributionAnalyzer
 					{
 						dimensionComboBox.Items.Add(DimensionID.Overworld);
 					}
-					if(Directory.Exists(Path.Combine(worldRoot, "DIM-1", "region")))
+					if (Directory.Exists(Path.Combine(worldRoot, "DIM-1", "region")))
 					{
 						dimensionComboBox.Items.Add(DimensionID.Nether);
 					}
-					if(Directory.Exists(Path.Combine(worldRoot, "DIM1", "region")))
+					if (Directory.Exists(Path.Combine(worldRoot, "DIM1", "region")))
 					{
 						dimensionComboBox.Items.Add(DimensionID.TheEnd);
 					}
@@ -101,6 +115,20 @@ namespace RegionViewer.DistributionAnalyzer
 					dimensionComboBox.SelectedIndex = -1;
 				}
 			}
+			else
+			{
+				createButton.Enabled = false;
+			}
+		}
+
+		private void cancelButton_Click(object sender, EventArgs e)
+		{
+			filePathTextBox.Text = null;
+		}
+
+		private void createButton_Click(object sender, EventArgs e)
+		{
+			Close();
 		}
 	}
 }

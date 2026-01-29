@@ -51,7 +51,7 @@
 			scanTypesList = new CheckedListBox();
 			cancelButton = new Button();
 			tableLayoutPanel1 = new TableLayoutPanel();
-			startButton = new Button();
+			createButton = new Button();
 			label1 = new Label();
 			label2 = new Label();
 			label3 = new Label();
@@ -296,6 +296,7 @@
 			cancelButton.TabIndex = 10;
 			cancelButton.Text = "Cancel";
 			cancelButton.UseVisualStyleBackColor = true;
+			cancelButton.Click += cancelButton_Click;
 			// 
 			// tableLayoutPanel1
 			// 
@@ -304,7 +305,7 @@
 			tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 			tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
 			tableLayoutPanel1.Controls.Add(cancelButton, 1, 0);
-			tableLayoutPanel1.Controls.Add(startButton, 0, 0);
+			tableLayoutPanel1.Controls.Add(createButton, 0, 0);
 			tableLayoutPanel1.Dock = DockStyle.Bottom;
 			tableLayoutPanel1.Location = new Point(0, 344);
 			tableLayoutPanel1.Margin = new Padding(0);
@@ -315,19 +316,20 @@
 			tableLayoutPanel1.Size = new Size(234, 29);
 			tableLayoutPanel1.TabIndex = 10;
 			// 
-			// startButton
+			// createButton
 			// 
-			startButton.Dock = DockStyle.Bottom;
-			startButton.Location = new Point(3, 3);
-			startButton.Name = "startButton";
-			startButton.Size = new Size(111, 23);
-			startButton.TabIndex = 9;
-			startButton.Text = "Create";
-			startButton.UseVisualStyleBackColor = true;
+			createButton.Dock = DockStyle.Bottom;
+			createButton.Location = new Point(3, 3);
+			createButton.Name = "createButton";
+			createButton.Size = new Size(111, 23);
+			createButton.TabIndex = 9;
+			createButton.Text = "Create";
+			createButton.UseVisualStyleBackColor = true;
+			createButton.Click += createButton_Click;
 			// 
 			// CreateAnalysisForm
 			// 
-			AcceptButton = startButton;
+			AcceptButton = createButton;
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			AutoSize = true;
@@ -379,6 +381,6 @@
         private ComboBox dimensionComboBox;
         private Button cancelButton;
         private TableLayoutPanel tableLayoutPanel1;
-        private Button startButton;
+        private Button createButton;
     }
 }

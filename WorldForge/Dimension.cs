@@ -87,14 +87,15 @@ namespace WorldForge
 			if(!Directory.Exists(dimensionRootDir)) return null;
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
 			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
-			bool isAlphaFormat = world.GameVersion < GameVersion.Beta_1(3);
+			var version = gameVersion ?? world?.GameVersion ?? GameVersion.FirstAnvilVersion;
+			bool isAlphaFormat = version < GameVersion.Beta_1(3);
 			if(isAlphaFormat)
 			{
-				LoadAlphaChunkFiles(dimensionRootDir, world.GameVersion, throwOnRegionLoadFail, dim);
+				LoadAlphaChunkFiles(dimensionRootDir, version, throwOnRegionLoadFail, dim);
 			}
 			else
 			{
-				LoadRegionFiles(dimensionRootDir, world.GameVersion, throwOnRegionLoadFail, dim);
+				LoadRegionFiles(dimensionRootDir, version, throwOnRegionLoadFail, dim);
 			}
 			return dim;
 		}
@@ -291,11 +292,17 @@ namespace WorldForge
 		}
 
 
-		public IEnumerable<Chunk> EnumerateChunks()
+		public IEnumerable<Chunk> EnumerateChunks(bool keepLoadedRegions = true)
 		{
 			foreach(var region in regions.Values)
 			{
-				foreach(var chunk in region.chunks)
+				var loadedRegion = region;
+				if (!region.IsLoaded)
+				{
+					if(keepLoadedRegions) region.Load();
+					else loadedRegion = region.LoadClone();
+				}
+				foreach (var chunk in loadedRegion.chunks)
 				{
 					if(chunk != null)
 					{
@@ -305,13 +312,23 @@ namespace WorldForge
 			}
 		}
 
-		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive)
+		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive, bool keepLoadedRegions = true, bool includeNullChunks = false)
 		{
 			foreach(var region in regions.Values)
 			{
-				foreach(var chunk in region.chunks)
+				var loadedRegion = region;
+				if (!region.IsLoaded)
 				{
-					if(chunk == null) continue;
+					if (keepLoadedRegions) region.Load();
+					else loadedRegion = region.LoadClone();
+				}
+				foreach (var chunk in loadedRegion.chunks)
+				{
+					if (chunk == null)
+					{
+						if(includeNullChunks) yield return null;
+						continue;
+					}
 					var c = chunk.WorldSpaceCoord;
 					if(c.x >= minInclusive.x && c.x < maxExclusive.x && c.z >= minInclusive.z && c.z < maxExclusive.z)
 					{

@@ -236,7 +236,7 @@ namespace WorldForge
 			object dim = nbt.Get("Dimension");
 			if(dim != null)
 			{
-				if(dim is string dimString) dimension = new DimensionID(dimString);
+				if(dim is string dimString) dimension = DimensionID.FromID(dimString);
 				else dimension = DimensionID.FromIndex((int)dim);
 			}
 			object healthValue = nbt.Get("Health");

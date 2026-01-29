@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using WorldForge.NBT;
 
@@ -10,10 +11,21 @@ namespace WorldForge
 
 		public string ID { get; private set; }
 
-		public static readonly DimensionID Unknown = new DimensionID(null);
-		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld");
-		public static readonly DimensionID Nether = new DimensionID("minecraft:the_nether");
-		public static readonly DimensionID TheEnd = new DimensionID("minecraft:the_end");
+		public int Index { get; private set; }
+
+		public string SubdirectoryName => (Index != 0 && Index != int.MinValue) ? $"DIM{Index}" : null;
+
+		public static readonly DimensionID Unknown = new DimensionID(null, int.MinValue);
+		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld", 0);
+		public static readonly DimensionID Nether = new DimensionID("minecraft:the_nether", -1);
+		public static readonly DimensionID TheEnd = new DimensionID("minecraft:the_end", 1);
+
+		private static List<DimensionID> registry = new List<DimensionID>
+		{
+			Overworld,
+			Nether,
+			TheEnd
+		};
 
 		public int? DimensionIndex
 		{
@@ -31,20 +43,41 @@ namespace WorldForge
 
 		public bool Exists => ID != null;
 
-		public DimensionID(string id)
+		private DimensionID(string id, int index)
 		{
 			ID = id;
+			Index = index;
+		}
+
+		public static DimensionID Register(string ID, int index = int.MinValue)
+		{
+			var b = new DimensionID(ID, index);
+			registry.Add(b);
+			return b;
+		}
+
+		public static DimensionID FromID(string id)
+		{
+			foreach (var b in registry)
+			{
+				if (b.ID == id)
+				{
+					return b;
+				}
+			}
+			return Register(id);
 		}
 
 		public static DimensionID FromIndex(int index)
 		{
-			switch(index)
+			foreach(var b in registry)
 			{
-				case 0: return Overworld;
-				case -1: return Nether;
-				case 1: return TheEnd;
-				default: return Unknown;
+				if(b.Index == index)
+				{
+					return b;
+				}
 			}
+			return Register("unknown:unknown", index);
 		}
 
 		public object ToNBT(GameVersion version)
