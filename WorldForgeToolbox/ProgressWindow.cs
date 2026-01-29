@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WorldForge;
 
 namespace RegionViewer
 {
@@ -43,8 +44,9 @@ namespace RegionViewer
 		{
 			Invoke(() =>
 			{
-				progressBar.Value = value;
+				progressBar.Value = Math.Clamp(value, 0, progressBar.Maximum);
 				if (text != null) progressLabel.Text = text;
+				Logger.Info($"Progress: {progressLabel.Text} | {value}/{progressBar.Maximum}");
 				Invalidate(true);
 			});
 		}

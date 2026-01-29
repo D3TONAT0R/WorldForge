@@ -43,8 +43,15 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-		public void AnalyzeRegion(Region region, bool parallel = true, CancellationToken? token = null)
+		public void AnalyzeRegion(Region region, bool parallel = true, CancellationToken? token = null, IProgress<int> progress = null)
 		{
+			object lockObj = new object();
+			int processedChunks = 0;
+			lock (lockObj)
+			{
+				processedChunks++;
+				progress?.Report(0);
+			}
 			if (parallel)
 			{
 				var options = new ParallelOptions { CancellationToken = token ?? CancellationToken.None };
@@ -52,6 +59,11 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 				{
 					var chunk = region.chunks[i % 32, i / 32];
 					if (IsChunkReady(chunk)) AnalyzeChunk(chunk);
+					lock (lockObj)
+					{
+						processedChunks++;
+						progress?.Report(processedChunks);
+					}
 				});
 			}
 			else
@@ -69,6 +81,10 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 		{
 			object lockObj = new object();
 			int processedRegions = 0;
+			lock (lockObj)
+			{
+				progress?.Report(0);
+			}
 			if (parallel)
 			{
 				var options = new ParallelOptions { CancellationToken = token ?? CancellationToken.None };
@@ -108,12 +124,16 @@ namespace WorldForge.Utilities.BlockDistributionAnalysis
 			}
 		}
 
-		public void AnalyzeDimensionArea(Dimension dimension, ChunkCoord scanOriginChunk, int browserScanChunkRadius, bool parallel = true, CancellationToken? token = null, IProgress<int> progress = null)
+		public void AnalyzeDimensionArea(Dimension dimension, ChunkCoord scanOriginChunk, int scanChunkRadius, bool parallel = true, CancellationToken? token = null, IProgress<int> progress = null)
 		{
 			object lockObj = new object();
 			int processedChunks = 0;
-			var minChunk = new ChunkCoord(scanOriginChunk.x - browserScanChunkRadius, scanOriginChunk.z - browserScanChunkRadius);
-			var maxChunk = new ChunkCoord(scanOriginChunk.x + browserScanChunkRadius, scanOriginChunk.z + browserScanChunkRadius);
+			lock (lockObj)
+			{
+				progress?.Report(0);
+			}
+			var minChunk = new ChunkCoord(scanOriginChunk.x - scanChunkRadius, scanOriginChunk.z - scanChunkRadius);
+			var maxChunk = new ChunkCoord(scanOriginChunk.x + scanChunkRadius, scanOriginChunk.z + scanChunkRadius);
 			if (parallel)
 			{
 				var options = new ParallelOptions { CancellationToken = token ?? CancellationToken.None };

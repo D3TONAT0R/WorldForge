@@ -64,23 +64,17 @@ namespace RegionViewer.DistributionAnalyzer
 				cfg.UseDefaults();
 			});
 			InitializeComponent();
-			//Test();
 		}
 
-		public void Test()
-		{
-			if (!OpenFileUtility.OpenRegionDialog(out var path)) return;
-			var analyzer = new Analyzer();
-			analyzer.AnalyzeRegion(RegionDeserializer.LoadMainRegion(path, null, loadChunks: true, chunkLoadFlags: ChunkLoadFlags.All));
-			Show(analyzer.analysisData, AnalysisEvaluator.TargetBlockTypes.Ores, -64, 320, false);
-		}
-
-		public void Show(AnalysisData data, AnalysisEvaluator.TargetBlockTypes targetFlags, short yMin, short yMax, bool relativeToStone)
+		public void Show(AnalysisData data, IEnumerable<AnalysisConfiguration> configurations, short yMin, short yMax, bool relativeToStone)
 		{
 			var evaluation = new AnalysisEvaluation(data, yMin, yMax, relativeToStone);
-			foreach (var g in AnalysisEvaluator.GetTargetBlocks(targetFlags))
+			foreach (var conf in configurations)
 			{
-				evaluation.AddEvaluation(g);
+				foreach(var g in conf.BlockGroups)
+				{
+					evaluation.AddEvaluation(g);
+				}
 			}
 			Show(evaluation);
 		}
@@ -221,14 +215,19 @@ namespace RegionViewer.DistributionAnalyzer
 		{
 			var cancellationTokenSource = new CancellationTokenSource();
 			var progressForm = ProgressWindow.Show(cancellationTokenSource);
+			var analyzer = new Analyzer();
 			await Task.Run(() =>
 			{
-				var analyzer = new Analyzer();
 				if (browser.WorldScanMode == CreateAnalysisForm.ScanMode.Region)
 				{
 					progressForm.UpdateText("Analyzing region...");
+					progressForm.MaxProgressValue = 1024;
 					var region = RegionDeserializer.LoadMainRegion(browser.FilePath, null, loadChunks: true, chunkLoadFlags: ChunkLoadFlags.Blocks);
-					analyzer.AnalyzeRegion(region, true, cancellationTokenSource.Token);
+					var progressReporter = new Progress<int>(value =>
+					{
+						progressForm.UpdateProgress(value, $"Analyzing region ... ({value}/{1024} chunks)");
+					});
+					analyzer.AnalyzeRegion(region, true, cancellationTokenSource.Token, progressReporter);
 				}
 				else
 				{
@@ -255,9 +254,9 @@ namespace RegionViewer.DistributionAnalyzer
 						analyzer.AnalyzeDimensionArea(dimension, browser.ScanOrigin.Chunk, browser.ScanChunkRadius, true, cancellationTokenSource.Token, progressReporter);
 					}
 				}
-				progressForm.Close();
-				Show(analyzer.analysisData, AnalysisEvaluator.TargetBlockTypes.Ores, -64, 320, false);
 			}, cancellationTokenSource.Token);
+			progressForm.Close();
+			Show(analyzer.analysisData, browser.ScanConfigurations, -64, 320, false);
 		}
 
 		private void zoomToFitButton_Click(object sender, EventArgs e)

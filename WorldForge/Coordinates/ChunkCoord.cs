@@ -9,6 +9,8 @@
 
 		public ChunkCoord LocalRegionPos => new ChunkCoord(x & 31, z & 31);
 
+		public RegionLocation RegionCoord => new RegionLocation(x >> 5, z >> 5);
+
 		public ChunkCoord(int x, int z)
 		{
 			this.x = x;

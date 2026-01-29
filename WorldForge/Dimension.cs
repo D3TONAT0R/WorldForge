@@ -312,28 +312,35 @@ namespace WorldForge
 			}
 		}
 
-		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord minInclusive, ChunkCoord maxExclusive, bool keepLoadedRegions = true, bool includeNullChunks = false)
+		public IEnumerable<Chunk> EnumerateChunks(ChunkCoord min, ChunkCoord max, bool keepLoadedRegions = true, bool includeNullChunks = false)
 		{
-			foreach(var region in regions.Values)
+			RegionLocation minRegion = min.RegionCoord;
+			RegionLocation maxRegion = max.RegionCoord;
+			Dictionary<RegionLocation, Region> regionCache = new Dictionary<RegionLocation, Region>();
+			for(int cx = min.x; cx <= max.x; cx++)
 			{
-				var loadedRegion = region;
-				if (!region.IsLoaded)
+				for(int cz = min.z; cz <= max.z; cz++)
 				{
-					if (keepLoadedRegions) region.Load();
-					else loadedRegion = region.LoadClone();
-				}
-				foreach (var chunk in loadedRegion.chunks)
-				{
+					var regionLoc = new RegionLocation(cx >> 5, cz >> 5);
+					if(!HasRegion(regionLoc)) continue;
+					if (!regionCache.TryGetValue(regionLoc, out var region))
+					{
+						var loadedRegion = regions[regionLoc];
+						if (!loadedRegion.IsLoaded)
+						{
+							if(keepLoadedRegions) loadedRegion.Load();
+							else loadedRegion = loadedRegion.LoadClone();
+						}
+						regionCache.Add(regionLoc, loadedRegion);
+						region = loadedRegion;
+					}
+					var chunk = region.chunks[cx & 31, cz & 31];
 					if (chunk == null)
 					{
 						if(includeNullChunks) yield return null;
 						continue;
 					}
-					var c = chunk.WorldSpaceCoord;
-					if(c.x >= minInclusive.x && c.x < maxExclusive.x && c.z >= minInclusive.z && c.z < maxExclusive.z)
-					{
-						yield return chunk;
-					}
+					yield return chunk;
 				}
 			}
 		}
