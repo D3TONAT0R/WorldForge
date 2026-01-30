@@ -69,7 +69,7 @@ namespace WorldForge
 		{
 			var world = new World();
 			world.LevelData = LevelData.Load(new NBTFile(Path.Combine(worldSaveDir, "level.dat")), versionHint, out var actualGameVersion);
-			world.GameVersion = actualGameVersion ?? versionHint ?? GameVersion.FirstVersion;
+			world.GameVersion = actualGameVersion ?? versionHint ?? GameVersion.FirstAnvilVersion;
 
 			//Load the dimensions
 			world.Overworld = Dimension.Load(world, worldSaveDir, null, DimensionID.Overworld, versionHint, throwOnRegionLoadFail);

@@ -47,7 +47,7 @@ namespace WorldForge
 				for(int x = boundary.xMin; x < boundary.xMax; x++)
 				{
 					int y = heightmap[x - boundary.xMin, z - boundary.zMin];
-					if(y < 0) continue;
+					if(y == short.MinValue) continue;
 					var block = dim.GetBlock(new BlockCoord(x, y, z));
 					int shade = 0;
 					if(block != null && shading)

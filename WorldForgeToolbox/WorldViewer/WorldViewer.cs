@@ -1,6 +1,7 @@
 ﻿using System.Drawing.Drawing2D;
 using WorldForge;
 using WorldForge.Coordinates;
+using WorldForge.Entities;
 using WorldForge.Maps;
 using Region = WorldForge.Regions.Region;
 
@@ -83,7 +84,12 @@ namespace WorldForgeToolbox
 		private DimensionView? view;
 
 		private BlockCoord2D center;
-		private int zoom = 4;
+		private int Zoom
+		{
+			get => _zoom;
+			set => _zoom = Math.Clamp(value, 1, 6);
+		}
+		private int ZoomScale => 1 << (Zoom - 1);
 		private Point lastMousePos;
 		private bool mouseDown;
 		private Point mousePosition;
@@ -93,6 +99,10 @@ namespace WorldForgeToolbox
 		private bool processNewRenders = true;
 
 		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
+		private Pen spawnMarker = new Pen(Color.Red, 4);
+		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
+
+		private int _zoom = 4;
 
 		public WorldViewer(string file)
 		{
@@ -157,14 +167,14 @@ namespace WorldForgeToolbox
 			dimensionSelector.DropDownItems.Add(button);
 		}
 
-		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
+		private Point WorldToScreenPoint(BlockCoord2D pos, Rectangle clipRectangle)
 		{
 			pos.x -= center.x;
 			pos.z -= center.z;
-			float x = pos.x / 8f;
-			float y = pos.z / 8f;
-			x *= zoom;
-			y *= zoom;
+			float x = pos.x / 16f;
+			float y = pos.z / 16f;
+			x *= ZoomScale;
+			y *= ZoomScale;
 			x += clipRectangle.Width * 0.5f;
 			y += clipRectangle.Height * 0.5f;
 			return new Point((int)x, (int)y);
@@ -174,13 +184,18 @@ namespace WorldForgeToolbox
 		{
 			float x = screenPos.X - clipRectangle.Width * 0.5f;
 			float y = screenPos.Y - clipRectangle.Height * 0.5f;
-			x /= zoom;
-			y /= zoom;
-			x *= 8;
-			y *= 8;
+			x /= ZoomScale;
+			y /= ZoomScale;
+			x *= 16;
+			y *= 16;
 			x += center.x;
 			y += center.z;
 			return new BlockCoord2D((int)x, (int)y);
+		}
+
+		private void Repaint()
+		{
+			canvas.Invalidate();
 		}
 
 		private void OnDraw(object sender, PaintEventArgs e)
@@ -200,30 +215,48 @@ namespace WorldForgeToolbox
 
 		private void DrawDimension(PaintEventArgs e, Graphics g, Dimension dim)
 		{
-			var spawnPos = WorldToScreenPoint(view.world.LevelData.spawnpoint.Position, e.ClipRectangle);
-			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y - 4, spawnPos.X + 4, spawnPos.Y + 4);
-			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y + 4, spawnPos.X + 4, spawnPos.Y - 4);
+			if(view == null) return;
 			g.PixelOffsetMode = PixelOffsetMode.Half;
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			foreach (var r in dim.regions)
 			{
 				var pos = WorldToScreenPoint(r.Key.GetBlockCoord(0, 0, 0), e.ClipRectangle);
-				var rect = new Rectangle(pos, new Size(64 * zoom, 64 * zoom));
+				var rect = new Rectangle(pos, new Size(32 * ZoomScale, 32 * ZoomScale));
 				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
 				var bmp = RequestSurfaceMap(r.Value);
 				if (view.currentRenders.Contains(r.Value))
 				{
 					g.FillRectangle(currentRenderBrush, rect);
+					g.TranslateTransform(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+					int s = rect.Width / 8;
+					g.DrawLine(Pens.Gray, -s, -s, s, s);
+					g.DrawLine(Pens.Gray, -s, s, s, -s);
+					g.DrawLine(Pens.Gray, -s, s, s, s);
+					g.DrawLine(Pens.Gray, -s, -s, s, -s);
+					g.ResetTransform();
 				}
 				else
 				{
 					g.DrawImage(bmp, rect);
+					if(renderQueue.Contains(r.Value))
+					{
+						g.DrawLine(missingRenderPen, rect.Left, rect.Top, rect.Right, rect.Bottom);
+						g.DrawLine(missingRenderPen, rect.Left, rect.Bottom, rect.Right, rect.Top);
+					}
 				}
 				g.DrawRectangle(Pens.DarkGray, rect);
 				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
-			ProcessRenderQueue();
+			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8);
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
+			ProcessRenderQueue();
+		}
+
+		private void Cross(Graphics g, PaintEventArgs e, BlockCoord2D pos, Pen p, int size = 4)
+		{
+			var spawnPos = WorldToScreenPoint(pos, e.ClipRectangle);
+			g.DrawLine(p, spawnPos.X - size, spawnPos.Y - size, spawnPos.X + size, spawnPos.Y + size);
+			g.DrawLine(p, spawnPos.X - size, spawnPos.Y + size, spawnPos.X + size, spawnPos.Y - size);
 		}
 
 		private void ProcessRenderQueue()
@@ -249,7 +282,7 @@ namespace WorldForgeToolbox
 					{
 						break;
 					}
-					Invalidate(true);
+					Repaint();
 				}
 			}
 		}
@@ -317,14 +350,13 @@ namespace WorldForgeToolbox
 			catch
 			{
 			}
-			canvas.Invalidate();
+			Repaint();
 		}
 
 		private void OnCanvasScroll(object? sender, MouseEventArgs e)
 		{
-			zoom += Math.Clamp(e.Delta, -1, 1);
-			zoom = Math.Clamp(zoom, 1, 8);
-			canvas.Invalidate();
+			Zoom += Math.Clamp(e.Delta, -1, 1);
+			Repaint();
 		}
 
 		private void OnCanvasMouseDown(object? sender, MouseEventArgs e)
@@ -344,10 +376,10 @@ namespace WorldForgeToolbox
 			if (mouseDown)
 			{
 				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
-				center.x -= moveDelta.X * 8 / zoom;
-				center.z -= moveDelta.Y * 8 / zoom;
+				center.x -= moveDelta.X * 16 / ZoomScale;
+				center.z -= moveDelta.Y * 16 / ZoomScale;
 				lastMousePos = e.Location;
-				canvas.Invalidate();
+				Repaint();
 			}
 			var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
 			statusLabel.Text = $"Block {blockPos} | Region {blockPos.Region}";
@@ -382,7 +414,7 @@ namespace WorldForgeToolbox
 			{
 				view.ClearRenderCache(true);
 			}
-			Invalidate(true);
+			Repaint();
 		}
 
 		private void resumeMapRender_Click(object sender, EventArgs e)
@@ -406,21 +438,21 @@ namespace WorldForgeToolbox
 
 		private void zoomIn_Click(object sender, EventArgs e)
 		{
-			zoom = Math.Min(8, zoom + 1);
-			Invalidate(true);
+			Zoom++;
+			Repaint();
 		}
 
 		private void zoomOut_Click(object sender, EventArgs e)
 		{
-			zoom = Math.Max(1, zoom - 1);
-			Invalidate(true);
+			Zoom--;
+			Repaint();
 		}
 
 		private void jumpToSpawn_Click(object sender, EventArgs e)
 		{
 			if(view == null) return;
 			center = view.world.LevelData.spawnpoint.Position;
-			Invalidate(true);
+			Repaint();
 		}
 	}
 }

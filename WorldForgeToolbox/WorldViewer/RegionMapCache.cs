@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using WorldForge.Coordinates;
 using WorldForge.NBT;
 
@@ -79,14 +80,22 @@ namespace WorldForgeToolbox
 
 		public void Save(string filename)
 		{
+			// Serialize bitmaps in parallel
+			var serialized = new ConcurrentDictionary<RegionLocation, NBTCompound>();
+			Parallel.ForEach(cache, kvp =>
+			{
+				if (!kvp.Value.renderComplete) return; // Skip incomplete renders
+				serialized.TryAdd(kvp.Key, kvp.Value.Serialize());
+			});
+			// Create NBT structure
 			var nbt = new NBTCompound();
 			var entries = nbt.AddCompound("entries");
-			foreach (var kvp in cache)
+			foreach (var kvp in serialized)
 			{
-				if (!kvp.Value.renderComplete) continue; // Skip incomplete renders
 				string key = $"{kvp.Key.x},{kvp.Key.z}";
-				entries.Add(key, kvp.Value.Serialize());
+				entries.Add(key, serialized[kvp.Key]);
 			}
+			// Save to file
 			var file = new NBTFile(nbt, null);
 			file.Save(filename, false);
 		}
@@ -102,13 +111,21 @@ namespace WorldForgeToolbox
 			var nbt = file.contents;
 			var entriesNbt = nbt.Get<NBTCompound>("entries");
 			var cache = new RegionMapCache();
-			foreach (var key in entriesNbt.contents.Keys)
+			var deserialized = new ConcurrentDictionary<RegionLocation, Entry>();
+			// Deserialize bitmaps in parallel
+			Parallel.ForEach(entriesNbt.contents, kvp =>
 			{
+				var key = kvp.Key;
 				var split = key.Split(',');
 				var location = new RegionLocation(int.Parse(split[0]), int.Parse(split[1]));
 				var entryNbt = entriesNbt.Get<NBTCompound>(key);
 				var entry = Entry.Deserialize(entryNbt);
-				cache.cache[location] = entry;
+				deserialized.TryAdd(location, entry);
+			});
+			// Copy deserialized entries to cache
+			foreach (var kvp in deserialized)
+			{
+				cache.cache[kvp.Key] = kvp.Value;
 			}
 			return cache;
 		}
