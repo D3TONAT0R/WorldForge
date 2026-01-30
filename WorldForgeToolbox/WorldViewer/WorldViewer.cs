@@ -8,32 +8,95 @@ namespace WorldForgeToolbox
 {
 	public partial class WorldViewer : Form
 	{
+		private class DimensionView
+		{
+			private string sourceFileName;
+			public World world;
+			public Dimension dimension;
+			public RegionMapCache maps;
+			public List<Region> currentRenders = new List<Region>();
+			public CancellationTokenSource? cancellationTokenSource;
+
+			public DimensionView(string file, bool loadMapCache = true)
+			{
+				sourceFileName = file;
+				world = World.Load(Path.GetDirectoryName(file));
+				if (world.HasOverworld && world.Overworld.regions.Count > 0) dimension = world.Overworld;
+				else if (world.HasNether && world.Nether.regions.Count > 0) dimension = world.Nether;
+				else if (world.HasTheEnd && world.TheEnd.regions.Count > 0) dimension = world.TheEnd;
+				dimension ??= world.Overworld ?? world.Nether ?? world.TheEnd;
+				cancellationTokenSource = new CancellationTokenSource();
+				if (loadMapCache) LoadOrCreateRenderCache();
+				else maps = new RegionMapCache();
+			}
+
+			public void Dispose(bool saveCache = true)
+			{
+				cancellationTokenSource?.Cancel();
+				if (saveCache) SaveRenderCache();
+				maps = null!;
+				world = null!;
+				dimension = null!;
+			}
+
+			public void SaveRenderCache()
+			{
+				if (!File.Exists(sourceFileName)) return;
+				var worldRoot = Path.GetDirectoryName(sourceFileName);
+				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
+				maps.Save(cachePath);
+			}
+
+			public void LoadOrCreateRenderCache()
+			{
+				var worldRoot = Path.GetDirectoryName(sourceFileName);
+				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
+			}
+
+			public void ClearRenderCache(bool deleteCacheFile)
+			{
+				maps.Clear();
+				var worldRoot = Path.GetDirectoryName(sourceFileName);
+				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+				if (File.Exists(cachePath))
+				{
+					File.Delete(cachePath);
+				}
+			}
+
+			public void SwitchDimension(Dimension dim, bool saveMapCache = true)
+			{
+				cancellationTokenSource?.Cancel();
+				cancellationTokenSource = new CancellationTokenSource();
+				dimension = dim;
+				if (saveMapCache) SaveRenderCache();
+				currentRenders.Clear();
+				LoadOrCreateRenderCache();
+			}
+		}
+
 		private const int REGION_RES = 64;
 		private const int BLOCKS_PER_PIXEL = 512 / REGION_RES;
 
-		private string fileName;
-
-		private World world;
-		private Dimension dimension;
-		private RegionMapCache regionBitmaps;
-		private List<Region> currentRenders = new List<Region>();
+		private DimensionView? view;
 
 		private BlockCoord2D center;
-
 		private int zoom = 4;
 		private Point lastMousePos;
 		private bool mouseDown;
 		private Point mousePosition;
 
 		private List<Region> renderQueue = new List<Region>();
-		private int runningRenderTasks => currentRenders.Count;
+		private int RunningRenderTasks => view?.currentRenders.Count ?? 0;
+		private bool processNewRenders = true;
 
 		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
 
 		public WorldViewer(string file)
 		{
 			InitializeComponent();
-			fileName = file;
 			canvas.MouseWheel += OnCanvasScroll;
 			canvas.MouseDown += OnCanvasMouseDown;
 			canvas.MouseUp += OnCanvasMouseUp;
@@ -41,83 +104,57 @@ namespace WorldForgeToolbox
 			canvas.MouseLeave += OnCanvasMouseLeave;
 			canvas.DoubleClick += OnCanvasDoubleClick;
 			canvas.Cursor = Cursors.SizeAll;
-			if (string.IsNullOrEmpty(fileName))
+			if (string.IsNullOrEmpty(file))
 			{
-				OpenFileDialog openFileDialog = new OpenFileDialog();
-				openFileDialog.Filter = "World Files (level.dat)|*.dat|All Files (*.*)|*.*";
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				if (OpenFileUtility.OpenFileDialog(out file, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
 				{
-					fileName = openFileDialog.FileName;
-				}
-				else
-				{
-					Close();
-					return;
+					OpenWorld(file);
 				}
 			}
-			Load();
+		}
+
+		private void OpenWorld(string file)
+		{
+			view?.Dispose();
+			view = new DimensionView(file);
+			center = view.world.LevelData.spawnpoint.Position;
+			dimensionSelector.DropDownItems.Clear();
+			CreateDimensionMenuItem(view.world.Overworld);
+			CreateDimensionMenuItem(view.world.Nether);
+			CreateDimensionMenuItem(view.world.TheEnd);
+			Invalidate(true);
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
 			base.OnFormClosing(e);
-			SaveRenderCache();
-		}
-
-		private void Load()
-		{
-			world = World.Load(Path.GetDirectoryName(fileName));
-			center = world.LevelData.spawnpoint.Position;
-			dimensionSelector.DropDownItems.Clear();
-			CreateDimensionMenuItem(world.Overworld);
-			CreateDimensionMenuItem(world.Nether);
-			CreateDimensionMenuItem(world.TheEnd);
-			ShowDimension(world.Overworld ?? world.Nether ?? world.TheEnd);
+			view?.Dispose();
 		}
 
 		private string GetDimensionName(Dimension dim)
 		{
-            string readableName = dim.dimensionID.ID.Replace("minecraft:", "");
-            readableName = readableName.Substring(0, 1).ToUpper() + readableName.Substring(1);
+			string readableName = dim.dimensionID.ID.Replace("minecraft:", "");
+			readableName = readableName.Substring(0, 1).ToUpper() + readableName.Substring(1);
 			return readableName;
-        }
+		}
 
-        private void ShowDimension(Dimension dim)
-        {
-			SaveRenderCache();
-			dimension = dim;
+		private void ShowDimension(Dimension dim)
+		{
+			view.SwitchDimension(dim);
 			dimensionSelector.Text = GetDimensionName(dim);
 			renderQueue.Clear();
-			currentRenders.Clear();
-			LoadOrCreateRenderCache();
 			Invalidate(true);
-        }
+		}
 
-        private void CreateDimensionMenuItem(Dimension dim)
-        {
+		private void CreateDimensionMenuItem(Dimension dim)
+		{
 			if (dim == null) return;
-			
-            var button = new ToolStripMenuItem(GetDimensionName(dim))
-            {
+
+			var button = new ToolStripMenuItem(GetDimensionName(dim))
+			{
 				Tag = dim
 			};
 			dimensionSelector.DropDownItems.Add(button);
-        }
-
-		private void SaveRenderCache()
-		{
-			if (!File.Exists(fileName) || world == null || dimension == null) return;
-			var worldRoot = Path.GetDirectoryName(fileName);
-			var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
-			if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
-			regionBitmaps.Save(cachePath);
-		}
-
-		private void LoadOrCreateRenderCache()
-		{
-			var worldRoot = Path.GetDirectoryName(fileName);
-			var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
-			regionBitmaps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 		}
 
 		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
@@ -135,7 +172,6 @@ namespace WorldForgeToolbox
 
 		private BlockCoord2D ScreenToBlockPos(Point screenPos, Rectangle clipRectangle)
 		{
-			var spawn = world.LevelData.spawnpoint;
 			float x = screenPos.X - clipRectangle.Width * 0.5f;
 			float y = screenPos.Y - clipRectangle.Height * 0.5f;
 			x /= zoom;
@@ -152,9 +188,9 @@ namespace WorldForgeToolbox
 			var g = e.Graphics;
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 			g.Clear(Color.Transparent);
-			if(dimension != null)
+			if (view?.dimension != null)
 			{
-				DrawDimension(e, g, dimension);
+				DrawDimension(e, g, view.dimension);
 			}
 			else
 			{
@@ -164,7 +200,7 @@ namespace WorldForgeToolbox
 
 		private void DrawDimension(PaintEventArgs e, Graphics g, Dimension dim)
 		{
-			var spawnPos = WorldToScreenPoint(world.LevelData.spawnpoint.Position, e.ClipRectangle);
+			var spawnPos = WorldToScreenPoint(view.world.LevelData.spawnpoint.Position, e.ClipRectangle);
 			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y - 4, spawnPos.X + 4, spawnPos.Y + 4);
 			g.DrawLine(Pens.Red, spawnPos.X - 4, spawnPos.Y + 4, spawnPos.X + 4, spawnPos.Y - 4);
 			g.PixelOffsetMode = PixelOffsetMode.Half;
@@ -175,7 +211,7 @@ namespace WorldForgeToolbox
 				var rect = new Rectangle(pos, new Size(64 * zoom, 64 * zoom));
 				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
 				var bmp = RequestSurfaceMap(r.Value);
-				if (currentRenders.Contains(r.Value))
+				if (view.currentRenders.Contains(r.Value))
 				{
 					g.FillRectangle(currentRenderBrush, rect);
 				}
@@ -192,55 +228,53 @@ namespace WorldForgeToolbox
 
 		private void ProcessRenderQueue()
 		{
-			if (runningRenderTasks < 10)
+			if (!processNewRenders) return;
+			if (view != null && RunningRenderTasks < 10)
 			{
 				foreach (var region in renderQueue.OrderBy(GetRenderPriority))
 				{
-					var bitmap = regionBitmaps.Get(region.regionPos);
-					currentRenders.Add(region);
+					var bitmap = view.maps.Get(region.regionPos);
+					view.currentRenders.Add(region);
 					renderQueue.Remove(region);
 					var wfBitmap = new WinformsBitmap(bitmap);
-					var task = new Task(() => RenderRegionMap(region, wfBitmap));
+					var task = new Task(() => RenderRegionMap(region, wfBitmap), view.cancellationTokenSource.Token);
 					task.ContinueWith(t =>
 					{
-						currentRenders.Remove(region);
-						regionBitmaps.MarkRenderCompleted(region.regionPos);
+						if (task.IsCanceled) return;
+						view.currentRenders.Remove(region);
+						view.maps.MarkRenderCompleted(region.regionPos);
 					});
 					task.Start();
-					if (runningRenderTasks >= 10)
+					if (RunningRenderTasks >= 10)
 					{
 						break;
 					}
+					Invalidate(true);
 				}
 			}
 		}
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
 		{
-			OpenFileDialog openFileDialog = new OpenFileDialog();
-			openFileDialog.Filter = "World Files (level.dat)|*.dat;";
-			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			if (OpenFileUtility.OpenFileDialog(out var file, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
 			{
-				fileName = openFileDialog.FileName;
-				Load();
-			}
-			else
-			{
-				return;
+				OpenWorld(file);
 			}
 		}
 
 		private Bitmap RequestSurfaceMap(WorldForge.Regions.Region region)
 		{
-			if (regionBitmaps.TryGet(region.regionPos, out var bmp))
+			// Check if we have a cached version that is up to date
+			if (view!.maps.TryGet(region.regionPos, out var entry) && region.sourceFilePaths.MainFileLastWriteTimeUtc <= entry.regionTimestamp)
 			{
-				return bmp;
+				return entry.bitmap;
 			}
 			else
 			{
+				// Create new bitmap and queue for render
 				var bitmap = new Bitmap(REGION_RES, REGION_RES);
-				var timestamp = DateTime.Now; //TODO: Use timestamp from region file
-				regionBitmaps.Set(region.regionPos, bitmap, timestamp, false);
+				var timestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
+				view.maps.Set(region.regionPos, bitmap, timestamp, false);
 				renderQueue.Add(region);
 				return bitmap;
 			}
@@ -264,7 +298,7 @@ namespace WorldForgeToolbox
 				{
 					for (int z = 0; z < REGION_RES; z++)
 					{
-						if (region.Parent != dimension)
+						if (region.Parent != view!.dimension)
 						{
 							//Cancel render if dimension or world has changed
 							return;
@@ -326,8 +360,9 @@ namespace WorldForgeToolbox
 
 		private void OnCanvasDoubleClick(object? sender, EventArgs e)
 		{
+			if (view == null) return;
 			var pos = ScreenToBlockPos(mousePosition, canvas.ClientRectangle).Region;
-			if (dimension.TryGetRegion(pos, out var r))
+			if (view.dimension.TryGetRegion(pos, out var r))
 			{
 				var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
 				viewer.Show();
@@ -337,6 +372,55 @@ namespace WorldForgeToolbox
 		private void OnDimensionSelect(object sender, ToolStripItemClickedEventArgs e)
 		{
 			ShowDimension((Dimension)e.ClickedItem.Tag);
+		}
+
+		private void deleteMapCacheButton_Click(object sender, EventArgs e)
+		{
+			if (view == null) return;
+			var result = MessageBox.Show("Are you sure you want to delete the region map cache for the current dimension?", "Delete Map Cache", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+			if (result == DialogResult.Yes)
+			{
+				view.ClearRenderCache(true);
+			}
+			Invalidate(true);
+		}
+
+		private void resumeMapRender_Click(object sender, EventArgs e)
+		{
+			processNewRenders = true;
+			pauseMapRender.Enabled = true;
+			resumeMapRender.Enabled = false;
+		}
+
+		private void pauseMapRender_Click(object sender, EventArgs e)
+		{
+			processNewRenders = false;
+			pauseMapRender.Enabled = false;
+			resumeMapRender.Enabled = true;
+		}
+
+		private void SaveMapCacheButtonClick(object sender, EventArgs e)
+		{
+			view?.SaveRenderCache();
+		}
+
+		private void zoomIn_Click(object sender, EventArgs e)
+		{
+			zoom = Math.Min(8, zoom + 1);
+			Invalidate(true);
+		}
+
+		private void zoomOut_Click(object sender, EventArgs e)
+		{
+			zoom = Math.Max(1, zoom - 1);
+			Invalidate(true);
+		}
+
+		private void jumpToSpawn_Click(object sender, EventArgs e)
+		{
+			if(view == null) return;
+			center = view.world.LevelData.spawnpoint.Position;
+			Invalidate(true);
 		}
 	}
 }

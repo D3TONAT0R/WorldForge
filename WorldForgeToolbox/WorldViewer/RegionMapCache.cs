@@ -6,13 +6,13 @@ namespace WorldForgeToolbox
 {
 	public class RegionMapCache
 	{
-		public class RegionEntry
+		public class Entry
 		{
 			public Bitmap bitmap;
 			public DateTime regionTimestamp;
 			public bool renderComplete = false;
 
-			public RegionEntry(Bitmap bitmap, DateTime timestamp, bool renderComplete)
+			public Entry(Bitmap bitmap, DateTime timestamp, bool renderComplete)
 			{
 				this.bitmap = bitmap;
 				regionTimestamp = timestamp;
@@ -35,7 +35,7 @@ namespace WorldForgeToolbox
 				return nbt;
 			}
 
-			public static RegionEntry Deserialize(NBTCompound nbt)
+			public static Entry Deserialize(NBTCompound nbt)
 			{
 				var timestamp = DateTime.FromBinary(nbt.Get<long>("timestamp"));
 				var resolution = nbt.Get<int>("resolution");
@@ -46,25 +46,24 @@ namespace WorldForgeToolbox
 				// Copy byte[] to bitmap
 				Marshal.Copy(pixelData, 0, bitmapData.Scan0, length);
 				bitmap.UnlockBits(bitmapData);
-				return new RegionEntry(bitmap, timestamp, true);
+				return new Entry(bitmap, timestamp, true);
 			}
 		}
 
-		public readonly Dictionary<RegionLocation, RegionEntry> cache = new();
+		public readonly Dictionary<RegionLocation, Entry> cache = new();
 
 		public Bitmap? Get(RegionLocation location)
 		{
 			return cache.GetValueOrDefault(location)?.bitmap;
 		}
 
-		public bool TryGet(RegionLocation regionRegionPos, out Bitmap bitmap)
+		public bool TryGet(RegionLocation regionRegionPos, out Entry entry)
 		{
-			if(cache.TryGetValue(regionRegionPos, out var entry))
+			if(cache.TryGetValue(regionRegionPos, out entry))
 			{
-				bitmap = entry.bitmap;
 				return true;
 			}
-			bitmap = null!;
+			entry = null!;
 			return false;
 		}
 
@@ -75,7 +74,7 @@ namespace WorldForgeToolbox
 
 		public void Set(RegionLocation location, Bitmap bitmap, DateTime timestamp, bool renderComplete)
 		{
-			cache[location] = new RegionEntry(bitmap, timestamp, renderComplete);
+			cache[location] = new Entry(bitmap, timestamp, renderComplete);
 		}
 
 		public void Save(string filename)
@@ -92,6 +91,11 @@ namespace WorldForgeToolbox
 			file.Save(filename, false);
 		}
 
+		public void Clear()
+		{
+			cache.Clear();
+		}
+
 		public static RegionMapCache Load(string filename)
 		{
 			var file = new NBTFile(filename);
@@ -103,7 +107,7 @@ namespace WorldForgeToolbox
 				var split = key.Split(',');
 				var location = new RegionLocation(int.Parse(split[0]), int.Parse(split[1]));
 				var entryNbt = entriesNbt.Get<NBTCompound>(key);
-				var entry = RegionEntry.Deserialize(entryNbt);
+				var entry = Entry.Deserialize(entryNbt);
 				cache.cache[location] = entry;
 			}
 			return cache;

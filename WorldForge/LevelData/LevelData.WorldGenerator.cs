@@ -223,7 +223,14 @@ namespace WorldForge
 						layers.Add(new SuperflatLayer((NBTCompound)layer));
 					}
 				}
-				structureOverrides = settings.Get<List<string>>("structure_overrides");
+				if(settings.Contains("structure_overrides"))
+				{
+					if (settings.CheckType<string>("structure_overrides"))
+					{
+						structureOverrides = new List<string> { settings.Get<string>("structure_overrides") };
+					}
+					else structureOverrides = settings.Get<List<string>>("structure_overrides");
+				}
 				biome = BiomeIDs.GetOrCreate(settings.Get<string>("biome"));
 			}
 

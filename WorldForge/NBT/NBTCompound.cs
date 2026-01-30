@@ -132,7 +132,7 @@ namespace WorldForge.NBT
 			}
 			else
 			{
-				return (T)Convert.ChangeType(Get(key), typeof(T));
+				return (T)Convert.ChangeType(v, typeof(T));
 			}
 		}
 
@@ -193,6 +193,11 @@ namespace WorldForge.NBT
 		public bool Contains(string key)
 		{
 			return contents.ContainsKey(key);
+		}
+
+		public bool CheckType<T>(string key)
+		{
+			return Get(key) is T;
 		}
 
 		public NBTCompound GetAsCompound(string key)
