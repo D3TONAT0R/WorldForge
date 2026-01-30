@@ -1,29 +1,15 @@
 ﻿using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.Kernel;
-using LiveChartsCore.Kernel.Sketches;
-using LiveChartsCore.Painting;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
 using LiveChartsCore.SkiaSharpView.SKCharts;
-using LiveChartsCore.SkiaSharpView.WinForms;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using WorldForge;
 using WorldForge.IO;
-using WorldForge.Regions;
 using WorldForge.Utilities.BlockDistributionAnalysis;
-using WorldForgeToolbox;
 
 namespace RegionViewer.DistributionAnalyzer
 {

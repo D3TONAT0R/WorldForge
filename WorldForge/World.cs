@@ -203,5 +203,18 @@ namespace WorldForge
 			var nbt = serializer.CreateNBTFile(this);
 			nbt.Save(Path.Combine(worldSaveDir, "level.dat"), false);
 		}
+
+		public string GetDimensionDirectory(string worldSaveDir, DimensionID dimensionID)
+		{
+			var subdir = dimensionID.SubdirectoryName;
+			if(subdir != null)
+			{
+				return Path.Combine(worldSaveDir, subdir);
+			}
+			else
+			{
+				return worldSaveDir;
+			}
+		}
 	}
 }

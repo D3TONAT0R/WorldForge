@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Drawing.Drawing2D;
 using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
@@ -24,7 +15,7 @@ namespace WorldForgeToolbox
 
 		private World world;
 		private Dimension dimension;
-		private Dictionary<RegionLocation, WinformsBitmap> regionBitmaps = new Dictionary<RegionLocation, WinformsBitmap>();
+		private RegionMapCache regionBitmaps;
 		private List<Region> currentRenders = new List<Region>();
 
 		private BlockCoord2D center;
@@ -67,6 +58,12 @@ namespace WorldForgeToolbox
 			Load();
 		}
 
+		protected override void OnFormClosing(FormClosingEventArgs e)
+		{
+			base.OnFormClosing(e);
+			SaveRenderCache();
+		}
+
 		private void Load()
 		{
 			world = World.Load(Path.GetDirectoryName(fileName));
@@ -87,10 +84,13 @@ namespace WorldForgeToolbox
 
         private void ShowDimension(Dimension dim)
         {
+			SaveRenderCache();
 			dimension = dim;
 			dimensionSelector.Text = GetDimensionName(dim);
-            ClearRenderData();
-            Invalidate(true);
+			renderQueue.Clear();
+			currentRenders.Clear();
+			LoadOrCreateRenderCache();
+			Invalidate(true);
         }
 
         private void CreateDimensionMenuItem(Dimension dim)
@@ -104,11 +104,20 @@ namespace WorldForgeToolbox
 			dimensionSelector.DropDownItems.Add(button);
         }
 
-        private void ClearRenderData()
+		private void SaveRenderCache()
 		{
-			regionBitmaps.Clear();
-			renderQueue.Clear();
-			currentRenders.Clear();
+			if (!File.Exists(fileName) || world == null || dimension == null) return;
+			var worldRoot = Path.GetDirectoryName(fileName);
+			var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+			if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
+			regionBitmaps.Save(cachePath);
+		}
+
+		private void LoadOrCreateRenderCache()
+		{
+			var worldRoot = Path.GetDirectoryName(fileName);
+			var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+			regionBitmaps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 		}
 
 		private Point WorldToScreenPoint(BlockCoord pos, Rectangle clipRectangle)
@@ -187,13 +196,15 @@ namespace WorldForgeToolbox
 			{
 				foreach (var region in renderQueue.OrderBy(GetRenderPriority))
 				{
-					var bitmap = regionBitmaps[region.regionPos];
+					var bitmap = regionBitmaps.Get(region.regionPos);
 					currentRenders.Add(region);
 					renderQueue.Remove(region);
-					var task = new Task(() => RenderRegionMap(region, bitmap));
+					var wfBitmap = new WinformsBitmap(bitmap);
+					var task = new Task(() => RenderRegionMap(region, wfBitmap));
 					task.ContinueWith(t =>
 					{
 						currentRenders.Remove(region);
+						regionBitmaps.MarkRenderCompleted(region.regionPos);
 					});
 					task.Start();
 					if (runningRenderTasks >= 10)
@@ -221,16 +232,17 @@ namespace WorldForgeToolbox
 
 		private Bitmap RequestSurfaceMap(WorldForge.Regions.Region region)
 		{
-			if (regionBitmaps.TryGetValue(region.regionPos, out var bmp))
+			if (regionBitmaps.TryGet(region.regionPos, out var bmp))
 			{
-				return bmp.bitmap;
+				return bmp;
 			}
 			else
 			{
-				var bitmap = Bitmaps.Create(REGION_RES, REGION_RES);
-				regionBitmaps[region.regionPos] = (WinformsBitmap)bitmap;
+				var bitmap = new Bitmap(REGION_RES, REGION_RES);
+				var timestamp = DateTime.Now; //TODO: Use timestamp from region file
+				regionBitmaps.Set(region.regionPos, bitmap, timestamp, false);
 				renderQueue.Add(region);
-				return regionBitmaps[region.regionPos].bitmap;
+				return bitmap;
 			}
 		}
 
