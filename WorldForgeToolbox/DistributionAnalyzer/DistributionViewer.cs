@@ -10,10 +10,11 @@ using SkiaSharp;
 using WorldForge;
 using WorldForge.IO;
 using WorldForge.Utilities.BlockDistributionAnalysis;
+using WorldForgeToolbox;
 
 namespace RegionViewer.DistributionAnalyzer
 {
-	public partial class DistributionViewer : Form
+	public partial class DistributionViewer : ToolboxForm
 	{
 		public enum LineStyle
 		{
@@ -42,7 +43,7 @@ namespace RegionViewer.DistributionAnalyzer
 			{ "Lava", (new SKColor(0xFFFC9804), LineStyle.Dashed, false) },
 		};
 
-		public DistributionViewer()
+		public DistributionViewer() : base(null)
 		{
 			LiveCharts.Configure(cfg =>
 			{
@@ -57,7 +58,7 @@ namespace RegionViewer.DistributionAnalyzer
 			var evaluation = new AnalysisEvaluation(data, yMin, yMax, relativeToStone);
 			foreach (var conf in configurations)
 			{
-				foreach(var g in conf.BlockGroups)
+				foreach (var g in conf.BlockGroups)
 				{
 					evaluation.AddEvaluation(g);
 				}
@@ -253,6 +254,12 @@ namespace RegionViewer.DistributionAnalyzer
 			var y = chart.YAxes.First();
 			y.MinLimit = null;
 			y.MaxLimit = null;
+		}
+
+		private void toolboxButton_Click(object sender, EventArgs e)
+		{
+			Toolbox.Instance.Return();
+			Close();
 		}
 	}
 }

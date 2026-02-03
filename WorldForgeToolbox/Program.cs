@@ -48,7 +48,8 @@ static class Program
 		Bitmaps.BitmapFactory = new WinformsBitmapFactory();
 		//Get file name from command line args
 		string[] args = Environment.GetCommandLineArgs();
-		string fileName = args.Length > 1 ? args[1] : null;
-		Application.Run(new Toolbox());
+		string? fileName = args.Length > 1 ? args[1] : null;
+        var toolbox = new Toolbox(fileName);
+		Application.Run(toolbox);
 	}
 }

@@ -32,6 +32,10 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NBTViewer));
 			treeView = new TreeView();
 			icons = new ImageList(components);
+			toolStrip1 = new ToolStrip();
+			toolboxButton = new ToolStripButton();
+			toolStripSeparator1 = new ToolStripSeparator();
+			toolStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// treeView
@@ -39,10 +43,10 @@
 			treeView.Dock = DockStyle.Fill;
 			treeView.ImageIndex = 0;
 			treeView.ImageList = icons;
-			treeView.Location = new Point(0, 0);
+			treeView.Location = new Point(0, 25);
 			treeView.Name = "treeView";
 			treeView.SelectedImageIndex = 0;
-			treeView.Size = new Size(436, 450);
+			treeView.Size = new Size(436, 425);
 			treeView.TabIndex = 0;
 			// 
 			// icons
@@ -65,20 +69,51 @@
 			icons.Images.SetKeyName(12, "long_array.png");
 			icons.Images.SetKeyName(13, "boolean.png");
 			// 
+			// toolStrip1
+			// 
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1 });
+			toolStrip1.Location = new Point(0, 0);
+			toolStrip1.Name = "toolStrip1";
+			toolStrip1.Size = new Size(436, 25);
+			toolStrip1.TabIndex = 1;
+			toolStrip1.Text = "toolStrip1";
+			// 
+			// toolboxButton
+			// 
+			toolboxButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			toolboxButton.Image = (Image)resources.GetObject("toolboxButton.Image");
+			toolboxButton.ImageTransparentColor = Color.Magenta;
+			toolboxButton.Name = "toolboxButton";
+			toolboxButton.Size = new Size(23, 22);
+			toolboxButton.Text = "Return to Toolbox";
+			toolboxButton.Click += toolboxButton_Click;
+			// 
+			// toolStripSeparator1
+			// 
+			toolStripSeparator1.Name = "toolStripSeparator1";
+			toolStripSeparator1.Size = new Size(6, 25);
+			// 
 			// NBTViewer
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(436, 450);
 			Controls.Add(treeView);
+			Controls.Add(toolStrip1);
 			Name = "NBTViewer";
 			Text = "NBTViewer";
+			toolStrip1.ResumeLayout(false);
+			toolStrip1.PerformLayout();
 			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
 
 		private TreeView treeView;
 		private ImageList icons;
+		private ToolStrip toolStrip1;
+		private ToolStripButton toolboxButton;
+		private ToolStripSeparator toolStripSeparator1;
 	}
 }

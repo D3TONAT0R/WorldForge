@@ -1,13 +1,12 @@
 ﻿using System.Drawing.Drawing2D;
 using WorldForge;
 using WorldForge.Coordinates;
-using WorldForge.Entities;
 using WorldForge.Maps;
 using Region = WorldForge.Regions.Region;
 
 namespace WorldForgeToolbox
 {
-	public partial class WorldViewer : Form
+	public partial class WorldViewer : ToolboxForm
 	{
 		private class DimensionView
 		{
@@ -104,7 +103,7 @@ namespace WorldForgeToolbox
 
 		private int _zoom = 4;
 
-		public WorldViewer(string file)
+		public WorldViewer(string? inputFile) : base(inputFile)
 		{
 			InitializeComponent();
 			canvas.MouseWheel += OnCanvasScroll;
@@ -114,12 +113,21 @@ namespace WorldForgeToolbox
 			canvas.MouseLeave += OnCanvasMouseLeave;
 			canvas.DoubleClick += OnCanvasDoubleClick;
 			canvas.Cursor = Cursors.SizeAll;
-			if (string.IsNullOrEmpty(file))
+			
+		}
+
+		protected override void OnShown(EventArgs e)
+		{
+			if (string.IsNullOrEmpty(inputFileArg))
 			{
-				if (OpenFileUtility.OpenFileDialog(out file, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
+				if (OpenFileUtility.OpenFileDialog(out inputFileArg, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
 				{
-					OpenWorld(file);
+					OpenWorld(inputFileArg);
 				}
+			}
+			else
+			{
+				OpenWorld(inputFileArg);
 			}
 		}
 
@@ -215,7 +223,7 @@ namespace WorldForgeToolbox
 
 		private void DrawDimension(PaintEventArgs e, Graphics g, Dimension dim)
 		{
-			if(view == null) return;
+			if (view == null) return;
 			g.PixelOffsetMode = PixelOffsetMode.Half;
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			foreach (var r in dim.regions)
@@ -238,7 +246,7 @@ namespace WorldForgeToolbox
 				else
 				{
 					g.DrawImage(bmp, rect);
-					if(renderQueue.Contains(r.Value))
+					if (renderQueue.Contains(r.Value))
 					{
 						g.DrawLine(missingRenderPen, rect.Left, rect.Top, rect.Right, rect.Bottom);
 						g.DrawLine(missingRenderPen, rect.Left, rect.Bottom, rect.Right, rect.Top);
@@ -450,9 +458,15 @@ namespace WorldForgeToolbox
 
 		private void jumpToSpawn_Click(object sender, EventArgs e)
 		{
-			if(view == null) return;
+			if (view == null) return;
 			center = view.world.LevelData.spawnpoint.Position;
 			Repaint();
+		}
+
+		private void toolboxButton_Click(object sender, EventArgs e)
+		{
+			Toolbox.Instance.Return();
+			Close();
 		}
 	}
 }

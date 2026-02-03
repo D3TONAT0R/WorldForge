@@ -1,48 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml.Linq;
-using WorldForge.IO;
+﻿using WorldForge.IO;
 using WorldForge.NBT;
 
 namespace WorldForgeToolbox
 {
-	public partial class NBTViewer : Form
+	public partial class NBTViewer : ToolboxForm
 	{
-		public NBTViewer(string file)
+		private NBTCompound? data;
+
+		public NBTViewer(string? inputFile) : base(inputFile)
 		{
 			InitializeComponent();
-			if(string.IsNullOrEmpty(file))
+		}
+
+		protected override void OnShown(EventArgs e)
+		{
+			if (data != null) return;
+			inputFileArg ??= OpenFilePrompt();
+			if (inputFileArg != null)
 			{
-				//Open file dialog to select region file
-				OpenFileDialog openFileDialog = new OpenFileDialog();
-				openFileDialog.Filter = "Region Files (*.mca;*.mcr)|*.mca;*.mcr|All Files (*.*)|*.*";
-				if(openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					file = openFileDialog.FileName;
-				}
-				else
-				{
-					Close();
-					return;
-				}
+				OpenFile(inputFileArg);
 			}
+		}
+
+		private string? OpenFilePrompt()
+		{
+			//Open file dialog to select region file
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "Region Files (*.mca;*.mcr)|*.mca;*.mcr|All Files (*.*)|*.*";
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				return openFileDialog.FileName;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		private void OpenFile(string file)
+		{
 			var extension = Path.GetExtension(file).ToLower();
-			if(extension == ".mca" || extension == ".mcr")
+			if (extension == ".mca" || extension == ".mcr")
 			{
 				var nbt = new NBTCompound();
 				var region = RegionDeserializer.LoadMainRegion(file, null);
-				for(int z = 0; z < 32; z++)
+				for (int z = 0; z < 32; z++)
 				{
-					for(int x = 0; x < 32; x++)
+					for (int x = 0; x < 32; x++)
 					{
-						if(region.chunks[z, x] != null)
+						if (region.chunks[z, x] != null)
 						{
 							nbt.Add($"Chunk[{x},{z}]", region.chunks[z, x].SourceData.main.contents);
 						}
@@ -57,13 +63,7 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		public NBTViewer(NBTFile nbt, string title)
-		{
-			InitializeComponent();
-			DisplayContent(nbt, title);
-		}
-
-		public NBTViewer(NBTCompound nbt, string title)
+		public NBTViewer(NBTFile nbt, string title) : base(null)
 		{
 			InitializeComponent();
 			DisplayContent(nbt, title);
@@ -86,6 +86,7 @@ namespace WorldForgeToolbox
 
 		public void DisplayContent(NBTCompound nbt, string title)
 		{
+			data = nbt;
 			Text = title;
 			treeView.Nodes.Clear();
 			var rootNode = new TreeNode("Root");
@@ -97,7 +98,7 @@ namespace WorldForgeToolbox
 
 		private void PopulateTreeNode(TreeNode node, NBTCompound comp)
 		{
-			foreach(var kvp in comp)
+			foreach (var kvp in comp)
 			{
 				Add(node, NBTMappings.GetTag(kvp.Value.GetType()), $"{kvp.Key}: {ShowValue(kvp.Value)}", kvp.Value);
 			}
@@ -105,7 +106,7 @@ namespace WorldForgeToolbox
 
 		private void PopulateListNode(TreeNode node, NBTList childList)
 		{
-			for(int i = 0; i < childList.Length; i++)
+			for (int i = 0; i < childList.Length; i++)
 			{
 				Add(node, childList.ContentsType, $"[{i}]: {ShowValue(childList[i])}", childList[i]);
 			}
@@ -116,11 +117,11 @@ namespace WorldForgeToolbox
 			var childNode = new TreeNode(key);
 			childNode.ImageIndex = (int)tag;
 			childNode.SelectedImageIndex = childNode.ImageIndex;
-			if(value is NBTCompound childComp)
+			if (value is NBTCompound childComp)
 			{
 				PopulateTreeNode(childNode, childComp);
 			}
-			else if(value is NBTList childList)
+			else if (value is NBTList childList)
 			{
 				PopulateListNode(childNode, childList);
 			}
@@ -129,8 +130,14 @@ namespace WorldForgeToolbox
 
 		private string ShowValue(object value)
 		{
-			if(value == null) return "(null)";
+			if (value == null) return "(null)";
 			else return $"{value}";
+		}
+
+		private void toolboxButton_Click(object sender, EventArgs e)
+		{
+			Toolbox.Instance.Return();
+			Close();
 		}
 	}
 }

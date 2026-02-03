@@ -28,17 +28,19 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend skDefaultLegend3 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultLegend();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DistributionViewer));
-			LiveChartsCore.Drawing.Padding padding1 = new LiveChartsCore.Drawing.Padding();
-			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip1 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
-			LiveChartsCore.Drawing.Padding padding2 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.Drawing.Padding padding5 = new LiveChartsCore.Drawing.Padding();
+			LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip skDefaultTooltip3 = new LiveChartsCore.SkiaSharpView.SKCharts.SKDefaultTooltip();
+			LiveChartsCore.Drawing.Padding padding6 = new LiveChartsCore.Drawing.Padding();
 			chart = new LiveChartsCore.SkiaSharpView.WinForms.CartesianChart();
 			toolStrip1 = new ToolStrip();
 			openButton = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			filterSplitButton = new ToolStripSplitButton();
 			zoomToFitButton = new ToolStripButton();
+			toolboxButton = new ToolStripButton();
+			toolStripSeparator2 = new ToolStripSeparator();
 			toolStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
@@ -49,47 +51,47 @@
 			chart.ChartTheme = null;
 			chart.Dock = DockStyle.Fill;
 			chart.ForceGPU = false;
-			skDefaultLegend1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
-			skDefaultLegend1.Content = null;
-			skDefaultLegend1.IsValid = false;
-			skDefaultLegend1.Opacity = 1F;
-			padding1.Bottom = 0F;
-			padding1.Left = 0F;
-			padding1.Right = 0F;
-			padding1.Top = 0F;
-			skDefaultLegend1.Padding = padding1;
-			skDefaultLegend1.RemoveOnCompleted = false;
-			skDefaultLegend1.RotateTransform = 0F;
-			skDefaultLegend1.X = 0F;
-			skDefaultLegend1.Y = 0F;
-			chart.Legend = skDefaultLegend1;
+			skDefaultLegend3.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultLegend3.Content = null;
+			skDefaultLegend3.IsValid = false;
+			skDefaultLegend3.Opacity = 1F;
+			padding5.Bottom = 0F;
+			padding5.Left = 0F;
+			padding5.Right = 0F;
+			padding5.Top = 0F;
+			skDefaultLegend3.Padding = padding5;
+			skDefaultLegend3.RemoveOnCompleted = false;
+			skDefaultLegend3.RotateTransform = 0F;
+			skDefaultLegend3.X = 0F;
+			skDefaultLegend3.Y = 0F;
+			chart.Legend = skDefaultLegend3;
 			chart.Location = new Point(0, 25);
 			chart.Margin = new Padding(4, 3, 4, 3);
 			chart.MatchAxesScreenDataRatio = false;
 			chart.Name = "chart";
 			chart.Size = new Size(800, 425);
 			chart.TabIndex = 0;
-			skDefaultTooltip1.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
-			skDefaultTooltip1.Content = null;
-			skDefaultTooltip1.IsValid = false;
-			skDefaultTooltip1.Opacity = 1F;
-			padding2.Bottom = 0F;
-			padding2.Left = 0F;
-			padding2.Right = 0F;
-			padding2.Top = 0F;
-			skDefaultTooltip1.Padding = padding2;
-			skDefaultTooltip1.RemoveOnCompleted = false;
-			skDefaultTooltip1.RotateTransform = 0F;
-			skDefaultTooltip1.Wedge = 10;
-			skDefaultTooltip1.X = 0F;
-			skDefaultTooltip1.Y = 0F;
-			chart.Tooltip = skDefaultTooltip1;
+			skDefaultTooltip3.AnimationsSpeed = TimeSpan.Parse("00:00:00.1500000");
+			skDefaultTooltip3.Content = null;
+			skDefaultTooltip3.IsValid = false;
+			skDefaultTooltip3.Opacity = 1F;
+			padding6.Bottom = 0F;
+			padding6.Left = 0F;
+			padding6.Right = 0F;
+			padding6.Top = 0F;
+			skDefaultTooltip3.Padding = padding6;
+			skDefaultTooltip3.RemoveOnCompleted = false;
+			skDefaultTooltip3.RotateTransform = 0F;
+			skDefaultTooltip3.Wedge = 10;
+			skDefaultTooltip3.X = 0F;
+			skDefaultTooltip3.Y = 0F;
+			chart.Tooltip = skDefaultTooltip3;
 			chart.TooltipFindingStrategy = LiveChartsCore.Measure.TooltipFindingStrategy.Automatic;
 			chart.UpdaterThrottler = TimeSpan.Parse("00:00:00.0500000");
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { openButton, toolStripSeparator1, filterSplitButton, zoomToFitButton });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator2, openButton, toolStripSeparator1, filterSplitButton, zoomToFitButton });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -132,6 +134,21 @@
 			zoomToFitButton.Text = "Zoom to Fit";
 			zoomToFitButton.Click += zoomToFitButton_Click;
 			// 
+			// toolboxButton
+			// 
+			toolboxButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			toolboxButton.Image = (Image)resources.GetObject("toolboxButton.Image");
+			toolboxButton.ImageTransparentColor = Color.Magenta;
+			toolboxButton.Name = "toolboxButton";
+			toolboxButton.Size = new Size(23, 22);
+			toolboxButton.Text = "Return to Toolbox";
+			toolboxButton.Click += toolboxButton_Click;
+			// 
+			// toolStripSeparator2
+			// 
+			toolStripSeparator2.Name = "toolStripSeparator2";
+			toolStripSeparator2.Size = new Size(6, 25);
+			// 
 			// DistributionViewer
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -155,5 +172,7 @@
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripSplitButton filterSplitButton;
         private ToolStripButton zoomToFitButton;
-    }
+		private ToolStripButton toolboxButton;
+		private ToolStripSeparator toolStripSeparator2;
+	}
 }

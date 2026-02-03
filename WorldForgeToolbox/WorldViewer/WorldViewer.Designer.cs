@@ -39,20 +39,22 @@
 			toolStripSeparator3 = new ToolStripSeparator();
 			saveMapCacheButton = new ToolStripButton();
 			deleteMapCacheButton = new ToolStripButton();
+			toolStripSeparator4 = new ToolStripSeparator();
+			zoomIn = new ToolStripButton();
+			zoomOut = new ToolStripButton();
+			jumpToSpawn = new ToolStripButton();
 			canvas = new CanvasPanel();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
-			toolStripSeparator4 = new ToolStripSeparator();
-			jumpToSpawn = new ToolStripButton();
-			zoomIn = new ToolStripButton();
-			zoomOut = new ToolStripButton();
+			toolboxButton = new ToolStripButton();
+			toolStripSeparator5 = new ToolStripSeparator();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -138,6 +140,41 @@
 			deleteMapCacheButton.ToolTipText = "Delete Map Cache";
 			deleteMapCacheButton.Click += deleteMapCacheButton_Click;
 			// 
+			// toolStripSeparator4
+			// 
+			toolStripSeparator4.Name = "toolStripSeparator4";
+			toolStripSeparator4.Size = new Size(6, 25);
+			// 
+			// zoomIn
+			// 
+			zoomIn.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			zoomIn.Image = (Image)resources.GetObject("zoomIn.Image");
+			zoomIn.ImageTransparentColor = Color.Magenta;
+			zoomIn.Name = "zoomIn";
+			zoomIn.Size = new Size(23, 22);
+			zoomIn.Text = "Zoom In";
+			zoomIn.Click += zoomIn_Click;
+			// 
+			// zoomOut
+			// 
+			zoomOut.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			zoomOut.Image = (Image)resources.GetObject("zoomOut.Image");
+			zoomOut.ImageTransparentColor = Color.Magenta;
+			zoomOut.Name = "zoomOut";
+			zoomOut.Size = new Size(23, 22);
+			zoomOut.Text = "Zoom Out";
+			zoomOut.Click += zoomOut_Click;
+			// 
+			// jumpToSpawn
+			// 
+			jumpToSpawn.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			jumpToSpawn.Image = (Image)resources.GetObject("jumpToSpawn.Image");
+			jumpToSpawn.ImageTransparentColor = Color.Magenta;
+			jumpToSpawn.Name = "jumpToSpawn";
+			jumpToSpawn.Size = new Size(23, 22);
+			jumpToSpawn.Text = "Jump to Spawnpoint";
+			jumpToSpawn.Click += jumpToSpawn_Click;
+			// 
 			// canvas
 			// 
 			canvas.BackColor = SystemColors.AppWorkspace;
@@ -164,40 +201,20 @@
 			statusLabel.Size = new Size(200, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
-			// toolStripSeparator4
+			// toolboxButton
 			// 
-			toolStripSeparator4.Name = "toolStripSeparator4";
-			toolStripSeparator4.Size = new Size(6, 25);
+			toolboxButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			toolboxButton.Image = (Image)resources.GetObject("toolboxButton.Image");
+			toolboxButton.ImageTransparentColor = Color.Magenta;
+			toolboxButton.Name = "toolboxButton";
+			toolboxButton.Size = new Size(23, 22);
+			toolboxButton.Text = "Return to Toolbox";
+			toolboxButton.Click += toolboxButton_Click;
 			// 
-			// jumpToSpawn
+			// toolStripSeparator5
 			// 
-			jumpToSpawn.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			jumpToSpawn.Image = (Image)resources.GetObject("jumpToSpawn.Image");
-			jumpToSpawn.ImageTransparentColor = Color.Magenta;
-			jumpToSpawn.Name = "jumpToSpawn";
-			jumpToSpawn.Size = new Size(23, 22);
-			jumpToSpawn.Text = "Jump to Spawnpoint";
-			jumpToSpawn.Click += jumpToSpawn_Click;
-			// 
-			// zoomIn
-			// 
-			zoomIn.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			zoomIn.Image = (Image)resources.GetObject("zoomIn.Image");
-			zoomIn.ImageTransparentColor = Color.Magenta;
-			zoomIn.Name = "zoomIn";
-			zoomIn.Size = new Size(23, 22);
-			zoomIn.Text = "Zoom In";
-			zoomIn.Click += zoomIn_Click;
-			// 
-			// zoomOut
-			// 
-			zoomOut.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			zoomOut.Image = (Image)resources.GetObject("zoomOut.Image");
-			zoomOut.ImageTransparentColor = Color.Magenta;
-			zoomOut.Name = "zoomOut";
-			zoomOut.Size = new Size(23, 22);
-			zoomOut.Text = "Zoom Out";
-			zoomOut.Click += zoomOut_Click;
+			toolStripSeparator5.Name = "toolStripSeparator5";
+			toolStripSeparator5.Size = new Size(6, 25);
 			// 
 			// WorldViewer
 			// 
@@ -236,5 +253,7 @@
 		private ToolStripButton zoomIn;
 		private ToolStripButton zoomOut;
 		private ToolStripButton jumpToSpawn;
+		private ToolStripButton toolboxButton;
+		private ToolStripSeparator toolStripSeparator5;
 	}
 }
