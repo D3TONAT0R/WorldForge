@@ -10,9 +10,8 @@ using SkiaSharp;
 using WorldForge;
 using WorldForge.IO;
 using WorldForge.Utilities.BlockDistributionAnalysis;
-using WorldForgeToolbox;
 
-namespace RegionViewer.DistributionAnalyzer
+namespace WorldForgeToolbox
 {
 	public partial class DistributionViewer : ToolboxForm
 	{

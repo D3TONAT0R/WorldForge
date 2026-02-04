@@ -34,12 +34,13 @@ namespace WorldForgeToolbox
 			nbtViewer = new Button();
 			worldViewer = new Button();
 			blockDistributionViewer = new Button();
+			playerDataViewer = new Button();
 			SuspendLayout();
 			// 
 			// regionViewer
 			// 
 			regionViewer.Dock = DockStyle.Top;
-			regionViewer.Location = new Point(0, 25);
+			regionViewer.Location = new Point(0, 50);
 			regionViewer.Name = "regionViewer";
 			regionViewer.Size = new Size(244, 25);
 			regionViewer.TabIndex = 1;
@@ -63,7 +64,7 @@ namespace WorldForgeToolbox
 			// 
 			worldViewer.AutoSize = true;
 			worldViewer.Dock = DockStyle.Top;
-			worldViewer.Location = new Point(0, 50);
+			worldViewer.Location = new Point(0, 75);
 			worldViewer.Margin = new Padding(5);
 			worldViewer.Name = "worldViewer";
 			worldViewer.Size = new Size(244, 25);
@@ -76,7 +77,7 @@ namespace WorldForgeToolbox
 			// 
 			blockDistributionViewer.AutoSize = true;
 			blockDistributionViewer.Dock = DockStyle.Top;
-			blockDistributionViewer.Location = new Point(0, 75);
+			blockDistributionViewer.Location = new Point(0, 100);
 			blockDistributionViewer.Margin = new Padding(5);
 			blockDistributionViewer.Name = "blockDistributionViewer";
 			blockDistributionViewer.Size = new Size(244, 25);
@@ -85,15 +86,28 @@ namespace WorldForgeToolbox
 			blockDistributionViewer.UseVisualStyleBackColor = true;
 			blockDistributionViewer.Click += OnBlockDistributionClick;
 			// 
+			// playerDataViewer
+			// 
+			playerDataViewer.AutoSize = true;
+			playerDataViewer.Dock = DockStyle.Top;
+			playerDataViewer.Location = new Point(0, 25);
+			playerDataViewer.Name = "playerDataViewer";
+			playerDataViewer.Size = new Size(244, 25);
+			playerDataViewer.TabIndex = 4;
+			playerDataViewer.Text = "Player Data Viewer";
+			playerDataViewer.UseVisualStyleBackColor = true;
+			playerDataViewer.Click += OnPlayerDataViewerClick;
+			// 
 			// Toolbox
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			AutoSize = true;
-			ClientSize = new Size(244, 101);
+			ClientSize = new Size(244, 128);
 			Controls.Add(blockDistributionViewer);
 			Controls.Add(worldViewer);
 			Controls.Add(regionViewer);
+			Controls.Add(playerDataViewer);
 			Controls.Add(nbtViewer);
 			FormBorderStyle = FormBorderStyle.FixedSingle;
 			MaximizeBox = false;
@@ -110,5 +124,6 @@ namespace WorldForgeToolbox
 
 		private Button worldViewer;
         private Button blockDistributionViewer;
-    }
+		private Button playerDataViewer;
+	}
 }

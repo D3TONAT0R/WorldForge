@@ -1,9 +1,8 @@
 ﻿using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Utilities.BlockDistributionAnalysis;
-using WorldForgeToolbox;
 
-namespace RegionViewer.DistributionAnalyzer
+namespace WorldForgeToolbox
 {
 	public partial class CreateAnalysisForm : Form
 	{

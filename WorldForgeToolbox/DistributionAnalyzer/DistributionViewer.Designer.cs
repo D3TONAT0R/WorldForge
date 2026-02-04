@@ -1,4 +1,4 @@
-﻿namespace RegionViewer.DistributionAnalyzer
+﻿namespace WorldForgeToolbox
 {
     partial class DistributionViewer
     {

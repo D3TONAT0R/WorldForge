@@ -1,24 +1,21 @@
-﻿using RegionViewer.DistributionAnalyzer;
-using WorldForge.ConsoleTools;
-
-namespace WorldForgeToolbox
+﻿namespace WorldForgeToolbox
 {
-    public partial class Toolbox : Form
-    {
-        private readonly string? fileNameArg;
+	public partial class Toolbox : Form
+	{
+		private readonly string? fileNameArg;
 
 		private bool returning = false;
 
-        public Toolbox(string? fileNameArg)
-        {
+		public Toolbox(string? fileNameArg)
+		{
 			Instance = this;
-            this.fileNameArg = fileNameArg;
-            InitializeComponent();
+			this.fileNameArg = fileNameArg;
+			InitializeComponent();
 		}
 
-        public static Toolbox Instance { get; private set; }
+		public static Toolbox Instance { get; private set; }
 
-        protected override void OnShown(EventArgs _)
+		protected override void OnShown(EventArgs _)
 		{
 			try
 			{
@@ -52,41 +49,46 @@ namespace WorldForgeToolbox
 			}
 		}
 
-        private void OnNBTViewerClick(object sender, EventArgs e)
-        {
-            Show(new NBTViewer(null));
-        }
+		private void OnNBTViewerClick(object sender, EventArgs e)
+		{
+			Show(new NBTViewer(null));
+		}
 
-        private void OnRegionViewerClick(object sender, EventArgs e)
-        {
-            Show(new RegionViewer(null));
-        }
+		private void OnPlayerDataViewerClick(object sender, EventArgs e)
+		{
+			Show(new PlayerDataViewer(null));
+		}
 
-        private void OnWorldViewerClick(object sender, EventArgs e)
-        {
-            Show(new WorldViewer(null));
-        }
+		private void OnRegionViewerClick(object sender, EventArgs e)
+		{
+			Show(new RegionViewer(null));
+		}
 
-        private void OnBlockDistributionClick(object sender, EventArgs e)
-        {
-            Show(new DistributionViewer());
-        }
+		private void OnWorldViewerClick(object sender, EventArgs e)
+		{
+			Show(new WorldViewer(null));
+		}
 
-        private void Show(Form form)
-        {
+		private void OnBlockDistributionClick(object sender, EventArgs e)
+		{
+			Show(new DistributionViewer());
+		}
+
+		private void Show(Form form)
+		{
 			returning = false;
-            Hide();
+			Hide();
 			form.Closed += (s, args) =>
 			{
 				if (returning) Show();
 				else Close();
 			};
-            if (!form.IsDisposed) form.Show();
-        }
+			if (!form.IsDisposed) form.Show();
+		}
 
-        public void Return()
-        {
+		public void Return()
+		{
 			returning = true;
-        }
-    }
+		}
+	}
 }

@@ -237,7 +237,7 @@
 		#endregion
 
 		private ToolStrip toolStrip1;
-		private WorldForgeToolbox.CanvasPanel canvas;
+		private global::WorldForgeToolbox.CanvasPanel canvas;
 		private ToolStripButton toolStripButton1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel statusLabel;

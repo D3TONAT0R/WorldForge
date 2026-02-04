@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WorldForge;
 
-namespace RegionViewer
+namespace WorldForgeToolbox
 {
 	public partial class ProgressWindow : Form
 	{
