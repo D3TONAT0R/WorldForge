@@ -4,6 +4,7 @@ public class OpenFileUtility
 {
 	public const string REGION_FILTER = "Region files (*.mca;*.mcr)|*.mca;*.mcr";
 	public const string LEVEL_FILTER = "Level files (*.dat)|*.dat";
+	public const string NBT_DATA_FILTER = "NBT files (*.dat)|*.dat";
 	public const string ALL_FILES_FILTER = "All files (*.*)|*.*";
 
 	public static bool OpenRegionDialog(string? initialDirectory, out string filePath)
