@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using WorldForge.Items;
 
 namespace WorldForge
 {

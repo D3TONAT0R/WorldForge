@@ -34,6 +34,8 @@
 			canvas = new CanvasPanel();
 			toolStrip1 = new ToolStrip();
 			toolboxButton = new ToolStripButton();
+			toolStripSeparator1 = new ToolStripSeparator();
+			openFileButton = new ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
 			splitContainer1.Panel1.SuspendLayout();
 			splitContainer1.Panel2.SuspendLayout();
@@ -76,7 +78,7 @@
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -92,6 +94,21 @@
 			toolboxButton.Size = new Size(23, 22);
 			toolboxButton.Text = "Return to Toolbox";
 			toolboxButton.Click += toolboxButton_Click;
+			// 
+			// toolStripSeparator1
+			// 
+			toolStripSeparator1.Name = "toolStripSeparator1";
+			toolStripSeparator1.Size = new Size(6, 25);
+			// 
+			// openFileButton
+			// 
+			openFileButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			openFileButton.Image = (Image)resources.GetObject("openFileButton.Image");
+			openFileButton.ImageTransparentColor = Color.Magenta;
+			openFileButton.Name = "openFileButton";
+			openFileButton.Size = new Size(23, 22);
+			openFileButton.Text = "Open File";
+			openFileButton.Click += openFileButton_Click;
 			// 
 			// PlayerDataViewer
 			// 
@@ -119,5 +136,7 @@
 		private CanvasPanel canvas;
 		private ToolStrip toolStrip1;
 		private ToolStripButton toolboxButton;
+		private ToolStripSeparator toolStripSeparator1;
+		private ToolStripButton openFileButton;
 	}
 }

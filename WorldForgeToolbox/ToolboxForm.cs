@@ -16,7 +16,7 @@ public class ToolboxForm : Form
 
 	public void ReturnToToolbox()
 	{
-		Toolbox.Instance.Show();
-		this.Close();
+		Toolbox.Instance.Return();
+		Close();
 	}
 }
