@@ -220,6 +220,13 @@ namespace WorldForge
 		[NBT("Score")]
 		public int Score = 0;
 
+		public ItemStack headItemSlot;
+		public ItemStack chestItemSlot;
+		public ItemStack legsItemSlot;
+		public ItemStack feetItemSlot;
+
+		public ItemStack offhandItemSlot;
+
 		public Player(Vector3 position)
 		{
 			this.position = position;

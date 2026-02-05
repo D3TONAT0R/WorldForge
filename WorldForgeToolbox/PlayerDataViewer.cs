@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using WorldForge;
 using WorldForge.IO;
 using WorldForge.Items;
@@ -10,7 +11,8 @@ namespace WorldForgeToolbox
 	{
 		private NBTCompound? data;
 		private Player? playerData;
-		private Image avatar;
+		private Image? avatar;
+		private string? username;
 
 		private StringFormat centerFormat = new StringFormat()
 		{
@@ -20,6 +22,11 @@ namespace WorldForgeToolbox
 		private StringFormat bottomRightFormat = new StringFormat()
 		{
 			Alignment = StringAlignment.Far,
+			LineAlignment = StringAlignment.Far
+		};
+		private StringFormat bottomLeftFormat = new StringFormat()
+		{
+			Alignment = StringAlignment.Near,
 			LineAlignment = StringAlignment.Far
 		};
 
@@ -40,18 +47,23 @@ namespace WorldForgeToolbox
 				g.DrawString("No player data loaded.", Font, Brushes.Black, e.ClipRectangle, centerFormat);
 				return;
 			}
-			int w = e.ClipRectangle.Width / 10;
+			int w = (int)(e.ClipRectangle.Width / 11.5f);
 			for (int iy = 0; iy < 4; iy++)
 			{
-				int y = (int)((3.5f - iy) * w);
-				if (iy == 0) y += w / 2;
+				var y = 4f - iy;
+				if (iy == 0) y += 0.5f;
 				for (int ix = 0; ix < 9; ix++)
 				{
 					sbyte slot = (sbyte)(ix + iy * 9);
-					int x = ix * w + w / 2;
+					var x = 1.5f + ix;
 					DrawSlot(g, x, y, w, playerData.inventory.GetItem(slot));
 				}
 			}
+			DrawSlot(g, 0, 0, w, playerData.headItemSlot);
+			DrawSlot(g, 0, 1, w, playerData.chestItemSlot);
+			DrawSlot(g, 0, 2, w, playerData.legsItemSlot);
+			DrawSlot(g, 0, 3, w, playerData.feetItemSlot);
+			DrawSlot(g, 0, 4.5f, w, playerData.offhandItemSlot);
 			if(avatar != null)
 			{
 				g.DrawImage(avatar, 16, e.ClipRectangle.Height - 80, 64, 64);
@@ -60,10 +72,15 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(Pens.Red, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
+			g.DrawString(username ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width /2f, w, centerFormat);
 		}
 
-		private void DrawSlot(Graphics g, int x, int y, int size, ItemStack? stack)
+		private void DrawSlot(Graphics g, float x, float y, int size, ItemStack? stack)
 		{
+			x += 0.5f;
+			y += 0.5f;
+			x *= size;
+			y *= size;
 			g.DrawRectangle(Pens.Black, x, y, size, size);
 			if (stack != null && !stack.IsNull && stack.item.id != null)
 			{
@@ -94,22 +111,62 @@ namespace WorldForgeToolbox
 			data = nbt.contents;
 			playerData = new Player(data, GameVersion.DefaultVersion);
 			nbtView.DisplayContent(data, "");
-			string uuid = Path.GetFileNameWithoutExtension(file);
-			string url = $"https://mc-heads.net/avatar/{uuid}/8";
-			avatar = null;
-			try
+			var uuid = GetUUID(file);
+			if(uuid != null)
 			{
-				var request = WebRequest.Create(url);
-				using var response = request.GetResponse();
-				using var stream = response.GetResponseStream();
-				avatar = Bitmap.FromStream(stream);
-			}
-			catch(Exception e)
-			{
+				string url = $"https://mc-heads.net/avatar/{uuid}/8";
 				avatar = null;
-				MessageBox.Show(url + "\n" + e.ToString());
+				username = null;
+				Task.Run(() => LoadAvatar(url));
+				Task.Run(() => GetUsername(uuid));
 			}
 			Invalidate(true);
+		}
+
+		private UUID? GetUUID(string file)
+		{
+			string s = Path.GetFileNameWithoutExtension(file);
+			try
+			{
+				return new UUID(s);
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
+		private async Task LoadAvatar(string url)
+		{
+			try
+			{
+				using var http = new HttpClient();
+				await using var stream = await http.GetStreamAsync(url);
+				avatar = Bitmap.FromStream(stream);
+				Invalidate(true);
+			}
+			catch (Exception e)
+			{
+				avatar = null;
+			}
+		}
+
+		private async Task GetUsername(UUID uuid)
+		{
+			string url = $"https://api.minecraftservices.com/minecraft/profile/lookup/{uuid}";
+			try
+			{
+				using var http = new HttpClient();
+				var response = await http.GetStringAsync(url);
+				var json = JsonDocument.Parse(response);
+				username = json.RootElement.GetProperty("name").GetString();
+				Invoke(() => Text += " - " + username);
+				Invalidate(true);
+			}
+			catch (Exception e)
+			{
+				username = "Unknown Username";
+			}
 		}
 
 		private void toolboxButton_Click(object sender, EventArgs e)
