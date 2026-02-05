@@ -36,7 +36,7 @@ namespace WorldForge
 		public Dimension Nether { get; set; }
 		public Dimension TheEnd { get; set; }
 
-		public Dictionary<string, PlayerData> playerData = new Dictionary<string, PlayerData>();
+		public Dictionary<UUID, PlayerData> playerData = new Dictionary<UUID, PlayerData>();
 
 		public Dictionary<string, NBTCompound> commandStorage = new Dictionary<string, NBTCompound>();
 
@@ -83,6 +83,27 @@ namespace WorldForge
 			}
 
 			world.WorldData = WorldData.FromWorldSave(worldSaveDir);
+
+			if (Directory.Exists(Path.Combine(worldSaveDir, "playerdata")))
+			{
+				foreach (var file in Directory.GetFiles(Path.Combine(worldSaveDir, "playerdata"), "*.dat"))
+				{
+					try {
+						var uuid = new UUID(Path.GetFileNameWithoutExtension(file));
+						var playerNBT = new NBTFile(file);
+						//TODO: include stats and advancements 
+						var player = new PlayerData
+						{
+							player = new Player(playerNBT.contents, world.GameVersion)
+						};
+						world.playerData[uuid] = player;
+					}
+					catch
+					{
+
+					}
+				}
+			}
 
 			return world;
 		}

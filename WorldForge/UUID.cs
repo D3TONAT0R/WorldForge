@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using WorldForge.NBT;
 
 namespace WorldForge
@@ -11,6 +9,11 @@ namespace WorldForge
 		public int i1;
 		public int i2;
 		public int i3;
+
+		private UUID()
+		{
+			// Private constructor for internal use
+		}
 
 		public UUID(int i0, int i1, int i2, int i3)
 		{
@@ -35,17 +38,24 @@ namespace WorldForge
 			i2 = (int)(leastSignificant >> 32);
 			i3 = (int)leastSignificant;
 		}
-		
+
+		public UUID(string uuidString) 		{
+			var hex = uuidString.Replace("-", "");
+			if (hex.Length != 32)
+			{
+				throw new ArgumentException("Invalid UUID string");
+			}
+			i0 = Convert.ToInt32(hex.Substring(0, 8), 16);
+			i1 = Convert.ToInt32(hex.Substring(8, 8), 16);
+			i2 = Convert.ToInt32(hex.Substring(16, 8), 16);
+			i3 = Convert.ToInt32(hex.Substring(24, 8), 16);
+		}
+
 		public static UUID CreateFromNBT(object nbtData)
 		{
 			UUID uuid = new UUID();
 			uuid.FromNBT(nbtData);
 			return uuid;
-		}
-
-		private UUID()
-		{
-			//Needed for Activator.CreateInstance
 		}
 
 		public object ToNBT(GameVersion version)
@@ -97,6 +107,39 @@ namespace WorldForge
 				i2 = (int)(least >> 32);
 				i3 = (int)least;
 			}
+		}
+
+		public override string ToString() => ToString(true);
+
+		public string ToString(bool dashes)
+		{
+			if(dashes)
+			{
+				return $"{i0:x8}-{i1:x8}-{i2:x8}-{i3:x8}";
+			}
+			else
+			{
+				return $"{i0:x8}{i1:x8}{i2:x8}{i3:x8}";
+			}
+		}
+
+		public override int GetHashCode()
+		{
+			int hash = 17;
+			hash = hash * 31 + i0.GetHashCode();
+			hash = hash * 31 + i1.GetHashCode();
+			hash = hash * 31 + i2.GetHashCode();
+			hash = hash * 31 + i3.GetHashCode();
+			return hash;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if(obj is UUID other)
+			{
+				return i0 == other.i0 && i1 == other.i1 && i2 == other.i2 && i3 == other.i3;
+			}
+			return false;
 		}
 	}
 }

@@ -30,6 +30,8 @@
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldViewer));
 			toolStrip1 = new ToolStrip();
+			toolboxButton = new ToolStripButton();
+			toolStripSeparator5 = new ToolStripSeparator();
 			toolStripButton1 = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			dimensionSelector = new ToolStripSplitButton();
@@ -46,20 +48,35 @@
 			canvas = new CanvasPanel();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
-			toolboxButton = new ToolStripButton();
-			toolStripSeparator5 = new ToolStripSeparator();
+			toolStripSeparator6 = new ToolStripSeparator();
+			toggleGrid = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
 			toolStrip1.TabIndex = 0;
 			toolStrip1.Text = "toolStrip";
+			// 
+			// toolboxButton
+			// 
+			toolboxButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			toolboxButton.Image = (Image)resources.GetObject("toolboxButton.Image");
+			toolboxButton.ImageTransparentColor = Color.Magenta;
+			toolboxButton.Name = "toolboxButton";
+			toolboxButton.Size = new Size(23, 22);
+			toolboxButton.Text = "Return to Toolbox";
+			toolboxButton.Click += toolboxButton_Click;
+			// 
+			// toolStripSeparator5
+			// 
+			toolStripSeparator5.Name = "toolStripSeparator5";
+			toolStripSeparator5.Size = new Size(6, 25);
 			// 
 			// toolStripButton1
 			// 
@@ -201,20 +218,20 @@
 			statusLabel.Size = new Size(200, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
-			// toolboxButton
+			// toolStripSeparator6
 			// 
-			toolboxButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			toolboxButton.Image = (Image)resources.GetObject("toolboxButton.Image");
-			toolboxButton.ImageTransparentColor = Color.Magenta;
-			toolboxButton.Name = "toolboxButton";
-			toolboxButton.Size = new Size(23, 22);
-			toolboxButton.Text = "Return to Toolbox";
-			toolboxButton.Click += toolboxButton_Click;
+			toolStripSeparator6.Name = "toolStripSeparator6";
+			toolStripSeparator6.Size = new Size(6, 25);
 			// 
-			// toolStripSeparator5
+			// toggleGrid
 			// 
-			toolStripSeparator5.Name = "toolStripSeparator5";
-			toolStripSeparator5.Size = new Size(6, 25);
+			toggleGrid.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			toggleGrid.Image = (Image)resources.GetObject("toggleGrid.Image");
+			toggleGrid.ImageTransparentColor = Color.Magenta;
+			toggleGrid.Name = "toggleGrid";
+			toggleGrid.Size = new Size(23, 22);
+			toggleGrid.Text = "Toggle Grid";
+			toggleGrid.Click += toggleGrid_Click;
 			// 
 			// WorldViewer
 			// 
@@ -255,5 +272,7 @@
 		private ToolStripButton jumpToSpawn;
 		private ToolStripButton toolboxButton;
 		private ToolStripSeparator toolStripSeparator5;
+		private ToolStripSeparator toolStripSeparator6;
+		private ToolStripButton toggleGrid;
 	}
 }

@@ -92,6 +92,7 @@ namespace WorldForgeToolbox
 		private Point lastMousePos;
 		private bool mouseDown;
 		private Point mousePosition;
+		private RegionLocation? hoveredRegion;
 
 		private List<Region> renderQueue = new List<Region>();
 		private int RunningRenderTasks => view?.currentRenders.Count ?? 0;
@@ -99,6 +100,7 @@ namespace WorldForgeToolbox
 
 		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
 		private Pen spawnMarker = new Pen(Color.Red, 4);
+		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
 
 		private int _zoom = 4;
@@ -113,7 +115,7 @@ namespace WorldForgeToolbox
 			canvas.MouseLeave += OnCanvasMouseLeave;
 			canvas.DoubleClick += OnCanvasDoubleClick;
 			canvas.Cursor = Cursors.SizeAll;
-			
+			toggleGrid.Checked = true;
 		}
 
 		protected override void OnShown(EventArgs e)
@@ -228,8 +230,7 @@ namespace WorldForgeToolbox
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			foreach (var r in dim.regions)
 			{
-				var pos = WorldToScreenPoint(r.Key.GetBlockCoord(0, 0, 0), e.ClipRectangle);
-				var rect = new Rectangle(pos, new Size(32 * ZoomScale, 32 * ZoomScale));
+				var rect = GetRegionRectangle(e, r.Key);
 				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
 				var bmp = RequestSurfaceMap(r.Value);
 				if (view.currentRenders.Contains(r.Value))
@@ -248,16 +249,33 @@ namespace WorldForgeToolbox
 					g.DrawImage(bmp, rect);
 					if (renderQueue.Contains(r.Value))
 					{
-						g.DrawLine(missingRenderPen, rect.Left, rect.Top, rect.Right, rect.Bottom);
-						g.DrawLine(missingRenderPen, rect.Left, rect.Bottom, rect.Right, rect.Top);
+						var rect1 = rect;
+						rect1.Inflate(-6, -6);
+						g.DrawLine(missingRenderPen, rect1.Left, rect1.Top, rect1.Right, rect1.Bottom);
+						g.DrawLine(missingRenderPen, rect1.Left, rect1.Bottom, rect1.Right, rect1.Top);
 					}
 				}
-				g.DrawRectangle(Pens.DarkGray, rect);
+				if(toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
 				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
+			if (hoveredRegion.HasValue)
+			{
+				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(e, hoveredRegion.Value));
+			}
 			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8);
+			foreach(var player in view.world.playerData.Values)
+			{
+				Cross(g, e, player.player.position.Block.XZ, playerMarker, 6);
+			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
 			ProcessRenderQueue();
+		}
+
+		private Rectangle GetRegionRectangle(PaintEventArgs e, RegionLocation location)
+		{
+			var pos = WorldToScreenPoint(location.GetBlockCoord(0, 0, 0), e.ClipRectangle);
+			var rect = new Rectangle(pos, new Size(32 * ZoomScale, 32 * ZoomScale));
+			return rect;
 		}
 
 		private void Cross(Graphics g, PaintEventArgs e, BlockCoord2D pos, Pen p, int size = 4)
@@ -381,21 +399,27 @@ namespace WorldForgeToolbox
 		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
 		{
 			mousePosition = e.Location;
+			var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
 			if (mouseDown)
 			{
 				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
 				center.x -= moveDelta.X * 16 / ZoomScale;
 				center.z -= moveDelta.Y * 16 / ZoomScale;
 				lastMousePos = e.Location;
-				Repaint();
 			}
-			var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
+			else
+			{
+				hoveredRegion = blockPos.Region;
+			}
 			statusLabel.Text = $"Block {blockPos} | Region {blockPos.Region}";
+			Repaint();
 		}
 
 		private void OnCanvasMouseLeave(object? sender, EventArgs e)
 		{
 			statusLabel.Text = "";
+			hoveredRegion = null;
+			Repaint();
 		}
 
 		private void OnCanvasDoubleClick(object? sender, EventArgs e)
@@ -467,6 +491,12 @@ namespace WorldForgeToolbox
 		{
 			Toolbox.Instance.Return();
 			Close();
+		}
+
+		private void toggleGrid_Click(object sender, EventArgs e)
+		{
+			toggleGrid.Checked = !toggleGrid.Checked;
+			Repaint();
 		}
 	}
 }

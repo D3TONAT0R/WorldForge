@@ -105,7 +105,7 @@ public partial class RegionViewer : ToolboxForm
 		}
 		if (hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
 		{
-			e.Graphics.DrawRectangle(Pens.Red, hoveredChunk.x * 16, hoveredChunk.z * 16, 16, 16);
+			e.Graphics.DrawRectangle(hoverOutlinePen, hoveredChunk.x * 16, hoveredChunk.z * 16, 16, 16);
 		}
 	}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using WorldForge.Coordinates;
 using WorldForge.NBT;
 
 namespace WorldForge
@@ -226,6 +227,8 @@ namespace WorldForge
 		{
 			return new Vector3(a.x / b, a.y / b, a.z / b);
 		}
+
+		public BlockCoord Block => new BlockCoord((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z));
 
 		public static double Distance(Vector3 a, Vector3 b)
 		{
