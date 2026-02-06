@@ -17,6 +17,8 @@ namespace WorldForgeToolbox
 			public List<Region> currentRenders = new List<Region>();
 			public CancellationTokenSource? cancellationTokenSource;
 
+			public Dictionary<UUID, PlayerAccountData> playerAccountDatas = new Dictionary<UUID, PlayerAccountData>();
+
 			public DimensionView(string file, bool loadMapCache = true)
 			{
 				sourceFileName = file;
@@ -75,6 +77,17 @@ namespace WorldForgeToolbox
 				currentRenders.Clear();
 				LoadOrCreateRenderCache();
 			}
+
+			public PlayerAccountData GetPlayerAccountData(UUID uuid)
+			{
+				if (!playerAccountDatas.TryGetValue(uuid, out var data))
+				{
+					data = new PlayerAccountData(uuid);
+					playerAccountDatas[uuid] = data;
+					data.BeginRequest();
+				}
+				return data;
+			}
 		}
 
 		private const int REGION_RES = 64;
@@ -99,11 +112,17 @@ namespace WorldForgeToolbox
 		private bool processNewRenders = true;
 
 		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
-		private Pen spawnMarker = new Pen(Color.Red, 4);
+		private Pen spawnMarker = new Pen(Color.Blue, 4);
 		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
 
 		private int _zoom = 4;
+
+		private StringFormat pointLabelFormat = new StringFormat()
+		{
+			Alignment = StringAlignment.Near,
+			LineAlignment = StringAlignment.Center
+		};
 
 		public WorldViewer(string? inputFile) : base(inputFile)
 		{
@@ -262,10 +281,12 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(e, hoveredRegion.Value));
 			}
-			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8);
+			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
 			foreach(var player in view.world.playerData.Values)
 			{
-				Cross(g, e, player.player.position.Block.XZ, playerMarker, 6);
+				var username = view.GetPlayerAccountData(player.player.uuid).GetUsername();
+				var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
+				Icon(g, e, player.player.position.Block.XZ, avatar, Pens.White, 32, username);
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
 			ProcessRenderQueue();
@@ -278,11 +299,27 @@ namespace WorldForgeToolbox
 			return rect;
 		}
 
-		private void Cross(Graphics g, PaintEventArgs e, BlockCoord2D pos, Pen p, int size = 4)
+		private void Cross(Graphics g, PaintEventArgs e, BlockCoord2D pos, Pen p, int size = 4, string? label = null)
 		{
-			var spawnPos = WorldToScreenPoint(pos, e.ClipRectangle);
-			g.DrawLine(p, spawnPos.X - size, spawnPos.Y - size, spawnPos.X + size, spawnPos.Y + size);
-			g.DrawLine(p, spawnPos.X - size, spawnPos.Y + size, spawnPos.X + size, spawnPos.Y - size);
+			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
+			g.DrawLine(p, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
+			g.DrawLine(p, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
+			if(label != null)
+			{
+				g.DrawString(label, Font, p.Brush, screenPos.X + size + 2, screenPos.Y, pointLabelFormat);
+			}
+		}
+
+		private void Icon(Graphics g, PaintEventArgs e, BlockCoord2D pos, Image? image, Pen p, int size = 4, string? label = null)
+		{
+			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
+			size /= 2;
+			var rect = new Rectangle(screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
+			if (image != null) g.DrawImage(image, rect);
+			if (label != null)
+			{
+				g.DrawString(label, Font, p.Brush, screenPos.X + size / 2 + 2, screenPos.Y, pointLabelFormat);
+			}
 		}
 
 		private void ProcessRenderQueue()

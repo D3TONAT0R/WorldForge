@@ -125,7 +125,7 @@ namespace WorldForge
 
 		//TODO: find out when this was added
 		[NBT("UUID", "1.0.0")]
-		public int[] uuid = new int[4];
+		public UUID uuid;
 
 		//[NBT("Dimension")]
 		//This needs to be loaded manually because it can be either a string or an int

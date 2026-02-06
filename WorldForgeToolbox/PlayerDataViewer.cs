@@ -11,8 +11,7 @@ namespace WorldForgeToolbox
 	{
 		private NBTCompound? data;
 		private Player? playerData;
-		private Image? avatar;
-		private string? username;
+		private PlayerAccountData? accountData;
 
 		private StringFormat centerFormat = new StringFormat()
 		{
@@ -28,6 +27,11 @@ namespace WorldForgeToolbox
 		{
 			Alignment = StringAlignment.Near,
 			LineAlignment = StringAlignment.Far
+		};
+		private StringFormat centerLeftFormat = new StringFormat()
+		{
+			Alignment = StringAlignment.Near,
+			LineAlignment = StringAlignment.Center
 		};
 
 		public PlayerDataViewer(string? inputFile) : base(inputFile)
@@ -64,7 +68,8 @@ namespace WorldForgeToolbox
 			DrawSlot(g, 0, 2, w, playerData.legsItemSlot);
 			DrawSlot(g, 0, 3, w, playerData.feetItemSlot);
 			DrawSlot(g, 0, 4.5f, w, playerData.offhandItemSlot);
-			if(avatar != null)
+			var avatar = accountData?.GetAvatar();
+			if (avatar != null)
 			{
 				g.DrawImage(avatar, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
@@ -72,7 +77,7 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(Pens.Red, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
-			g.DrawString(username ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width /2f, w, centerFormat);
+			g.DrawString(accountData?.GetUsername() ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width /2f, w, centerFormat);
 		}
 
 		private void DrawSlot(Graphics g, float x, float y, int size, ItemStack? stack)
@@ -110,17 +115,23 @@ namespace WorldForgeToolbox
 			var nbt = new NBTFile(file);
 			data = nbt.contents;
 			playerData = new Player(data, GameVersion.DefaultVersion);
+			accountData = new PlayerAccountData(playerData.uuid);
 			nbtView.DisplayContent(data, "");
+			Invalidate(true);
 			var uuid = GetUUID(file);
 			if(uuid != null)
 			{
-				string url = $"https://mc-heads.net/avatar/{uuid}/8";
-				avatar = null;
-				username = null;
-				Task.Run(() => LoadAvatar(url));
-				Task.Run(() => GetUsername(uuid));
+				Task.Run(async () =>
+				{
+					var username = await accountData.GetUsernameAsync();
+					if(username != null) Text += " - " + username;
+				});
+				Task.Run(async () =>
+				{
+					await accountData.GetAvatarAsync();
+					Invalidate(true);
+				});
 			}
-			Invalidate(true);
 		}
 
 		private UUID? GetUUID(string file)
@@ -133,39 +144,6 @@ namespace WorldForgeToolbox
 			catch
 			{
 				return null;
-			}
-		}
-
-		private async Task LoadAvatar(string url)
-		{
-			try
-			{
-				using var http = new HttpClient();
-				await using var stream = await http.GetStreamAsync(url);
-				avatar = Bitmap.FromStream(stream);
-				Invalidate(true);
-			}
-			catch (Exception e)
-			{
-				avatar = null;
-			}
-		}
-
-		private async Task GetUsername(UUID uuid)
-		{
-			string url = $"https://api.minecraftservices.com/minecraft/profile/lookup/{uuid}";
-			try
-			{
-				using var http = new HttpClient();
-				var response = await http.GetStringAsync(url);
-				var json = JsonDocument.Parse(response);
-				username = json.RootElement.GetProperty("name").GetString();
-				Invoke(() => Text += " - " + username);
-				Invalidate(true);
-			}
-			catch (Exception e)
-			{
-				username = "Unknown Username";
 			}
 		}
 
