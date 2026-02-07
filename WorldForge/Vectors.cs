@@ -9,6 +9,9 @@ namespace WorldForge
 		public T x;
 		public T y;
 
+		public int BlockX => (int)Math.Floor(Convert.ToDouble(x));
+		public int BlockY => (int)Math.Floor(Convert.ToDouble(y));
+
 		public bool IsZero => Convert.ToDouble(x) == 0 && Convert.ToDouble(y) == 0;
 
 		public double SqrMagnitude
@@ -146,6 +149,10 @@ namespace WorldForge
 		public T x;
 		public T y;
 		public T z;
+
+		public int BlockX => (int)Math.Floor(Convert.ToDouble(x));
+		public int BlockY => (int)Math.Floor(Convert.ToDouble(y));
+		public int BlockZ => (int)Math.Floor(Convert.ToDouble(z));
 
 		public bool IsZero => Convert.ToDouble(x) == 0 && Convert.ToDouble(y) == 0 && Convert.ToDouble(z) == 0;
 

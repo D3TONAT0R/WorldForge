@@ -1,4 +1,5 @@
 ﻿using System.Drawing.Drawing2D;
+using System.Threading.Tasks;
 using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
@@ -97,7 +98,7 @@ namespace WorldForgeToolbox
 
 		private DimensionView? view;
 
-		private BlockCoord2D center;
+		private readonly Vector3 center = new Vector3();
 		private int Zoom
 		{
 			get => _zoom;
@@ -163,7 +164,8 @@ namespace WorldForgeToolbox
 		{
 			view?.Dispose();
 			view = new DimensionView(file);
-			center = view.world.LevelData.spawnpoint.Position;
+			center.x = view.world.LevelData.spawnpoint.Position.x;
+			center.z = view.world.LevelData.spawnpoint.Position.z;
 			dimensionSelector.DropDownItems.Clear();
 			CreateDimensionMenuItem(view.world.Overworld);
 			CreateDimensionMenuItem(view.world.Nether);
@@ -205,8 +207,9 @@ namespace WorldForgeToolbox
 
 		private Point WorldToScreenPoint(BlockCoord2D pos, Rectangle clipRectangle)
 		{
-			pos.x -= center.x;
-			pos.z -= center.z;
+			var centerBlock = center.Block;
+			pos.x -= centerBlock.x;
+			pos.z -= centerBlock.z;
 			float x = pos.x / 16f;
 			float y = pos.z / 16f;
 			x *= ZoomScale;
@@ -224,8 +227,9 @@ namespace WorldForgeToolbox
 			y /= ZoomScale;
 			x *= 16;
 			y *= 16;
-			x += center.x;
-			y += center.z;
+			var centerBlock = center.Block;
+			x += centerBlock.x;
+			y += centerBlock.z;
 			return new BlockCoord2D((int)x, (int)y);
 		}
 
@@ -259,24 +263,29 @@ namespace WorldForgeToolbox
 			{
 				var rect = GetRegionRectangle(e, r.Key);
 				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
-				var bmp = RequestSurfaceMap(r.Value);
+				var bmp = RequestSurfaceMap(r.Value, true);
 				if (view.currentRenders.Contains(r.Value))
 				{
+					// Currently rendering
 					g.FillRectangle(currentRenderBrush, rect);
-					g.TranslateTransform(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
-					int s = rect.Width / 8;
-					g.DrawLine(Pens.Gray, -s, -s, s, s);
-					g.DrawLine(Pens.Gray, -s, s, s, -s);
-					g.DrawLine(Pens.Gray, -s, s, s, s);
-					g.DrawLine(Pens.Gray, -s, -s, s, -s);
-					g.ResetTransform();
+					DrawRenderIcon(g, rect);
 				}
 				else
 				{
-					g.DrawImage(bmp, rect);
-					if(darken) g.FillRectangle(darkenMapBrush, rect);
-					if (renderQueue.Contains(r.Value))
+					if(bmp != null)
 					{
+						// Fully rendered
+						g.DrawImage(bmp, rect);
+						if (darken) g.FillRectangle(darkenMapBrush, rect);
+						var hq = view.maps.cache[r.Key].highQualityRender;
+						if (hq != null && !hq.renderComplete)
+						{
+							DrawRenderIcon(g, rect);
+						}
+					}
+					else
+					{
+						// Not rendered yet
 						var rect1 = rect;
 						rect1.Inflate(-6, -6);
 						g.DrawLine(missingRenderPen, rect1.Left, rect1.Top, rect1.Right, rect1.Bottom);
@@ -304,6 +313,17 @@ namespace WorldForgeToolbox
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
 			ProcessRenderQueue();
+		}
+
+		private static void DrawRenderIcon(Graphics g, Rectangle rect)
+		{
+			g.TranslateTransform(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+			int s = rect.Width / 8;
+			g.DrawLine(Pens.Gray, -s, -s, s, s);
+			g.DrawLine(Pens.Gray, -s, s, s, -s);
+			g.DrawLine(Pens.Gray, -s, s, s, s);
+			g.DrawLine(Pens.Gray, -s, -s, s, -s);
+			g.ResetTransform();
 		}
 
 		private Rectangle GetRegionRectangle(PaintEventArgs e, RegionLocation location)
@@ -345,18 +365,15 @@ namespace WorldForgeToolbox
 			{
 				foreach (var region in renderQueue.OrderBy(GetRenderPriority))
 				{
-					var bitmap = view.maps.Get(region.regionPos);
+					if(!view.maps.cache.TryGetValue(region.regionPos, out var entry))
+					{
+						entry = new RegionMapCache.Entry(null, region.sourceFilePaths.MainFileLastWriteTimeUtc);
+						view.maps.cache[region.regionPos] = entry;
+					}
 					view.currentRenders.Add(region);
 					renderQueue.Remove(region);
-					var wfBitmap = new WinformsBitmap(bitmap);
-					var task = new Task(() => RenderRegionMap(region, wfBitmap), view.cancellationTokenSource.Token);
-					task.ContinueWith(t =>
-					{
-						if (task.IsCanceled) return;
-						view.currentRenders.Remove(region);
-						view.maps.MarkRenderCompleted(region.regionPos);
-					});
-					task.Start();
+
+					entry.normalRender = BeginRender(region, false);
 					if (RunningRenderTasks >= 10)
 					{
 						break;
@@ -364,6 +381,26 @@ namespace WorldForgeToolbox
 					Repaint();
 				}
 			}
+		}
+
+		private Render BeginRender(Region region, bool highQuality)
+		{
+			int res = highQuality ? 512 : REGION_RES;
+			return Render.CreateNew(res, res,
+				(r, token) =>
+				{
+					var wfBitmap = new WinformsBitmap(r.bitmap);
+					RenderRegionMap(region, wfBitmap, res, token);
+				},
+				(r, token) =>
+				{
+					view.currentRenders.Remove(region);
+					if (token.IsCancellationRequested) return;
+					r.renderComplete = true;
+					Repaint();
+				},
+				view.cancellationTokenSource.Token
+			);
 		}
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
@@ -374,21 +411,21 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		private Bitmap RequestSurfaceMap(WorldForge.Regions.Region region)
+		private Bitmap? RequestSurfaceMap(Region region, bool allowHighQuality)
 		{
 			// Check if we have a cached version that is up to date
 			if (view!.maps.TryGet(region.regionPos, out var entry) && region.sourceFilePaths.MainFileLastWriteTimeUtc <= entry.regionTimestamp)
 			{
-				return entry.bitmap;
+				if(allowHighQuality && (entry.highQualityRender?.renderComplete ?? false))
+				{
+					return entry.highQualityRender.bitmap;
+				}
+				return entry.normalRender.bitmap;
 			}
 			else
 			{
-				// Create new bitmap and queue for render
-				var bitmap = new Bitmap(REGION_RES, REGION_RES);
-				var timestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
-				view.maps.Set(region.regionPos, bitmap, timestamp, false);
-				renderQueue.Add(region);
-				return bitmap;
+				if (!renderQueue.Contains(region)) renderQueue.Add(region);
+				return null;
 			}
 		}
 
@@ -396,27 +433,29 @@ namespace WorldForgeToolbox
 		{
 			//Lower means higher
 			var location = region.regionPos;
-			var diffX = Math.Abs(location.x - center.Region.x);
-			var diffZ = Math.Abs(location.z - center.Region.z);
+			var centerBlock = center.Block;
+			var diffX = Math.Abs(location.x - centerBlock.Region.x);
+			var diffZ = Math.Abs(location.z - centerBlock.Region.z);
 			return Math.Max(diffX, diffZ);
 		}
 
-		private void RenderRegionMap(WorldForge.Regions.Region region, IBitmap bitmap)
+		private void RenderRegionMap(WorldForge.Regions.Region region, IBitmap bitmap, int resolution, CancellationToken token)
 		{
 			try
 			{
+				int blocksPerPixel = Math.Max(1, 512 / resolution);
 				var loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
-				for (int x = 0; x < REGION_RES; x++)
+				for (int x = 0; x < resolution; x++)
 				{
-					for (int z = 0; z < REGION_RES; z++)
+					for (int z = 0; z < resolution; z++)
 					{
-						if (region.Parent != view!.dimension)
+						if (token.IsCancellationRequested)
 						{
 							//Cancel render if dimension or world has changed
 							return;
 						}
-						int bx = x * BLOCKS_PER_PIXEL;
-						int bz = z * BLOCKS_PER_PIXEL;
+						int bx = x * blocksPerPixel;
+						int bz = z * blocksPerPixel;
 						var chunk = loaded.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
 						if (chunk != null)
 						{
@@ -447,6 +486,16 @@ namespace WorldForgeToolbox
 		private void OnCanvasMouseUp(object? sender, MouseEventArgs e)
 		{
 			mouseDown = false;
+			if (view == null) return;
+			if(e.Button == MouseButtons.Right)
+			{
+				var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
+				if(view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
+				{
+					entry.highQualityRender = BeginRender(view.dimension.GetRegion(blockPos.Region)!, true);
+				}
+				Repaint();
+			}
 		}
 
 		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
@@ -456,8 +505,8 @@ namespace WorldForgeToolbox
 			if (mouseDown)
 			{
 				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
-				center.x -= moveDelta.X * 16 / ZoomScale;
-				center.z -= moveDelta.Y * 16 / ZoomScale;
+				center.x -= moveDelta.X * 16f / ZoomScale;
+				center.z -= moveDelta.Y * 16f / ZoomScale;
 				lastMousePos = e.Location;
 			}
 			else
@@ -567,7 +616,8 @@ namespace WorldForgeToolbox
 		private void jumpToSpawn_Click(object sender, EventArgs e)
 		{
 			if (view == null) return;
-			center = view.world.LevelData.spawnpoint.Position;
+			center.x = view.world.LevelData.spawnpoint.Position.x;
+			center.z = view.world.LevelData.spawnpoint.Position.z;
 			Repaint();
 		}
 

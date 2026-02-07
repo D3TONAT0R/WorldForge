@@ -9,23 +9,23 @@ namespace WorldForgeToolbox
 	{
 		public class Entry
 		{
-			public Bitmap bitmap;
+			public Render normalRender;
+			public Render? highQualityRender;
 			public DateTime regionTimestamp;
-			public bool renderComplete = false;
 
-			public Entry(Bitmap bitmap, DateTime timestamp, bool renderComplete)
+			public Entry(Render normalRender, DateTime timestamp)
 			{
-				this.bitmap = bitmap;
+				this.normalRender = normalRender;
 				regionTimestamp = timestamp;
-				this.renderComplete = renderComplete;
 			}
 
 			public NBTCompound Serialize()
 			{
 				var nbt = new NBTCompound();
 				nbt.Add("timestamp", regionTimestamp.ToBinary());
-				nbt.Add("resolution", bitmap.Width);
+				nbt.Add("resolution", normalRender.bitmap.Width);
 
+				var bitmap = normalRender.bitmap;
 				var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 				var length = bitmapData.Stride * bitmapData.Height;
 				byte[] pixelData = new byte[length];
@@ -47,15 +47,15 @@ namespace WorldForgeToolbox
 				// Copy byte[] to bitmap
 				Marshal.Copy(pixelData, 0, bitmapData.Scan0, length);
 				bitmap.UnlockBits(bitmapData);
-				return new Entry(bitmap, timestamp, true);
+				return new Entry(Render.CreateCompleted(bitmap), timestamp);
 			}
 		}
 
 		public readonly Dictionary<RegionLocation, Entry> cache = new();
 
-		public Bitmap? Get(RegionLocation location)
+		public Render? Get(RegionLocation location)
 		{
-			return cache.GetValueOrDefault(location)?.bitmap;
+			return cache.GetValueOrDefault(location)?.normalRender;
 		}
 
 		public bool TryGet(RegionLocation regionRegionPos, out Entry entry)
@@ -73,18 +73,13 @@ namespace WorldForgeToolbox
 			return cache.ContainsKey(location);
 		}
 
-		public void Set(RegionLocation location, Bitmap bitmap, DateTime timestamp, bool renderComplete)
-		{
-			cache[location] = new Entry(bitmap, timestamp, renderComplete);
-		}
-
 		public void Save(string filename)
 		{
 			// Serialize bitmaps in parallel
 			var serialized = new ConcurrentDictionary<RegionLocation, NBTCompound>();
 			Parallel.ForEach(cache, kvp =>
 			{
-				if (!kvp.Value.renderComplete) return; // Skip incomplete renders
+				if (!kvp.Value.normalRender.renderComplete) return; // Skip incomplete renders
 				serialized.TryAdd(kvp.Key, kvp.Value.Serialize());
 			});
 			// Create NBT structure
@@ -128,11 +123,6 @@ namespace WorldForgeToolbox
 				cache.cache[kvp.Key] = kvp.Value;
 			}
 			return cache;
-		}
-
-		public void MarkRenderCompleted(RegionLocation regionRegionPos)
-		{
-			cache[regionRegionPos].renderComplete = true;
 		}
 	}
 }
