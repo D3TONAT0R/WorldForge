@@ -10,7 +10,7 @@ namespace WorldForgeToolbox
 	{
 		private class DimensionView
 		{
-			private string sourceFileName;
+			public string sourceFileName;
 			public World world;
 			public Dimension dimension;
 			public RegionMapCache maps;
@@ -18,6 +18,8 @@ namespace WorldForgeToolbox
 			public CancellationTokenSource? cancellationTokenSource;
 
 			public Dictionary<UUID, PlayerAccountData> playerAccountDatas = new Dictionary<UUID, PlayerAccountData>();
+
+			public string RootDirectory => Path.GetDirectoryName(sourceFileName);
 
 			public DimensionView(string file, bool loadMapCache = true)
 			{
@@ -99,12 +101,14 @@ namespace WorldForgeToolbox
 		private int Zoom
 		{
 			get => _zoom;
-			set => _zoom = Math.Clamp(value, 1, 6);
+			set => _zoom = Math.Clamp(value, 1, 8);
 		}
 		private int ZoomScale => 1 << (Zoom - 1);
 		private Point lastMousePos;
 		private bool mouseDown;
 		private Point mousePosition;
+
+		private PlayerData? hoveredPlayer;
 		private RegionLocation? hoveredRegion;
 
 		private List<Region> renderQueue = new List<Region>();
@@ -116,6 +120,8 @@ namespace WorldForgeToolbox
 		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
 		private Brush darkenMapBrush = new SolidBrush(Color.FromArgb(160, Color.Black));
+
+		private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
 
 		private int _zoom = 4;
 
@@ -280,7 +286,7 @@ namespace WorldForgeToolbox
 				if (toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
 				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
-			if (hoveredRegion.HasValue)
+			if (hoveredRegion.HasValue && hoveredPlayer == null)
 			{
 				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(e, hoveredRegion.Value));
 			}
@@ -291,7 +297,9 @@ namespace WorldForgeToolbox
 				{
 					var username = view.GetPlayerAccountData(player.player.uuid).GetUsername();
 					var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
-					Icon(g, e, player.player.position.Block.XZ, avatar, Pens.White, 32, username);
+					bool hovered = hoveredPlayer == player;
+					Pen pen = hovered ? Pens.Red : playerMarker;
+					Icon(g, e, player.player.position.Block.XZ, avatar, pen, 16, username, hovered);
 				}
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
@@ -312,19 +320,21 @@ namespace WorldForgeToolbox
 			g.DrawLine(p, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
 			if (label != null)
 			{
-				g.DrawString(label, Font, p.Brush, screenPos.X + size + 2, screenPos.Y, pointLabelFormat);
+				g.DrawString(label, boldFont, Brushes.Black, screenPos.X + size + 3, screenPos.Y + 1, pointLabelFormat);
+				g.DrawString(label, boldFont, p.Brush, screenPos.X + size + 2, screenPos.Y, pointLabelFormat);
 			}
 		}
 
-		private void Icon(Graphics g, PaintEventArgs e, BlockCoord2D pos, Image? image, Pen p, int size = 4, string? label = null)
+		private void Icon(Graphics g, PaintEventArgs e, BlockCoord2D pos, Image? image, Pen p, int size = 16, string? label = null, bool border = false)
 		{
 			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
-			size /= 2;
 			var rect = new Rectangle(screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
 			if (image != null) g.DrawImage(image, rect);
+			if(border) g.DrawRectangle(p, rect);
 			if (label != null)
 			{
-				g.DrawString(label, Font, p.Brush, screenPos.X + size / 2 + 2, screenPos.Y, pointLabelFormat);
+				g.DrawString(label, boldFont, Brushes.Black, screenPos.X + size / 2 + 3, screenPos.Y + 1, pointLabelFormat);
+				g.DrawString(label, boldFont, p.Brush, screenPos.X + size / 2 + 2, screenPos.Y, pointLabelFormat);
 			}
 		}
 
@@ -453,8 +463,23 @@ namespace WorldForgeToolbox
 			else
 			{
 				hoveredRegion = blockPos.Region;
+				hoveredPlayer = null;
+				if(togglePlayers.Checked)
+				{
+					foreach(var player in view!.world.playerData.Values)
+					{
+						var playerScreenPos = WorldToScreenPoint(player.player.position.Block.XZ, canvas.ClientRectangle);
+						var distance = Math.Sqrt(Math.Pow(playerScreenPos.X - e.Location.X, 2) + Math.Pow(playerScreenPos.Y - e.Location.Y, 2));
+						if (distance <= 16)
+						{
+							hoveredPlayer = player;
+							statusLabel.Text = $"Player: {view.GetPlayerAccountData(player.player.uuid).GetUsername()} | Block {blockPos} | Region {blockPos.Region}";
+						}
+					}
+				}
 			}
 			statusLabel.Text = $"Block {blockPos} | Region {blockPos.Region}";
+			canvas.Cursor = hoveredPlayer != null ? Cursors.Hand : Cursors.SizeAll;
 			Repaint();
 		}
 
@@ -462,17 +487,33 @@ namespace WorldForgeToolbox
 		{
 			statusLabel.Text = "";
 			hoveredRegion = null;
+			hoveredPlayer = null;
 			Repaint();
 		}
 
-		private void OnCanvasDoubleClick(object? sender, EventArgs e)
+		private void OnCanvasDoubleClick(object? sender, EventArgs _)
 		{
 			if (view == null) return;
-			var pos = ScreenToBlockPos(mousePosition, canvas.ClientRectangle).Region;
-			if (view.dimension.TryGetRegion(pos, out var r))
+			if(hoveredPlayer != null)
 			{
-				var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
-				viewer.Show();
+				try
+				{
+					var playerPath = Path.Combine(view.RootDirectory, "playerdata", hoveredPlayer.player.uuid.ToString(true) + ".dat");
+					var viewer = new PlayerDataViewer(playerPath);
+					viewer.Show();
+				}
+				catch(Exception e)
+				{
+					MessageBox.Show(e.ToString());
+				}
+			}
+			else if(hoveredRegion != null)
+			{
+				if (view.dimension.TryGetRegion(hoveredRegion.Value, out var r))
+				{
+					var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
+					viewer.Show();
+				}
 			}
 		}
 

@@ -115,7 +115,13 @@ namespace WorldForge
 		{
 			if(dashes)
 			{
-				return $"{i0:x8}-{i1:x8}-{i2:x8}-{i3:x8}";
+				int a = i0;
+				short b = (short)(i1 >> 16);
+				short c = (short)i1;
+				short d = (short)(i2 >> 16);
+				short e1 = (short)i2;
+				int e2 = i3;
+				return $"{a:x8}-{b:x4}-{c:x4}-{d:x4}-{e1:x4}{e2:x8}";
 			}
 			else
 			{
