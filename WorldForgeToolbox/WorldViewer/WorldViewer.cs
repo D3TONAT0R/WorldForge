@@ -112,9 +112,10 @@ namespace WorldForgeToolbox
 		private bool processNewRenders = true;
 
 		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
-		private Pen spawnMarker = new Pen(Color.Blue, 4);
+		private Pen spawnMarker = new Pen(Color.DarkOrange, 4);
 		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
+		private Brush darkenMapBrush = new SolidBrush(Color.FromArgb(160, Color.Black));
 
 		private int _zoom = 4;
 
@@ -247,6 +248,7 @@ namespace WorldForgeToolbox
 			if (view == null) return;
 			g.PixelOffsetMode = PixelOffsetMode.Half;
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
+			bool darken = toggleOpacity.Checked;
 			foreach (var r in dim.regions)
 			{
 				var rect = GetRegionRectangle(e, r.Key);
@@ -266,6 +268,7 @@ namespace WorldForgeToolbox
 				else
 				{
 					g.DrawImage(bmp, rect);
+					if(darken) g.FillRectangle(darkenMapBrush, rect);
 					if (renderQueue.Contains(r.Value))
 					{
 						var rect1 = rect;
@@ -274,7 +277,7 @@ namespace WorldForgeToolbox
 						g.DrawLine(missingRenderPen, rect1.Left, rect1.Bottom, rect1.Right, rect1.Top);
 					}
 				}
-				if(toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
+				if (toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
 				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
 			}
 			if (hoveredRegion.HasValue)
@@ -282,11 +285,14 @@ namespace WorldForgeToolbox
 				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(e, hoveredRegion.Value));
 			}
 			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
-			foreach(var player in view.world.playerData.Values)
+			if (togglePlayers.Checked)
 			{
-				var username = view.GetPlayerAccountData(player.player.uuid).GetUsername();
-				var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
-				Icon(g, e, player.player.position.Block.XZ, avatar, Pens.White, 32, username);
+				foreach (var player in view.world.playerData.Values)
+				{
+					var username = view.GetPlayerAccountData(player.player.uuid).GetUsername();
+					var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
+					Icon(g, e, player.player.position.Block.XZ, avatar, Pens.White, 32, username);
+				}
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
 			ProcessRenderQueue();
@@ -304,7 +310,7 @@ namespace WorldForgeToolbox
 			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
 			g.DrawLine(p, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
 			g.DrawLine(p, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
-			if(label != null)
+			if (label != null)
 			{
 				g.DrawString(label, Font, p.Brush, screenPos.X + size + 2, screenPos.Y, pointLabelFormat);
 			}
@@ -530,9 +536,21 @@ namespace WorldForgeToolbox
 			Close();
 		}
 
-		private void toggleGrid_Click(object sender, EventArgs e)
+		private void ToggleGrid(object sender, EventArgs e)
 		{
 			toggleGrid.Checked = !toggleGrid.Checked;
+			Repaint();
+		}
+
+		private void TogglePlayers(object sender, EventArgs e)
+		{
+			togglePlayers.Checked = !togglePlayers.Checked;
+			Repaint();
+		}
+
+		private void ToggleMapOpacity(object sender, EventArgs e)
+		{
+			toggleOpacity.Checked = !toggleOpacity.Checked;
 			Repaint();
 		}
 	}

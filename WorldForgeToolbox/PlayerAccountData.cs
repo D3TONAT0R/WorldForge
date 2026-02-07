@@ -55,7 +55,8 @@ namespace WorldForge
 		public async Task<string> GetUsernameAsync()
 		{
 			if(usernameRequested) return username;
-			string url = $"https://api.minecraftservices.com/minecraft/profile/lookup/{uuid.ToString(false)}";
+			//string url = $"https://api.minecraftservices.com/minecraft/profile/lookup/{uuid.ToString(false)}";
+			string url = $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid.ToString(false)}";
 			try
 			{
 				usernameRequested = true;
