@@ -38,9 +38,11 @@
 			toolStripSeparator2 = new ToolStripSeparator();
 			resumeMapRender = new ToolStripButton();
 			pauseMapRender = new ToolStripButton();
+			regenerateOutdatedMaps = new ToolStripButton();
 			toolStripSeparator3 = new ToolStripSeparator();
 			saveMapCacheButton = new ToolStripButton();
 			deleteMapCacheButton = new ToolStripButton();
+			forceSingleMapRender = new ToolStripButton();
 			toolStripSeparator4 = new ToolStripSeparator();
 			zoomIn = new ToolStripButton();
 			zoomOut = new ToolStripButton();
@@ -52,14 +54,13 @@
 			canvas = new CanvasPanel();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
-			forceSingleMapRender = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -134,6 +135,16 @@
 			pauseMapRender.Text = "Pause Map Rendering";
 			pauseMapRender.Click += pauseMapRender_Click;
 			// 
+			// regenerateOutdatedMaps
+			// 
+			regenerateOutdatedMaps.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			regenerateOutdatedMaps.Image = (Image)resources.GetObject("regenerateOutdatedMaps.Image");
+			regenerateOutdatedMaps.ImageTransparentColor = Color.Magenta;
+			regenerateOutdatedMaps.Name = "regenerateOutdatedMaps";
+			regenerateOutdatedMaps.Size = new Size(23, 22);
+			regenerateOutdatedMaps.Text = "Regenerate Outdated Maps";
+			regenerateOutdatedMaps.Click += regenerateOutdatedMaps_Click;
+			// 
 			// toolStripSeparator3
 			// 
 			toolStripSeparator3.Name = "toolStripSeparator3";
@@ -159,6 +170,16 @@
 			deleteMapCacheButton.Text = "Delete Map Cache";
 			deleteMapCacheButton.ToolTipText = "Delete Map Cache";
 			deleteMapCacheButton.Click += deleteMapCacheButton_Click;
+			// 
+			// forceSingleMapRender
+			// 
+			forceSingleMapRender.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			forceSingleMapRender.Image = (Image)resources.GetObject("forceSingleMapRender.Image");
+			forceSingleMapRender.ImageTransparentColor = Color.Magenta;
+			forceSingleMapRender.Name = "forceSingleMapRender";
+			forceSingleMapRender.Size = new Size(23, 22);
+			forceSingleMapRender.Text = "Force Single Map Render";
+			forceSingleMapRender.Click += ToggleSingleRender;
 			// 
 			// toolStripSeparator4
 			// 
@@ -254,18 +275,8 @@
 			// 
 			statusLabel.AutoSize = false;
 			statusLabel.Name = "statusLabel";
-			statusLabel.Size = new Size(200, 17);
+			statusLabel.Size = new Size(300, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
-			// 
-			// forceSingleMapRender
-			// 
-			forceSingleMapRender.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			forceSingleMapRender.Image = (Image)resources.GetObject("forceSingleMapRender.Image");
-			forceSingleMapRender.ImageTransparentColor = Color.Magenta;
-			forceSingleMapRender.Name = "forceSingleMapRender";
-			forceSingleMapRender.Size = new Size(23, 22);
-			forceSingleMapRender.Text = "Force Single Map Render";
-			forceSingleMapRender.Click += ToggleSingleRender;
 			// 
 			// WorldViewer
 			// 
@@ -312,5 +323,6 @@
 		private ToolStripButton toggleOpacity;
 		private ToolStripButton togglePlayers;
 		private ToolStripButton forceSingleMapRender;
+		private ToolStripButton regenerateOutdatedMaps;
 	}
 }

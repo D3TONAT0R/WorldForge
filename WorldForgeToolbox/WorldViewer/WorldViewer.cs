@@ -1,9 +1,9 @@
 ﻿using System.Drawing.Drawing2D;
-using System.Threading.Tasks;
 using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
 using Region = WorldForge.Regions.Region;
+using Timer = System.Windows.Forms.Timer;
 
 namespace WorldForgeToolbox
 {
@@ -109,6 +109,7 @@ namespace WorldForgeToolbox
 		private bool mouseDown;
 		private Point mousePosition;
 
+		private BlockCoord2D? hoveredBlockPos;
 		private PlayerData? hoveredPlayer;
 		private RegionLocation? hoveredRegion;
 
@@ -121,10 +122,15 @@ namespace WorldForgeToolbox
 		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
 		private Brush darkenMapBrush = new SolidBrush(Color.FromArgb(160, Color.Black));
+		private Brush outdatedMapBrush = new SolidBrush(Color.FromArgb(100, Color.Gray));
 
 		private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
 
 		private int _zoom = 4;
+
+		private Timer statusLabelUpdater = new Timer() {
+			Interval = 100
+		};
 
 		private StringFormat pointLabelFormat = new StringFormat()
 		{
@@ -143,6 +149,8 @@ namespace WorldForgeToolbox
 			canvas.DoubleClick += OnCanvasDoubleClick;
 			canvas.Cursor = Cursors.SizeAll;
 			toggleGrid.Checked = true;
+			statusLabelUpdater.Tick += UpdateStatusStrip;
+			statusLabelUpdater.Start();
 		}
 
 		protected override void OnShown(EventArgs e)
@@ -263,8 +271,8 @@ namespace WorldForgeToolbox
 			foreach (var r in dim.regions)
 			{
 				var rect = GetRegionRectangle(e, r.Key);
-				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
-				var bmp = RequestSurfaceMap(r.Value, true);
+				if (!rect.IntersectsWith(e.ClipRectangle)) continue;
+				var bmp = RequestSurfaceMap(r.Value, true, out var renderUpToDate);
 				if (view.currentRenders.Contains(r.Key))
 				{
 					// Currently rendering
@@ -277,6 +285,12 @@ namespace WorldForgeToolbox
 					{
 						// Fully rendered
 						g.DrawImage(bmp, rect);
+						if (!renderUpToDate)
+						{
+							g.FillRectangle(outdatedMapBrush, rect);
+							// Queue for re-rendering when outdated
+							if(regenerateOutdatedMaps.Checked) visibleUnrenderedRegions.Add(r.Key);
+						}
 						if (darken) g.FillRectangle(darkenMapBrush, rect);
 						var hq = view.maps.cache[r.Key].highQualityRender;
 						if (hq != null && !hq.renderComplete)
@@ -371,9 +385,10 @@ namespace WorldForgeToolbox
 					var region = view.dimension.GetRegion(pos);
 					if (!view.maps.cache.TryGetValue(pos, out var entry))
 					{
-						entry = new RegionMapCache.Entry(null, region.sourceFilePaths.MainFileLastWriteTimeUtc);
+						entry = new RegionMapCache.Entry(null, DateTime.MinValue);
 						view.maps.cache[pos] = entry;
 					}
+					entry.regionTimestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
 					view.currentRenders.Add(pos);
 					visibleUnrenderedRegions.Remove(pos);
 
@@ -415,11 +430,12 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		private Bitmap? RequestSurfaceMap(Region region, bool allowHighQuality)
+		private Bitmap? RequestSurfaceMap(Region region, bool allowHighQuality, out bool upToDate)
 		{
 			// Check if we have a cached version that is up to date
-			if (view!.maps.TryGet(region.regionPos, out var entry) && region.sourceFilePaths.MainFileLastWriteTimeUtc <= entry.regionTimestamp)
+			if (view!.maps.TryGet(region.regionPos, out var entry))
 			{
+				upToDate = entry.regionTimestamp >= region.sourceFilePaths.MainFileLastWriteTimeUtc;
 				if (allowHighQuality && (entry.highQualityRender?.renderComplete ?? false))
 				{
 					return entry.highQualityRender.bitmap;
@@ -428,6 +444,7 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
+				upToDate = false;
 				return null;
 			}
 		}
@@ -490,10 +507,54 @@ namespace WorldForgeToolbox
 			if (e.Button == MouseButtons.Right)
 			{
 				var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
-				if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
+				view.maps.TryGet(blockPos.Region, out var render);
+				view.dimension.TryGetRegion(blockPos.Region, out var region);
+				//Show context menu
+				ContextMenuStrip menu = new ContextMenuStrip();
+				if (region != null)
 				{
-					entry.highQualityRender = BeginRender(view.dimension.GetRegion(blockPos.Region)!, true);
+					menu.Items.Add("Open Region").Click += (s, ev) =>
+					{
+						if (view.dimension.TryGetRegion(blockPos.Region, out var r))
+						{
+							var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
+							viewer.Show();
+						}
+					};
+					menu.Items.Add("Regenerate").Click += (s, ev) =>
+					{
+						if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
+						{
+							entry.normalRender = BeginRender(region, false);
+							entry.regionTimestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
+							view.currentRenders.Add(region.regionPos);
+							Repaint();
+						}
+					};
+					menu.Items.Add("Render High Resolution").Click += (s, ev) =>
+					{
+						if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
+						{
+							entry.highQualityRender = BeginRender(region, true);
+							Repaint();
+						}
+						else
+						{
+							MessageBox.Show("Normal render not complete yet. Please wait.");
+						}
+					};
+					menu.Items.Add(new ToolStripSeparator());
+					menu.Items.Add(new ToolStripLabel("Region Timestamp: " + region.sourceFilePaths.MainFileLastWriteTimeUtc));
+					menu.Items.Add(new ToolStripLabel("Render Timestamp: " + render?.regionTimestamp ?? "-"));
+					menu.Items.Add(new ToolStripSeparator());
 				}
+				menu.Items.Add("Jump to Spawn").Click += (s, ev) =>
+				{
+					center.x = view.world.LevelData.spawnpoint.Position.x;
+					center.z = view.world.LevelData.spawnpoint.Position.z;
+					Repaint();
+				};
+				menu.Show(canvas, e.Location);
 				Repaint();
 			}
 		}
@@ -502,7 +563,7 @@ namespace WorldForgeToolbox
 		{
 			mousePosition = e.Location;
 			if (view == null) return;
-			var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
+			hoveredBlockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
 			if (mouseDown)
 			{
 				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
@@ -512,8 +573,8 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
-				var regPos = blockPos.Region;
-				hoveredRegion = view.dimension.HasRegion(regPos) ? blockPos.Region : null;
+				var regPos = hoveredBlockPos.Value.Region;
+				hoveredRegion = view.dimension.HasRegion(regPos) ? hoveredBlockPos.Value.Region : null;
 				hoveredPlayer = null;
 				if (togglePlayers.Checked)
 				{
@@ -524,19 +585,17 @@ namespace WorldForgeToolbox
 						if (distance <= 16)
 						{
 							hoveredPlayer = player;
-							statusLabel.Text = $"Player: {view.GetPlayerAccountData(player.player.uuid).GetUsername()} | Block {blockPos} | Region {blockPos.Region}";
 						}
 					}
 				}
 			}
-			statusLabel.Text = $"Block {blockPos} | Region {blockPos.Region}";
 			canvas.Cursor = hoveredPlayer != null ? Cursors.Hand : Cursors.SizeAll;
 			Repaint();
 		}
 
 		private void OnCanvasMouseLeave(object? sender, EventArgs e)
 		{
-			statusLabel.Text = "";
+			hoveredBlockPos = null;
 			hoveredRegion = null;
 			hoveredPlayer = null;
 			Repaint();
@@ -565,6 +624,19 @@ namespace WorldForgeToolbox
 					var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
 					viewer.Show();
 				}
+			}
+		}
+
+		private void UpdateStatusStrip(object? sender, EventArgs e)
+		{
+			if (view == null) return;
+			string text;
+			if (hoveredPlayer != null) text = $"Player: {view.GetPlayerAccountData(hoveredPlayer.player.uuid).GetUsername()} {hoveredPlayer.player.position.Block}";
+			else if (hoveredBlockPos != null) text = $"Block {hoveredBlockPos.Value} | Region {hoveredBlockPos.Value.Region}";
+			else text = "";
+			if (text != statusLabel.Text)
+			{
+				statusLabel.Text = text;
 			}
 		}
 
@@ -650,7 +722,11 @@ namespace WorldForgeToolbox
 		private void ToggleSingleRender(object sender, EventArgs e)
 		{
 			forceSingleMapRender.Checked = !forceSingleMapRender.Checked;
+		}
 
+		private void regenerateOutdatedMaps_Click(object sender, EventArgs e)
+		{
+			regenerateOutdatedMaps.Checked = !regenerateOutdatedMaps.Checked;
 		}
 	}
 }

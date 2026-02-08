@@ -50,7 +50,7 @@ namespace WorldForge.Coordinates
 
 		public override string ToString()
 		{
-			return $"({x},{z})";
+			return $"[{x},{z}]";
 		}
 
 		public bool Equals(RegionLocation other)

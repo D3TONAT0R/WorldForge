@@ -58,9 +58,9 @@ namespace WorldForgeToolbox
 			return cache.GetValueOrDefault(location)?.normalRender;
 		}
 
-		public bool TryGet(RegionLocation regionRegionPos, out Entry entry)
+		public bool TryGet(RegionLocation regionPos, out Entry entry)
 		{
-			if(cache.TryGetValue(regionRegionPos, out entry))
+			if(cache.TryGetValue(regionPos, out entry))
 			{
 				return true;
 			}

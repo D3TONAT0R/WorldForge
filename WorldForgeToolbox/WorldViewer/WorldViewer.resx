@@ -165,6 +165,18 @@
         QmCC
 </value>
   </data>
+  <data name="regenerateOutdatedMaps.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFfSURBVDhPrZJNSsNQFIXfwIG0nZmYGGj+ySqUlAqi4EBB
+        t+AOHCvqIloEF2PrUKtbKE5aO2rJuJ6T3odpGuPEC4e89+75zvtp1b9XGIa7vu8/BEHwDmWiEXTPntiq
+        C6ZLwDPP8/rtdvsIgEtx7LpuD5rCcyH29SIMwxjqQntVQnAH3/FGiBx7huYaDOOyOKckZBrHsSm4UnLn
+        ftlcFSDqoXcnuFJY+EDyccn0awC96I0EVwoLCzSCsrEmwCcjeP6AGRqhNmBuyZgPttTSfYibzQVXKoqi
+        K30FVCNN061CyIbgPcG7vebwsGFdD5pWx7ZtkzDHXKsLQcAjAm7ygEHL3H/eNiYvTatbHDOsCob4U0+S
+        JDHyABZ3JUhxXAMfYudPnOBM0FWVA/jH4j0BhLhGgu8pwCesfUHngq1q2DIO9LGLV+DDAs4ALAC/YXzr
+        OM6OYD+lH1Gm+Wm4JtM/SqlveruRxPEsPeoAAAAASUVORK5CYII=
+</value>
+  </data>
   <data name="saveMapCacheButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -188,12 +200,12 @@
   <data name="forceSingleMapRender.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEJSURBVDhPY0AHioqK94H4PxZ8H6oEPwAplpOTk0THIHGo
-        EvyAoAExu0oYYnfZg9lkgdjdNkADXjLE7HQC80F+A5mOBUP8HLvrP1YcvesKWB6kGK+T0QHYBTteMMTt
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAENSURBVDhPY0AHioqK94H4PxZ8H6oEPwAplpOTk0THIHGo
+        EvyAoAExu0oYYnfZg9lkgdjdNkADXjLE7HQC80F+A5mOBUP8HLvrP1YcvesKWB6kGK+T0QHYBdteMMTt
         cATzCRqA7md0PrIBUCFUEL3bgSF250IGhv+MUBFUgGEAul9jdtUf5JCSPcolvuYop/gnED7CLb7+CK+U
-        Olg9IReANB/mFH17lFv8PwrmFHsHkiMYBmCb0TVD8REusVWEDQA5G6j4UWs3CgaJHeYU/wgyAG86IGDA
-        B5AavAAUYCDFWDGX2EqoMtwAFNqgAEPXDAzYNyc4pWWgyvADUGiDAgzkZxAG2QzRzMAAAJyh30tBHzL0
-        AAAAAElFTkSuQmCC
+        Olg9IReANB9kF317lFv8PwpmF3sHkiMYBmCb0TVD8REusVWEDQA5G6j4UWs3CgaJHeQU/wgyAG86wGfA
+        YQ7xDyA1eAEowECKsWIusZVQZbgBKLRBAYau+RC7yJsTnNIyUGX4ASi0QQEG8jMIg2yGaGZgAACI4982
+        f/EWggAAAABJRU5ErkJggg==
 </value>
   </data>
   <data name="zoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
