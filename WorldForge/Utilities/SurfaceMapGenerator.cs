@@ -110,7 +110,7 @@ namespace WorldForge
 			return bmp;
 		}
 
-		public static BitmapColor GetSurfaceMapColor(Chunk c, int x, int z, HeightmapType surfaceType, MapColorPalette colorPalette)
+		public static BitmapColor GetSurfaceMapColor(Chunk c, int x, int z, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette)
 		{
 			var y = c.GetHighestBlock(x, z, surfaceType);
 			if(y < 0) return new BitmapColor(0, 0, 0, 0);
@@ -121,70 +121,118 @@ namespace WorldForge
 			return MapColorPalette.Modern.GetColor(block, 0);
 		}
 
+		public static BitmapColor GetSurfaceMapColor(Region r, int x, int z, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette)
+		{
+			int y = r.GetHighestBlock(x, z, surfaceType);
+			if (y == short.MinValue) return new BitmapColor(0, 0, 0, 0);
+			var block = r.GetBlock(new BlockCoord(x, y, z));
+			int shade = 0;
+			if (block != null && shading)
+			{
+				shade = GetShade(r, x, z, block, y);
+			}
+			//Check for snow above the block
+			var aboveBlock = r.GetBlock((x, y + 1, z));
+			if (aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
+			return MapColorPalette.Modern.GetColor(block, shade);
+		}
+
 
 		private static int GetShade(Dimension dim, int xMin, int zMin, int z, BlockID block, int x, int y, short[,] heightmap)
 		{
 			int shade = 0;
-			if(z - 1 >= zMin)
+			var pos = new BlockCoord(x, y, z);
+			var chunk = dim.GetRegionAtBlock(pos)?.GetChunkAtBlock(pos, false);
+			if (!GetWaterShade(block, chunk, pos, ref shade))
 			{
-				if(block != null && block.IsLiquid)
+				if (z - 1 >= 0 && heightmap != null)
 				{
-					//Water dithering
-					var depth = dim.GetWaterDepth(new BlockCoord(x, y, z));
-					if(depth < 8) shade = 1;
-					else if(depth < 16) shade = 0;
-					else shade = -1;
-					if(depth % 8 >= 4 && shade > -1)
-					{
-						//Same as modulo of 2
-						if((x & 1) == (z & 1)) shade--;
-					}
-				}
-				else
-				{
-					var above = heightmap[x - xMin, z - 1 - zMin];
-					if(above > y) shade = -1;
-					else if(above < y) shade = 1;
+					var above = heightmap[x, z - 1];
+					if (above > y) shade = -1;
+					else if (above < y) shade = 1;
 				}
 			}
+			return shade;
+		}
 
+		private static int GetShade(Region r, int x, int z, BlockID block, int y, short[,] heightmap)
+		{
+			int shade = 0;
+			var pos = new BlockCoord(x, y, z);
+			var chunk = r.GetChunkAtBlock(pos, false);
+			if (!GetWaterShade(block, chunk, pos, ref shade))
+			{
+				if (z - 1 >= 0 && heightmap != null)
+				{
+					var above = heightmap[x, z - 1];
+					if (above > y) shade = -1;
+					else if (above < y) shade = 1;
+				}
+			}
+			return shade;
+		}
+
+		private static int GetShade(Region r, int x, int z, BlockID block, int y)
+		{
+			int shade = 0;
+			var pos = new BlockCoord(x, y, z);
+			var chunk = r.GetChunkAtBlock(pos, false);
+			if(!GetWaterShade(block, chunk, pos, ref shade))
+			{
+				if(z - 1 >= 0)
+				{
+					var above = r.GetHighestBlock(x, z - 1);
+					if (above > y) shade = -1;
+					else if (above < y) shade = 1;
+				}
+			}
 			return shade;
 		}
 
 		private static int GetShade(Chunk c, BlockID block, int x, int y, int z, short[,] heightmap)
 		{
 			int shade = 0;
-			if(block != null && block.IsLiquid)
+			var pos = new BlockCoord(x, y, z);
+			if(!GetWaterShade(block, c, pos, ref shade))
 			{
-				var pos = new BlockCoord(x, y, z);
+				if(z - 1 >= 0 && heightmap != null)
+				{
+					var above = heightmap[x, z - 1];
+					if (above > y) shade = -1;
+					else if (above < y) shade = 1;
+				}
+			}
+			return shade;
+		}
+
+		private static bool GetWaterShade(BlockID block, Chunk c, BlockCoord pos, ref int shade)
+		{
+			pos = pos.LocalChunkCoords;
+			if (block != null && block.IsLiquid)
+			{
 				//Water dithering
 				int depth = 0;
 				var b1 = c.GetBlock(pos).Block;
-				while(b1.IsWater)
+				while (b1.IsWater)
 				{
 					depth++;
 					pos.y--;
 					var b2 = c.GetBlock(pos);
-					if(b2 == null) break;
+					if (b2 == null) break;
 					b1 = b2.Block;
 				}
 
-				if(depth < 8) shade = 1;
-				else if(depth < 16) shade = 0;
+				if (depth < 8) shade = 1;
+				else if (depth < 16) shade = 0;
 				else shade = -1;
-				if(depth % 8 >= 4 && shade > -1)
+				if (depth % 8 >= 4 && shade > -1)
 				{
 					//Same as modulo of 2
-					if((x & 1) == (z & 1)) shade--;
+					if ((pos.x & 1) == (pos.z & 1)) shade--;
 				}
+				return true;
 			}
-			else if(z - 1 >= 0 && heightmap != null)
-			{
-				var above = heightmap[x, z - 1];
-				if(above > y) shade = -1;
-				else if(above < y) shade = 1;
-			}
-			return shade;
+			return false;
 		}
 	}
 }

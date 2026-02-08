@@ -439,12 +439,13 @@ namespace WorldForgeToolbox
 			return Math.Max(diffX, diffZ);
 		}
 
-		private void RenderRegionMap(WorldForge.Regions.Region region, IBitmap bitmap, int resolution, CancellationToken token)
+		private void RenderRegionMap(Region region, IBitmap bitmap, int resolution, CancellationToken token)
 		{
 			try
 			{
 				int blocksPerPixel = Math.Max(1, 512 / resolution);
 				var loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
+				bool fullRes = resolution >= 512;
 				for (int x = 0; x < resolution; x++)
 				{
 					for (int z = 0; z < resolution; z++)
@@ -456,17 +457,14 @@ namespace WorldForgeToolbox
 						}
 						int bx = x * blocksPerPixel;
 						int bz = z * blocksPerPixel;
-						var chunk = loaded.GetChunkAtBlock(new BlockCoord(bx, 0, bz), false);
-						if (chunk != null)
-						{
-							var color = SurfaceMapGenerator.GetSurfaceMapColor(chunk, bx & 15, bz & 15, HeightmapType.AllBlocks, MapColorPalette.Modern);
-							bitmap.SetPixel(x, z, color);
-						}
+						var color = SurfaceMapGenerator.GetSurfaceMapColor(loaded, bx, bz, HeightmapType.AllBlocks, fullRes, MapColorPalette.Modern);
+						bitmap.SetPixel(x, z, color);
 					}
 				}
 			}
-			catch
+			catch(Exception e)
 			{
+				int i = 0;
 			}
 			Repaint();
 		}
@@ -501,6 +499,7 @@ namespace WorldForgeToolbox
 		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
 		{
 			mousePosition = e.Location;
+			if (view == null) return;
 			var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
 			if (mouseDown)
 			{
@@ -511,7 +510,8 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
-				hoveredRegion = blockPos.Region;
+				var regPos = blockPos.Region;
+				hoveredRegion = view.dimension.HasRegion(regPos) ? blockPos.Region : null;
 				hoveredPlayer = null;
 				if(togglePlayers.Checked)
 				{
