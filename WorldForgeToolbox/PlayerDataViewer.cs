@@ -60,11 +60,11 @@ namespace WorldForgeToolbox
 					DrawSlot(g, x, y, w, playerData.player.inventory.GetItem(slot));
 				}
 			}
-			DrawSlot(g, 0, 0, w, playerData.player.headItemSlot);
-			DrawSlot(g, 0, 1, w, playerData.player.chestItemSlot);
-			DrawSlot(g, 0, 2, w, playerData.player.legsItemSlot);
-			DrawSlot(g, 0, 3, w, playerData.player.feetItemSlot);
-			DrawSlot(g, 0, 4.5f, w, playerData.player.offhandItemSlot);
+			DrawSlot(g, 0, 0, w, playerData.player.equipmentSlots.head);
+			DrawSlot(g, 0, 1, w, playerData.player.equipmentSlots.chest);
+			DrawSlot(g, 0, 2, w, playerData.player.equipmentSlots.legs);
+			DrawSlot(g, 0, 3, w, playerData.player.equipmentSlots.feet);
+			DrawSlot(g, 0, 4.5f, w, playerData.player.equipmentSlots.offhand);
 			var avatar = accountData?.GetAvatar();
 			if (avatar != null)
 			{

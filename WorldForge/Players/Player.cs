@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net.NetworkInformation;
 using WorldForge.Entities;
 using WorldForge.Items;
 using WorldForge.NBT;
@@ -9,10 +8,10 @@ namespace WorldForge
 	public class Player
 	{
 		public enum GameMode : int
-		{ 
-			Survival = 0, 
-			Creative = 1, 
-			Adventure = 2, 
+		{
+			Survival = 0,
+			Creative = 1,
+			Adventure = 2,
 			Spectator = 3
 		}
 
@@ -123,6 +122,35 @@ namespace WorldForge
 			}
 		}
 
+		public class EquipmentSlots
+		{
+			public ItemStack head;
+			public ItemStack chest;
+			public ItemStack legs;
+			public ItemStack feet;
+			public ItemStack offhand;
+
+			public void LoadFromNBT(NBTCompound nbt)
+			{
+				if (nbt.TryGet("head", out NBTCompound headNBT)) head = new ItemStack(headNBT, out _);
+				if (nbt.TryGet("chest", out NBTCompound chestNBT)) chest = new ItemStack(chestNBT, out _);
+				if (nbt.TryGet("legs", out NBTCompound legsNBT)) legs = new ItemStack(legsNBT, out _);
+				if (nbt.TryGet("feet", out NBTCompound feetNBT)) feet = new ItemStack(feetNBT, out _);
+				if (nbt.TryGet("offhand", out NBTCompound offhandNBT)) offhand = new ItemStack(offhandNBT, out _);
+			}
+
+			public NBTCompound ToNBT(GameVersion version)
+			{
+				NBTCompound nbt = new NBTCompound();
+				if (head != null && !head.IsNull) nbt.Add("head", head.ToNBT(version));
+				if (chest != null && !chest.IsNull) nbt.Add("chest", chest.ToNBT(version));
+				if (legs != null && !legs.IsNull) nbt.Add("legs", legs.ToNBT(version));
+				if (feet != null && !feet.IsNull) nbt.Add("feet", feet.ToNBT(version));
+				if (offhand != null && !offhand.IsNull) nbt.Add("offhand", offhand.ToNBT(version));
+				return nbt;
+			}
+		}
+
 		//TODO: find out when this was added
 		[NBT("UUID", "1.0.0")]
 		public UUID uuid;
@@ -201,6 +229,8 @@ namespace WorldForge
 
 		[NBT("Inventory")]
 		public Inventory inventory = new Inventory();
+		//[NBT("equipment")]
+		public EquipmentSlots equipmentSlots = new EquipmentSlots();
 		//TODO: find out when this was added
 		[NBT("SelectedItemSlot", "1.0.0")]
 		public int selectedItemSlot = 0;
@@ -218,14 +248,7 @@ namespace WorldForge
 		public int xpTotal = 0;
 		//TODO: find out when this was added
 		[NBT("Score")]
-		public int Score = 0;
-
-		public ItemStack headItemSlot;
-		public ItemStack chestItemSlot;
-		public ItemStack legsItemSlot;
-		public ItemStack feetItemSlot;
-
-		public ItemStack offhandItemSlot;
+		public int score = 0;
 
 		public Player(Vector3 position)
 		{
@@ -236,21 +259,33 @@ namespace WorldForge
 		{
 			NBTConverter.LoadFromNBT(nbt, this);
 			//Versions prior to 1.3 used the head position as the player position
-			if(version < GameVersion.Release_1(3))
+			if (version < GameVersion.Release_1(3))
 			{
 				position.y -= 1.62f;
 			}
 			object dim = nbt.Get("Dimension");
-			if(dim != null)
+			if (dim != null)
 			{
-				if(dim is string dimString) dimension = DimensionID.FromID(dimString);
+				if (dim is string dimString) dimension = DimensionID.FromID(dimString);
 				else dimension = DimensionID.FromIndex((int)dim);
 			}
 			object healthValue = nbt.Get("Health");
-			if(healthValue != null)
+			if (healthValue != null)
 			{
-				if(healthValue is short hs) health = hs;
+				if (healthValue is short hs) health = hs;
 				else health = (short)(float)healthValue;
+			}
+			if (nbt.TryGet("equipment", out NBTCompound equipmentNBT))
+			{
+				equipmentSlots.LoadFromNBT(equipmentNBT);
+			}
+			else
+			{
+				if (inventory.HasItem(103)) equipmentSlots.head = inventory.TakeItem(103);
+				if (inventory.HasItem(102)) equipmentSlots.chest = inventory.TakeItem(102);
+				if (inventory.HasItem(101)) equipmentSlots.legs = inventory.TakeItem(101);
+				if (inventory.HasItem(100)) equipmentSlots.feet = inventory.TakeItem(100);
+				if (inventory.HasItem(-106)) equipmentSlots.offhand = inventory.TakeItem(-106);
 			}
 		}
 
@@ -265,22 +300,56 @@ namespace WorldForge
 		{
 			NBTCompound nbt = new NBTCompound();
 			//Versions prior to 1.3 used the head position as the player position
-			if(version < GameVersion.Release_1(3)) position.y += 1.62f;
+			if (version < GameVersion.Release_1(3)) position.y += 1.62f;
 			NBTConverter.WriteToNBT(this, nbt, version);
 			//Restore position
-			if(version < GameVersion.Release_1(3)) position.y -= 1.62f;
+			if (version < GameVersion.Release_1(3)) position.y -= 1.62f;
 
-			if(version >= GameVersion.Release_1(16)) nbt.Add("Dimension", dimension.ID);
+			if (version >= GameVersion.Release_1(16)) nbt.Add("Dimension", dimension.ID);
 			else nbt.Add("Dimension", dimension.DimensionIndex);
 
-			if(version >= GameVersion.Release_1(9)) nbt.Add("Health", health);
+			if (version >= GameVersion.Release_1(9)) nbt.Add("Health", health);
 			else
 			{
 				nbt.Add("Health", (short)health);
 				nbt.Add("HealF", health);
 			}
 
+			if (version >= GameVersion.Release_1(21, 5))
+			{
+				nbt.Add("equipment", equipmentSlots.ToNBT(version));
+			}
+			else
+			{
+				var inv = nbt.GetAsList("Inventory");
+				//Delete existing armor and offhand items from inventory to avoid duplication
+				for (int i = inv.Length - 1; i >= 0; i--)
+				{
+					var comp = inv.Get<NBTCompound>(i);
+					int slot = comp.Get<int>("Slot");
+					if(slot >= 100 && slot <= 103 || slot == -106)
+					{
+						inv.RemoveAt(i);
+					}
+				}
+				//Add armor and offhand items from equipment slots
+				AddEquipmentToInventoryNBT(inv, equipmentSlots.head, 103, version);
+				AddEquipmentToInventoryNBT(inv, equipmentSlots.chest, 102, version);
+				AddEquipmentToInventoryNBT(inv, equipmentSlots.legs, 101, version);
+				AddEquipmentToInventoryNBT(inv, equipmentSlots.feet, 100, version);
+				AddEquipmentToInventoryNBT(inv, equipmentSlots.offhand, -106, version);
+			}
+
 			return nbt;
 		}
+
+		private void AddEquipmentToInventoryNBT(NBTList inv, ItemStack stack, sbyte slotIndex, GameVersion version)
+		{
+			if(stack != null && !stack.IsNull && stack.ToNBT(slotIndex, version, out var nbt))
+			{
+				inv.Add(nbt);
+			}
+		}
+
 	}
 }
