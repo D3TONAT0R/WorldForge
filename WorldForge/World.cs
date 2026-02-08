@@ -90,17 +90,12 @@ namespace WorldForge
 				{
 					try {
 						var uuid = new UUID(Path.GetFileNameWithoutExtension(file));
-						var playerNBT = new NBTFile(file);
-						//TODO: include stats and advancements 
-						var player = new PlayerData
-						{
-							player = new Player(playerNBT.contents, world.GameVersion)
-						};
+						var player = new PlayerData(worldSaveDir, uuid, world.GameVersion);
 						world.playerData[uuid] = player;
 					}
-					catch
+					catch(Exception e)
 					{
-
+						Logger.Error($"Failed to load player data from file {file}: {e.Message}");
 					}
 				}
 			}

@@ -254,6 +254,13 @@ namespace WorldForge
 			}
 		}
 
+		public static Player FromFile(string filename, GameVersion gameVersionHint)
+		{
+			var nbt = new NBTFile(filename);
+			var gameVersion = GameVersion.FromDataVersion(nbt.dataVersion);
+			return new Player(nbt.contents, gameVersion ?? gameVersionHint);
+		}
+
 		public NBTCompound ToNBT(GameVersion version)
 		{
 			NBTCompound nbt = new NBTCompound();
