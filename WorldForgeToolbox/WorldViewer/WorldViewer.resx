@@ -185,6 +185,17 @@
         AElFTkSuQmCC
 </value>
   </data>
+  <data name="forceSingleMapRender.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEJSURBVDhPY0AHioqK94H4PxZ8H6oEPwAplpOTk0THIHGo
+        EvyAoAExu0oYYnfZg9lkgdjdNkADXjLE7HQC80F+A5mOBUP8HLvrP1YcvesKWB6kGK+T0QHYBTteMMTt
+        cATzCRqA7md0PrIBUCFUEL3bgSF250IGhv+MUBFUgGEAul9jdtUf5JCSPcolvuYop/gnED7CLb7+CK+U
+        Olg9IReANB/mFH17lFv8PwrmFHsHkiMYBmCb0TVD8REusVWEDQA5G6j4UWs3CgaJHeYU/wgyAG86IGDA
+        B5AavAAUYCDFWDGX2EqoMtwAFNqgAEPXDAzYNyc4pWWgyvADUGiDAgzkZxAG2QzRzMAAAJyh30tBHzL0
+        AAAAAElFTkSuQmCC
+</value>
+  </data>
   <data name="zoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8

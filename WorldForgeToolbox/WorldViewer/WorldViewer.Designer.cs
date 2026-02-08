@@ -52,13 +52,14 @@
 			canvas = new CanvasPanel();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
+			forceSingleMapRender = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -256,6 +257,16 @@
 			statusLabel.Size = new Size(200, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
+			// forceSingleMapRender
+			// 
+			forceSingleMapRender.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			forceSingleMapRender.Image = (Image)resources.GetObject("forceSingleMapRender.Image");
+			forceSingleMapRender.ImageTransparentColor = Color.Magenta;
+			forceSingleMapRender.Name = "forceSingleMapRender";
+			forceSingleMapRender.Size = new Size(23, 22);
+			forceSingleMapRender.Text = "Force Single Map Render";
+			forceSingleMapRender.Click += ToggleSingleRender;
+			// 
 			// WorldViewer
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -300,5 +311,6 @@
 		private ToolStripButton toolStripButton2;
 		private ToolStripButton toggleOpacity;
 		private ToolStripButton togglePlayers;
+		private ToolStripButton forceSingleMapRender;
 	}
 }

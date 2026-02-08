@@ -15,7 +15,7 @@ namespace WorldForgeToolbox
 			public World world;
 			public Dimension dimension;
 			public RegionMapCache maps;
-			public List<Region> currentRenders = new List<Region>();
+			public List<RegionLocation> currentRenders = new List<RegionLocation>();
 			public CancellationTokenSource? cancellationTokenSource;
 
 			public Dictionary<UUID, PlayerAccountData> playerAccountDatas = new Dictionary<UUID, PlayerAccountData>();
@@ -94,7 +94,7 @@ namespace WorldForgeToolbox
 		}
 
 		private const int REGION_RES = 64;
-		private const int BLOCKS_PER_PIXEL = 512 / REGION_RES;
+		private const int MAX_CONCURRENT_RENDERS = 8;
 
 		private DimensionView? view;
 
@@ -112,7 +112,7 @@ namespace WorldForgeToolbox
 		private PlayerData? hoveredPlayer;
 		private RegionLocation? hoveredRegion;
 
-		private List<Region> renderQueue = new List<Region>();
+		private List<RegionLocation> visibleUnrenderedRegions = new List<RegionLocation>();
 		private int RunningRenderTasks => view?.currentRenders.Count ?? 0;
 		private bool processNewRenders = true;
 
@@ -190,7 +190,7 @@ namespace WorldForgeToolbox
 		{
 			view.SwitchDimension(dim);
 			dimensionSelector.Text = GetDimensionName(dim);
-			renderQueue.Clear();
+			visibleUnrenderedRegions.Clear();
 			Invalidate(true);
 		}
 
@@ -259,12 +259,13 @@ namespace WorldForgeToolbox
 			g.PixelOffsetMode = PixelOffsetMode.Half;
 			g.InterpolationMode = InterpolationMode.NearestNeighbor;
 			bool darken = toggleOpacity.Checked;
+			visibleUnrenderedRegions.Clear();
 			foreach (var r in dim.regions)
 			{
 				var rect = GetRegionRectangle(e, r.Key);
 				if (rect.IntersectsWith(e.ClipRectangle) == false) continue;
 				var bmp = RequestSurfaceMap(r.Value, true);
-				if (view.currentRenders.Contains(r.Value))
+				if (view.currentRenders.Contains(r.Key))
 				{
 					// Currently rendering
 					g.FillRectangle(currentRenderBrush, rect);
@@ -272,7 +273,7 @@ namespace WorldForgeToolbox
 				}
 				else
 				{
-					if(bmp != null)
+					if (bmp != null)
 					{
 						// Fully rendered
 						g.DrawImage(bmp, rect);
@@ -290,6 +291,7 @@ namespace WorldForgeToolbox
 						rect1.Inflate(-6, -6);
 						g.DrawLine(missingRenderPen, rect1.Left, rect1.Top, rect1.Right, rect1.Bottom);
 						g.DrawLine(missingRenderPen, rect1.Left, rect1.Bottom, rect1.Right, rect1.Top);
+						visibleUnrenderedRegions.Add(r.Key);
 					}
 				}
 				if (toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
@@ -350,7 +352,7 @@ namespace WorldForgeToolbox
 			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
 			var rect = new Rectangle(screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
 			if (image != null) g.DrawImage(image, rect);
-			if(border) g.DrawRectangle(p, rect);
+			if (border) g.DrawRectangle(p, rect);
 			if (label != null)
 			{
 				g.DrawString(label, boldFont, Brushes.Black, screenPos.X + size / 2 + 3, screenPos.Y + 1, pointLabelFormat);
@@ -361,20 +363,22 @@ namespace WorldForgeToolbox
 		private void ProcessRenderQueue()
 		{
 			if (!processNewRenders) return;
-			if (view != null && RunningRenderTasks < 10)
+			int maxConcurrent = forceSingleMapRender.Checked ? 1 : MAX_CONCURRENT_RENDERS;
+			if (view != null && RunningRenderTasks < maxConcurrent)
 			{
-				foreach (var region in renderQueue.OrderBy(GetRenderPriority))
+				foreach (var pos in visibleUnrenderedRegions.OrderBy(GetRenderPriority))
 				{
-					if(!view.maps.cache.TryGetValue(region.regionPos, out var entry))
+					var region = view.dimension.GetRegion(pos);
+					if (!view.maps.cache.TryGetValue(pos, out var entry))
 					{
 						entry = new RegionMapCache.Entry(null, region.sourceFilePaths.MainFileLastWriteTimeUtc);
-						view.maps.cache[region.regionPos] = entry;
+						view.maps.cache[pos] = entry;
 					}
-					view.currentRenders.Add(region);
-					renderQueue.Remove(region);
+					view.currentRenders.Add(pos);
+					visibleUnrenderedRegions.Remove(pos);
 
 					entry.normalRender = BeginRender(region, false);
-					if (RunningRenderTasks >= 10)
+					if (RunningRenderTasks >= maxConcurrent)
 					{
 						break;
 					}
@@ -394,7 +398,7 @@ namespace WorldForgeToolbox
 				},
 				(r, token) =>
 				{
-					view.currentRenders.Remove(region);
+					view.currentRenders.Remove(region.regionPos);
 					if (token.IsCancellationRequested) return;
 					r.renderComplete = true;
 					Repaint();
@@ -416,7 +420,7 @@ namespace WorldForgeToolbox
 			// Check if we have a cached version that is up to date
 			if (view!.maps.TryGet(region.regionPos, out var entry) && region.sourceFilePaths.MainFileLastWriteTimeUtc <= entry.regionTimestamp)
 			{
-				if(allowHighQuality && (entry.highQualityRender?.renderComplete ?? false))
+				if (allowHighQuality && (entry.highQualityRender?.renderComplete ?? false))
 				{
 					return entry.highQualityRender.bitmap;
 				}
@@ -424,15 +428,13 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
-				if (!renderQueue.Contains(region)) renderQueue.Add(region);
 				return null;
 			}
 		}
 
-		private int GetRenderPriority(Region region)
+		private int GetRenderPriority(RegionLocation location)
 		{
 			//Lower means higher
-			var location = region.regionPos;
 			var centerBlock = center.Block;
 			var diffX = Math.Abs(location.x - centerBlock.Region.x);
 			var diffZ = Math.Abs(location.z - centerBlock.Region.z);
@@ -462,7 +464,7 @@ namespace WorldForgeToolbox
 					}
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				int i = 0;
 			}
@@ -485,10 +487,10 @@ namespace WorldForgeToolbox
 		{
 			mouseDown = false;
 			if (view == null) return;
-			if(e.Button == MouseButtons.Right)
+			if (e.Button == MouseButtons.Right)
 			{
 				var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
-				if(view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
+				if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
 				{
 					entry.highQualityRender = BeginRender(view.dimension.GetRegion(blockPos.Region)!, true);
 				}
@@ -513,9 +515,9 @@ namespace WorldForgeToolbox
 				var regPos = blockPos.Region;
 				hoveredRegion = view.dimension.HasRegion(regPos) ? blockPos.Region : null;
 				hoveredPlayer = null;
-				if(togglePlayers.Checked)
+				if (togglePlayers.Checked)
 				{
-					foreach(var player in view!.world.playerData.Values)
+					foreach (var player in view!.world.playerData.Values)
 					{
 						var playerScreenPos = WorldToScreenPoint(player.player.position.Block.XZ, canvas.ClientRectangle);
 						var distance = Math.Sqrt(Math.Pow(playerScreenPos.X - e.Location.X, 2) + Math.Pow(playerScreenPos.Y - e.Location.Y, 2));
@@ -543,7 +545,7 @@ namespace WorldForgeToolbox
 		private void OnCanvasDoubleClick(object? sender, EventArgs _)
 		{
 			if (view == null) return;
-			if(hoveredPlayer != null)
+			if (hoveredPlayer != null)
 			{
 				try
 				{
@@ -551,12 +553,12 @@ namespace WorldForgeToolbox
 					var viewer = new PlayerDataViewer(playerPath);
 					viewer.Show();
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					MessageBox.Show(e.ToString());
 				}
 			}
-			else if(hoveredRegion != null)
+			else if (hoveredRegion != null)
 			{
 				if (view.dimension.TryGetRegion(hoveredRegion.Value, out var r))
 				{
@@ -643,6 +645,12 @@ namespace WorldForgeToolbox
 		{
 			toggleOpacity.Checked = !toggleOpacity.Checked;
 			Repaint();
+		}
+
+		private void ToggleSingleRender(object sender, EventArgs e)
+		{
+			forceSingleMapRender.Checked = !forceSingleMapRender.Checked;
+
 		}
 	}
 }
