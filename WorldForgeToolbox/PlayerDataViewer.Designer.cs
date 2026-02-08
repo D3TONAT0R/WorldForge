@@ -34,6 +34,7 @@
 			canvas = new CanvasPanel();
 			toolStrip1 = new ToolStrip();
 			toolboxButton = new ToolStripButton();
+			showInWorldViewer = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			openFileButton = new ToolStripButton();
 			toolStripSeparator2 = new ToolStripSeparator();
@@ -80,7 +81,7 @@
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton, toolStripSeparator2, showGeneralStatistics });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton, toolStripSeparator2, showGeneralStatistics, showInWorldViewer });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -96,6 +97,16 @@
 			toolboxButton.Size = new Size(23, 22);
 			toolboxButton.Text = "Return to Toolbox";
 			toolboxButton.Click += toolboxButton_Click;
+			// 
+			// showInWorldViewer
+			// 
+			showInWorldViewer.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			showInWorldViewer.Image = (Image)resources.GetObject("showInWorldViewer.Image");
+			showInWorldViewer.ImageTransparentColor = Color.Magenta;
+			showInWorldViewer.Name = "showInWorldViewer";
+			showInWorldViewer.Size = new Size(23, 22);
+			showInWorldViewer.Text = "Show in World Viewer";
+			showInWorldViewer.Click += showInWorldViewer_Click;
 			// 
 			// toolStripSeparator1
 			// 
@@ -157,5 +168,6 @@
 		private ToolStripButton openFileButton;
 		private ToolStripSeparator toolStripSeparator2;
 		private ToolStripButton showGeneralStatistics;
+		private ToolStripButton showInWorldViewer;
 	}
 }

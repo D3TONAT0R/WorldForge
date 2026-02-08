@@ -22,6 +22,8 @@ namespace WorldForgeToolbox
 
 			public string RootDirectory => Path.GetDirectoryName(sourceFileName);
 
+			public bool Dirty { get; private set; }
+
 			public DimensionView(string file, bool loadMapCache = true)
 			{
 				sourceFileName = file;
@@ -44,6 +46,11 @@ namespace WorldForgeToolbox
 				dimension = null!;
 			}
 
+			public void MarkDirty()
+			{
+				Dirty = true;
+			}
+
 			public void SaveRenderCache()
 			{
 				if (!File.Exists(sourceFileName)) return;
@@ -51,6 +58,7 @@ namespace WorldForgeToolbox
 				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
 				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
 				maps.Save(cachePath);
+				Dirty = false;
 			}
 
 			public void LoadOrCreateRenderCache()
@@ -58,6 +66,7 @@ namespace WorldForgeToolbox
 				var worldRoot = Path.GetDirectoryName(sourceFileName);
 				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
 				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
+				Dirty = false;
 			}
 
 			public void ClearRenderCache(bool deleteCacheFile)
@@ -69,6 +78,7 @@ namespace WorldForgeToolbox
 				{
 					File.Delete(cachePath);
 				}
+				Dirty = false;
 			}
 
 			public void SwitchDimension(Dimension dim, bool saveMapCache = true)
@@ -96,8 +106,11 @@ namespace WorldForgeToolbox
 		private const int REGION_RES = 64;
 		private const int MAX_CONCURRENT_RENDERS = 8;
 
+		public static WorldViewer? Instance { get; private set; }
+
 		private DimensionView? view;
 
+		private BlockCoord2D? focusPosition;
 		private readonly Vector3 center = new Vector3();
 		private int Zoom
 		{
@@ -138,8 +151,29 @@ namespace WorldForgeToolbox
 			LineAlignment = StringAlignment.Center
 		};
 
+		public static WorldViewer GetInstance(string? file = null)
+		{
+			if(Instance != null && !Instance.IsDisposed)
+			{
+				Instance.BringToFront();
+				if(file != null) Instance.OpenWorld(file);
+				return Instance;
+			}
+			else
+			{
+				var window = new WorldViewer(file);
+				window.Show();
+				return window;
+			}
+		}
+
 		public WorldViewer(string? inputFile) : base(inputFile)
 		{
+			if(!Instance?.IsDisposed ?? false)
+			{
+				throw new InvalidOperationException("Only one instance of WorldViewer can be open at a time.");
+			}
+			Instance = this;
 			InitializeComponent();
 			canvas.MouseWheel += OnCanvasScroll;
 			canvas.MouseDown += OnCanvasMouseDown;
@@ -168,12 +202,21 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		private void OpenWorld(string file)
+		public void OpenWorld(string file)
 		{
+			if(view?.sourceFileName == file) return;
 			view?.Dispose();
 			view = new DimensionView(file);
-			center.x = view.world.LevelData.spawnpoint.Position.x;
-			center.z = view.world.LevelData.spawnpoint.Position.z;
+			if(focusPosition.HasValue)
+			{
+				center.x = focusPosition.Value.x;
+				center.z = focusPosition.Value.z;
+			}
+			else
+			{
+				center.x = view.world.LevelData.spawnpoint.Position.x;
+				center.z = view.world.LevelData.spawnpoint.Position.z;
+			}
 			dimensionSelector.DropDownItems.Clear();
 			CreateDimensionMenuItem(view.world.Overworld);
 			CreateDimensionMenuItem(view.world.Nether);
@@ -183,8 +226,28 @@ namespace WorldForgeToolbox
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
+			bool saveCache = false;
+			if (view.Dirty)
+			{
+				var result = MessageBox.Show("Save render cache before closing?", "Unsaved Render Cache", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+				if(result == DialogResult.Cancel)
+				{
+					e.Cancel = true;
+					return;
+				}
+				saveCache = result == DialogResult.Yes;
+			}
 			base.OnFormClosing(e);
-			view?.Dispose();
+			view?.Dispose(saveCache);
+		}
+
+		public void GoToPosition(BlockCoord2D pos, int? zoomLevel = null)
+		{
+			focusPosition = pos;
+			center.x = pos.x;
+			center.z = pos.z;
+			if(zoomLevel.HasValue) Zoom = zoomLevel.Value;
+			Repaint();
 		}
 
 		private string GetDimensionName(Dimension dim)
@@ -416,6 +479,7 @@ namespace WorldForgeToolbox
 					view.currentRenders.Remove(region.regionPos);
 					if (token.IsCancellationRequested) return;
 					r.renderComplete = true;
+					view.MarkDirty();
 					Repaint();
 				},
 				view.cancellationTokenSource.Token

@@ -66,7 +66,7 @@
 
 		private void OnWorldViewerClick(object sender, EventArgs e)
 		{
-			Show(new WorldViewer(null));
+			Show(WorldViewer.GetInstance());
 		}
 
 		private void OnBlockDistributionClick(object sender, EventArgs e)

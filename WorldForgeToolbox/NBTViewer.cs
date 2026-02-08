@@ -56,6 +56,7 @@ namespace WorldForgeToolbox
 		{
 			InitializeComponent();
 			Text = title;
+			data = nbt.contents;
 			nbtView.DisplayContent(nbt, title);
 		}
 

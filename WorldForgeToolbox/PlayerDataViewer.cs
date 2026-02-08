@@ -6,6 +6,7 @@ namespace WorldForgeToolbox
 {
 	public partial class PlayerDataViewer : ToolboxForm
 	{
+		private string filename;
 		private NBTCompound? data;
 		private PlayerData? playerData;
 		private PlayerAccountData? accountData;
@@ -107,7 +108,7 @@ namespace WorldForgeToolbox
 
 		private void OpenFile(string file)
 		{
-			var extension = Path.GetExtension(file).ToLower();
+			filename = file;
 			Text = Path.GetFileName(file);
 			var nbt = new NBTFile(file);
 			data = nbt.contents;
@@ -160,7 +161,7 @@ namespace WorldForgeToolbox
 
 		private void showGeneralStatistics_Click(object sender, EventArgs e)
 		{
-			if(playerData.stats != null)
+			if (playerData.stats != null)
 			{
 				int totalPlayTime = playerData.stats.data.GetAsCompound("minecraft:custom")?.Get<int>("minecraft:play_time") ?? 0;
 				int seconds = totalPlayTime / 20;
@@ -170,6 +171,24 @@ namespace WorldForgeToolbox
 			else
 			{
 				MessageBox.Show("No stats data found for this player.");
+			}
+		}
+
+		private void showInWorldViewer_Click(object sender, EventArgs e)
+		{
+			if (playerData == null) return;
+			string worldDir = Path.Combine(Path.GetDirectoryName(filename) ?? "", "..");
+			string levelDat = Path.Combine(worldDir, "level.dat");
+			if (File.Exists(levelDat))
+			{
+				var viewer = WorldViewer.GetInstance(levelDat);
+				viewer.GoToPosition(playerData.player.position.Block.XZ);
+				viewer.togglePlayers.Checked = true;
+				viewer.Show();
+			}
+			else
+			{
+				MessageBox.Show("No world was found at this location", "World not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 	}

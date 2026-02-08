@@ -318,11 +318,11 @@
 		private ToolStripButton toolboxButton;
 		private ToolStripSeparator toolStripSeparator5;
 		private ToolStripSeparator toolStripSeparator6;
-		private ToolStripButton toggleGrid;
 		private ToolStripButton toolStripButton2;
-		private ToolStripButton toggleOpacity;
-		private ToolStripButton togglePlayers;
 		private ToolStripButton forceSingleMapRender;
 		private ToolStripButton regenerateOutdatedMaps;
+		public ToolStripButton toggleGrid;
+		public ToolStripButton toggleOpacity;
+		public ToolStripButton togglePlayers;
 	}
 }
