@@ -36,6 +36,8 @@
 			toolboxButton = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			openFileButton = new ToolStripButton();
+			toolStripSeparator2 = new ToolStripSeparator();
+			showGeneralStatistics = new ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
 			splitContainer1.Panel1.SuspendLayout();
 			splitContainer1.Panel2.SuspendLayout();
@@ -78,7 +80,7 @@
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton, toolStripSeparator2, showGeneralStatistics });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -110,6 +112,21 @@
 			openFileButton.Text = "Open File";
 			openFileButton.Click += openFileButton_Click;
 			// 
+			// toolStripSeparator2
+			// 
+			toolStripSeparator2.Name = "toolStripSeparator2";
+			toolStripSeparator2.Size = new Size(6, 25);
+			// 
+			// showGeneralStatistics
+			// 
+			showGeneralStatistics.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			showGeneralStatistics.Image = (Image)resources.GetObject("showGeneralStatistics.Image");
+			showGeneralStatistics.ImageTransparentColor = Color.Magenta;
+			showGeneralStatistics.Name = "showGeneralStatistics";
+			showGeneralStatistics.Size = new Size(23, 22);
+			showGeneralStatistics.Text = "Show General Statistics";
+			showGeneralStatistics.Click += showGeneralStatistics_Click;
+			// 
 			// PlayerDataViewer
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -138,5 +155,7 @@
 		private ToolStripButton toolboxButton;
 		private ToolStripSeparator toolStripSeparator1;
 		private ToolStripButton openFileButton;
+		private ToolStripSeparator toolStripSeparator2;
+		private ToolStripButton showGeneralStatistics;
 	}
 }

@@ -10,12 +10,15 @@ namespace WorldForge
 	/// </summary>
 	public class PlayerData
 	{
+		public readonly UUID uuid;
+
 		public Player player;
 		public PlayerStats stats;
 		public PlayerAdvancements advancements;
 
 		public PlayerData(string rootDirectory, UUID uuid, GameVersion gameVersionHint)
 		{
+			this.uuid = uuid;
 			string playerDataFile = System.IO.Path.Combine(rootDirectory, "playerdata", uuid.ToString(true) + ".dat");
 			string playerStatsFile = System.IO.Path.Combine(rootDirectory, "stats", uuid.ToString(true) + ".json");
 			string playerAdvancementsFile = System.IO.Path.Combine(rootDirectory, "advancements", uuid.ToString(true) + ".json");

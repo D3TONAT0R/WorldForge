@@ -1,7 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
-using WorldForge;
-using WorldForge.IO;
+﻿using WorldForge;
 using WorldForge.Items;
 using WorldForge.NBT;
 
@@ -10,7 +7,7 @@ namespace WorldForgeToolbox
 	public partial class PlayerDataViewer : ToolboxForm
 	{
 		private NBTCompound? data;
-		private Player? playerData;
+		private PlayerData? playerData;
 		private PlayerAccountData? accountData;
 
 		private StringFormat centerFormat = new StringFormat()
@@ -60,14 +57,14 @@ namespace WorldForgeToolbox
 				{
 					sbyte slot = (sbyte)(ix + iy * 9);
 					var x = 1.5f + ix;
-					DrawSlot(g, x, y, w, playerData.inventory.GetItem(slot));
+					DrawSlot(g, x, y, w, playerData.player.inventory.GetItem(slot));
 				}
 			}
-			DrawSlot(g, 0, 0, w, playerData.headItemSlot);
-			DrawSlot(g, 0, 1, w, playerData.chestItemSlot);
-			DrawSlot(g, 0, 2, w, playerData.legsItemSlot);
-			DrawSlot(g, 0, 3, w, playerData.feetItemSlot);
-			DrawSlot(g, 0, 4.5f, w, playerData.offhandItemSlot);
+			DrawSlot(g, 0, 0, w, playerData.player.headItemSlot);
+			DrawSlot(g, 0, 1, w, playerData.player.chestItemSlot);
+			DrawSlot(g, 0, 2, w, playerData.player.legsItemSlot);
+			DrawSlot(g, 0, 3, w, playerData.player.feetItemSlot);
+			DrawSlot(g, 0, 4.5f, w, playerData.player.offhandItemSlot);
 			var avatar = accountData?.GetAvatar();
 			if (avatar != null)
 			{
@@ -77,7 +74,7 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(Pens.Red, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
-			g.DrawString(accountData?.GetUsername() ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width /2f, w, centerFormat);
+			g.DrawString(accountData?.GetUsername() ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width / 2f, w, centerFormat);
 		}
 
 		private void DrawSlot(Graphics g, float x, float y, int size, ItemStack? stack)
@@ -114,12 +111,13 @@ namespace WorldForgeToolbox
 			Text = Path.GetFileName(file);
 			var nbt = new NBTFile(file);
 			data = nbt.contents;
-			playerData = new Player(data, GameVersion.DefaultVersion);
+			var rootDir = Path.Combine(Path.GetDirectoryName(file), "..");
+			var uuid = GetUUID(file);
+			playerData = new PlayerData(rootDir, uuid, GameVersion.DefaultVersion);
 			accountData = new PlayerAccountData(playerData.uuid);
 			nbtView.DisplayContent(data, "");
 			Invalidate(true);
-			var uuid = GetUUID(file);
-			if(uuid != null)
+			if (uuid != null)
 			{
 				Task.Run(async () =>
 				{
@@ -154,9 +152,24 @@ namespace WorldForgeToolbox
 
 		private void openFileButton_Click(object sender, EventArgs e)
 		{
-			if(OpenFileUtility.OpenFileDialog(out inputFileArg, OpenFileUtility.NBT_DATA_FILTER, OpenFileUtility.ALL_FILES_FILTER))
+			if (OpenFileUtility.OpenFileDialog(out inputFileArg, OpenFileUtility.NBT_DATA_FILTER, OpenFileUtility.ALL_FILES_FILTER))
 			{
 				OpenFile(inputFileArg);
+			}
+		}
+
+		private void showGeneralStatistics_Click(object sender, EventArgs e)
+		{
+			if(playerData.stats != null)
+			{
+				int totalPlayTime = playerData.stats.data.GetAsCompound("minecraft:custom")?.Get<int>("minecraft:play_time") ?? 0;
+				int seconds = totalPlayTime / 20;
+				var timespan = TimeSpan.FromSeconds(seconds);
+				MessageBox.Show($"Total play time: {(int)timespan.TotalHours}h {timespan.Minutes}m {timespan.Seconds}s");
+			}
+			else
+			{
+				MessageBox.Show("No stats data found for this player.");
 			}
 		}
 	}
