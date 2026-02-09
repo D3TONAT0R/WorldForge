@@ -554,7 +554,23 @@ namespace WorldForgeToolbox
 
 		private void OnCanvasScroll(object? sender, MouseEventArgs e)
 		{
+			var lastZoom = Zoom;
 			Zoom += Math.Clamp(e.Delta, -1, 1);
+			var zoomDelta = Zoom - lastZoom;
+			var normPosX = (e.Location.X / (float)canvas.ClientRectangle.Width) * 2f - 1f;
+			var normPosY = (e.Location.Y / (float)canvas.ClientRectangle.Height) * 2f - 1f;
+			var cursorBlock = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
+			var diff = cursorBlock - center.Block;
+			if(zoomDelta > 0)
+			{
+				center.x += diff.x * zoomDelta;
+				center.z += diff.z * zoomDelta;
+			}
+			else if(zoomDelta < 0)
+			{
+				center.x += diff.x * zoomDelta / 2f;
+				center.z += diff.z * zoomDelta / 2f;
+			}
 			Repaint();
 		}
 
