@@ -306,7 +306,7 @@ namespace WorldForge
 			if (version < GameVersion.Release_1(3)) position.y -= 1.62f;
 
 			if (version >= GameVersion.Release_1(16)) nbt.Add("Dimension", dimension.ID);
-			else nbt.Add("Dimension", dimension.DimensionIndex);
+			else nbt.Add("Dimension", dimension.Index ?? 0);
 
 			if (version >= GameVersion.Release_1(9)) nbt.Add("Health", health);
 			else

@@ -18,6 +18,8 @@ namespace WorldForge
 	{
 		public World ParentWorld { get; private set; }
 
+		public string SourceSubdirectory { get; private set; }
+
 		public DimensionID dimensionID;
 
 		public BiomeID DefaultBiome
@@ -80,12 +82,12 @@ namespace WorldForge
 			DefaultBiome = defaultBiome;
 		}
 
-		//TODO: Danger, loads entire dimension at once
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var dimensionRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
 			if(!Directory.Exists(dimensionRootDir)) return null;
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
+			dim.SourceSubdirectory = subdir ?? "";
 			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
 			var version = gameVersion ?? world?.GameVersion ?? GameVersion.FirstAnvilVersion;
 			bool isAlphaFormat = version < GameVersion.Beta_1(3);

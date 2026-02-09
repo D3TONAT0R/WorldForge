@@ -9,11 +9,11 @@ namespace WorldForge
 	public struct DimensionID : INBTConverter, IEquatable<DimensionID>
 	{
 
-		public string ID { get; private set; }
+		public NamespacedID ID { get; private set; }
 
-		public int Index { get; private set; }
+		public int? Index { get; private set; }
 
-		public string SubdirectoryName => (Index != 0 && Index != int.MinValue) ? $"DIM{Index}" : null;
+		public string SubdirectoryName => (Index.HasValue && Index != 0) ? $"DIM{Index}" : null;
 
 		public static readonly DimensionID Unknown = new DimensionID(null, int.MinValue);
 		public static readonly DimensionID Overworld = new DimensionID("minecraft:overworld", 0);
@@ -27,29 +27,15 @@ namespace WorldForge
 			TheEnd
 		};
 
-		public int? DimensionIndex
-		{
-			get
-			{
-				switch(ID)
-				{
-					case "minecraft:overworld": return 0;
-					case "minecraft:the_nether": return -1;
-					case "minecraft:the_end": return 1;
-					default: return null;
-				}
-			}
-		}
-
 		public bool Exists => ID != null;
 
-		private DimensionID(string id, int index)
+		private DimensionID(string id, int? index)
 		{
-			ID = id;
+			ID = new NamespacedID(id ?? "unknown:unknown");
 			Index = index;
 		}
 
-		public static DimensionID Register(string ID, int index = int.MinValue)
+		public static DimensionID Register(string ID, int? index = null)
 		{
 			var b = new DimensionID(ID, index);
 			registry.Add(b);
@@ -58,9 +44,10 @@ namespace WorldForge
 
 		public static DimensionID FromID(string id)
 		{
+			var namespacedID = new NamespacedID(id);
 			foreach (var b in registry)
 			{
-				if (b.ID == id)
+				if (b.ID == namespacedID)
 				{
 					return b;
 				}
@@ -89,7 +76,7 @@ namespace WorldForge
 		{
 			if(nbtData is string s)
 			{
-				ID = s;
+				ID = new NamespacedID(s);
 			}
 			else if(nbtData is int i)
 			{
@@ -113,12 +100,18 @@ namespace WorldForge
 
 		public override int GetHashCode()
 		{
-			return ID != null ? ID.GetHashCode() : 0;
+			if(ID != null)
+			{
+				int h = ID.GetHashCode();
+				return h;
+			}
+			return 0;
+			//return ID != null ? ID.GetHashCode() : 0;
 		}
 
 		public override string ToString()
 		{
-			return ID;
+			return ID.FullID;
 		}
 
 		public static bool operator ==(DimensionID left, DimensionID right)

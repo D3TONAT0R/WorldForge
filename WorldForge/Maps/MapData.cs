@@ -183,7 +183,7 @@ namespace WorldForge.Maps
 			var comp = NBTConverter.WriteToNBT(this, new NBTCompound(), version);
 			DimensionID dim = dimension.Exists ? dimension : DimensionID.Overworld;
 			if(version >= GameVersion.Release_1(16)) comp.Add("dimension", dim.ID);
-			else if(dim.DimensionIndex.HasValue) comp.Add("dimension", dim.DimensionIndex ?? -2);
+			else if(dim.Index.HasValue) comp.Add("dimension", dim.Index ?? -2);
 			return comp;
 		}
 	}

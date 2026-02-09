@@ -32,9 +32,23 @@ namespace WorldForge
 		public GameVersion GameVersion { get; set; }
 		public LevelData LevelData { get; private set; }
 
-		public Dimension Overworld { get; set; }
-		public Dimension Nether { get; set; }
-		public Dimension TheEnd { get; set; }
+		public Dictionary<DimensionID, Dimension> Dimensions { get; } = new Dictionary<DimensionID, Dimension>();
+
+		public Dimension Overworld
+		{
+			get => GetDimension(DimensionID.Overworld);
+			set => Dimensions[DimensionID.Overworld] = value;
+		}
+		public Dimension Nether
+		{
+			get => GetDimension(DimensionID.Nether);
+			set => Dimensions[DimensionID.Nether] = value;
+		}
+		public Dimension TheEnd
+		{
+			get => GetDimension(DimensionID.TheEnd);
+			set => Dimensions[DimensionID.TheEnd] = value;
+		}
 
 		public Dictionary<UUID, PlayerData> playerData = new Dictionary<UUID, PlayerData>();
 
@@ -58,7 +72,7 @@ namespace WorldForge
 		{
 			var world = new World(version, LevelData.CreateNew(), new WorldData());
 			world.LevelData.worldName = worldName;
-			if(createOverworld)
+			if (createOverworld)
 			{
 				world.Overworld = Dimension.CreateOverworld(world);
 			}
@@ -73,13 +87,28 @@ namespace WorldForge
 
 			//Load the dimensions
 			world.Overworld = Dimension.Load(world, worldSaveDir, null, DimensionID.Overworld, versionHint, throwOnRegionLoadFail);
-			if(Directory.Exists(Path.Combine(worldSaveDir, "DIM-1")))
+			foreach (var dir in Directory.GetDirectories(worldSaveDir, "DIM*"))
 			{
-				world.Nether = Dimension.Load(world, worldSaveDir, "DIM-1", DimensionID.Nether, versionHint, throwOnRegionLoadFail);
+				var dirName = Path.GetFileName(dir);
+				if (int.TryParse(dirName.Substring(3), out var dimIndex))
+				{
+					var dimensionID = DimensionID.FromIndex(dimIndex);
+					world.Dimensions[dimensionID] = Dimension.Load(world, worldSaveDir, dirName, dimensionID, versionHint, throwOnRegionLoadFail);
+				}
 			}
-			if(Directory.Exists(Path.Combine(worldSaveDir, "DIM1")))
+			string dimensionsDir = Path.Combine(worldSaveDir, "dimensions");
+			if (Directory.Exists(dimensionsDir))
 			{
-				world.TheEnd = Dimension.Load(world, worldSaveDir, "DIM1", DimensionID.TheEnd, versionHint, throwOnRegionLoadFail);
+				foreach (var dir1 in Directory.GetDirectories(dimensionsDir))
+				{
+					var ns = Path.GetFileName(dir1);
+					foreach (var dir2 in Directory.GetDirectories(dir1))
+					{
+						var name = Path.GetFileName(dir2);
+						var dimensionID = DimensionID.FromID($"{ns}:{name}");
+						world.Dimensions[dimensionID] = Dimension.Load(world, worldSaveDir, Path.Combine("dimensions", ns, name), dimensionID, versionHint, throwOnRegionLoadFail);
+					}
+				}
 			}
 
 			world.WorldData = WorldData.FromWorldSave(worldSaveDir);
@@ -88,12 +117,13 @@ namespace WorldForge
 			{
 				foreach (var file in Directory.GetFiles(Path.Combine(worldSaveDir, "playerdata"), "*.dat"))
 				{
-					try {
+					try
+					{
 						var uuid = new UUID(Path.GetFileNameWithoutExtension(file));
 						var player = new PlayerData(worldSaveDir, uuid, world.GameVersion);
 						world.playerData[uuid] = player;
 					}
-					catch(Exception e)
+					catch (Exception e)
 					{
 						Logger.Error($"Failed to load player data from file {file}: {e.Message}");
 					}
@@ -120,12 +150,31 @@ namespace WorldForge
 
 		}
 
+		public Dimension GetDimension(DimensionID dimensionID)
+		{
+			if (Dimensions.TryGetValue(dimensionID, out var dimension))
+			{
+				return dimension;
+			}
+			return null;
+		}
+
+		public bool HasDimension(DimensionID dimensionID)
+		{
+			return Dimensions.ContainsKey(dimensionID);
+		}
+
+		public bool TryGetDimension(DimensionID dimensionID, out Dimension dimension)
+		{
+			return Dimensions.TryGetValue(dimensionID, out dimension);
+		}
+
 		public void PlaceSpawnpoint(int x, int z, bool throwException = false)
 		{
 			short y = Overworld.GetHighestBlock(x, z, HeightmapType.AllBlocks);
-			if(y == short.MinValue)
+			if (y == short.MinValue)
 			{
-				if(throwException) throw new InvalidOperationException("Could not find any blocks at the given spawn location");
+				if (throwException) throw new InvalidOperationException("Could not find any blocks at the given spawn location");
 				y = 64;
 			}
 			LevelData.spawnpoint = new LevelData.Spawnpoint(x, y, z);
@@ -135,10 +184,10 @@ namespace WorldForge
 		{
 			LevelData.gameTypeAndDifficulty.gameType = gameMode;
 			LevelData.gameTypeAndDifficulty.allowCommands = true;
-			if(forceAllPlayers)
+			if (forceAllPlayers)
 			{
 				LevelData.player.playerGameType = gameMode;
-				foreach(var player in playerData.Values)
+				foreach (var player in playerData.Values)
 				{
 					player.player.playerGameType = gameMode;
 				}
@@ -153,9 +202,9 @@ namespace WorldForge
 			gameVersion = GameVersion.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? GameVersion.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
 			regions = new List<RegionLocation>();
-			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
-				if(RegionLocation.TryGetFromFileName(f, out var loc))
+				if (RegionLocation.TryGetFromFileName(f, out var loc))
 				{
 					regions.Add(loc);
 				}
@@ -167,20 +216,20 @@ namespace WorldForge
 			bool exists = Directory.Exists(worldSaveDir);
 			bool hasFiles = exists && Directory.GetFiles(worldSaveDir, "*", SearchOption.AllDirectories).Length > 0;
 
-			if(saveFileOption == SaveFileOption.CreateNew && hasFiles)
+			if (saveFileOption == SaveFileOption.CreateNew && hasFiles)
 			{
 				throw new InvalidOperationException("Target directory already contains files.");
 			}
-			else if(saveFileOption == SaveFileOption.Replace && hasFiles)
+			else if (saveFileOption == SaveFileOption.Replace && hasFiles)
 			{
 				//Check if the destination folder is a world folder to avoid unintended deletions
-				if(!IsWorldSaveDirectory(worldSaveDir))
+				if (!IsWorldSaveDirectory(worldSaveDir))
 				{
 					throw new ArgumentException("Target directory already contains files and is not a world save.");
 				}
 				Directory.Delete(worldSaveDir, true);
 			}
-			else if(saveFileOption == SaveFileOption.ReplaceAny)
+			else if (saveFileOption == SaveFileOption.ReplaceAny)
 			{
 				Directory.Delete(worldSaveDir, true);
 			}
@@ -189,22 +238,22 @@ namespace WorldForge
 
 			SaveLevelData(worldSaveDir);
 
-			if(HasOverworld)
+			if (HasOverworld)
 			{
 				Overworld.SaveFiles(worldSaveDir, GameVersion);
 			}
-			if(HasNether)
+			if (HasNether)
 			{
 				Nether.SaveFiles(Path.Combine(worldSaveDir, "DIM-1"), GameVersion);
 			}
-			if(HasTheEnd)
+			if (HasTheEnd)
 			{
 				TheEnd.SaveFiles(Path.Combine(worldSaveDir, "DIM1"), GameVersion);
 			}
 
 			WorldData.Save(worldSaveDir, GameVersion);
 
-			if(createSpawnpointMapIcon && Overworld != null)
+			if (createSpawnpointMapIcon && Overworld != null)
 			{
 				var spawnX = LevelData.spawnpoint.spawnX;
 				var spawnZ = LevelData.spawnpoint.spawnZ;
@@ -223,7 +272,7 @@ namespace WorldForge
 		public string GetDimensionDirectory(string worldSaveDir, DimensionID dimensionID)
 		{
 			var subdir = dimensionID.SubdirectoryName;
-			if(subdir != null)
+			if (subdir != null)
 			{
 				return Path.Combine(worldSaveDir, subdir);
 			}

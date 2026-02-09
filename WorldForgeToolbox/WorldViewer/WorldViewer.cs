@@ -40,7 +40,7 @@ namespace WorldForgeToolbox
 			public void Dispose(bool saveCache = true)
 			{
 				cancellationTokenSource?.Cancel();
-				if (saveCache) SaveRenderCache();
+				if (saveCache && Dirty) SaveRenderCache();
 				maps = null!;
 				world = null!;
 				dimension = null!;
@@ -51,11 +51,22 @@ namespace WorldForgeToolbox
 				Dirty = true;
 			}
 
+			public DialogResult SaveIfRequiredAndConfirmedByUser()
+			{
+				if (Dirty)
+				{
+					var result = MessageBox.Show("Save modified render cache?", "Unsaved Render Cache", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+					if (result == DialogResult.Yes) SaveRenderCache();
+					return result;
+				}
+				return DialogResult.None;
+			}
+
 			public void SaveRenderCache()
 			{
 				if (!File.Exists(sourceFileName)) return;
 				var worldRoot = Path.GetDirectoryName(sourceFileName);
-				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+				var cachePath = Path.Combine(worldRoot, dimension.SourceSubdirectory, "region_map_cache.dat");
 				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
 				maps.Save(cachePath);
 				Dirty = false;
@@ -64,7 +75,7 @@ namespace WorldForgeToolbox
 			public void LoadOrCreateRenderCache()
 			{
 				var worldRoot = Path.GetDirectoryName(sourceFileName);
-				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
+				var cachePath = Path.Combine(worldRoot, dimension.SourceSubdirectory, "region_map_cache.dat");
 				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 				Dirty = false;
 			}
@@ -81,14 +92,21 @@ namespace WorldForgeToolbox
 				Dirty = false;
 			}
 
-			public void SwitchDimension(Dimension dim, bool saveMapCache = true)
+			public bool SwitchDimension(Dimension dim, bool saveMapCache = true)
 			{
+				if (saveMapCache)
+				{
+					if(SaveIfRequiredAndConfirmedByUser() == DialogResult.Cancel)
+					{
+						return false;
+					}
+				}
 				cancellationTokenSource?.Cancel();
 				cancellationTokenSource = new CancellationTokenSource();
 				dimension = dim;
-				if (saveMapCache) SaveRenderCache();
 				currentRenders.Clear();
 				LoadOrCreateRenderCache();
+				return true;
 			}
 
 			public PlayerAccountData GetPlayerAccountData(UUID uuid)
@@ -141,7 +159,8 @@ namespace WorldForgeToolbox
 
 		private int _zoom = 4;
 
-		private Timer statusLabelUpdater = new Timer() {
+		private Timer statusLabelUpdater = new Timer()
+		{
 			Interval = 100
 		};
 
@@ -153,10 +172,10 @@ namespace WorldForgeToolbox
 
 		public static WorldViewer GetInstance(string? file = null)
 		{
-			if(Instance != null && !Instance.IsDisposed)
+			if (Instance != null && !Instance.IsDisposed)
 			{
 				Instance.BringToFront();
-				if(file != null) Instance.OpenWorld(file);
+				if (file != null) Instance.OpenWorld(file);
 				return Instance;
 			}
 			else
@@ -169,7 +188,7 @@ namespace WorldForgeToolbox
 
 		public WorldViewer(string? inputFile) : base(inputFile)
 		{
-			if(!Instance?.IsDisposed ?? false)
+			if (!Instance?.IsDisposed ?? false)
 			{
 				throw new InvalidOperationException("Only one instance of WorldViewer can be open at a time.");
 			}
@@ -204,10 +223,10 @@ namespace WorldForgeToolbox
 
 		public void OpenWorld(string file)
 		{
-			if(view?.sourceFileName == file) return;
+			if (view?.sourceFileName == file) return;
 			view?.Dispose();
 			view = new DimensionView(file);
-			if(focusPosition.HasValue)
+			if (focusPosition.HasValue)
 			{
 				center.x = focusPosition.Value.x;
 				center.z = focusPosition.Value.z;
@@ -218,27 +237,22 @@ namespace WorldForgeToolbox
 				center.z = view.world.LevelData.spawnpoint.Position.z;
 			}
 			dimensionSelector.DropDownItems.Clear();
-			CreateDimensionMenuItem(view.world.Overworld);
-			CreateDimensionMenuItem(view.world.Nether);
-			CreateDimensionMenuItem(view.world.TheEnd);
+			foreach (var dim in view.world.Dimensions)
+			{
+				CreateDimensionMenuItem(dim.Value);
+			}
 			Invalidate(true);
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
-			bool saveCache = false;
-			if (view.Dirty)
+			if (view?.SaveIfRequiredAndConfirmedByUser() == DialogResult.Cancel)
 			{
-				var result = MessageBox.Show("Save render cache before closing?", "Unsaved Render Cache", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-				if(result == DialogResult.Cancel)
-				{
-					e.Cancel = true;
-					return;
-				}
-				saveCache = result == DialogResult.Yes;
+				e.Cancel = true;
+				return;
 			}
 			base.OnFormClosing(e);
-			view?.Dispose(saveCache);
+			view?.Dispose(false);
 		}
 
 		public void GoToPosition(BlockCoord2D pos, int? zoomLevel = null)
@@ -246,21 +260,22 @@ namespace WorldForgeToolbox
 			focusPosition = pos;
 			center.x = pos.x;
 			center.z = pos.z;
-			if(zoomLevel.HasValue) Zoom = zoomLevel.Value;
+			if (zoomLevel.HasValue) Zoom = zoomLevel.Value;
 			Repaint();
 		}
 
 		private string GetDimensionName(Dimension dim)
 		{
-			string readableName = dim.dimensionID.ID.Replace("minecraft:", "");
+			string readableName = dim.dimensionID.ID.FullID.Replace("minecraft:", "");
 			readableName = readableName.Substring(0, 1).ToUpper() + readableName.Substring(1);
 			return readableName;
 		}
 
 		private void ShowDimension(Dimension dim)
 		{
+			if (view == null) return;
 			view.SwitchDimension(dim);
-			dimensionSelector.Text = GetDimensionName(dim);
+			dimensionSelector.Text = GetDimensionName(view.dimension);
 			visibleUnrenderedRegions.Clear();
 			Invalidate(true);
 		}
@@ -352,7 +367,7 @@ namespace WorldForgeToolbox
 						{
 							g.FillRectangle(outdatedMapBrush, rect);
 							// Queue for re-rendering when outdated
-							if(regenerateOutdatedMaps.Checked) visibleUnrenderedRegions.Add(r.Key);
+							if (regenerateOutdatedMaps.Checked) visibleUnrenderedRegions.Add(r.Key);
 						}
 						if (darken) g.FillRectangle(darkenMapBrush, rect);
 						var hq = view.maps.cache[r.Key].highQualityRender;
@@ -557,16 +572,14 @@ namespace WorldForgeToolbox
 			var lastZoom = Zoom;
 			Zoom += Math.Clamp(e.Delta, -1, 1);
 			var zoomDelta = Zoom - lastZoom;
-			var normPosX = (e.Location.X / (float)canvas.ClientRectangle.Width) * 2f - 1f;
-			var normPosY = (e.Location.Y / (float)canvas.ClientRectangle.Height) * 2f - 1f;
 			var cursorBlock = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
 			var diff = cursorBlock - center.Block;
-			if(zoomDelta > 0)
+			if (zoomDelta > 0)
 			{
 				center.x += diff.x * zoomDelta;
 				center.z += diff.z * zoomDelta;
 			}
-			else if(zoomDelta < 0)
+			else if (zoomDelta < 0)
 			{
 				center.x += diff.x * zoomDelta / 2f;
 				center.z += diff.z * zoomDelta / 2f;

@@ -120,7 +120,8 @@ namespace WorldForge.Maps
 						int matches = 0;
 						foreach(var r in resolvedBlocks)
 						{
-							var resolvedBlockId = BlockList.Find(r, false, false);
+							var id = new NamespacedID(r);
+							var resolvedBlockId = BlockList.Find(id, false, false);
 							if(resolvedBlockId != null)
 							{
 								mappings.Add(resolvedBlockId.ID, i);
