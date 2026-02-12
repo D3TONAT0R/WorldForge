@@ -32,7 +32,7 @@
 			toolStrip1 = new ToolStrip();
 			toolboxButton = new ToolStripButton();
 			toolStripSeparator5 = new ToolStripSeparator();
-			toolStripButton1 = new ToolStripButton();
+			openWorld = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			dimensionSelector = new ToolStripSplitButton();
 			toolStripSeparator2 = new ToolStripSeparator();
@@ -54,13 +54,14 @@
 			canvas = new CanvasPanel();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
+			openServerWorld = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, toolStripButton1, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, openWorld, openServerWorld, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -82,15 +83,15 @@
 			toolStripSeparator5.Name = "toolStripSeparator5";
 			toolStripSeparator5.Size = new Size(6, 25);
 			// 
-			// toolStripButton1
+			// openWorld
 			// 
-			toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-			toolStripButton1.ImageTransparentColor = Color.Magenta;
-			toolStripButton1.Name = "toolStripButton1";
-			toolStripButton1.Size = new Size(23, 22);
-			toolStripButton1.Text = "Open World ...";
-			toolStripButton1.Click += OnOpenWorldClick;
+			openWorld.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			openWorld.Image = (Image)resources.GetObject("openWorld.Image");
+			openWorld.ImageTransparentColor = Color.Magenta;
+			openWorld.Name = "openWorld";
+			openWorld.Size = new Size(23, 22);
+			openWorld.Text = "Open World ...";
+			openWorld.Click += OnOpenWorldClick;
 			// 
 			// toolStripSeparator1
 			// 
@@ -278,6 +279,16 @@
 			statusLabel.Size = new Size(300, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
+			// openServerWorld
+			// 
+			openServerWorld.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			openServerWorld.Image = (Image)resources.GetObject("openServerWorld.Image");
+			openServerWorld.ImageTransparentColor = Color.Magenta;
+			openServerWorld.Name = "openServerWorld";
+			openServerWorld.Size = new Size(23, 22);
+			openServerWorld.Text = "Open Server World ...";
+			openServerWorld.Click += OnOpenServerWorldClick;
+			// 
 			// WorldViewer
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -300,7 +311,7 @@
 
 		private ToolStrip toolStrip1;
 		private global::WorldForgeToolbox.CanvasPanel canvas;
-		private ToolStripButton toolStripButton1;
+		private ToolStripButton openWorld;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel statusLabel;
         private ToolStripSeparator toolStripSeparator1;
@@ -324,5 +335,6 @@
 		public ToolStripButton toggleGrid;
 		public ToolStripButton toggleOpacity;
 		public ToolStripButton togglePlayers;
+		private ToolStripButton openServerWorld;
 	}
 }

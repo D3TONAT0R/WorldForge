@@ -12,6 +12,7 @@ namespace WorldForgeToolbox
 		private class DimensionView
 		{
 			public string sourceFileName;
+			public Server? server;
 			public World world;
 			public Dimension dimension;
 			public RegionMapCache maps;
@@ -24,10 +25,18 @@ namespace WorldForgeToolbox
 
 			public bool Dirty { get; private set; }
 
-			public DimensionView(string file, bool loadMapCache = true)
+			public DimensionView(string file, bool isServer, bool loadMapCache = true)
 			{
 				sourceFileName = file;
-				world = World.Load(Path.GetDirectoryName(file));
+				if(isServer)
+				{
+					server = Server.FromDirectory(file, null);
+					world = server.World;
+				}
+				else
+				{
+					world = World.Load(Path.GetDirectoryName(file));
+				}
 				if (world.HasOverworld && world.Overworld.regions.Count > 0) dimension = world.Overworld;
 				else if (world.HasNether && world.Nether.regions.Count > 0) dimension = world.Nether;
 				else if (world.HasTheEnd && world.TheEnd.regions.Count > 0) dimension = world.TheEnd;
@@ -96,7 +105,7 @@ namespace WorldForgeToolbox
 			{
 				if (saveMapCache)
 				{
-					if(SaveIfRequiredAndConfirmedByUser() == DialogResult.Cancel)
+					if (SaveIfRequiredAndConfirmedByUser() == DialogResult.Cancel)
 					{
 						return false;
 					}
@@ -223,9 +232,21 @@ namespace WorldForgeToolbox
 
 		public void OpenWorld(string file)
 		{
+			if(!File.Exists(file) && !Directory.Exists(file))
+			{
+				MessageBox.Show("File or directory does not exist.");
+				return;
+			}
+			bool isServer = false;
+			if(Path.GetExtension(file).Equals(".properties", StringComparison.OrdinalIgnoreCase)
+				|| Directory.Exists(file) && File.Exists(Path.Combine(file, "server.properties")))
+			{
+				isServer = true;
+			}
+
 			if (view?.sourceFileName == file) return;
 			view?.Dispose();
-			view = new DimensionView(file);
+			view = new DimensionView(file, isServer);
 			if (focusPosition.HasValue)
 			{
 				center.x = focusPosition.Value.x;
@@ -506,6 +527,14 @@ namespace WorldForgeToolbox
 			if (OpenFileUtility.OpenFileDialog(out var file, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
 			{
 				OpenWorld(file);
+			}
+		}
+
+		private void OnOpenServerWorldClick(object sender, EventArgs e)
+		{
+			if (OpenFileUtility.OpenWorldFolderDialog(out var folder))
+			{
+				OpenWorld(folder);
 			}
 		}
 

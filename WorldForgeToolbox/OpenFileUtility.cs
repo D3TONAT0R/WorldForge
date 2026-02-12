@@ -21,13 +21,13 @@ public class OpenFileUtility
 			// Handle the selected file path as needed
 			return true;
 		}
-		filePath = null;
+		filePath = null!;
 		return false;
 	}
 
 	public static bool OpenRegionDialog(out string filePath) => OpenRegionDialog(null, out filePath);
 
-	public static bool OpenWorldFolderDialog(string? initialDirectory, out string? folderPath)
+	public static bool OpenWorldFolderDialog(string? initialDirectory, out string folderPath)
 	{
 		using FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
 		if(initialDirectory != null) folderBrowserDialog.InitialDirectory = initialDirectory;
@@ -39,11 +39,11 @@ public class OpenFileUtility
 			// Handle the selected folder path as needed
 			return true;
 		}
-		folderPath = null;
+		folderPath = null!;
 		return false;
 	}
 
-	public static bool OpenWorldFolderDialog(out string? folderPath) => OpenWorldFolderDialog(null, out folderPath);
+	public static bool OpenWorldFolderDialog(out string folderPath) => OpenWorldFolderDialog(null, out folderPath);
 
 	public static bool OpenFileDialog(string? initialDirectory, out string filePath, params string[] fileFilters)
 	{
@@ -60,7 +60,7 @@ public class OpenFileUtility
 			// Handle the selected file path as needed
 			return true;
 		}
-		filePath = null;
+		filePath = null!;
 		return false;
 	}
 

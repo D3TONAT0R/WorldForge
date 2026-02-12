@@ -42,6 +42,11 @@ namespace WorldForge
 			return b;
 		}
 
+		public static DimensionID Temporary(string ID, int? index = null)
+		{
+			return new DimensionID(ID, index);
+		}
+
 		public static DimensionID FromID(string id)
 		{
 			var namespacedID = new NamespacedID(id);
