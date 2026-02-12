@@ -218,7 +218,7 @@ namespace WorldForgeToolbox
 				else
 				{
 					var worldRoot = Path.GetDirectoryName(browser.FilePath);
-					var dimension = Dimension.Load(null, worldRoot, browser.Dimension.SubdirectoryName, browser.Dimension);
+					var dimension = Dimension.Load(null, worldRoot, browser.Dimension.GetSubdirectoryName(false), browser.Dimension);
 					if (browser.WorldScanMode == CreateAnalysisForm.ScanMode.FullWorld)
 					{
 						int regionCount = dimension.regions.Count;

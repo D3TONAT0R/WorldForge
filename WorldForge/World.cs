@@ -269,9 +269,9 @@ namespace WorldForge
 			nbt.Save(Path.Combine(worldSaveDir, "level.dat"), false);
 		}
 
-		public string GetDimensionDirectory(string worldSaveDir, DimensionID dimensionID)
+		public string GetDimensionDirectory(string worldSaveDir, DimensionID dimensionID, bool forceDimensionsDirectory)
 		{
-			var subdir = dimensionID.SubdirectoryName;
+			var subdir = dimensionID.GetSubdirectoryName(forceDimensionsDirectory); ;
 			if (subdir != null)
 			{
 				return Path.Combine(worldSaveDir, subdir);

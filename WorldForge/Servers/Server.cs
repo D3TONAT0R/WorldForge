@@ -12,7 +12,7 @@ namespace WorldForge
 		{
 			var server = new Server();
 			server.ServerProperties = ServerProperties.Load(System.IO.Path.Combine(rootDirectory, "server.properties"));
-			var worldsRootDirectory = GetWorldRootDirectory(rootDirectory);
+			var worldsRootDirectory = GetWorldRootDirectory(rootDirectory, out var isCustomDirectory);
 			var worldName = server.ServerProperties.LevelName;
 			var mainWorld = Path.Combine(worldsRootDirectory, worldName);
 			server.World = World.Load(mainWorld, versionHint);
@@ -23,26 +23,24 @@ namespace WorldForge
 				{
 					continue; //Already loaded the main world.
 				}
-				DimensionID dimensionID;
-				if(dimensionName == worldName + "_nether")
+				if(!isCustomDirectory)
 				{
-					dimensionID = DimensionID.Nether;
+					//Check if directory name starts with world name in normal world folders.
+					//In custom world folders, assume all directories are dimensions.
+					if (!dimensionName.StartsWith(worldName + "_"))
+					{
+						continue; //Not a dimension folder.
+					}
 				}
-				else if(dimensionName == worldName + "_the_end")
-				{
-					dimensionID = DimensionID.TheEnd;
-				}
-				else
-				{
-					dimensionID = DimensionID.Temporary("custom:" + dimensionName);
-				}
-				server.World.Dimensions.Add(dimensionID, Dimension.Load(server.World, worldsRootDirectory, dimensionName, dimensionID, versionHint));
+				var dim = Dimension.LoadServerDimension(server.World, worldsRootDirectory, dimensionName, out var dimensionID);
+				server.World.Dimensions.Add(dimensionID, dim);
 			}
 			return server;
 		}
 
-		private static string GetWorldRootDirectory(string rootDirectory)
+		private static string GetWorldRootDirectory(string rootDirectory, out bool isCustomDirectory)
 		{
+			isCustomDirectory = false;
 			string worldsRootDirectory = rootDirectory;
 			//Check if bukkit.yml exists, if so, use the world directory specified in there.
 			string bukkitYmlPath = System.IO.Path.Combine(rootDirectory, "bukkit.yml");
@@ -54,7 +52,8 @@ namespace WorldForge
 					if (line.TrimStart().StartsWith("world-container:"))
 					{
 						var worldContainer = line.Split(':')[1].Trim().Replace("\"", "");
-						worldsRootDirectory = System.IO.Path.Combine(rootDirectory, worldContainer);
+						worldsRootDirectory = Path.Combine(rootDirectory, worldContainer);
+						isCustomDirectory = true;
 					}
 				}
 			}

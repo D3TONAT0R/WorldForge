@@ -11,7 +11,7 @@ namespace WorldForgeToolbox
 	{
 		private class DimensionView
 		{
-			public string sourceFileName;
+			public string sourceRootDirectory;
 			public Server? server;
 			public World world;
 			public Dimension dimension;
@@ -21,13 +21,11 @@ namespace WorldForgeToolbox
 
 			public Dictionary<UUID, PlayerAccountData> playerAccountDatas = new Dictionary<UUID, PlayerAccountData>();
 
-			public string RootDirectory => Path.GetDirectoryName(sourceFileName);
-
 			public bool Dirty { get; private set; }
 
 			public DimensionView(string file, bool isServer, bool loadMapCache = true)
 			{
-				sourceFileName = file;
+				sourceRootDirectory = Directory.Exists(file) ? file : Path.GetDirectoryName(file)!;
 				if(isServer)
 				{
 					server = Server.FromDirectory(file, null);
@@ -73,9 +71,8 @@ namespace WorldForgeToolbox
 
 			public void SaveRenderCache()
 			{
-				if (!File.Exists(sourceFileName)) return;
-				var worldRoot = Path.GetDirectoryName(sourceFileName);
-				var cachePath = Path.Combine(worldRoot, dimension.SourceSubdirectory, "region_map_cache.dat");
+				if (!Directory.Exists(sourceRootDirectory)) return;
+				var cachePath = Path.Combine(sourceRootDirectory, dimension.RelativeSourceDirectory, "region_map_cache.dat");
 				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
 				maps.Save(cachePath);
 				Dirty = false;
@@ -83,8 +80,7 @@ namespace WorldForgeToolbox
 
 			public void LoadOrCreateRenderCache()
 			{
-				var worldRoot = Path.GetDirectoryName(sourceFileName);
-				var cachePath = Path.Combine(worldRoot, dimension.SourceSubdirectory, "region_map_cache.dat");
+				var cachePath = Path.Combine(sourceRootDirectory, dimension.RelativeSourceDirectory, "region_map_cache.dat");
 				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 				Dirty = false;
 			}
@@ -92,9 +88,8 @@ namespace WorldForgeToolbox
 			public void ClearRenderCache(bool deleteCacheFile)
 			{
 				maps.Clear();
-				var worldRoot = Path.GetDirectoryName(sourceFileName);
-				var cachePath = Path.Combine(world.GetDimensionDirectory(worldRoot, dimension.dimensionID), "region_map_cache.dat");
-				if (File.Exists(cachePath))
+				var cachePath = Path.Combine(world.GetDimensionDirectory(sourceRootDirectory, dimension.dimensionID, false), "region_map_cache.dat");
+				if (File.Exists(cachePath) && deleteCacheFile)
 				{
 					File.Delete(cachePath);
 				}
@@ -244,7 +239,7 @@ namespace WorldForgeToolbox
 				isServer = true;
 			}
 
-			if (view?.sourceFileName == file) return;
+			if (view?.sourceRootDirectory == file) return;
 			view?.Dispose();
 			view = new DimensionView(file, isServer);
 			if (focusPosition.HasValue)
@@ -730,7 +725,7 @@ namespace WorldForgeToolbox
 			{
 				try
 				{
-					var playerPath = Path.Combine(view.RootDirectory, "playerdata", hoveredPlayer.player.uuid.ToString(true) + ".dat");
+					var playerPath = Path.Combine(view.sourceRootDirectory, "playerdata", hoveredPlayer.player.uuid.ToString(true) + ".dat");
 					var viewer = new PlayerDataViewer(playerPath);
 					viewer.Show();
 				}

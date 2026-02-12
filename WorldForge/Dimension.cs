@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorldForge.Biomes;
@@ -18,7 +19,7 @@ namespace WorldForge
 	{
 		public World ParentWorld { get; private set; }
 
-		public string SourceSubdirectory { get; private set; }
+		public string RelativeSourceDirectory { get; set; }
 
 		public DimensionID dimensionID;
 
@@ -85,13 +86,13 @@ namespace WorldForge
 		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var dimensionRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
-			if(!Directory.Exists(dimensionRootDir)) return null;
+			if (!Directory.Exists(dimensionRootDir)) return null;
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
-			dim.SourceSubdirectory = subdir ?? "";
+			dim.RelativeSourceDirectory = subdir ?? "";
 			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
 			var version = gameVersion ?? world?.GameVersion ?? GameVersion.FirstAnvilVersion;
 			bool isAlphaFormat = version < GameVersion.Beta_1(3);
-			if(isAlphaFormat)
+			if (isAlphaFormat)
 			{
 				LoadAlphaChunkFiles(dimensionRootDir, version, throwOnRegionLoadFail, dim);
 			}
@@ -102,14 +103,68 @@ namespace WorldForge
 			return dim;
 		}
 
+		public static Dimension LoadServerDimension(World world, string worldRoot, string subdir, out DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		{
+			var dimRoot = Path.Combine(worldRoot, subdir);
+			string contentSubdir;
+			if (Directory.Exists(Path.Combine(dimRoot, "region")))
+			{
+				// It's a normal overworld dimension
+				id = DimensionID.Overworld;
+				return Load(world, dimRoot, "", id, gameVersion, throwOnRegionLoadFail);
+			}
+			if (Directory.Exists(Path.Combine(dimRoot, "dimensions")))
+			{
+				var namespaceDir = Directory.GetDirectories(Path.Combine(dimRoot, "dimensions")).FirstOrDefault();
+				if (namespaceDir != null)
+				{
+					var idDir = Directory.GetDirectories(namespaceDir).FirstOrDefault();
+					if (idDir != null)
+					{
+						var ns = Path.GetFileName(namespaceDir);
+						var name = Path.GetFileName(idDir);
+						id = DimensionID.FromID($"{ns}:{name}");
+						contentSubdir = Path.Combine("dimensions", ns, name);
+					}
+					else
+					{
+						throw new InvalidOperationException($"Empty dimensions directory");
+					}
+				}
+				else
+				{
+					throw new InvalidOperationException($"Empty dimensions directory");
+				}
+			}
+			else
+			{
+				// Get the first directory starting with "DIM"
+				var dimDirs = Directory.GetDirectories(dimRoot, "DIM*");
+				if (dimDirs.Length > 0)
+				{
+					if (dimDirs.Length > 1)
+					{
+						throw new InvalidOperationException($"Multiple dimension directories found in server world: {string.Join(", ", dimDirs)}");
+					}
+					id = DimensionID.FromIndex(int.Parse(Path.GetFileName(dimDirs[0]).Substring(3)));
+					contentSubdir = Path.GetFileName(dimDirs[0]);
+				}
+				else
+				{
+					throw new InvalidOperationException($"Empty dimensions directory");
+				}
+			}
+			return Load(world, dimRoot, contentSubdir, id, gameVersion, throwOnRegionLoadFail);
+		}
+
 		public static Dimension FromRegionFolder(World world, string regionFolder, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
 			var dim = new Dimension(world, id, BiomeID.TheVoid);
 			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
-			foreach(var mainFileName in Directory.GetFiles(regionFolder, "*.mc*"))
+			foreach (var mainFileName in Directory.GetFiles(regionFolder, "*.mc*"))
 			{
 				var filename = Path.GetFileName(mainFileName);
-				if(Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
+				if (Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
 				{
 					try
 					{
@@ -117,7 +172,7 @@ namespace WorldForge
 						var region = RegionDeserializer.PreloadRegion(paths, dim, gameVersion);
 						dim.AddRegion(region, true);
 					}
-					catch(Exception e) when(!throwOnRegionLoadFail)
+					catch (Exception e) when (!throwOnRegionLoadFail)
 					{
 						Logger.Exception($"Failed to preload region '{filename}'", e);
 					}
@@ -133,7 +188,7 @@ namespace WorldForge
 		private static void LoadAlphaChunkFiles(string chunksRootDir, GameVersion? version, bool throwOnRegionLoadFail, Dimension dim)
 		{
 			var cs = ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
-			foreach(var f in Directory.GetFiles(chunksRootDir, "c.*.dat", SearchOption.AllDirectories))
+			foreach (var f in Directory.GetFiles(chunksRootDir, "c.*.dat", SearchOption.AllDirectories))
 			{
 				string filename = Path.GetFileName(f);
 				try
@@ -143,7 +198,7 @@ namespace WorldForge
 					string zBase36 = split[2];
 					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
-					if(!dim.TryGetRegion(regionPos, out var region))
+					if (!dim.TryGetRegion(regionPos, out var region))
 					{
 						region = Region.CreateNew(regionPos, dim);
 						dim.AddRegion(region, true);
@@ -152,7 +207,7 @@ namespace WorldForge
 					var chunk = Chunk.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), new ChunkSourceData(nbt, null, null));
 					region.chunks[chunkPos.x & 31, chunkPos.z & 31] = chunk;
 				}
-				catch(Exception e) when(!throwOnRegionLoadFail)
+				catch (Exception e) when (!throwOnRegionLoadFail)
 				{
 					Logger.Exception($"Failed to load region '{filename}'", e);
 				}
@@ -162,23 +217,23 @@ namespace WorldForge
 		private static void LoadRegionFiles(string dimensionRootDir, GameVersion? gameVersion, bool throwOnRegionLoadFail, Dimension dim)
 		{
 			var mainRegionDir = Path.Combine(dimensionRootDir, "region");
-			if(!Directory.Exists(mainRegionDir))
+			if (!Directory.Exists(mainRegionDir))
 			{
 				Logger.Error($"Region folder not found: {mainRegionDir}");
 				return;
 			}
 
 			var entitiesRegionDir = Path.Combine(dimensionRootDir, "entities");
-			if(!Directory.Exists(entitiesRegionDir)) entitiesRegionDir = null;
+			if (!Directory.Exists(entitiesRegionDir)) entitiesRegionDir = null;
 
 			var poiRegionDir = Path.Combine(dimensionRootDir, "poi");
-			if(!Directory.Exists(poiRegionDir)) poiRegionDir = null;
+			if (!Directory.Exists(poiRegionDir)) poiRegionDir = null;
 
 
-			foreach(var mainFileName in Directory.GetFiles(mainRegionDir, "*.mc*"))
+			foreach (var mainFileName in Directory.GetFiles(mainRegionDir, "*.mc*"))
 			{
 				var filename = Path.GetFileName(mainFileName);
-				if(Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
+				if (Regex.IsMatch(filename, @"^r.-*\d+.-*\d+.mc(a|r)$"))
 				{
 					try
 					{
@@ -188,7 +243,7 @@ namespace WorldForge
 						var region = RegionDeserializer.PreloadRegion(paths, dim, gameVersion);
 						dim.AddRegion(region, true);
 					}
-					catch(Exception e) when(!throwOnRegionLoadFail)
+					catch (Exception e) when (!throwOnRegionLoadFail)
 					{
 						Logger.Exception($"Failed to preload region '{filename}'", e);
 					}
@@ -208,9 +263,9 @@ namespace WorldForge
 			gameVersion = GameVersion.FromDataVersion(dataComp.Get<int>("DataVersion")) ?? GameVersion.FirstVersion;
 			worldName = dataComp.Get<string>("LevelName");
 			regions = new List<RegionLocation>();
-			foreach(var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
+			foreach (var f in Directory.GetFiles(Path.Combine(worldSaveDir, "region"), "*.mc*"))
 			{
-				if(RegionLocation.TryGetFromFileName(f, out var loc))
+				if (RegionLocation.TryGetFromFileName(f, out var loc))
 				{
 					regions.Add(loc);
 				}
@@ -219,7 +274,7 @@ namespace WorldForge
 
 		public void LoadAllChunks()
 		{
-			foreach(var r in regions)
+			foreach (var r in regions)
 			{
 				r.Value.LoadAllChunks();
 			}
@@ -232,9 +287,9 @@ namespace WorldForge
 		/// <summary>Instantiates empty regions in the specified area, allowing for blocks to be placed.</summary>
 		public void InitializeArea(int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
 		{
-			for(int x = regionLowerX; x <= regionUpperX; x++)
+			for (int x = regionLowerX; x <= regionUpperX; x++)
 			{
-				for(int z = regionLowerZ; z <= regionUpperZ; z++)
+				for (int z = regionLowerZ; z <= regionUpperZ; z++)
 				{
 					var loc = new RegionLocation(x, z);
 					AddRegion(Region.CreateNew(loc, this), true);
@@ -271,7 +326,7 @@ namespace WorldForge
 		public bool AddRegion(Region reg, bool throwException)
 		{
 			bool added = regions.TryAdd(reg.regionPos, reg);
-			if(!added && throwException)
+			if (!added && throwException)
 			{
 				throw new ArgumentException("Region already exists in dimension.");
 			}
@@ -280,7 +335,7 @@ namespace WorldForge
 
 		public bool CreateRegionIfMissing(RegionLocation loc)
 		{
-			if(!regions.ContainsKey(loc))
+			if (!regions.ContainsKey(loc))
 			{
 				var r = Region.CreateNew(loc, this);
 				return AddRegion(r, false);
@@ -296,17 +351,17 @@ namespace WorldForge
 
 		public IEnumerable<Chunk> EnumerateChunks(bool keepLoadedRegions = true)
 		{
-			foreach(var region in regions.Values)
+			foreach (var region in regions.Values)
 			{
 				var loadedRegion = region;
 				if (!region.IsLoaded)
 				{
-					if(keepLoadedRegions) region.Load();
+					if (keepLoadedRegions) region.Load();
 					else loadedRegion = region.LoadClone();
 				}
 				foreach (var chunk in loadedRegion.chunks)
 				{
-					if(chunk != null)
+					if (chunk != null)
 					{
 						yield return chunk;
 					}
@@ -319,18 +374,18 @@ namespace WorldForge
 			RegionLocation minRegion = min.RegionCoord;
 			RegionLocation maxRegion = max.RegionCoord;
 			Dictionary<RegionLocation, Region> regionCache = new Dictionary<RegionLocation, Region>();
-			for(int cx = min.x; cx <= max.x; cx++)
+			for (int cx = min.x; cx <= max.x; cx++)
 			{
-				for(int cz = min.z; cz <= max.z; cz++)
+				for (int cz = min.z; cz <= max.z; cz++)
 				{
 					var regionLoc = new RegionLocation(cx >> 5, cz >> 5);
-					if(!HasRegion(regionLoc)) continue;
+					if (!HasRegion(regionLoc)) continue;
 					if (!regionCache.TryGetValue(regionLoc, out var region))
 					{
 						var loadedRegion = regions[regionLoc];
 						if (!loadedRegion.IsLoaded)
 						{
-							if(keepLoadedRegions) loadedRegion.Load();
+							if (keepLoadedRegions) loadedRegion.Load();
 							else loadedRegion = loadedRegion.LoadClone();
 						}
 						regionCache.Add(regionLoc, loadedRegion);
@@ -339,7 +394,7 @@ namespace WorldForge
 					var chunk = region.chunks[cx & 31, cz & 31];
 					if (chunk == null)
 					{
-						if(includeNullChunks) yield return null;
+						if (includeNullChunks) yield return null;
 						continue;
 					}
 					yield return chunk;
@@ -389,7 +444,7 @@ namespace WorldForge
 			//TODO: Check for varying build limits
 			//if (pos.y < 0 || pos.y > 255) return false;
 			var r = GetRegionAtBlock(pos);
-			if(r != null)
+			if (r != null)
 			{
 				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
 			}
@@ -408,7 +463,7 @@ namespace WorldForge
 		///<summary>Sets the tile entity at the given location.</summary>
 		public bool SetTileEntity(BlockCoord pos, TileEntity te)
 		{
-			if(TryGetRegionAtBlock(pos, out var region))
+			if (TryGetRegionAtBlock(pos, out var region))
 			{
 				return region.SetTileEntity(pos, te);
 			}
@@ -420,7 +475,7 @@ namespace WorldForge
 
 		public bool SetBlockWithTileEntity(BlockCoord pos, BlockState block, TileEntity te, bool allowNewChunks = false)
 		{
-			if(TryGetRegionAtBlock(pos, out var region))
+			if (TryGetRegionAtBlock(pos, out var region))
 			{
 				region.SetBlockWithTileEntity(pos, block, te, allowNewChunks);
 			}
@@ -486,20 +541,20 @@ namespace WorldForge
 		{
 			short[,] heightmap = new short[boundary.LengthX, boundary.LengthZ];
 			Dictionary<ChunkCoord, short[,]> chunkHeightmaps = new Dictionary<ChunkCoord, short[,]>();
-			for(int z = boundary.zMin; z < boundary.zMax; z++)
+			for (int z = boundary.zMin; z < boundary.zMax; z++)
 			{
-				for(int x = boundary.xMin; x < boundary.xMax; x++)
+				for (int x = boundary.xMin; x < boundary.xMax; x++)
 				{
 					var pos = new BlockCoord(x, 0, z);
 					var chunkPos = pos.Chunk;
-					if(!chunkHeightmaps.TryGetValue(chunkPos, out var chunkHeightmap))
+					if (!chunkHeightmaps.TryGetValue(chunkPos, out var chunkHeightmap))
 					{
 						var chunk = GetRegionAtBlock(pos)?.GetChunk(chunkPos.x & 31, chunkPos.z & 31);
 						chunkHeightmap = chunk?.GetHeightmap(type, forceManualCalculation);
 						chunkHeightmaps.Add(chunkPos, chunkHeightmap);
 					}
 					short height;
-					if(chunkHeightmap != null)
+					if (chunkHeightmap != null)
 					{
 						height = chunkHeightmap[x & 0xF, z & 0xF];
 					}
@@ -535,7 +590,7 @@ namespace WorldForge
 		{
 			Directory.CreateDirectory(rootDir);
 			var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
-			if(gameVersion >= GameVersion.FirstMCRVersion)
+			if (gameVersion >= GameVersion.FirstMCRVersion)
 			{
 				Directory.CreateDirectory(Path.Combine(rootDir, "region"));
 
@@ -551,10 +606,10 @@ namespace WorldForge
 				var alphaSerializer = (ChunkSerializerAlpha)ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(gameVersion);
 				Parallel.ForEach(regions, parallelOptions, region =>
 				{
-					if(!region.Value.IsLoaded) region.Value.Load();
-					foreach(var c in region.Value.chunks)
+					if (!region.Value.IsLoaded) region.Value.Load();
+					foreach (var c in region.Value.chunks)
 					{
-						if(c != null)
+						if (c != null)
 						{
 							ChunkSerializerAlpha.GetAlphaChunkPathAndName(c.WorldSpaceCoord, out var folder1, out var folder2, out var fileName);
 							Directory.CreateDirectory(Path.Combine(rootDir, folder1, folder2));

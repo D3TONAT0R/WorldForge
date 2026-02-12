@@ -6,14 +6,18 @@ namespace WorldForge
 {
 	public readonly struct NamespacedID : IEquatable<NamespacedID>, INBTConverter
 	{
+		public static readonly NamespacedID unknown = new NamespacedID("unknown:unknown");
+
 		public readonly string customNamespace;
 		public readonly string id;
 
 		public readonly int hash;
 
-		public string FullID => (customNamespace ?? "minecraft") + ":" + id;
+		public string FullID => $"{ResolvedNamespace}:{id}";
 
 		public bool HasCustomNamespace => customNamespace != null;
+
+		public string ResolvedNamespace => customNamespace ?? "minecraft";
 
 		public NamespacedID(string ns, string id, bool checkValidity = true)
 		{
