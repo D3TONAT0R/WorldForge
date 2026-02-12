@@ -12,12 +12,21 @@ namespace WorldForge
 			Infdev = 1,
 			Alpha = 2,
 			Beta = 3,
-			Release = 4
+			Release = 4,
 		}
 
 		public Stage stage;
+		/// <summary>
+		/// The major version number (normally 1), or the year in the case of YDH (Year.Drop.Hotfix) versioning.
+		/// </summary>
 		public byte major;
+		/// <summary>
+		/// The minor version number (e.g. the 16 in 1.16), or the drop number in the case of YDH versioning.
+		/// </summary>
 		public byte minor;
+		/// <summary>
+		/// The patch version number (e.g. the 5 in 1.16.5), or the hotfix number in the case of YDH versioning.
+		/// </summary>
 		public byte patch;
 
 		public static readonly GameVersion FirstVersion = new GameVersion(Stage.Indev, 0, 0, 0);
@@ -27,6 +36,7 @@ namespace WorldForge
 		public static readonly GameVersion FirstMCRVersion = Beta_1(3);
 		public static readonly GameVersion FirstAnvilVersion = Release_1(2, 1);
 		public static readonly GameVersion FirstFlatteningVersion = Release_1(1, 13);
+		public static readonly GameVersion FirstYDHVersion = YDH(26, 1);
 
 		public static readonly GameVersion LastSupportedVersion = Release_1(21, 1);
 
@@ -119,6 +129,12 @@ namespace WorldForge
 		public static GameVersion Release_1(byte minor, byte patch = 0)
 		{
 			return new GameVersion(Stage.Release, 1, minor, patch);
+		}
+
+		public static GameVersion YDH(byte year, byte drop, byte hotfix = 0)
+		{
+			if(year < 26) throw new System.ArgumentOutOfRangeException(nameof(year), "Year must be 26 or higher for YDH versioning.");
+			return new GameVersion(Stage.Release, year, drop, hotfix);
 		}
 
 		public static GameVersion Parse(string s)
