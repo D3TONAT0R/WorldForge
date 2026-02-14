@@ -613,7 +613,7 @@ namespace WorldForge
 
 		private LevelData() { }
 
-		public static LevelData CreateNew()
+		public static LevelData Create()
 		{
 			return new LevelData();
 		}

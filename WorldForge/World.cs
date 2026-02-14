@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using WorldForge.Biomes;
 using WorldForge.Coordinates;
 using WorldForge.IO;
 using WorldForge.NBT;
@@ -29,6 +30,8 @@ namespace WorldForge
 
 	public class World
 	{
+		public string SourceDirectory { get; private set; }
+
 		public GameVersion GameVersion { get; set; }
 		public LevelData LevelData { get; private set; }
 
@@ -50,9 +53,13 @@ namespace WorldForge
 			set => Dimensions[DimensionID.TheEnd] = value;
 		}
 
-		public Dictionary<UUID, PlayerData> playerData = new Dictionary<UUID, PlayerData>();
+		public bool HasOverworld => Overworld != null;
 
-		public Dictionary<string, NBTCompound> commandStorage = new Dictionary<string, NBTCompound>();
+		public bool HasNether => Nether != null;
+
+		public bool HasTheEnd => TheEnd != null;
+
+		public Dictionary<UUID, PlayerData> PlayerData { get; } = new Dictionary<UUID, PlayerData>();
 
 		public WorldData WorldData { get; private set; }
 
@@ -62,38 +69,39 @@ namespace WorldForge
 			set => LevelData.worldName = value;
 		}
 
-		public bool HasOverworld => Overworld != null;
-
-		public bool HasNether => Nether != null;
-
-		public bool HasTheEnd => TheEnd != null;
-
-		public static World CreateNew(GameVersion version, string worldName, bool createOverworld = true)
+		public static World Create(GameVersion version, string name, bool createOverworld = true)
 		{
-			var world = new World(version, LevelData.CreateNew(), new WorldData());
-			world.LevelData.worldName = worldName;
+			var world = new World(version, LevelData.Create(), WorldData.Create());
+			world.LevelData.worldName = name;
 			if (createOverworld)
 			{
-				world.Overworld = Dimension.CreateOverworld(world);
+				world.Overworld = Dimension.Create(world, DimensionID.Overworld, BiomeID.Plains);
 			}
 			return world;
+		}
+
+		public static World CreatePlaceholder(string name = "Placeholder")
+		{
+			return Create(GameVersion.DefaultVersion, name);
 		}
 
 		public static World Load(string worldSaveDir, GameVersion? versionHint = null, bool throwOnRegionLoadFail = false)
 		{
 			var world = new World();
+			world.SourceDirectory = worldSaveDir;
+
 			world.LevelData = LevelData.Load(new NBTFile(Path.Combine(worldSaveDir, "level.dat")), versionHint, out var actualGameVersion);
 			world.GameVersion = actualGameVersion ?? versionHint ?? GameVersion.FirstAnvilVersion;
 
 			//Load the dimensions
-			world.Overworld = Dimension.Load(world, worldSaveDir, null, DimensionID.Overworld, versionHint, throwOnRegionLoadFail);
+			world.Overworld = Dimension.Load(world, null, DimensionID.Overworld, versionHint, throwOnRegionLoadFail);
 			foreach (var dir in Directory.GetDirectories(worldSaveDir, "DIM*"))
 			{
 				var dirName = Path.GetFileName(dir);
 				if (int.TryParse(dirName.Substring(3), out var dimIndex))
 				{
 					var dimensionID = DimensionID.FromIndex(dimIndex);
-					world.Dimensions[dimensionID] = Dimension.Load(world, worldSaveDir, dirName, dimensionID, versionHint, throwOnRegionLoadFail);
+					world.Dimensions[dimensionID] = Dimension.Load(world, dirName, dimensionID, versionHint, throwOnRegionLoadFail);
 				}
 			}
 			string dimensionsDir = Path.Combine(worldSaveDir, "dimensions");
@@ -106,7 +114,7 @@ namespace WorldForge
 					{
 						var name = Path.GetFileName(dir2);
 						var dimensionID = DimensionID.FromID($"{ns}:{name}");
-						world.Dimensions[dimensionID] = Dimension.Load(world, worldSaveDir, Path.Combine("dimensions", ns, name), dimensionID, versionHint, throwOnRegionLoadFail);
+						world.Dimensions[dimensionID] = Dimension.Load(world, Path.Combine("dimensions", ns, name), dimensionID, versionHint, throwOnRegionLoadFail);
 					}
 				}
 			}
@@ -121,7 +129,7 @@ namespace WorldForge
 					{
 						var uuid = new UUID(Path.GetFileNameWithoutExtension(file));
 						var player = new PlayerData(worldSaveDir, uuid, world.GameVersion);
-						world.playerData[uuid] = player;
+						world.PlayerData[uuid] = player;
 					}
 					catch (Exception e)
 					{
@@ -187,7 +195,7 @@ namespace WorldForge
 			if (forceAllPlayers)
 			{
 				LevelData.player.playerGameType = gameMode;
-				foreach (var player in playerData.Values)
+				foreach (var player in PlayerData.Values)
 				{
 					player.player.playerGameType = gameMode;
 				}

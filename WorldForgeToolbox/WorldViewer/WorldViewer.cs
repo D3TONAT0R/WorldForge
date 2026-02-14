@@ -11,7 +11,6 @@ namespace WorldForgeToolbox
 	{
 		private class DimensionView
 		{
-			public string sourceRootDirectory;
 			public Server? server;
 			public World world;
 			public Dimension dimension;
@@ -25,11 +24,10 @@ namespace WorldForgeToolbox
 
 			public DimensionView(string file, bool isServer, bool loadMapCache = true)
 			{
-				sourceRootDirectory = Directory.Exists(file) ? file : Path.GetDirectoryName(file)!;
 				if(isServer)
 				{
 					server = Server.FromDirectory(file, null);
-					world = server.World;
+					world = server.MainWorld;
 				}
 				else
 				{
@@ -71,8 +69,7 @@ namespace WorldForgeToolbox
 
 			public void SaveRenderCache()
 			{
-				if (!Directory.Exists(sourceRootDirectory)) return;
-				var cachePath = Path.Combine(sourceRootDirectory, dimension.RelativeSourceDirectory, "region_map_cache.dat");
+				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
 				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
 				maps.Save(cachePath);
 				Dirty = false;
@@ -80,7 +77,7 @@ namespace WorldForgeToolbox
 
 			public void LoadOrCreateRenderCache()
 			{
-				var cachePath = Path.Combine(sourceRootDirectory, dimension.RelativeSourceDirectory, "region_map_cache.dat");
+				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
 				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 				Dirty = false;
 			}
@@ -88,7 +85,7 @@ namespace WorldForgeToolbox
 			public void ClearRenderCache(bool deleteCacheFile)
 			{
 				maps.Clear();
-				var cachePath = Path.Combine(world.GetDimensionDirectory(sourceRootDirectory, dimension.dimensionID, false), "region_map_cache.dat");
+				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
 				if (File.Exists(cachePath) && deleteCacheFile)
 				{
 					File.Delete(cachePath);
@@ -239,7 +236,7 @@ namespace WorldForgeToolbox
 				isServer = true;
 			}
 
-			if (view?.sourceRootDirectory == file) return;
+			if (view?.world.SourceDirectory == file) return;
 			view?.Dispose();
 			view = new DimensionView(file, isServer);
 			if (focusPosition.HasValue)
@@ -253,9 +250,20 @@ namespace WorldForgeToolbox
 				center.z = view.world.LevelData.spawnpoint.Position.z;
 			}
 			dimensionSelector.DropDownItems.Clear();
-			foreach (var dim in view.world.Dimensions)
+			if(view.server != null)
 			{
-				CreateDimensionMenuItem(dim.Value);
+				foreach (var kvp in view.server.Worlds)
+				{
+					var name = kvp.Key;
+					CreateDimensionMenuItem(kvp.Value.Dimensions.First().Value, name);
+				}
+			}
+			else
+			{
+				foreach (var dim in view.world.Dimensions)
+				{
+					CreateDimensionMenuItem(dim.Value);
+				}
 			}
 			Invalidate(true);
 		}
@@ -296,11 +304,11 @@ namespace WorldForgeToolbox
 			Invalidate(true);
 		}
 
-		private void CreateDimensionMenuItem(Dimension dim)
+		private void CreateDimensionMenuItem(Dimension dim, string name = null)
 		{
 			if (dim == null) return;
 
-			var button = new ToolStripMenuItem(GetDimensionName(dim))
+			var button = new ToolStripMenuItem(name ?? GetDimensionName(dim))
 			{
 				Tag = dim
 			};
@@ -412,7 +420,7 @@ namespace WorldForgeToolbox
 			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
 			if (togglePlayers.Checked)
 			{
-				foreach (var player in view.world.playerData.Values)
+				foreach (var player in view.world.PlayerData.Values)
 				{
 					var username = view.GetPlayerAccountData(player.player.uuid).GetUsername();
 					var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
@@ -695,7 +703,7 @@ namespace WorldForgeToolbox
 				hoveredPlayer = null;
 				if (togglePlayers.Checked)
 				{
-					foreach (var player in view!.world.playerData.Values)
+					foreach (var player in view!.world.PlayerData.Values)
 					{
 						var playerScreenPos = WorldToScreenPoint(player.player.position.Block.XZ, canvas.ClientRectangle);
 						var distance = Math.Sqrt(Math.Pow(playerScreenPos.X - e.Location.X, 2) + Math.Pow(playerScreenPos.Y - e.Location.Y, 2));
@@ -725,7 +733,7 @@ namespace WorldForgeToolbox
 			{
 				try
 				{
-					var playerPath = Path.Combine(view.sourceRootDirectory, "playerdata", hoveredPlayer.player.uuid.ToString(true) + ".dat");
+					var playerPath = Path.Combine(view.world.SourceDirectory, "playerdata", hoveredPlayer.player.uuid.ToString(true) + ".dat");
 					var viewer = new PlayerDataViewer(playerPath);
 					viewer.Show();
 				}

@@ -19,6 +19,11 @@ namespace WorldForge
 	{
 		public World ParentWorld { get; private set; }
 
+		public string AbsoluteSourceDirectory =>
+			ParentWorld?.SourceDirectory != null && RelativeSourceDirectory != null
+				? Path.Combine(ParentWorld.SourceDirectory, RelativeSourceDirectory)
+				: RelativeSourceDirectory;
+
 		public string RelativeSourceDirectory { get; set; }
 
 		public DimensionID dimensionID;
@@ -34,46 +39,9 @@ namespace WorldForge
 		public ConcurrentDictionary<RegionLocation, Region> regions = new ConcurrentDictionary<RegionLocation, Region>();
 
 		#region Creation methods
-		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome)
+		public static Dimension Create(World parentWorld, DimensionID id, BiomeID defaultBiome)
 		{
 			return new Dimension(parentWorld, id, defaultBiome);
-		}
-
-		public static Dimension CreateNew(World parentWorld, DimensionID id, BiomeID defaultBiome, int regionLowerX, int regionLowerZ, int regionUpperX, int regionUpperZ)
-		{
-			var dim = CreateNew(parentWorld, id, defaultBiome);
-			dim.InitializeArea(regionLowerX, regionLowerZ, regionUpperX, regionUpperZ);
-			return dim;
-		}
-
-		public static Dimension CreateOverworld(World parentWorld, BiomeID defaultBiome)
-		{
-			return CreateNew(parentWorld, DimensionID.Overworld, defaultBiome);
-		}
-
-		public static Dimension CreateOverworld(World parentWorld)
-		{
-			return CreateNew(parentWorld, DimensionID.Overworld, BiomeID.Plains);
-		}
-
-		public static Dimension CreateNether(World parentWorld, BiomeID defaultBiome)
-		{
-			return CreateNew(parentWorld, DimensionID.Nether, defaultBiome);
-		}
-
-		public static Dimension CreateNether(World parentWorld)
-		{
-			return CreateNew(parentWorld, DimensionID.Nether, BiomeID.NetherWastes);
-		}
-
-		public static Dimension CreateTheEnd(World parentWorld, BiomeID defaultBiome)
-		{
-			return CreateNew(parentWorld, DimensionID.TheEnd, defaultBiome);
-		}
-
-		public static Dimension CreateTheEnd(World parentWorld)
-		{
-			return CreateNew(parentWorld, DimensionID.TheEnd, BiomeID.TheEnd);
 		}
 
 		private Dimension(World parentWorld, DimensionID dimensionID, BiomeID defaultBiome)
@@ -83,35 +51,38 @@ namespace WorldForge
 			DefaultBiome = defaultBiome;
 		}
 
-		public static Dimension Load(World world, string worldRoot, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		public static Dimension Load(string directory, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
-			var dimensionRootDir = !string.IsNullOrEmpty(subdir) ? Path.Combine(worldRoot, subdir) : worldRoot;
-			if (!Directory.Exists(dimensionRootDir)) return null;
-			var dim = new Dimension(world, id, BiomeID.TheVoid);
-			dim.RelativeSourceDirectory = subdir ?? "";
-			dim.regions = new ConcurrentDictionary<RegionLocation, Region>();
-			var version = gameVersion ?? world?.GameVersion ?? GameVersion.FirstAnvilVersion;
-			bool isAlphaFormat = version < GameVersion.Beta_1(3);
-			if (isAlphaFormat)
-			{
-				LoadAlphaChunkFiles(dimensionRootDir, version, throwOnRegionLoadFail, dim);
-			}
-			else
-			{
-				LoadRegionFiles(dimensionRootDir, version, throwOnRegionLoadFail, dim);
-			}
+			if (!Directory.Exists(directory)) throw new DirectoryNotFoundException($"Directory not found: {directory}");
+			var dim = new Dimension(null, id, BiomeID.TheVoid);
+			dim.RelativeSourceDirectory = directory ?? "";
+			dim.LoadDimensionContent(gameVersion, throwOnRegionLoadFail);
 			return dim;
 		}
 
-		public static Dimension LoadServerDimension(World world, string worldRoot, string subdir, out DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		public static Dimension Load(World world, string subdir, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
 		{
-			var dimRoot = Path.Combine(worldRoot, subdir);
+			if(world == null) throw new ArgumentNullException(nameof(world));
+			if(world.SourceDirectory == null) throw new ArgumentException("World source directory is not set.");
+			var dimensionRootDir = Path.Combine(world.SourceDirectory, subdir ?? "");
+			if (!Directory.Exists(dimensionRootDir)) throw new DirectoryNotFoundException($"Directory not found: {dimensionRootDir}");
+			var dim = new Dimension(world, id, BiomeID.TheVoid);
+			dim.RelativeSourceDirectory = subdir ?? "";
+			dim.LoadDimensionContent(gameVersion, throwOnRegionLoadFail);
+			return dim;
+		}
+
+		public static Dimension LoadServerDimension(World world, string subdir, out DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
+		{
+			if(world == null) throw new ArgumentNullException(nameof(world));
+			if(world.SourceDirectory == null) throw new ArgumentException("World source directory is not set.");
+			var dimRoot = Path.Combine(world.SourceDirectory, subdir);
 			string contentSubdir;
 			if (Directory.Exists(Path.Combine(dimRoot, "region")))
 			{
 				// It's a normal overworld dimension
 				id = DimensionID.Overworld;
-				return Load(world, dimRoot, "", id, gameVersion, throwOnRegionLoadFail);
+				return Load(world, "", id, gameVersion, throwOnRegionLoadFail);
 			}
 			if (Directory.Exists(Path.Combine(dimRoot, "dimensions")))
 			{
@@ -154,7 +125,22 @@ namespace WorldForge
 					throw new InvalidOperationException($"Empty dimensions directory");
 				}
 			}
-			return Load(world, dimRoot, contentSubdir, id, gameVersion, throwOnRegionLoadFail);
+			return Load(world, Path.Combine(subdir, contentSubdir), id, gameVersion, throwOnRegionLoadFail);
+		}
+
+		private void LoadDimensionContent(GameVersion? gameVersion, bool throwOnRegionLoadFail)
+		{
+			regions = new ConcurrentDictionary<RegionLocation, Region>();
+			var version = gameVersion ?? GameVersion.FirstAnvilVersion;
+			bool isAlphaFormat = version < GameVersion.Beta_1(3);
+			if (isAlphaFormat)
+			{
+				LoadAlphaChunkFiles(AbsoluteSourceDirectory, version, throwOnRegionLoadFail);
+			}
+			else
+			{
+				LoadRegionFiles(AbsoluteSourceDirectory, version, throwOnRegionLoadFail);
+			}
 		}
 
 		public static Dimension FromRegionFolder(World world, string regionFolder, DimensionID id, GameVersion? gameVersion = null, bool throwOnRegionLoadFail = false)
@@ -185,7 +171,7 @@ namespace WorldForge
 			return dim;
 		}
 
-		private static void LoadAlphaChunkFiles(string chunksRootDir, GameVersion? version, bool throwOnRegionLoadFail, Dimension dim)
+		private void LoadAlphaChunkFiles(string chunksRootDir, GameVersion? version, bool throwOnRegionLoadFail)
 		{
 			var cs = ChunkSerializer.GetOrCreateSerializer<ChunkSerializerAlpha>(version ?? new GameVersion(GameVersion.Stage.Infdev, 1, 0, 0));
 			foreach (var f in Directory.GetFiles(chunksRootDir, "c.*.dat", SearchOption.AllDirectories))
@@ -198,10 +184,10 @@ namespace WorldForge
 					string zBase36 = split[2];
 					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
-					if (!dim.TryGetRegion(regionPos, out var region))
+					if (!TryGetRegion(regionPos, out var region))
 					{
-						region = Region.CreateNew(regionPos, dim);
-						dim.AddRegion(region, true);
+						region = Region.CreateNew(regionPos, this);
+						AddRegion(region, true);
 					}
 					var nbt = new NBTFile(f);
 					var chunk = Chunk.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), new ChunkSourceData(nbt, null, null));
@@ -214,7 +200,7 @@ namespace WorldForge
 			}
 		}
 
-		private static void LoadRegionFiles(string dimensionRootDir, GameVersion? gameVersion, bool throwOnRegionLoadFail, Dimension dim)
+		private void LoadRegionFiles(string dimensionRootDir, GameVersion? gameVersion, bool throwOnRegionLoadFail)
 		{
 			var mainRegionDir = Path.Combine(dimensionRootDir, "region");
 			if (!Directory.Exists(mainRegionDir))
@@ -240,8 +226,8 @@ namespace WorldForge
 						string entitiesFileName = entitiesRegionDir != null ? Path.Combine(entitiesRegionDir, filename) : null;
 						string poiFileName = poiRegionDir != null ? Path.Combine(poiRegionDir, filename) : null;
 						var paths = new RegionFilePaths(mainFileName, entitiesFileName, poiFileName);
-						var region = RegionDeserializer.PreloadRegion(paths, dim, gameVersion);
-						dim.AddRegion(region, true);
+						var region = RegionDeserializer.PreloadRegion(paths, this, gameVersion);
+						AddRegion(region, true);
 					}
 					catch (Exception e) when (!throwOnRegionLoadFail)
 					{

@@ -72,7 +72,7 @@ namespace WorldForge
 
 		public static IBitmap GenerateSurfaceMap(Region r, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette, bool forceManualHeightmapCalculation = false)
 		{
-			var dim = Dimension.CreateNew(null, DimensionID.Unknown, BiomeID.TheVoid);
+			var dim = Dimension.Create(null, DimensionID.Unknown, BiomeID.TheVoid);
 			dim.AddRegion(r, true);
 			var pos = r.regionPos;
 			var boundary = new Boundary(pos.x * 512, pos.z * 512, pos.x * 512 + 512, pos.z * 512 + 512);

@@ -77,7 +77,7 @@ namespace WorldForge
 			public void Save(string worldRoot, int id, GameVersion version)
 			{
 				string path;
-				switch(id)
+				switch (id)
 				{
 					case 0: path = Path.Combine(worldRoot, "data", "raids.dat"); break;
 					case -1: path = Path.Combine(worldRoot, "DIM-1", "data", "raids.dat"); break;
@@ -96,16 +96,26 @@ namespace WorldForge
 		public RaidsData netherRaids;
 		public RaidsData endRaids;
 
+		private WorldData()
+		{
+
+		}
+
+		public static WorldData Create()
+		{
+			return new WorldData();
+		}
+
 		public static WorldData FromWorldSave(string worldSaveDir)
 		{
-			if(!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
+			if (!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
 			var wd = new WorldData();
-			if(TryLoad(Path.Combine(worldSaveDir, "data", "raids.dat"), out var file)) wd.overworldRaids = RaidsData.Load(file);
-			if(TryLoad(Path.Combine(worldSaveDir, "DIM-1", "data", "raids.dat"), out file)) wd.netherRaids = RaidsData.Load(file);
-			if(TryLoad(Path.Combine(worldSaveDir, "DIM1", "data", "raids_end.dat"), out file)) wd.endRaids = RaidsData.Load(file);
-			if(Directory.Exists(Path.Combine(worldSaveDir, "data")))
+			if (TryLoad(Path.Combine(worldSaveDir, "data", "raids.dat"), out var file)) wd.overworldRaids = RaidsData.Load(file);
+			if (TryLoad(Path.Combine(worldSaveDir, "DIM-1", "data", "raids.dat"), out file)) wd.netherRaids = RaidsData.Load(file);
+			if (TryLoad(Path.Combine(worldSaveDir, "DIM1", "data", "raids_end.dat"), out file)) wd.endRaids = RaidsData.Load(file);
+			if (Directory.Exists(Path.Combine(worldSaveDir, "data")))
 			{
-				foreach(var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
+				foreach (var mapFile in Directory.GetFiles(Path.Combine(worldSaveDir, "data"), "map_*.dat"))
 				{
 					try
 					{
@@ -125,10 +135,10 @@ namespace WorldForge
 
 		public MapData GetMap(int id)
 		{
-			if(maps.TryGetValue(id, out var i))
+			if (maps.TryGetValue(id, out var i))
 			{
 				MapData map;
-				if(i is MapDataFile u)
+				if (i is MapDataFile u)
 				{
 					map = u.Load();
 				}
@@ -145,9 +155,9 @@ namespace WorldForge
 
 		public int AddMap(IMapData map)
 		{
-			for(int i = 0; i < int.MaxValue; i++)
+			for (int i = 0; i < int.MaxValue; i++)
 			{
-				if(!maps.ContainsKey(i))
+				if (!maps.ContainsKey(i))
 				{
 					maps.Add(i, map);
 					return i;
@@ -160,15 +170,15 @@ namespace WorldForge
 
 		public void Save(string worldSaveDir, GameVersion version)
 		{
-			if(!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
+			if (!Directory.Exists(worldSaveDir)) throw new ArgumentException($"World save directory not found: '{worldSaveDir}'");
 			TrySave(overworldRaids, worldSaveDir, 0, version);
 			TrySave(netherRaids, worldSaveDir, -1, version);
 			TrySave(endRaids, worldSaveDir, 1, version);
-			foreach(var map in maps)
+			foreach (var map in maps)
 			{
 				map.Value.Save(worldSaveDir, map.Key, version);
 			}
-			if(maps.Keys.Count > 0)
+			if (maps.Keys.Count > 0)
 			{
 				int lastMap = maps.Keys.Max();
 				var file = new NBTFile(version.GetDataVersion());
@@ -179,7 +189,7 @@ namespace WorldForge
 
 		private static bool TryLoad(string path, out NBTFile file)
 		{
-			if(File.Exists(path))
+			if (File.Exists(path))
 			{
 				file = new NBTFile(path);
 				return true;
@@ -190,7 +200,7 @@ namespace WorldForge
 
 		private static void TrySave(IData d, string worldSaveRoot, int id, GameVersion version)
 		{
-			if(d == null) return;
+			if (d == null) return;
 			d.Save(worldSaveRoot, id, version);
 		}
 	}

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace WorldForge
 {
@@ -6,7 +7,9 @@ namespace WorldForge
 	{
 		public ServerProperties ServerProperties { get; private set; }
 
-		public World World { get; private set; }
+		public World MainWorld { get; private set; }
+
+		public Dictionary<string, World> Worlds { get; } = new Dictionary<string, World>();
 
 		public static Server FromDirectory(string rootDirectory, GameVersion? versionHint)
 		{
@@ -15,25 +18,36 @@ namespace WorldForge
 			var worldsRootDirectory = GetWorldRootDirectory(rootDirectory, out var isCustomDirectory);
 			var worldName = server.ServerProperties.LevelName;
 			var mainWorld = Path.Combine(worldsRootDirectory, worldName);
-			server.World = World.Load(mainWorld, versionHint);
-			foreach(var dimension in Directory.GetDirectories(worldsRootDirectory))
+			server.MainWorld = World.Load(mainWorld, versionHint);
+			server.Worlds.Add(worldName, server.MainWorld);
+			foreach (var dir in Directory.GetDirectories(worldsRootDirectory))
 			{
-				var dimensionName = Path.GetFileName(dimension);
-				if(dimensionName == worldName)
+				var dirName = Path.GetFileName(dir);
+				if(dirName == worldName)
 				{
 					continue; //Already loaded the main world.
 				}
+				/*
 				if(!isCustomDirectory)
 				{
 					//Check if directory name starts with world name in normal world folders.
 					//In custom world folders, assume all directories are dimensions.
-					if (!dimensionName.StartsWith(worldName + "_"))
+					if (!dirName.StartsWith(worldName + "_"))
 					{
 						continue; //Not a dimension folder.
 					}
 				}
-				var dim = Dimension.LoadServerDimension(server.World, worldsRootDirectory, dimensionName, out var dimensionID);
-				server.World.Dimensions.Add(dimensionID, dim);
+				*/
+				//Check for the existence of level.dat to confirm it's a world directory.
+				if (!File.Exists(Path.Combine(dir, "level.dat")))
+				{
+					continue; //Not a world directory.
+				}
+				var world = World.Load(dir, versionHint);
+				server.Worlds.Add(world.WorldName, world);
+				//var subdir = Path.Combine("..", dirName);
+				//var dim = Dimension.LoadServerDimension(server.MainWorld, subdir, out var dimensionID);
+				//server.MainWorld.Dimensions.Add(dimensionID, dim);
 			}
 			return server;
 		}
