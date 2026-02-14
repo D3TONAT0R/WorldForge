@@ -18,11 +18,22 @@ namespace WorldForge
 
 		public PlayerData(string rootDirectory, UUID uuid, GameVersion gameVersionHint)
 		{
+			if(uuid == null) throw new ArgumentException("UUID cannot be null", nameof(uuid));
 			this.uuid = uuid;
 			string playerDataFile = System.IO.Path.Combine(rootDirectory, "playerdata", uuid.ToString(true) + ".dat");
 			string playerStatsFile = System.IO.Path.Combine(rootDirectory, "stats", uuid.ToString(true) + ".json");
 			string playerAdvancementsFile = System.IO.Path.Combine(rootDirectory, "advancements", uuid.ToString(true) + ".json");
 			player = Player.FromFile(playerDataFile, gameVersionHint);
+			if(player.uuid != null)
+			{
+				//Compare UUIDs
+				if (player.uuid != uuid) throw new Exception($"Player UUID mismatch: expected {uuid}, got {player.uuid}");
+			}
+			else
+			{
+				//Set the UUID
+				player.uuid = uuid;
+			}
 			if (System.IO.File.Exists(playerStatsFile)) stats = PlayerStats.FromFile(playerStatsFile);
 			if (System.IO.File.Exists(playerAdvancementsFile)) advancements = PlayerAdvancements.FromFile(playerAdvancementsFile);
 		}

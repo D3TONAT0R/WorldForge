@@ -147,5 +147,23 @@ namespace WorldForge
 			}
 			return false;
 		}
+
+		public static bool operator ==(UUID left, UUID right)
+		{
+			if(ReferenceEquals(left, right))
+			{
+				return true;
+			}
+			if(left is null || right is null)
+			{
+				return false;
+			}
+			return left.i0 == right.i0 && left.i1 == right.i1 && left.i2 == right.i2 && left.i3 == right.i3;
+		}
+
+		public static bool operator !=(UUID left, UUID right)
+		{
+			return !(left == right);
+		}
 	}
 }
