@@ -18,6 +18,7 @@ namespace WorldForge
 			var stats = new PlayerStats();
 			var nbt = NBTCompound.FromJson(json);
 			stats.data = nbt.GetAsCompound("stats");
+			if (stats.data == null) return null;
 			if (stats.data.TryGet("DataVersion", out int dv)) stats.DataVersion = dv;
 			return stats;
 		}

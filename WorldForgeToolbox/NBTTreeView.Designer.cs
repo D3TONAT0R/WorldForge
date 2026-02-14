@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WorldForgeToolbox {
+namespace RegionViewer {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace WorldForgeToolbox {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public partial class NBTTreeViewResources {
+    public class NBTTreeView {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal NBTTreeViewResources() {
+        internal NBTTreeView() {
         }
         
         /// <summary>
@@ -67,6 +67,16 @@ namespace WorldForgeToolbox {
             get {
                 object obj = ResourceManager.GetObject("icons.ImageStream", resourceCulture);
                 return ((System.Windows.Forms.ImageListStreamer)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Point similar to {X=17,Y=17}.
+        /// </summary>
+        public static System.Drawing.Point icons_TrayLocation {
+            get {
+                object obj = ResourceManager.GetObject("icons.TrayLocation", resourceCulture);
+                return ((System.Drawing.Point)(obj));
             }
         }
     }

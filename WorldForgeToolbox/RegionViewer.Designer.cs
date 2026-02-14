@@ -39,12 +39,15 @@ partial class RegionViewer
 		scrollSouth = new ToolStripButton();
 		scrollWest = new ToolStripButton();
 		scrollEast = new ToolStripButton();
+		mapView1 = new WorldForgeToolbox.MapView();
+		canvas.SuspendLayout();
 		toolStrip1.SuspendLayout();
 		SuspendLayout();
 		// 
 		// canvas
 		// 
 		canvas.BackColor = SystemColors.AppWorkspace;
+		canvas.Controls.Add(mapView1);
 		canvas.Location = new Point(0, 25);
 		canvas.Margin = new Padding(0);
 		canvas.Name = "canvas";
@@ -135,6 +138,16 @@ partial class RegionViewer
 		scrollEast.Text = "Scroll East";
 		scrollEast.Click += scrollEast_Click;
 		// 
+		// mapView1
+		// 
+		mapView1.Location = new Point(473, 142);
+		mapView1.MaxZoom = 8;
+		mapView1.MinZoom = 1;
+		mapView1.Name = "mapView1";
+		mapView1.Size = new Size(200, 100);
+		mapView1.TabIndex = 1;
+		mapView1.Zoom = 8;
+		// 
 		// RegionViewer
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -146,6 +159,7 @@ partial class RegionViewer
 		Controls.Add(canvas);
 		Name = "RegionViewer";
 		Text = "Form1";
+		canvas.ResumeLayout(false);
 		toolStrip1.ResumeLayout(false);
 		toolStrip1.PerformLayout();
 		ResumeLayout(false);
@@ -165,4 +179,5 @@ partial class RegionViewer
     private ToolStripSeparator toolStripSeparator1;
 	private ToolStripButton toolboxButton;
 	private ToolStripSeparator toolStripSeparator2;
+	private WorldForgeToolbox.MapView mapView1;
 }

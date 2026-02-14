@@ -130,16 +130,6 @@ namespace WorldForgeToolbox
 		private DimensionView? view;
 
 		private BlockCoord2D? focusPosition;
-		private readonly Vector3 center = new Vector3();
-		private int Zoom
-		{
-			get => _zoom;
-			set => _zoom = Math.Clamp(value, 1, 8);
-		}
-		private int ZoomScale => 1 << (Zoom - 1);
-		private Point lastMousePos;
-		private bool mouseDown;
-		private Point mousePosition;
 
 		private BlockCoord2D? hoveredBlockPos;
 		private PlayerData? hoveredPlayer;
@@ -195,8 +185,7 @@ namespace WorldForgeToolbox
 			}
 			Instance = this;
 			InitializeComponent();
-			canvas.MouseWheel += OnCanvasScroll;
-			canvas.MouseDown += OnCanvasMouseDown;
+			canvas.UnitScale = 16;
 			canvas.MouseUp += OnCanvasMouseUp;
 			canvas.MouseMove += OnCanvasMouseMove;
 			canvas.MouseLeave += OnCanvasMouseLeave;
@@ -239,16 +228,19 @@ namespace WorldForgeToolbox
 			if (view?.world.SourceDirectory == file) return;
 			view?.Dispose();
 			view = new DimensionView(file, isServer);
+			float x;
+			float z;
 			if (focusPosition.HasValue)
 			{
-				center.x = focusPosition.Value.x;
-				center.z = focusPosition.Value.z;
+				x = focusPosition.Value.x;
+				z = focusPosition.Value.z;
 			}
 			else
 			{
-				center.x = view.world.LevelData.spawnpoint.Position.x;
-				center.z = view.world.LevelData.spawnpoint.Position.z;
+				x = view.world.LevelData.spawnpoint.Position.x;
+				z = view.world.LevelData.spawnpoint.Position.z;
 			}
+			canvas.Center = new System.Numerics.Vector2(x, z);
 			dimensionSelector.DropDownItems.Clear();
 			if(view.server != null)
 			{
@@ -282,10 +274,9 @@ namespace WorldForgeToolbox
 		public void GoToPosition(BlockCoord2D pos, int? zoomLevel = null)
 		{
 			focusPosition = pos;
-			center.x = pos.x;
-			center.z = pos.z;
-			if (zoomLevel.HasValue) Zoom = zoomLevel.Value;
-			Repaint();
+			canvas.Center = new System.Numerics.Vector2(pos.x, pos.z);
+			if (zoomLevel.HasValue) canvas.Zoom = zoomLevel.Value;
+			canvas.Repaint();
 		}
 
 		private string GetDimensionName(Dimension dim)
@@ -315,37 +306,12 @@ namespace WorldForgeToolbox
 			dimensionSelector.DropDownItems.Add(button);
 		}
 
-		private Point WorldToScreenPoint(BlockCoord2D pos, Rectangle clipRectangle)
-		{
-			var centerBlock = center.Block;
-			pos.x -= centerBlock.x;
-			pos.z -= centerBlock.z;
-			float x = pos.x / 16f;
-			float y = pos.z / 16f;
-			x *= ZoomScale;
-			y *= ZoomScale;
-			x += clipRectangle.Width * 0.5f;
-			y += clipRectangle.Height * 0.5f;
-			return new Point((int)x, (int)y);
-		}
+		private Point WorldToScreenPoint(BlockCoord2D pos) => canvas.MapToScreenPos(new System.Numerics.Vector2(pos.x, pos.z));
 
 		private BlockCoord2D ScreenToBlockPos(Point screenPos, Rectangle clipRectangle)
 		{
-			float x = screenPos.X - clipRectangle.Width * 0.5f;
-			float y = screenPos.Y - clipRectangle.Height * 0.5f;
-			x /= ZoomScale;
-			y /= ZoomScale;
-			x *= 16;
-			y *= 16;
-			var centerBlock = center.Block;
-			x += centerBlock.x;
-			y += centerBlock.z;
-			return new BlockCoord2D((int)x, (int)y);
-		}
-
-		private void Repaint()
-		{
-			canvas.Invalidate();
+			var pos = canvas.ScreenToMapPos(screenPos);
+			return new BlockCoord2D((int)pos.X, (int)pos.Y);
 		}
 
 		private void OnDraw(object sender, PaintEventArgs e)
@@ -372,7 +338,7 @@ namespace WorldForgeToolbox
 			visibleUnrenderedRegions.Clear();
 			foreach (var r in dim.regions)
 			{
-				var rect = GetRegionRectangle(e, r.Key);
+				var rect = GetRegionRectangle(r.Key);
 				if (!rect.IntersectsWith(e.ClipRectangle)) continue;
 				var bmp = RequestSurfaceMap(r.Value, true, out var renderUpToDate);
 				if (view.currentRenders.Contains(r.Key))
@@ -415,9 +381,9 @@ namespace WorldForgeToolbox
 			}
 			if (hoveredRegion.HasValue && hoveredPlayer == null)
 			{
-				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(e, hoveredRegion.Value));
+				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(hoveredRegion.Value));
 			}
-			Cross(g, e, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
+			Cross(g, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
 			if (togglePlayers.Checked)
 			{
 				foreach (var player in view.world.PlayerData.Values)
@@ -426,7 +392,7 @@ namespace WorldForgeToolbox
 					var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
 					bool hovered = hoveredPlayer == player;
 					Pen pen = hovered ? Pens.Red : playerMarker;
-					Icon(g, e, player.player.position.Block.XZ, avatar, pen, 16, username, hovered);
+					Icon(g, player.player.position.Block.XZ, avatar, pen, 16, username, hovered);
 				}
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
@@ -444,16 +410,16 @@ namespace WorldForgeToolbox
 			g.ResetTransform();
 		}
 
-		private Rectangle GetRegionRectangle(PaintEventArgs e, RegionLocation location)
+		private Rectangle GetRegionRectangle(RegionLocation location)
 		{
-			var pos = WorldToScreenPoint(location.GetBlockCoord(0, 0, 0), e.ClipRectangle);
-			var rect = new Rectangle(pos, new Size(32 * ZoomScale, 32 * ZoomScale));
+			var pos = WorldToScreenPoint(location.GetBlockCoord(0, 0, 0));
+			var rect = new Rectangle(pos, new Size(32 * canvas.ZoomScale, 32 * canvas.ZoomScale));
 			return rect;
 		}
 
-		private void Cross(Graphics g, PaintEventArgs e, BlockCoord2D pos, Pen p, int size = 4, string? label = null)
+		private void Cross(Graphics g, BlockCoord2D pos, Pen p, int size = 4, string? label = null)
 		{
-			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
+			var screenPos = WorldToScreenPoint(pos);
 			g.DrawLine(p, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
 			g.DrawLine(p, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
 			if (label != null)
@@ -463,9 +429,9 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		private void Icon(Graphics g, PaintEventArgs e, BlockCoord2D pos, Image? image, Pen p, int size = 16, string? label = null, bool border = false)
+		private void Icon(Graphics g, BlockCoord2D pos, Image? image, Pen p, int size = 16, string? label = null, bool border = false)
 		{
-			var screenPos = WorldToScreenPoint(pos, e.ClipRectangle);
+			var screenPos = WorldToScreenPoint(pos);
 			var rect = new Rectangle(screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
 			if (image != null) g.DrawImage(image, rect);
 			if (border) g.DrawRectangle(p, rect);
@@ -499,7 +465,7 @@ namespace WorldForgeToolbox
 					{
 						break;
 					}
-					Repaint();
+					canvas.Repaint();
 				}
 			}
 		}
@@ -519,7 +485,7 @@ namespace WorldForgeToolbox
 					if (token.IsCancellationRequested) return;
 					r.renderComplete = true;
 					view.MarkDirty();
-					Repaint();
+					canvas.Repaint();
 				},
 				view.cancellationTokenSource.Token
 			);
@@ -563,7 +529,7 @@ namespace WorldForgeToolbox
 		private int GetRenderPriority(RegionLocation location)
 		{
 			//Lower means higher
-			var centerBlock = center.Block;
+			var centerBlock = new BlockCoord2D((int)canvas.Center.X, (int)canvas.Center.Y);
 			var diffX = Math.Abs(location.x - centerBlock.Region.x);
 			var diffZ = Math.Abs(location.z - centerBlock.Region.z);
 			return Math.Max(diffX, diffZ);
@@ -596,38 +562,11 @@ namespace WorldForgeToolbox
 			{
 				int i = 0;
 			}
-			Repaint();
-		}
-
-		private void OnCanvasScroll(object? sender, MouseEventArgs e)
-		{
-			var lastZoom = Zoom;
-			Zoom += Math.Clamp(e.Delta, -1, 1);
-			var zoomDelta = Zoom - lastZoom;
-			var cursorBlock = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
-			var diff = cursorBlock - center.Block;
-			if (zoomDelta > 0)
-			{
-				center.x += diff.x * zoomDelta;
-				center.z += diff.z * zoomDelta;
-			}
-			else if (zoomDelta < 0)
-			{
-				center.x += diff.x * zoomDelta / 2f;
-				center.z += diff.z * zoomDelta / 2f;
-			}
-			Repaint();
-		}
-
-		private void OnCanvasMouseDown(object? sender, MouseEventArgs e)
-		{
-			mouseDown = true;
-			lastMousePos = e.Location;
+			canvas.Repaint();
 		}
 
 		private void OnCanvasMouseUp(object? sender, MouseEventArgs e)
 		{
-			mouseDown = false;
 			if (view == null) return;
 			if (e.Button == MouseButtons.Right)
 			{
@@ -653,7 +592,7 @@ namespace WorldForgeToolbox
 							entry.normalRender = BeginRender(region, false);
 							entry.regionTimestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
 							view.currentRenders.Add(region.regionPos);
-							Repaint();
+							canvas.Repaint();
 						}
 					};
 					menu.Items.Add("Render High Resolution").Click += (s, ev) =>
@@ -661,7 +600,7 @@ namespace WorldForgeToolbox
 						if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
 						{
 							entry.highQualityRender = BeginRender(region, true);
-							Repaint();
+							canvas.Repaint();
 						}
 						else
 						{
@@ -675,28 +614,21 @@ namespace WorldForgeToolbox
 				}
 				menu.Items.Add("Jump to Spawn").Click += (s, ev) =>
 				{
-					center.x = view.world.LevelData.spawnpoint.Position.x;
-					center.z = view.world.LevelData.spawnpoint.Position.z;
-					Repaint();
+					var x = view.world.LevelData.spawnpoint.Position.x;
+					var z = view.world.LevelData.spawnpoint.Position.z;
+					canvas.Center = new System.Numerics.Vector2(x, z);
+					canvas.Repaint();
 				};
 				menu.Show(canvas, e.Location);
-				Repaint();
+				canvas.Repaint();
 			}
 		}
 
 		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
 		{
-			mousePosition = e.Location;
 			if (view == null) return;
 			hoveredBlockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
-			if (mouseDown)
-			{
-				var moveDelta = new Point(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
-				center.x -= moveDelta.X * 16f / ZoomScale;
-				center.z -= moveDelta.Y * 16f / ZoomScale;
-				lastMousePos = e.Location;
-			}
-			else
+			if (!canvas.IsMouseDown)
 			{
 				var regPos = hoveredBlockPos.Value.Region;
 				hoveredRegion = view.dimension.HasRegion(regPos) ? hoveredBlockPos.Value.Region : null;
@@ -705,7 +637,7 @@ namespace WorldForgeToolbox
 				{
 					foreach (var player in view!.world.PlayerData.Values)
 					{
-						var playerScreenPos = WorldToScreenPoint(player.player.position.Block.XZ, canvas.ClientRectangle);
+						var playerScreenPos = WorldToScreenPoint(player.player.position.Block.XZ);
 						var distance = Math.Sqrt(Math.Pow(playerScreenPos.X - e.Location.X, 2) + Math.Pow(playerScreenPos.Y - e.Location.Y, 2));
 						if (distance <= 16)
 						{
@@ -715,7 +647,7 @@ namespace WorldForgeToolbox
 				}
 			}
 			canvas.Cursor = hoveredPlayer != null ? Cursors.Hand : Cursors.SizeAll;
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void OnCanvasMouseLeave(object? sender, EventArgs e)
@@ -723,7 +655,7 @@ namespace WorldForgeToolbox
 			hoveredBlockPos = null;
 			hoveredRegion = null;
 			hoveredPlayer = null;
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void OnCanvasDoubleClick(object? sender, EventArgs _)
@@ -778,7 +710,7 @@ namespace WorldForgeToolbox
 			{
 				view.ClearRenderCache(true);
 			}
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void resumeMapRender_Click(object sender, EventArgs e)
@@ -802,22 +734,23 @@ namespace WorldForgeToolbox
 
 		private void zoomIn_Click(object sender, EventArgs e)
 		{
-			Zoom++;
-			Repaint();
+			canvas.Zoom++;
+			canvas.Repaint();
 		}
 
 		private void zoomOut_Click(object sender, EventArgs e)
 		{
-			Zoom--;
-			Repaint();
+			canvas.Zoom--;
+			canvas.Repaint();
 		}
 
 		private void jumpToSpawn_Click(object sender, EventArgs e)
 		{
 			if (view == null) return;
-			center.x = view.world.LevelData.spawnpoint.Position.x;
-			center.z = view.world.LevelData.spawnpoint.Position.z;
-			Repaint();
+			var x = view.world.LevelData.spawnpoint.Position.x;
+			var z = view.world.LevelData.spawnpoint.Position.z;
+			canvas.Center = new System.Numerics.Vector2(x, z);
+			canvas.Repaint();
 		}
 
 		private void toolboxButton_Click(object sender, EventArgs e)
@@ -829,19 +762,19 @@ namespace WorldForgeToolbox
 		private void ToggleGrid(object sender, EventArgs e)
 		{
 			toggleGrid.Checked = !toggleGrid.Checked;
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void TogglePlayers(object sender, EventArgs e)
 		{
 			togglePlayers.Checked = !togglePlayers.Checked;
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void ToggleMapOpacity(object sender, EventArgs e)
 		{
 			toggleOpacity.Checked = !toggleOpacity.Checked;
-			Repaint();
+			canvas.Repaint();
 		}
 
 		private void ToggleSingleRender(object sender, EventArgs e)

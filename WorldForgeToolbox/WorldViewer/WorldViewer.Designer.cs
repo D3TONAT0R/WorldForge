@@ -33,6 +33,7 @@
 			toolboxButton = new ToolStripButton();
 			toolStripSeparator5 = new ToolStripSeparator();
 			openWorld = new ToolStripButton();
+			openServerWorld = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			dimensionSelector = new ToolStripSplitButton();
 			toolStripSeparator2 = new ToolStripSeparator();
@@ -51,10 +52,9 @@
 			toggleGrid = new ToolStripButton();
 			togglePlayers = new ToolStripButton();
 			toggleOpacity = new ToolStripButton();
-			canvas = new CanvasPanel();
+			canvas = new MapView();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
-			openServerWorld = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
@@ -92,6 +92,16 @@
 			openWorld.Size = new Size(23, 22);
 			openWorld.Text = "Open World ...";
 			openWorld.Click += OnOpenWorldClick;
+			// 
+			// openServerWorld
+			// 
+			openServerWorld.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			openServerWorld.Image = (Image)resources.GetObject("openServerWorld.Image");
+			openServerWorld.ImageTransparentColor = Color.Magenta;
+			openServerWorld.Name = "openServerWorld";
+			openServerWorld.Size = new Size(23, 22);
+			openServerWorld.Text = "Open Server World ...";
+			openServerWorld.Click += OnOpenServerWorldClick;
 			// 
 			// toolStripSeparator1
 			// 
@@ -255,12 +265,19 @@
 			// 
 			// canvas
 			// 
+			canvas.AllowInteractions = true;
+			canvas.AllowPanning = true;
+			canvas.AllowZooming = true;
 			canvas.BackColor = SystemColors.AppWorkspace;
 			canvas.Dock = DockStyle.Fill;
 			canvas.Location = new Point(0, 25);
+			canvas.MaxZoom = 8;
+			canvas.MinZoom = 1;
 			canvas.Name = "canvas";
 			canvas.Size = new Size(800, 403);
 			canvas.TabIndex = 1;
+			canvas.UnitScale = 1F;
+			canvas.Zoom = 4;
 			canvas.Paint += OnDraw;
 			// 
 			// statusStrip1
@@ -278,16 +295,6 @@
 			statusLabel.Name = "statusLabel";
 			statusLabel.Size = new Size(300, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
-			// 
-			// openServerWorld
-			// 
-			openServerWorld.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			openServerWorld.Image = (Image)resources.GetObject("openServerWorld.Image");
-			openServerWorld.ImageTransparentColor = Color.Magenta;
-			openServerWorld.Name = "openServerWorld";
-			openServerWorld.Size = new Size(23, 22);
-			openServerWorld.Text = "Open Server World ...";
-			openServerWorld.Click += OnOpenServerWorldClick;
 			// 
 			// WorldViewer
 			// 
@@ -310,7 +317,7 @@
 		#endregion
 
 		private ToolStrip toolStrip1;
-		private global::WorldForgeToolbox.CanvasPanel canvas;
+		private WorldForgeToolbox.MapView canvas;
 		private ToolStripButton openWorld;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel statusLabel;
