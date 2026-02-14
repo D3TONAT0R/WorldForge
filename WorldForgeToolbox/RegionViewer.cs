@@ -55,6 +55,7 @@ public partial class RegionViewer : ToolboxForm
 
 	private void Load()
 	{
+		canvas.Center = new System.Numerics.Vector2(256, 256);
 		currentChunkRenders.Clear();
 		chunkRenderQueue.Clear();
 		//Queue renders, starting from center
@@ -87,25 +88,37 @@ public partial class RegionViewer : ToolboxForm
 	private void Draw(object sender, PaintEventArgs e)
 	{
 		if (region == null) return;
+		var center = canvas.Center;
+		center.X = Math.Clamp(center.X, 0, 512);
+		center.Y = Math.Clamp(center.Y, 0, 512);
+		canvas.Center = center;
+		var g = e.Graphics;
+		g.PixelOffsetMode = PixelOffsetMode.Half;
+		g.InterpolationMode = InterpolationMode.NearestNeighbor;
 		HandleRenders();
-		e.Graphics.Clear(Color.Black);
+		g.Clear(Color.Black);
+		var scale = canvas.ZoomScale;
+		var size = 16 * scale;
 		for (int z = 0; z < 32; z++)
 		{
 			for (int x = 0; x < 32; x++)
 			{
+				var pos = canvas.MapToScreenPos(new System.Numerics.Vector2(x * 16, z * 16));
+				var rect = new Rectangle(pos.X, pos.Y, size, size);
 				int i = z * 32 + x;
-				if (currentChunkRenders.Contains(i)) e.Graphics.FillRectangle(renderingChunkBrush, x * 16, z * 16, 16, 16);
+				if (currentChunkRenders.Contains(i)) g.FillRectangle(renderingChunkBrush, rect);
 				else
 				{
 					var map = chunkMaps[i];
-					if (map != null) e.Graphics.DrawImage(map, x * 16, z * 16);
-					else if (region.chunks[x, z] != null) e.Graphics.FillRectangle(queuedChunkBrush, x * 16, z * 16, 16, 16);
+					if (map != null) g.DrawImage(map, rect);
+					else if (region.chunks[x, z] != null) g.FillRectangle(queuedChunkBrush, rect);
 				}
 			}
 		}
 		if (hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
 		{
-			e.Graphics.DrawRectangle(hoverOutlinePen, hoveredChunk.x * 16, hoveredChunk.z * 16, 16, 16);
+			var pos = canvas.MapToScreenPos(new System.Numerics.Vector2(hoveredChunk.x * 16, hoveredChunk.z * 16));
+			g.DrawRectangle(hoverOutlinePen, pos.X, pos.Y, size, size);
 		}
 	}
 
@@ -151,7 +164,7 @@ public partial class RegionViewer : ToolboxForm
 		});
 	}
 
-	private void OnCanvasClick(object sender, EventArgs e)
+	private void OnCanvasDoubleClick(object sender, EventArgs e)
 	{
 		var mouseEvent = (MouseEventArgs)e;
 		if (mouseEvent.Button == MouseButtons.Left)
@@ -187,7 +200,8 @@ public partial class RegionViewer : ToolboxForm
 
 	private void OnMouseMove(object sender, MouseEventArgs e)
 	{
-		hoveredChunk = new ChunkCoord(e.X / 16, e.Y / 16);
+		var mapPos = canvas.ScreenToMapPos(e.Location);
+		hoveredChunk = new ChunkCoord((int)mapPos.X / 16, (int)mapPos.Y / 16);
 		canvas.Invalidate();
 	}
 

@@ -29,7 +29,7 @@ partial class RegionViewer
 	private void InitializeComponent()
 	{
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegionViewer));
-		canvas = new CanvasPanel();
+		canvas = new MapView();
 		toolStrip1 = new ToolStrip();
 		toolboxButton = new ToolStripButton();
 		toolStripSeparator2 = new ToolStripSeparator();
@@ -39,22 +39,26 @@ partial class RegionViewer
 		scrollSouth = new ToolStripButton();
 		scrollWest = new ToolStripButton();
 		scrollEast = new ToolStripButton();
-		mapView1 = new WorldForgeToolbox.MapView();
-		canvas.SuspendLayout();
 		toolStrip1.SuspendLayout();
 		SuspendLayout();
 		// 
 		// canvas
 		// 
+		canvas.AllowInteractions = true;
+		canvas.AllowPanning = true;
+		canvas.AllowZooming = true;
 		canvas.BackColor = SystemColors.AppWorkspace;
-		canvas.Controls.Add(mapView1);
 		canvas.Location = new Point(0, 25);
 		canvas.Margin = new Padding(0);
+		canvas.MaxZoom = 4;
+		canvas.MinZoom = 1;
 		canvas.Name = "canvas";
 		canvas.Size = new Size(512, 512);
 		canvas.TabIndex = 0;
-		canvas.Click += OnCanvasClick;
+		canvas.UnitScale = 1F;
+		canvas.Zoom = 1;
 		canvas.Paint += Draw;
+		canvas.DoubleClick += OnCanvasDoubleClick;
 		canvas.MouseLeave += OnMouseExit;
 		canvas.MouseMove += OnMouseMove;
 		// 
@@ -138,16 +142,6 @@ partial class RegionViewer
 		scrollEast.Text = "Scroll East";
 		scrollEast.Click += scrollEast_Click;
 		// 
-		// mapView1
-		// 
-		mapView1.Location = new Point(473, 142);
-		mapView1.MaxZoom = 8;
-		mapView1.MinZoom = 1;
-		mapView1.Name = "mapView1";
-		mapView1.Size = new Size(200, 100);
-		mapView1.TabIndex = 1;
-		mapView1.Zoom = 8;
-		// 
 		// RegionViewer
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -159,14 +153,13 @@ partial class RegionViewer
 		Controls.Add(canvas);
 		Name = "RegionViewer";
 		Text = "Form1";
-		canvas.ResumeLayout(false);
 		toolStrip1.ResumeLayout(false);
 		toolStrip1.PerformLayout();
 		ResumeLayout(false);
 		PerformLayout();
 	}
 
-	private CanvasPanel canvas;
+	private MapView canvas;
 
     #endregion
 
@@ -179,5 +172,4 @@ partial class RegionViewer
     private ToolStripSeparator toolStripSeparator1;
 	private ToolStripButton toolboxButton;
 	private ToolStripSeparator toolStripSeparator2;
-	private WorldForgeToolbox.MapView mapView1;
 }

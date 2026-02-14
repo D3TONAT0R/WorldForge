@@ -120,7 +120,7 @@ public class MapView : Panel
 		if(AllowInteractions && AllowPanning && IsMouseDown)
 		{
 			var moveDelta = new Vector2(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
-			Center -= moveDelta * 16f / ZoomScale;
+			Center -= moveDelta * UnitScale / ZoomScale;
 			lastMousePos = e.Location;
 		}
 		base.OnMouseMove(e);
