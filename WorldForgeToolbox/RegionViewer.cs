@@ -21,6 +21,7 @@ public partial class RegionViewer : ToolboxForm
 
 	private Timer updateRenderTimer;
 
+	private Brush regionBackgroundBrush = new HatchBrush(HatchStyle.Percent25, Color.FromArgb(64, 128, 128, 128), Color.Black);
 	private Brush renderingChunkBrush = new SolidBrush(Color.FromArgb(160, 128, 128, 128));
 	private Brush queuedChunkBrush = new HatchBrush(HatchStyle.Percent50, Color.FromArgb(64, 128, 128, 128), Color.FromArgb(128, 128, 128, 128));
 
@@ -45,7 +46,7 @@ public partial class RegionViewer : ToolboxForm
 		}
 		try
 		{
-			if(!string.IsNullOrEmpty(inputFileArg)) Load();
+			if (!string.IsNullOrEmpty(inputFileArg)) Load();
 		}
 		catch (Exception e)
 		{
@@ -97,6 +98,7 @@ public partial class RegionViewer : ToolboxForm
 		g.InterpolationMode = InterpolationMode.NearestNeighbor;
 		HandleRenders();
 		g.Clear(Color.Black);
+		canvas.FillRectangle(g, regionBackgroundBrush, 0, 0, 512, 512);
 		var scale = canvas.ZoomScale;
 		var size = 16 * scale;
 		for (int z = 0; z < 32; z++)
@@ -114,6 +116,10 @@ public partial class RegionViewer : ToolboxForm
 					else if (region.chunks[x, z] != null) g.FillRectangle(queuedChunkBrush, rect);
 				}
 			}
+		}
+		if(toggleGrid.Checked)
+		{
+			canvas.DrawGrid(g, Pens.DarkGray, 16);
 		}
 		if (hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
 		{
@@ -263,5 +269,11 @@ public partial class RegionViewer : ToolboxForm
 	{
 		Toolbox.Instance.Return();
 		Close();
+	}
+
+	private void toggleGrid_Click(object sender, EventArgs e)
+	{
+		toggleGrid.Checked = !toggleGrid.Checked;
+		canvas.Repaint();
 	}
 }

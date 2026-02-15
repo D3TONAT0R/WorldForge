@@ -39,6 +39,8 @@ partial class RegionViewer
 		scrollSouth = new ToolStripButton();
 		scrollWest = new ToolStripButton();
 		scrollEast = new ToolStripButton();
+		toolStripSeparator3 = new ToolStripSeparator();
+		toggleGrid = new ToolStripButton();
 		toolStrip1.SuspendLayout();
 		SuspendLayout();
 		// 
@@ -47,13 +49,16 @@ partial class RegionViewer
 		canvas.AllowInteractions = true;
 		canvas.AllowPanning = true;
 		canvas.AllowZooming = true;
+		canvas.AutoSize = true;
 		canvas.BackColor = SystemColors.AppWorkspace;
+		canvas.Dock = DockStyle.Fill;
 		canvas.Location = new Point(0, 25);
 		canvas.Margin = new Padding(0);
 		canvas.MaxZoom = 4;
+		canvas.MinimumSize = new Size(512, 512);
 		canvas.MinZoom = 1;
 		canvas.Name = "canvas";
-		canvas.Size = new Size(512, 512);
+		canvas.Size = new Size(609, 535);
 		canvas.TabIndex = 0;
 		canvas.UnitScale = 1F;
 		canvas.Zoom = 1;
@@ -64,7 +69,7 @@ partial class RegionViewer
 		// 
 		// toolStrip1
 		// 
-		toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator2, openFile, toolStripSeparator1, scrollNorth, scrollSouth, scrollWest, scrollEast });
+		toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator2, openFile, toolStripSeparator1, scrollNorth, scrollSouth, scrollWest, scrollEast, toolStripSeparator3, toggleGrid });
 		toolStrip1.Location = new Point(0, 0);
 		toolStrip1.Name = "toolStrip1";
 		toolStrip1.Size = new Size(609, 25);
@@ -142,6 +147,21 @@ partial class RegionViewer
 		scrollEast.Text = "Scroll East";
 		scrollEast.Click += scrollEast_Click;
 		// 
+		// toolStripSeparator3
+		// 
+		toolStripSeparator3.Name = "toolStripSeparator3";
+		toolStripSeparator3.Size = new Size(6, 25);
+		// 
+		// toggleGrid
+		// 
+		toggleGrid.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		toggleGrid.Image = (Image)resources.GetObject("toggleGrid.Image");
+		toggleGrid.ImageTransparentColor = Color.Magenta;
+		toggleGrid.Name = "toggleGrid";
+		toggleGrid.Size = new Size(23, 22);
+		toggleGrid.Text = "Toggle Grid";
+		toggleGrid.Click += toggleGrid_Click;
+		// 
 		// RegionViewer
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -149,8 +169,8 @@ partial class RegionViewer
 		AutoSize = true;
 		AutoSizeMode = AutoSizeMode.GrowAndShrink;
 		ClientSize = new Size(609, 560);
-		Controls.Add(toolStrip1);
 		Controls.Add(canvas);
+		Controls.Add(toolStrip1);
 		Name = "RegionViewer";
 		Text = "Form1";
 		toolStrip1.ResumeLayout(false);
@@ -172,4 +192,6 @@ partial class RegionViewer
     private ToolStripSeparator toolStripSeparator1;
 	private ToolStripButton toolboxButton;
 	private ToolStripSeparator toolStripSeparator2;
+	private ToolStripSeparator toolStripSeparator3;
+	private ToolStripButton toggleGrid;
 }

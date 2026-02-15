@@ -146,6 +146,9 @@ namespace WorldForgeToolbox
 		private Brush darkenMapBrush = new SolidBrush(Color.FromArgb(160, Color.Black));
 		private Brush outdatedMapBrush = new SolidBrush(Color.FromArgb(100, Color.Gray));
 
+		private Pen regionGridPen = new Pen(Color.Gray, 2);
+		private Pen chunkGridPen = new Pen(Color.FromArgb(128, Color.Gray), 1);
+
 		private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
 
 		private int _zoom = 4;
@@ -376,8 +379,15 @@ namespace WorldForgeToolbox
 						visibleUnrenderedRegions.Add(r.Key);
 					}
 				}
-				if (toggleGrid.Checked) g.DrawRectangle(Pens.DarkGray, rect);
-				//g.DrawString(GetRenderPriority(r.Value).ToString(), Font, Brushes.Gray, rect.X + 2, rect.Y + 2);
+			}
+			if (toggleGrid.Checked)
+			{
+				canvas.DrawGrid(g, regionGridPen, 512);
+				if(canvas.Zoom >= 5) canvas.DrawGrid(g, chunkGridPen, 16);
+				// Draw origin lines
+				canvas.DrawHorizontalGuide(g, Pens.Red, 0);
+				canvas.DrawVerticalGuide(g, Pens.Blue, 0);
+				canvas.DrawMarker(g, regionGridPen, 0, 0, MapView.MarkerShape.Diamond, 6);
 			}
 			if (hoveredRegion.HasValue && hoveredPlayer == null)
 			{
