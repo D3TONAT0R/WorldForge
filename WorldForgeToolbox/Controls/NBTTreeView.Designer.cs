@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RegionViewer {
+namespace WorldForgeToolbox.Controls {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace RegionViewer {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("RegionViewer.NBTTreeView", typeof(NBTTreeView).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("RegionViewer.Controls.NBTTreeView", typeof(NBTTreeView).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

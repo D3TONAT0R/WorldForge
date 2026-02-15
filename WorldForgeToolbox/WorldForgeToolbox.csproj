@@ -16,10 +16,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="CanvasPanel.cs">
+      <Compile Update="Controls\CanvasPanel.cs">
         <SubType>Custom</SubType>
       </Compile>
-      <Compile Update="NBTTreeView.Designer.cs">
+      <Compile Update="Controls\NBTTreeView.Designer.cs">
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>NBTTreeView.resx</DependentUpon>
@@ -39,7 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="NBTTreeView.resx">
+      <EmbeddedResource Update="Controls\NBTTreeView.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>NBTTreeView.Designer.cs</LastGenOutput>
       </EmbeddedResource>
