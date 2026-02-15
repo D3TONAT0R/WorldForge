@@ -10,7 +10,7 @@ namespace WorldForgeToolbox;
 public partial class RegionViewer : ToolboxForm
 {
 	private Bitmap?[] chunkMaps = new Bitmap?[1024];
-	private WorldForge.Regions.Region region;
+	private WorldForge.Regions.Region? region;
 	private RegionLocation currentLocation;
 
 	private ChunkCoord hoveredChunk = new ChunkCoord(-1, -1);
@@ -56,7 +56,7 @@ public partial class RegionViewer : ToolboxForm
 
 	private void Load()
 	{
-		canvas.Center = new System.Numerics.Vector2(256, 256);
+		viewport.Center = new System.Numerics.Vector2(256, 256);
 		currentChunkRenders.Clear();
 		chunkRenderQueue.Clear();
 		//Queue renders, starting from center
@@ -88,24 +88,28 @@ public partial class RegionViewer : ToolboxForm
 
 	private void Draw(object sender, PaintEventArgs e)
 	{
-		if (region == null) return;
-		var center = canvas.Center;
+		var g = e.Graphics;
+		if (region == null)
+		{
+			viewport.DrawDisabled(g, "No region loaded");
+			return;
+		}
+		var center = viewport.Center;
 		center.X = Math.Clamp(center.X, 0, 512);
 		center.Y = Math.Clamp(center.Y, 0, 512);
-		canvas.Center = center;
-		var g = e.Graphics;
+		viewport.Center = center;
 		g.PixelOffsetMode = PixelOffsetMode.Half;
 		g.InterpolationMode = InterpolationMode.NearestNeighbor;
 		HandleRenders();
 		g.Clear(Color.Black);
-		canvas.FillRectangle(g, regionBackgroundBrush, 0, 0, 512, 512);
-		var scale = canvas.ZoomScale;
+		viewport.FillRectangle(g, regionBackgroundBrush, 0, 0, 512, 512);
+		var scale = viewport.ZoomScale;
 		var size = 16 * scale;
 		for (int z = 0; z < 32; z++)
 		{
 			for (int x = 0; x < 32; x++)
 			{
-				var pos = canvas.MapToScreenPos(new System.Numerics.Vector2(x * 16, z * 16));
+				var pos = viewport.MapToScreenPos(new System.Numerics.Vector2(x * 16, z * 16));
 				var rect = new Rectangle(pos.X, pos.Y, size, size);
 				int i = z * 32 + x;
 				if (currentChunkRenders.Contains(i)) g.FillRectangle(renderingChunkBrush, rect);
@@ -117,13 +121,13 @@ public partial class RegionViewer : ToolboxForm
 				}
 			}
 		}
-		if(toggleGrid.Checked)
+		if (toggleGrid.Checked)
 		{
-			canvas.DrawGrid(g, Pens.DarkGray, 16);
+			viewport.DrawGrid(g, Pens.DarkGray, 16);
 		}
 		if (hoveredChunk.x >= 0 && hoveredChunk.z >= 0)
 		{
-			var pos = canvas.MapToScreenPos(new System.Numerics.Vector2(hoveredChunk.x * 16, hoveredChunk.z * 16));
+			var pos = viewport.MapToScreenPos(new System.Numerics.Vector2(hoveredChunk.x * 16, hoveredChunk.z * 16));
 			g.DrawRectangle(hoverOutlinePen, pos.X, pos.Y, size, size);
 		}
 	}
@@ -157,7 +161,7 @@ public partial class RegionViewer : ToolboxForm
 					if (!chunk.IsLoaded) chunk.Load(ChunkLoadFlags.Blocks);
 					var map = (WinformsBitmap)SurfaceMapGenerator.GenerateSurfaceMap(chunk, HeightmapType.AllBlocks, true, WorldForge.Maps.MapColorPalette.Modern, true);
 					chunkMaps[i] = map.bitmap;
-					canvas.Invalidate();
+					viewport.Invalidate();
 				}
 			}
 			finally
@@ -170,7 +174,7 @@ public partial class RegionViewer : ToolboxForm
 		});
 	}
 
-	private void OnCanvasDoubleClick(object sender, EventArgs e)
+	private void OnViewportDoubleClick(object sender, EventArgs e)
 	{
 		var mouseEvent = (MouseEventArgs)e;
 		if (mouseEvent.Button == MouseButtons.Left)
@@ -206,15 +210,15 @@ public partial class RegionViewer : ToolboxForm
 
 	private void OnMouseMove(object sender, MouseEventArgs e)
 	{
-		var mapPos = canvas.ScreenToMapPos(e.Location);
+		var mapPos = viewport.ScreenToMapPos(e.Location);
 		hoveredChunk = new ChunkCoord((int)mapPos.X / 16, (int)mapPos.Y / 16);
-		canvas.Invalidate();
+		viewport.Invalidate();
 	}
 
 	private void OnMouseExit(object sender, EventArgs e)
 	{
 		hoveredChunk = new ChunkCoord(-1, -1);
-		canvas.Invalidate();
+		viewport.Invalidate();
 	}
 
 	private void scrollNorth_Click(object sender, EventArgs e)
@@ -274,6 +278,13 @@ public partial class RegionViewer : ToolboxForm
 	private void toggleGrid_Click(object sender, EventArgs e)
 	{
 		toggleGrid.Checked = !toggleGrid.Checked;
-		canvas.Repaint();
+		viewport.Repaint();
+	}
+
+	private void resetView_Click(object sender, EventArgs e)
+	{
+		viewport.SetCenter(256, 256);
+		viewport.Zoom = 1;
+		viewport.Repaint();
 	}
 }

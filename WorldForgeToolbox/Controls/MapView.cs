@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Numerics;
 using System.Windows.Forms;
 using WorldForge;
@@ -60,6 +61,9 @@ public class MapView : Panel
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
 	public bool IsMouseDown { get; private set; }
 
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+	public Func<bool> CheckInteractivity { get; set; }
+
 	private Point lastMousePos;
 	private Point mousePosition;
 
@@ -75,6 +79,8 @@ public class MapView : Panel
 		Alignment = StringAlignment.Center,
 		LineAlignment = StringAlignment.Center
 	};
+	private Brush disabledSolidBrush = new SolidBrush(Color.FromArgb(16, 16, 16));
+	private Brush disabledSurfaceBrush = new HatchBrush(HatchStyle.BackwardDiagonal, Color.FromArgb(32, 32, 32), Color.FromArgb(16, 16, 16));
 
 	public MapView()
 	{
@@ -124,6 +130,15 @@ public class MapView : Panel
 	#endregion
 
 	#region Drawing functions
+
+	public void DrawDisabled(Graphics g, string text)
+	{
+		g.FillRectangle(disabledSurfaceBrush, ClientRectangle);
+		var size = g.MeasureString(text, Font);
+		g.FillRectangle(disabledSolidBrush, ClientRectangle.Width / 2f - size.Width / 2f - 4, ClientRectangle.Height / 2f - size.Height / 2f - 4, size.Width + 8, size.Height + 8);
+		g.DrawString(text, Font, Brushes.White, ClientRectangle.Width / 2f, ClientRectangle.Height / 2f, centeredLabelFormat);
+	}
+
 	public void DrawGrid(Graphics g, Pen pen, float gridSize, bool showCoordinates = false)
 	{
 		var topLeft = ScreenToMapPos(Point.Empty);
@@ -337,7 +352,7 @@ public class MapView : Panel
 
 	protected override void OnMouseWheel(MouseEventArgs e)
 	{
-		if (AllowInteractions && AllowZooming)
+		if (AllowZooming && CheckCanInteract())
 		{
 			var lastZoom = Zoom;
 			Zoom += Math.Clamp(e.Delta, -1, 1);
@@ -373,7 +388,7 @@ public class MapView : Panel
 	protected override void OnMouseMove(MouseEventArgs e)
 	{
 		mousePosition = e.Location;
-		if(AllowInteractions && AllowPanning && IsMouseDown)
+		if(AllowPanning && CheckCanInteract() && IsMouseDown)
 		{
 			var moveDelta = new Vector2(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
 			Center -= moveDelta * UnitScale / ZoomScale;
@@ -387,5 +402,10 @@ public class MapView : Panel
 	{
 		Center = new Vector2(playerPosX, playerPosZ);
 		Repaint();
+	}
+
+	private bool CheckCanInteract()
+	{
+		return AllowInteractions && (CheckInteractivity?.Invoke() ?? true);
 	}
 }

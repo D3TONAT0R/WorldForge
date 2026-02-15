@@ -182,12 +182,12 @@ namespace WorldForgeToolbox
 			}
 			Instance = this;
 			InitializeComponent();
-			canvas.UnitScale = 16;
-			canvas.MouseUp += OnCanvasMouseUp;
-			canvas.MouseMove += OnCanvasMouseMove;
-			canvas.MouseLeave += OnCanvasMouseLeave;
-			canvas.DoubleClick += OnCanvasDoubleClick;
-			canvas.Cursor = Cursors.SizeAll;
+			viewport.UnitScale = 16;
+			viewport.MouseUp += OnViewportMouseUp;
+			viewport.MouseMove += OnViewportMouseMove;
+			viewport.MouseLeave += OnViewportMouseLeave;
+			viewport.DoubleClick += OnViewportDoubleClick;
+			viewport.Cursor = Cursors.SizeAll;
 			toggleGrid.Checked = true;
 			statusLabelUpdater.Tick += UpdateStatusStrip;
 			statusLabelUpdater.Start();
@@ -237,7 +237,7 @@ namespace WorldForgeToolbox
 				x = view.world.LevelData.spawnpoint.Position.x;
 				z = view.world.LevelData.spawnpoint.Position.z;
 			}
-			canvas.Center = new System.Numerics.Vector2(x, z);
+			viewport.Center = new System.Numerics.Vector2(x, z);
 			dimensionSelector.DropDownItems.Clear();
 			if (view.server != null)
 			{
@@ -271,9 +271,9 @@ namespace WorldForgeToolbox
 		public void GoToPosition(BlockCoord2D pos, int? zoomLevel = null)
 		{
 			focusPosition = pos;
-			canvas.Center = new System.Numerics.Vector2(pos.x, pos.z);
-			if (zoomLevel.HasValue) canvas.Zoom = zoomLevel.Value;
-			canvas.Repaint();
+			viewport.Center = new System.Numerics.Vector2(pos.x, pos.z);
+			if (zoomLevel.HasValue) viewport.Zoom = zoomLevel.Value;
+			viewport.Repaint();
 		}
 
 		private string GetDimensionName(Dimension dim)
@@ -303,11 +303,11 @@ namespace WorldForgeToolbox
 			dimensionSelector.DropDownItems.Add(button);
 		}
 
-		private Point WorldToScreenPoint(BlockCoord2D pos) => canvas.MapToScreenPos(new System.Numerics.Vector2(pos.x, pos.z));
+		private Point WorldToScreenPoint(BlockCoord2D pos) => viewport.MapToScreenPos(new System.Numerics.Vector2(pos.x, pos.z));
 
 		private BlockCoord2D ScreenToBlockPos(Point screenPos, Rectangle clipRectangle)
 		{
-			var pos = canvas.ScreenToMapPos(screenPos);
+			var pos = viewport.ScreenToMapPos(screenPos);
 			return new BlockCoord2D((int)pos.X, (int)pos.Y);
 		}
 
@@ -323,7 +323,7 @@ namespace WorldForgeToolbox
 			}
 			else
 			{
-				g.DrawString("No Dimensions found", Font, Brushes.Red, 10, 10);
+				viewport.DrawDisabled(g, "No world loaded");
 			}
 		}
 
@@ -378,19 +378,19 @@ namespace WorldForgeToolbox
 			}
 			if (toggleGrid.Checked)
 			{
-				canvas.DrawGrid(g, regionGridPen, 512, true);
-				if (canvas.Zoom >= 5) canvas.DrawGrid(g, chunkGridPen, 16);
+				viewport.DrawGrid(g, regionGridPen, 512, true);
+				if (viewport.Zoom >= 5) viewport.DrawGrid(g, chunkGridPen, 16);
 				// Draw origin lines
-				canvas.DrawHorizontalGuide(g, Pens.Red, 0);
-				canvas.DrawVerticalGuide(g, Pens.Blue, 0);
-				canvas.DrawMarker(g, regionGridPen, 0, 0, MapView.MarkerShape.Diamond, 6);
+				viewport.DrawHorizontalGuide(g, Pens.Red, 0);
+				viewport.DrawVerticalGuide(g, Pens.Blue, 0);
+				viewport.DrawMarker(g, regionGridPen, 0, 0, MapView.MarkerShape.Diamond, 6);
 			}
 			if (hoveredRegion.HasValue && hoveredPlayer == null)
 			{
 				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(hoveredRegion.Value));
 			}
 			var spawnPos = view.world.LevelData.spawnpoint.Position;
-			canvas.DrawMarker(g, spawnMarker, spawnPos.x, spawnPos.z, MapView.MarkerShape.Cross, 8, "Spawn");
+			viewport.DrawMarker(g, spawnMarker, spawnPos.x, spawnPos.z, MapView.MarkerShape.Cross, 8, "Spawn");
 			if (togglePlayers.Checked)
 			{
 				foreach (var player in view.world.PlayerData.Values)
@@ -400,7 +400,7 @@ namespace WorldForgeToolbox
 					bool hovered = hoveredPlayer == player;
 					Pen pen = hovered ? Pens.Red : playerMarker;
 					var playerPos = player.player.position.Block;
-					canvas.DrawIcon(g, avatar, pen, playerPos.x, playerPos.z, 16, hovered, username);
+					viewport.DrawIcon(g, avatar, pen, playerPos.x, playerPos.z, 16, hovered, username);
 				}
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
@@ -421,7 +421,7 @@ namespace WorldForgeToolbox
 		private Rectangle GetRegionRectangle(RegionLocation location)
 		{
 			var pos = WorldToScreenPoint(location.GetBlockCoord(0, 0, 0));
-			var rect = new Rectangle(pos, new Size(32 * canvas.ZoomScale, 32 * canvas.ZoomScale));
+			var rect = new Rectangle(pos, new Size(32 * viewport.ZoomScale, 32 * viewport.ZoomScale));
 			return rect;
 		}
 
@@ -448,7 +448,7 @@ namespace WorldForgeToolbox
 					{
 						break;
 					}
-					canvas.Repaint();
+					viewport.Repaint();
 				}
 			}
 		}
@@ -468,7 +468,7 @@ namespace WorldForgeToolbox
 					if (token.IsCancellationRequested) return;
 					r.renderComplete = true;
 					view.MarkDirty();
-					canvas.Repaint();
+					viewport.Repaint();
 				},
 				view.cancellationTokenSource.Token
 			);
@@ -512,7 +512,7 @@ namespace WorldForgeToolbox
 		private int GetRenderPriority(RegionLocation location)
 		{
 			//Lower means higher
-			var centerBlock = new BlockCoord2D((int)canvas.Center.X, (int)canvas.Center.Y);
+			var centerBlock = new BlockCoord2D((int)viewport.Center.X, (int)viewport.Center.Y);
 			var diffX = Math.Abs(location.x - centerBlock.Region.x);
 			var diffZ = Math.Abs(location.z - centerBlock.Region.z);
 			return Math.Max(diffX, diffZ);
@@ -554,15 +554,15 @@ namespace WorldForgeToolbox
 			{
 				int i = 0;
 			}
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
-		private void OnCanvasMouseUp(object? sender, MouseEventArgs e)
+		private void OnViewportMouseUp(object? sender, MouseEventArgs e)
 		{
 			if (view == null) return;
 			if (e.Button == MouseButtons.Right)
 			{
-				var blockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
+				var blockPos = ScreenToBlockPos(e.Location, viewport.ClientRectangle);
 				view.maps.TryGet(blockPos.Region, out var render);
 				view.dimension.TryGetRegion(blockPos.Region, out var region);
 				//Show context menu
@@ -584,7 +584,7 @@ namespace WorldForgeToolbox
 							entry.normalRender = BeginRender(region, false);
 							entry.regionTimestamp = region.sourceFilePaths?.MainFileLastWriteTimeUtc ?? DateTime.MinValue;
 							view.currentRenders.Add(region.regionPos);
-							canvas.Repaint();
+							viewport.Repaint();
 						}
 					};
 					menu.Items.Add("Render High Resolution").Click += (s, ev) =>
@@ -592,7 +592,7 @@ namespace WorldForgeToolbox
 						if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
 						{
 							entry.highQualityRender = BeginRender(region, true);
-							canvas.Repaint();
+							viewport.Repaint();
 						}
 						else
 						{
@@ -608,19 +608,19 @@ namespace WorldForgeToolbox
 				{
 					var x = view.world.LevelData.spawnpoint.Position.x;
 					var z = view.world.LevelData.spawnpoint.Position.z;
-					canvas.Center = new System.Numerics.Vector2(x, z);
-					canvas.Repaint();
+					viewport.Center = new System.Numerics.Vector2(x, z);
+					viewport.Repaint();
 				};
-				menu.Show(canvas, e.Location);
-				canvas.Repaint();
+				menu.Show(viewport, e.Location);
+				viewport.Repaint();
 			}
 		}
 
-		private void OnCanvasMouseMove(object? sender, MouseEventArgs e)
+		private void OnViewportMouseMove(object? sender, MouseEventArgs e)
 		{
 			if (view == null) return;
-			hoveredBlockPos = ScreenToBlockPos(e.Location, canvas.ClientRectangle);
-			if (!canvas.IsMouseDown)
+			hoveredBlockPos = ScreenToBlockPos(e.Location, viewport.ClientRectangle);
+			if (!viewport.IsMouseDown)
 			{
 				var regPos = hoveredBlockPos.Value.Region;
 				hoveredRegion = view.dimension.HasRegion(regPos) ? hoveredBlockPos.Value.Region : null;
@@ -638,19 +638,19 @@ namespace WorldForgeToolbox
 					}
 				}
 			}
-			canvas.Cursor = hoveredPlayer != null ? Cursors.Hand : Cursors.SizeAll;
-			canvas.Repaint();
+			viewport.Cursor = hoveredPlayer != null ? Cursors.Hand : Cursors.SizeAll;
+			viewport.Repaint();
 		}
 
-		private void OnCanvasMouseLeave(object? sender, EventArgs e)
+		private void OnViewportMouseLeave(object? sender, EventArgs e)
 		{
 			hoveredBlockPos = null;
 			hoveredRegion = null;
 			hoveredPlayer = null;
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
-		private void OnCanvasDoubleClick(object? sender, EventArgs _)
+		private void OnViewportDoubleClick(object? sender, EventArgs _)
 		{
 			if (view == null) return;
 			if (hoveredPlayer != null)
@@ -709,7 +709,7 @@ namespace WorldForgeToolbox
 			{
 				view.ClearRenderCache(true);
 			}
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
 		private void resumeMapRender_Click(object sender, EventArgs e)
@@ -733,14 +733,14 @@ namespace WorldForgeToolbox
 
 		private void zoomIn_Click(object sender, EventArgs e)
 		{
-			canvas.Zoom++;
-			canvas.Repaint();
+			viewport.Zoom++;
+			viewport.Repaint();
 		}
 
 		private void zoomOut_Click(object sender, EventArgs e)
 		{
-			canvas.Zoom--;
-			canvas.Repaint();
+			viewport.Zoom--;
+			viewport.Repaint();
 		}
 
 		private void jumpToSpawn_Click(object sender, EventArgs e)
@@ -748,8 +748,8 @@ namespace WorldForgeToolbox
 			if (view == null) return;
 			var x = view.world.LevelData.spawnpoint.Position.x;
 			var z = view.world.LevelData.spawnpoint.Position.z;
-			canvas.Center = new System.Numerics.Vector2(x, z);
-			canvas.Repaint();
+			viewport.Center = new System.Numerics.Vector2(x, z);
+			viewport.Repaint();
 		}
 
 		private void toolboxButton_Click(object sender, EventArgs e)
@@ -761,19 +761,19 @@ namespace WorldForgeToolbox
 		private void ToggleGrid(object sender, EventArgs e)
 		{
 			toggleGrid.Checked = !toggleGrid.Checked;
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
 		private void TogglePlayers(object sender, EventArgs e)
 		{
 			togglePlayers.Checked = !togglePlayers.Checked;
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
 		private void ToggleMapOpacity(object sender, EventArgs e)
 		{
 			toggleOpacity.Checked = !toggleOpacity.Checked;
-			canvas.Repaint();
+			viewport.Repaint();
 		}
 
 		private void ToggleSingleRender(object sender, EventArgs e)

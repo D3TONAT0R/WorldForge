@@ -72,6 +72,7 @@ namespace WorldForgeToolbox
 			profileSelector.Items.Add(SearchProfile.Diamond);
 			profileSelector.SelectedIndex = 0;
 			viewport.Cursor = Cursors.SizeAll;
+			viewport.CheckInteractivity = () => !PlayerPos.IsZero;
 		}
 
 		private void OnOpenClick(object sender, EventArgs e)
@@ -134,7 +135,7 @@ namespace WorldForgeToolbox
 
 			if (PlayerPos.IsZero)
 			{
-				g.DrawString("No position data", textFont, Brushes.White, e.ClipRectangle.Width / 2f, e.ClipRectangle.Height / 2f, centerFormat);
+				viewport.DrawDisabled(g, "No position data");
 				return;
 			}
 

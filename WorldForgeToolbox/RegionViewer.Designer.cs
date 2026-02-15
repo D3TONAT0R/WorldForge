@@ -29,7 +29,7 @@ partial class RegionViewer
 	private void InitializeComponent()
 	{
 		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegionViewer));
-		canvas = new MapView();
+		viewport = new MapView();
 		toolStrip1 = new ToolStrip();
 		toolboxButton = new ToolStripButton();
 		toolStripSeparator2 = new ToolStripSeparator();
@@ -41,35 +41,37 @@ partial class RegionViewer
 		scrollEast = new ToolStripButton();
 		toolStripSeparator3 = new ToolStripSeparator();
 		toggleGrid = new ToolStripButton();
+		resetView = new ToolStripButton();
 		toolStrip1.SuspendLayout();
 		SuspendLayout();
 		// 
 		// canvas
 		// 
-		canvas.AllowInteractions = true;
-		canvas.AllowPanning = true;
-		canvas.AllowZooming = true;
-		canvas.AutoSize = true;
-		canvas.BackColor = SystemColors.AppWorkspace;
-		canvas.Dock = DockStyle.Fill;
-		canvas.Location = new Point(0, 25);
-		canvas.Margin = new Padding(0);
-		canvas.MaxZoom = 4;
-		canvas.MinimumSize = new Size(512, 512);
-		canvas.MinZoom = 1;
-		canvas.Name = "canvas";
-		canvas.Size = new Size(609, 535);
-		canvas.TabIndex = 0;
-		canvas.UnitScale = 1F;
-		canvas.Zoom = 1;
-		canvas.Paint += Draw;
-		canvas.DoubleClick += OnCanvasDoubleClick;
-		canvas.MouseLeave += OnMouseExit;
-		canvas.MouseMove += OnMouseMove;
+		viewport.AllowInteractions = true;
+		viewport.AllowPanning = true;
+		viewport.AllowZooming = true;
+		viewport.AutoSize = true;
+		viewport.BackColor = SystemColors.AppWorkspace;
+		viewport.Dock = DockStyle.Fill;
+		viewport.LabelShadow = true;
+		viewport.Location = new Point(0, 25);
+		viewport.Margin = new Padding(0);
+		viewport.MaxZoom = 4;
+		viewport.MinimumSize = new Size(512, 512);
+		viewport.MinZoom = 1;
+		viewport.Name = "viewport";
+		viewport.Size = new Size(609, 535);
+		viewport.TabIndex = 0;
+		viewport.UnitScale = 1F;
+		viewport.Zoom = 1;
+		viewport.Paint += Draw;
+		viewport.DoubleClick += OnViewportDoubleClick;
+		viewport.MouseLeave += OnMouseExit;
+		viewport.MouseMove += OnMouseMove;
 		// 
 		// toolStrip1
 		// 
-		toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator2, openFile, toolStripSeparator1, scrollNorth, scrollSouth, scrollWest, scrollEast, toolStripSeparator3, toggleGrid });
+		toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator2, openFile, toolStripSeparator1, scrollNorth, scrollSouth, scrollWest, scrollEast, toolStripSeparator3, toggleGrid, resetView });
 		toolStrip1.Location = new Point(0, 0);
 		toolStrip1.Name = "toolStrip1";
 		toolStrip1.Size = new Size(609, 25);
@@ -162,6 +164,16 @@ partial class RegionViewer
 		toggleGrid.Text = "Toggle Grid";
 		toggleGrid.Click += toggleGrid_Click;
 		// 
+		// resetView
+		// 
+		resetView.DisplayStyle = ToolStripItemDisplayStyle.Image;
+		resetView.Image = (Image)resources.GetObject("resetView.Image");
+		resetView.ImageTransparentColor = Color.Magenta;
+		resetView.Name = "resetView";
+		resetView.Size = new Size(23, 22);
+		resetView.Text = "Reset View";
+		resetView.Click += resetView_Click;
+		// 
 		// RegionViewer
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
@@ -169,7 +181,7 @@ partial class RegionViewer
 		AutoSize = true;
 		AutoSizeMode = AutoSizeMode.GrowAndShrink;
 		ClientSize = new Size(609, 560);
-		Controls.Add(canvas);
+		Controls.Add(viewport);
 		Controls.Add(toolStrip1);
 		Name = "RegionViewer";
 		Text = "Form1";
@@ -179,7 +191,7 @@ partial class RegionViewer
 		PerformLayout();
 	}
 
-	private MapView canvas;
+	private MapView viewport;
 
     #endregion
 
@@ -194,4 +206,5 @@ partial class RegionViewer
 	private ToolStripSeparator toolStripSeparator2;
 	private ToolStripSeparator toolStripSeparator3;
 	private ToolStripButton toggleGrid;
+	private ToolStripButton resetView;
 }

@@ -52,7 +52,7 @@
 			toggleGrid = new ToolStripButton();
 			togglePlayers = new ToolStripButton();
 			toggleOpacity = new ToolStripButton();
-			canvas = new MapView();
+			viewport = new MapView();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
 			editLevelDat = new ToolStripButton();
@@ -266,21 +266,21 @@
 			// 
 			// canvas
 			// 
-			canvas.AllowInteractions = true;
-			canvas.AllowPanning = true;
-			canvas.AllowZooming = true;
-			canvas.BackColor = SystemColors.AppWorkspace;
-			canvas.Dock = DockStyle.Fill;
-			canvas.LabelShadow = true;
-			canvas.Location = new Point(0, 25);
-			canvas.MaxZoom = 8;
-			canvas.MinZoom = 1;
-			canvas.Name = "canvas";
-			canvas.Size = new Size(800, 403);
-			canvas.TabIndex = 1;
-			canvas.UnitScale = 1F;
-			canvas.Zoom = 4;
-			canvas.Paint += OnDraw;
+			viewport.AllowInteractions = true;
+			viewport.AllowPanning = true;
+			viewport.AllowZooming = true;
+			viewport.BackColor = SystemColors.AppWorkspace;
+			viewport.Dock = DockStyle.Fill;
+			viewport.LabelShadow = true;
+			viewport.Location = new Point(0, 25);
+			viewport.MaxZoom = 8;
+			viewport.MinZoom = 1;
+			viewport.Name = "viewport";
+			viewport.Size = new Size(800, 403);
+			viewport.TabIndex = 1;
+			viewport.UnitScale = 1F;
+			viewport.Zoom = 4;
+			viewport.Paint += OnDraw;
 			// 
 			// statusStrip1
 			// 
@@ -313,7 +313,7 @@
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
-			Controls.Add(canvas);
+			Controls.Add(viewport);
 			Controls.Add(statusStrip1);
 			Controls.Add(toolStrip1);
 			Name = "WorldViewer";
@@ -329,7 +329,7 @@
 		#endregion
 
 		private ToolStrip toolStrip1;
-		private WorldForgeToolbox.MapView canvas;
+		private WorldForgeToolbox.MapView viewport;
 		private ToolStripButton openWorld;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel statusLabel;
