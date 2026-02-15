@@ -132,18 +132,34 @@ namespace WorldForge.IO
 			}
 			region.InitializeChunks();
 			Logger.Verbose("Loading chunks ...");
+			var extension = Path.GetExtension(region.sourceFilePaths.mainPath).ToLower();
+			bool isAnvilFormat;
+			if(extension == ".mcr")
+			{
+				isAnvilFormat = false;
+			}
+			else if(extension == ".mca")
+			{
+				isAnvilFormat = true;
+			}
+			else
+			{
+				Logger.Error($"Unknown region file format for file {region.sourceFilePaths.mainPath}. Expected .mcr or .mca extension.");
+				isAnvilFormat = false;
+			}
 			Parallel.For(0, 1024, WorldForgeManager.ParallelOptions, i =>
 			{
-				LoadChunk(region, loadChunks, i, main, entities, poi, loadFlags);
+				LoadRegionChunk(region, loadChunks, i, main, entities, poi, loadFlags, isAnvilFormat);
 			});
 		}
 
-		private static void LoadChunk(Region region, bool loadChunks, int i, RegionData main, RegionData entities, RegionData poi, ChunkLoadFlags loadFlags)
+		private static void LoadRegionChunk(Region region, bool loadChunks, int i, RegionData main, RegionData entities, RegionData poi, ChunkLoadFlags loadFlags, bool isAnvilFormat)
 		{
 			if(main.compressedChunks[i] != null)
 			{
 				Stopwatch sw = Logger.Level == LogLevel.Verbose ? Stopwatch.StartNew() : null;
-				var sources = new ChunkSourceData(main.GetChunkNBT(i), entities?.GetChunkNBT(i), poi?.GetChunkNBT(i));
+				var format = isAnvilFormat ? ChunkSourceData.SourceRegionType.AnvilRegion : ChunkSourceData.SourceRegionType.MCRegion;
+				var sources = new ChunkSourceData(main.GetChunkNBT(i), entities?.GetChunkNBT(i), poi?.GetChunkNBT(i), format);
 				var coord = new ChunkCoord(i % 32, i / 32);
 				region.chunks[coord.x, coord.z] = Chunk.CreateFromNBT(region, coord, sources, region.versionHint, loadChunks, loadFlags);
 				if(sw != null)
@@ -185,7 +201,7 @@ namespace WorldForge.IO
 				//TODO: not sure if path is correct
 				var path = c.Item2;
 				var regionSpacePos = new ChunkCoord(coord.x & 31, coord.z & 31);
-				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new ChunkSourceData(new NBTFile(path), null, null));
+				var chunk = Chunk.CreateFromNBT(reg, regionSpacePos, new ChunkSourceData(new NBTFile(path), null, null, ChunkSourceData.SourceRegionType.AlphaChunk));
 				reg.chunks[regionSpacePos.x, regionSpacePos.z] = chunk;
 				if(sw != null)
 				{

@@ -52,7 +52,7 @@ namespace WorldForge
 			return GetUsernameAsync().Result;
 		}
 
-		public async Task<string> GetUsernameAsync()
+		public async Task<string?> GetUsernameAsync()
 		{
 			if(usernameRequested) return username;
 			//string url = $"https://api.minecraftservices.com/minecraft/profile/lookup/{uuid.ToString(false)}";

@@ -119,8 +119,9 @@ namespace WorldForge.Chunks
 		public void Load(ChunkLoadFlags loadFlags = ChunkLoadFlags.All, ExceptionHandling exceptionHandling = ExceptionHandling.Throw)
 		{
 			if(IsLoaded) throw new InvalidOperationException("Chunk is already loaded");
+			if(SourceData == null) throw new InvalidOperationException("No source data available to load chunk");
 
-			if(SourceData != null && SourceData.main.dataVersion.HasValue)
+			if (SourceData.main.dataVersion.HasValue)
 			{
 				ChunkGameVersion = GameVersion.FromDataVersion(SourceData.main.dataVersion.Value).Value;
 			}
@@ -130,6 +131,12 @@ namespace WorldForge.Chunks
 				{
 					ChunkGameVersion = ParentWorld.GameVersion;
 				}
+			}
+
+			if(SourceData.sourceRegionType == ChunkSourceData.SourceRegionType.MCRegion && ChunkGameVersion >= GameVersion.FirstAnvilVersion)
+			{
+				// Impossible chunk version
+				ChunkGameVersion = GameVersion.LastMCRVersion;
 			}
 
 			InitializeNewChunk();

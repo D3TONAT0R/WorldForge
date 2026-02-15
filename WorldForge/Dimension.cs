@@ -190,7 +190,7 @@ namespace WorldForge
 						AddRegion(region, true);
 					}
 					var nbt = new NBTFile(f);
-					var chunk = Chunk.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), new ChunkSourceData(nbt, null, null));
+					var chunk = Chunk.CreateFromNBT(region, new ChunkCoord(chunkPos.x & 31, chunkPos.z & 31), new ChunkSourceData(nbt, null, null, ChunkSourceData.SourceRegionType.AlphaChunk));
 					region.chunks[chunkPos.x & 31, chunkPos.z & 31] = chunk;
 				}
 				catch (Exception e) when (!throwOnRegionLoadFail)

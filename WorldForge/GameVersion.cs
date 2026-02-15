@@ -34,6 +34,7 @@ namespace WorldForge
 		public static readonly GameVersion DefaultVersion = Release_1(16);
 
 		public static readonly GameVersion FirstMCRVersion = Beta_1(3);
+		public static readonly GameVersion LastMCRVersion = Release_1(2, 0);
 		public static readonly GameVersion FirstAnvilVersion = Release_1(2, 1);
 		public static readonly GameVersion FirstFlatteningVersion = Release_1(1, 13);
 		public static readonly GameVersion FirstYDHVersion = YDH(26, 1);
