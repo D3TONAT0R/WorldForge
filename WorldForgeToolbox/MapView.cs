@@ -51,6 +51,9 @@ public class MapView : Panel
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Map Settings")]
 	public bool AllowZooming { get; set; } = true;
 
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Map Settings")]
+	public bool LabelShadow { get; set; } = true;
+
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
 	public Vector2 Center { get; set; } = Vector2.Zero;
 
@@ -59,6 +62,18 @@ public class MapView : Panel
 
 	private Point lastMousePos;
 	private Point mousePosition;
+
+	private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
+	private StringFormat markerLabelFormat = new StringFormat()
+	{
+		Alignment = StringAlignment.Near,
+		LineAlignment = StringAlignment.Center
+	};
+	private StringFormat centeredLabelFormat = new StringFormat()
+	{
+		Alignment = StringAlignment.Center,
+		LineAlignment = StringAlignment.Center
+	};
 
 	public MapView()
 	{
@@ -182,14 +197,14 @@ public class MapView : Panel
 
 	public void FillCircle(Graphics g, Brush brush, float centerX, float centerY, float radius) => FillCircle(g, brush, new Vector2(centerX, centerY), radius);
 
-	public void DrawMarker(Graphics g, Pen pen, Vector2 pos, MarkerShape shape, float size)
+	public void DrawMarker(Graphics g, Pen pen, Vector2 pos, MarkerShape shape, float size, string? label = null)
 	{
 		var screenPos = MapToScreenPos(pos);
 		switch (shape)
 		{
 			case MarkerShape.Cross:
-				g.DrawLine(pen, pos.X - size, pos.Y - size, pos.X + size, pos.Y + size);
-				g.DrawLine(pen, pos.X - size, pos.Y + size, pos.X + size, pos.Y - size);
+				g.DrawLine(pen, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
+				g.DrawLine(pen, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
 				break;
 			case MarkerShape.Circle:
 				g.DrawEllipse(pen, screenPos.X - size, screenPos.Y - size, size * 2, size * 2);
@@ -202,19 +217,20 @@ public class MapView : Panel
 				g.DrawPolygon(pen, points);
 				break;
 		}
+		if (label != null) DrawString(g, label, pen.Brush, screenPos.X + size + 2, screenPos.Y, markerLabelFormat);
 	}
 
-	public void DrawMarker(Graphics g, Pen pen, float x, float y, MarkerShape shape, float size) => DrawMarker(g, pen, new Vector2(x, y), shape, size);
+	public void DrawMarker(Graphics g, Pen pen, float x, float y, MarkerShape shape, float size, string? label = null) => DrawMarker(g, pen, new Vector2(x, y), shape, size, label);
 
-	public void FillMarker(Graphics g, Brush brush, Vector2 pos, MarkerShape shape, float size)
+	public void FillMarker(Graphics g, Brush brush, Vector2 pos, MarkerShape shape, float size, string? label = null)
 	{
 		var screenPos = MapToScreenPos(pos);
 		switch (shape)
 		{
 			case MarkerShape.Cross:
 				var pen = new Pen(brush, size / 2);
-				g.DrawLine(pen, pos.X - size, pos.Y - size, pos.X + size, pos.Y + size);
-				g.DrawLine(pen, pos.X - size, pos.Y + size, pos.X + size, pos.Y - size);
+				g.DrawLine(pen, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
+				g.DrawLine(pen, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
 				break;
 			case MarkerShape.Circle:
 				g.FillEllipse(brush, screenPos.X - size, screenPos.Y - size, size * 2, size * 2);
@@ -227,6 +243,7 @@ public class MapView : Panel
 				g.FillPolygon(brush, points);
 				break;
 		}
+		if (label != null) DrawString(g, label, brush, screenPos.X + size + 2, screenPos.Y, markerLabelFormat);
 	}
 
 	public void FillMarker(Graphics g, Brush brush, float x, float y, MarkerShape shape, float size) => FillMarker(g, brush, new Vector2(x, y), shape, size);
@@ -281,12 +298,28 @@ public class MapView : Panel
 		g.DrawImage(img, rect);
 	}
 
-	public void DrawImage(Graphics g, Image img, int x, int y, int width, int height) => DrawImage(g, img, new Vector2(x, y), new Vector2(width, height));
+	public void DrawImage(Graphics g, Image? img, int x, int y, int width, int height) => DrawImage(g, img, new Vector2(x, y), new Vector2(width, height));
 
-	public void DrawIcon(Graphics g, Image icon, Vector2 pos, float size)
+	public void DrawIcon(Graphics g, Image? icon, Pen pen, Vector2 pos, float size, bool border = false, string? label = null)
 	{
 		var screenPos = MapToScreenPos(pos);
-		g.DrawImage(icon, screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
+		if(icon != null) g.DrawImage(icon, screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
+		if(icon == null || border) g.DrawRectangle(pen, screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
+		if (label != null) DrawString(g, label, pen.Brush, screenPos.X + size / 2 + 2, screenPos.Y, markerLabelFormat);
+	}
+
+	public void DrawIcon(Graphics g, Image? icon, Pen pen, float x, float y, float size, bool border = false, string? label = null) => DrawIcon(g, icon, pen, new Vector2(x, y), size, border, label);
+
+	public void DrawLabel(Graphics g, string text, Brush brush, Vector2 pos)
+	{
+		var screenPos = MapToScreenPos(pos);
+		DrawString(g, text, brush, screenPos.X, screenPos.Y, centeredLabelFormat);
+	}
+
+	private void DrawString(Graphics g, string text, Brush b, float x, float y, StringFormat format)
+	{
+		if (LabelShadow) g.DrawString(text, boldFont, Brushes.Black, x + 1, y + 1, format);
+		g.DrawString(text, boldFont, b, x, y, format);
 	}
 	#endregion
 

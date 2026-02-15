@@ -149,19 +149,11 @@ namespace WorldForgeToolbox
 		private Pen regionGridPen = new Pen(Color.Gray, 2);
 		private Pen chunkGridPen = new Pen(Color.FromArgb(128, Color.Gray), 1);
 
-		private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
-
 		private int _zoom = 4;
 
 		private Timer statusLabelUpdater = new Timer()
 		{
 			Interval = 100
-		};
-
-		private StringFormat pointLabelFormat = new StringFormat()
-		{
-			Alignment = StringAlignment.Near,
-			LineAlignment = StringAlignment.Center
 		};
 
 		public static WorldViewer GetInstance(string? file = null)
@@ -393,7 +385,8 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(hoverOutlinePen, GetRegionRectangle(hoveredRegion.Value));
 			}
-			Cross(g, view.world.LevelData.spawnpoint.Position.XZ, spawnMarker, 8, "Spawn");
+			var spawnPos = view.world.LevelData.spawnpoint.Position;
+			canvas.DrawMarker(g, spawnMarker, spawnPos.x, spawnPos.z, MapView.MarkerShape.Cross, 8, "Spawn");
 			if (togglePlayers.Checked)
 			{
 				foreach (var player in view.world.PlayerData.Values)
@@ -402,7 +395,8 @@ namespace WorldForgeToolbox
 					var avatar = view.GetPlayerAccountData(player.player.uuid).GetAvatar();
 					bool hovered = hoveredPlayer == player;
 					Pen pen = hovered ? Pens.Red : playerMarker;
-					Icon(g, player.player.position.Block.XZ, avatar, pen, 16, username, hovered);
+					var playerPos = player.player.position.Block;
+					canvas.DrawIcon(g, avatar, pen, playerPos.x, playerPos.z, 16, hovered, username);
 				}
 			}
 			g.DrawString($"{dim.dimensionID.ID}\nRegion count: " + dim.regions.Count, Font, Brushes.Gray, 10, 10);
@@ -425,31 +419,6 @@ namespace WorldForgeToolbox
 			var pos = WorldToScreenPoint(location.GetBlockCoord(0, 0, 0));
 			var rect = new Rectangle(pos, new Size(32 * canvas.ZoomScale, 32 * canvas.ZoomScale));
 			return rect;
-		}
-
-		private void Cross(Graphics g, BlockCoord2D pos, Pen p, int size = 4, string? label = null)
-		{
-			var screenPos = WorldToScreenPoint(pos);
-			g.DrawLine(p, screenPos.X - size, screenPos.Y - size, screenPos.X + size, screenPos.Y + size);
-			g.DrawLine(p, screenPos.X - size, screenPos.Y + size, screenPos.X + size, screenPos.Y - size);
-			if (label != null)
-			{
-				g.DrawString(label, boldFont, Brushes.Black, screenPos.X + size + 3, screenPos.Y + 1, pointLabelFormat);
-				g.DrawString(label, boldFont, p.Brush, screenPos.X + size + 2, screenPos.Y, pointLabelFormat);
-			}
-		}
-
-		private void Icon(Graphics g, BlockCoord2D pos, Image? image, Pen p, int size = 16, string? label = null, bool border = false)
-		{
-			var screenPos = WorldToScreenPoint(pos);
-			var rect = new Rectangle(screenPos.X - size / 2, screenPos.Y - size / 2, size, size);
-			if (image != null) g.DrawImage(image, rect);
-			if (border) g.DrawRectangle(p, rect);
-			if (label != null)
-			{
-				g.DrawString(label, boldFont, Brushes.Black, screenPos.X + size / 2 + 3, screenPos.Y + 1, pointLabelFormat);
-				g.DrawString(label, boldFont, p.Brush, screenPos.X + size / 2 + 2, screenPos.Y, pointLabelFormat);
-			}
 		}
 
 		private void ProcessRenderQueue()

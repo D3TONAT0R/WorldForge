@@ -124,6 +124,7 @@ namespace WorldForgeToolbox
 				{
 					var username = await accountData.GetUsernameAsync();
 					if (username != null) Invoke(() => Text += " - " + username);
+					Invalidate(true);
 				});
 				Task.Run(async () =>
 				{
