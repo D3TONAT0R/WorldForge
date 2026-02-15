@@ -24,7 +24,7 @@ namespace WorldForgeToolbox
 
 			public DimensionView(string file, bool isServer, bool loadMapCache = true)
 			{
-				if(isServer)
+				if (isServer)
 				{
 					server = Server.FromDirectory(file, null);
 					world = server.MainWorld;
@@ -139,7 +139,9 @@ namespace WorldForgeToolbox
 		private int RunningRenderTasks => view?.currentRenders.Count ?? 0;
 		private bool processNewRenders = true;
 
-		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(64, 128, 128, 128));
+		private Brush voidBackgroundBrush = new HatchBrush(HatchStyle.BackwardDiagonal, Color.FromArgb(64, Color.Gray), Color.Transparent);
+		private Brush regionBackgroundBrush = Brushes.Black;
+		private Brush currentRenderBrush = new SolidBrush(Color.FromArgb(48, 128, 128, 128));
 		private Pen spawnMarker = new Pen(Color.DarkOrange, 4);
 		private Pen playerMarker = new Pen(Color.LightBlue, 3);
 		private Pen missingRenderPen = new Pen(Color.FromArgb(128, 128, 128, 128), 1);
@@ -208,13 +210,13 @@ namespace WorldForgeToolbox
 
 		public void OpenWorld(string file)
 		{
-			if(!File.Exists(file) && !Directory.Exists(file))
+			if (!File.Exists(file) && !Directory.Exists(file))
 			{
 				MessageBox.Show("File or directory does not exist.");
 				return;
 			}
 			bool isServer = false;
-			if(Path.GetExtension(file).Equals(".properties", StringComparison.OrdinalIgnoreCase)
+			if (Path.GetExtension(file).Equals(".properties", StringComparison.OrdinalIgnoreCase)
 				|| Directory.Exists(file) && File.Exists(Path.Combine(file, "server.properties")))
 			{
 				isServer = true;
@@ -237,7 +239,7 @@ namespace WorldForgeToolbox
 			}
 			canvas.Center = new System.Numerics.Vector2(x, z);
 			dimensionSelector.DropDownItems.Clear();
-			if(view.server != null)
+			if (view.server != null)
 			{
 				foreach (var kvp in view.server.Worlds)
 				{
@@ -314,6 +316,7 @@ namespace WorldForgeToolbox
 			var g = e.Graphics;
 			g.SmoothingMode = SmoothingMode.AntiAlias;
 			g.Clear(Color.Transparent);
+			g.FillRectangle(voidBackgroundBrush, new Rectangle(0, 0, e.ClipRectangle.Width, e.ClipRectangle.Height));
 			if (view?.dimension != null)
 			{
 				DrawDimension(e, g, view.dimension);
@@ -334,6 +337,7 @@ namespace WorldForgeToolbox
 			foreach (var r in dim.regions)
 			{
 				var rect = GetRegionRectangle(r.Key);
+				g.FillRectangle(regionBackgroundBrush, rect);
 				if (!rect.IntersectsWith(e.ClipRectangle)) continue;
 				var bmp = RequestSurfaceMap(r.Value, true, out var renderUpToDate);
 				if (view.currentRenders.Contains(r.Key))
@@ -375,7 +379,7 @@ namespace WorldForgeToolbox
 			if (toggleGrid.Checked)
 			{
 				canvas.DrawGrid(g, regionGridPen, 512);
-				if(canvas.Zoom >= 5) canvas.DrawGrid(g, chunkGridPen, 16);
+				if (canvas.Zoom >= 5) canvas.DrawGrid(g, chunkGridPen, 16);
 				// Draw origin lines
 				canvas.DrawHorizontalGuide(g, Pens.Red, 0);
 				canvas.DrawVerticalGuide(g, Pens.Blue, 0);
@@ -435,7 +439,7 @@ namespace WorldForgeToolbox
 						entry = new RegionMapCache.Entry(null, DateTime.MinValue);
 						view.maps.cache[pos] = entry;
 					}
-					entry.regionTimestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
+					entry.regionTimestamp = region.sourceFilePaths?.MainFileLastWriteTimeUtc ?? DateTime.MinValue;
 					view.currentRenders.Add(pos);
 					visibleUnrenderedRegions.Remove(pos);
 
@@ -491,7 +495,7 @@ namespace WorldForgeToolbox
 			// Check if we have a cached version that is up to date
 			if (view!.maps.TryGet(region.regionPos, out var entry))
 			{
-				upToDate = entry.regionTimestamp >= region.sourceFilePaths.MainFileLastWriteTimeUtc;
+				upToDate = entry.regionTimestamp >= (region.sourceFilePaths?.MainFileLastWriteTimeUtc ?? DateTime.MinValue);
 				if (allowHighQuality && (entry.highQualityRender?.renderComplete ?? false))
 				{
 					return entry.highQualityRender.bitmap;
@@ -519,7 +523,16 @@ namespace WorldForgeToolbox
 			try
 			{
 				int blocksPerPixel = Math.Max(1, 512 / resolution);
-				var loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
+				Region loaded;
+				if (region.IsLoaded)
+				{
+					loaded = region.Clone();
+					foreach(var chunk in loaded.chunks)
+					{
+						if (chunk != null && !chunk.IsLoaded) chunk.Load(WorldForge.IO.ChunkLoadFlags.Blocks);
+					}
+				}
+				else loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
 				bool fullRes = resolution >= 512;
 				for (int x = 0; x < resolution; x++)
 				{
@@ -569,7 +582,7 @@ namespace WorldForgeToolbox
 						if (view.maps.cache.TryGetValue(blockPos.Region, out var entry) && entry.normalRender.renderComplete)
 						{
 							entry.normalRender = BeginRender(region, false);
-							entry.regionTimestamp = region.sourceFilePaths.MainFileLastWriteTimeUtc;
+							entry.regionTimestamp = region.sourceFilePaths?.MainFileLastWriteTimeUtc ?? DateTime.MinValue;
 							view.currentRenders.Add(region.regionPos);
 							canvas.Repaint();
 						}
@@ -587,7 +600,7 @@ namespace WorldForgeToolbox
 						}
 					};
 					menu.Items.Add(new ToolStripSeparator());
-					menu.Items.Add(new ToolStripLabel("Region Timestamp: " + region.sourceFilePaths.MainFileLastWriteTimeUtc));
+					menu.Items.Add(new ToolStripLabel("Region Timestamp: " + region.sourceFilePaths?.MainFileLastWriteTimeUtc));
 					menu.Items.Add(new ToolStripLabel("Render Timestamp: " + render?.regionTimestamp ?? "-"));
 					menu.Items.Add(new ToolStripSeparator());
 				}
@@ -657,8 +670,15 @@ namespace WorldForgeToolbox
 			{
 				if (view.dimension.TryGetRegion(hoveredRegion.Value, out var r))
 				{
-					var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
-					viewer.Show();
+					if(r.sourceFilePaths != null && File.Exists(r.sourceFilePaths.mainPath))
+					{
+						var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
+						viewer.Show();
+					}
+					else
+					{
+						MessageBox.Show($"Region file for location {hoveredRegion.Value} not found.", "File not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
 				}
 			}
 		}
@@ -764,6 +784,23 @@ namespace WorldForgeToolbox
 		private void regenerateOutdatedMaps_Click(object sender, EventArgs e)
 		{
 			regenerateOutdatedMaps.Checked = !regenerateOutdatedMaps.Checked;
+		}
+
+		private void editLevelDat_Click(object sender, EventArgs e)
+		{
+			if(view.world != null)
+			{
+				string levelDatPath = Path.Combine(view.world.SourceDirectory, "level.dat");
+				if(File.Exists(levelDatPath))
+				{
+					var viewer = new NBTViewer(levelDatPath);
+					viewer.Show();
+				}
+				else
+				{
+					MessageBox.Show("No level.dat file was found.", "File not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
 		}
 	}
 }

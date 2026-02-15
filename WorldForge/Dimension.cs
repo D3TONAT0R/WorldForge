@@ -131,7 +131,26 @@ namespace WorldForge
 		private void LoadDimensionContent(GameVersion? gameVersion, bool throwOnRegionLoadFail)
 		{
 			regions = new ConcurrentDictionary<RegionLocation, Region>();
-			var version = gameVersion ?? GameVersion.FirstAnvilVersion;
+			GameVersion version;
+			if(gameVersion == null)
+			{
+				//Default to first anvil version
+				version = GameVersion.FirstAnvilVersion;
+				//Check if this is an alpha world
+				if (!Directory.Exists(Path.Combine(AbsoluteSourceDirectory, "region")))
+				{
+					var alphaChunkFiles = Directory.GetFiles(AbsoluteSourceDirectory, "c.*.dat", SearchOption.AllDirectories);
+					if(alphaChunkFiles.Length > 0)
+					{
+						//It's an alpha world
+						version = GameVersion.LastAlphaChunksVersion;
+					}
+				}
+			}
+			else
+			{
+				version = gameVersion.Value;
+			}
 			bool isAlphaFormat = version < GameVersion.Beta_1(3);
 			if (isAlphaFormat)
 			{
@@ -182,7 +201,7 @@ namespace WorldForge
 					var split = filename.Split('.');
 					string xBase36 = split[1];
 					string zBase36 = split[2];
-					var chunkPos = new ChunkCoord(Convert.ToInt32(xBase36, 36), Convert.ToInt32(zBase36, 36));
+					var chunkPos = new ChunkCoord((int)BitUtils.DecodeBase36(xBase36), (int)BitUtils.DecodeBase36(zBase36));
 					var regionPos = new RegionLocation(chunkPos.x >> 5, chunkPos.z >> 5);
 					if (!TryGetRegion(regionPos, out var region))
 					{

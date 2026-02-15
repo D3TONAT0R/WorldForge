@@ -55,13 +55,14 @@
 			canvas = new MapView();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
+			editLevelDat = new ToolStripButton();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, openWorld, openServerWorld, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, openWorld, openServerWorld, editLevelDat, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -270,6 +271,7 @@
 			canvas.AllowZooming = true;
 			canvas.BackColor = SystemColors.AppWorkspace;
 			canvas.Dock = DockStyle.Fill;
+			canvas.LabelShadow = true;
 			canvas.Location = new Point(0, 25);
 			canvas.MaxZoom = 8;
 			canvas.MinZoom = 1;
@@ -295,6 +297,16 @@
 			statusLabel.Name = "statusLabel";
 			statusLabel.Size = new Size(300, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
+			// 
+			// editLevelDat
+			// 
+			editLevelDat.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			editLevelDat.Image = (Image)resources.GetObject("editLevelDat.Image");
+			editLevelDat.ImageTransparentColor = Color.Magenta;
+			editLevelDat.Name = "editLevelDat";
+			editLevelDat.Size = new Size(23, 22);
+			editLevelDat.Text = "Edit level.dat";
+			editLevelDat.Click += editLevelDat_Click;
 			// 
 			// WorldViewer
 			// 
@@ -343,5 +355,6 @@
 		public ToolStripButton toggleOpacity;
 		public ToolStripButton togglePlayers;
 		private ToolStripButton openServerWorld;
+		private ToolStripButton editLevelDat;
 	}
 }
