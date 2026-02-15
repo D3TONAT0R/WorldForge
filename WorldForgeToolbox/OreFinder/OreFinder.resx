@@ -121,6 +121,14 @@
     <value>33, 15</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="returnToToolbox.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABsSURBVDhPYximQFFR8T4Q/0fD96HShAFIA5QJB9jE4OAg
+        t8iDo9zi/0nBID1Q7QwMYAEuEUlSMEgPVDuqASCnIitExshyKAYc4RB/DxIAYZAiGBsdI8uB9EC1U8EF
+        yAYQiweZARSngwEEDAwA3vK29YuvtyMAAAAASUVORK5CYII=
+</value>
+  </data>
   <data name="loadChunks.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -144,6 +152,18 @@
         iAAAAABJRU5ErkJggg==
 </value>
   </data>
+  <data name="recenter.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFFSURBVDhPrZJdSsNQEIUTXIKgUJWkaWILmqKLiTQU91AE
+        32rFR18sXYWtNfTNh2Y1rkS/Y+bS9AcR6YHD5E7OmZk7ibd3NJvNbhiGj/A9CIJSEY7IpybZjSzLDhDd
+        wSnGXhRFCTxS1NnyA+nMsg6ZEb8kSXLSaDQONxnH8SmasYqYZQVedOGrzF7+8endLr/8vHiWUVFn5a3I
+        jEaXZq2gO2tMGSSud3Z0eXQ5+qFZK2hRuqsEfr6Y1I2OLo+2TZG5WSuQKLWwTdMucoVj9EuzVtAEvDiX
+        wL8pnjZN9TzmztYEFBiR/NMOaNTf2gHJFE615d++QqvVOkP3Rrww6wpMMODlWEXqnR3NPKH7vVnWoT/M
+        isyI+lRtLZbnDrm+OssMC3JXZtuGfhJED4jmsFTkPHRjUyjlvGDS6x/Df7CXIrpGEAS9bw2jfN/o4Le6
+        AAAAAElFTkSuQmCC
+</value>
+  </data>
   <data name="zoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
@@ -162,16 +182,6 @@
         kr6DzhTBaRsEwbhL3quJpxIbHJNOfcUt0SQHC5XYQKLkuH2FLZmH0VUlNtCg4XgUjg71s0veo9iHrlaJ
         DSRvQxPAYO6c4MMdnJw7GHoF5HfIVc5XIPjOapJrYT6jnCvkHohLyfvBIvDMf4W4USzojO8FDbIsW0n+
         Pf6sCRdqjNm/APYwVcnowYbTAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAABAA
-        AAAAAAAAfoaVAFlgfgBAR2UALDRdAB0oSgAVHkEACxEkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        AAAAAAAAAAAAAAAAAAAAAAdwAAAAAAAAdFdwAAAAAAZDM1dwAAAAYzRDM1cAAAZEREQzNXAAAGRXd1Q0
-        VwAAB3Q1d1VwAAB2Q0Q1dwAAB0QzRDM1dwAAYyMzMzM1cAAGYiM0QyYAAAAGYRNCYAAAAAAGYRYAAAAA
-        AAAGYAAAAAAAAAAAAAD//wAA+f8AAPB/AADgHwAAwA8AAIAHAADAAwAA4AcAAMAPAACAAwAAwAEAAOAD
-        AAD4BwAA/g8AAP+fAAD//wAA
 </value>
   </data>
 </root>

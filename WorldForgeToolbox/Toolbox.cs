@@ -74,6 +74,11 @@
 			Show(new DistributionViewer());
 		}
 
+		private void OnOreFinderClick(object sender, EventArgs e)
+		{
+			Show(new OreFinder());
+		}
+
 		private void Show(Form form)
 		{
 			returning = false;

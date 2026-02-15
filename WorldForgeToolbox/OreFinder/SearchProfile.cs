@@ -1,6 +1,6 @@
 ﻿using WorldForge;
 
-namespace NetheriteFinder
+namespace WorldForgeToolbox
 {
 	public class SearchProfile
 	{

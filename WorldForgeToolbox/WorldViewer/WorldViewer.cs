@@ -378,7 +378,7 @@ namespace WorldForgeToolbox
 			}
 			if (toggleGrid.Checked)
 			{
-				canvas.DrawGrid(g, regionGridPen, 512);
+				canvas.DrawGrid(g, regionGridPen, 512, true);
 				if (canvas.Zoom >= 5) canvas.DrawGrid(g, chunkGridPen, 16);
 				// Draw origin lines
 				canvas.DrawHorizontalGuide(g, Pens.Red, 0);

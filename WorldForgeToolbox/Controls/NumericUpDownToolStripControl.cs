@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.Design;
 
-namespace NetheriteFinder
+namespace WorldForgeToolbox
 {
 	[DesignerCategory("Code")]
 	[ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ToolStrip | ToolStripItemDesignerAvailability.StatusStrip)]
@@ -19,6 +19,7 @@ namespace NetheriteFinder
 
 		public NumericUpDown Numeric => Control as NumericUpDown;
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Values")]
 		public decimal Value
 		{
 			get => Numeric.Value;
@@ -29,18 +30,21 @@ namespace NetheriteFinder
 			}
 		}
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Values")]
 		public decimal Minimum
 		{
 			get => Numeric.Minimum;
 			set => Numeric.Minimum = value;
 		}
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Values")]
 		public decimal Maximum
 		{
 			get => Numeric.Maximum;
 			set => Numeric.Maximum = value;
 		}
 
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), Category("Values")]
 		public decimal Increment
 		{
 			get => Numeric.Increment;

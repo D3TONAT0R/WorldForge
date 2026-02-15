@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
+using WorldForgeToolbox;
 
-namespace NetheriteFinder
+namespace WorldForgeToolbox
 {
-	partial class MainForm
+	partial class OreFinder
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -30,10 +31,12 @@ namespace NetheriteFinder
 		/// </summary>
 		private void InitializeComponent()
 		{
-			ComponentResourceManager resources = new ComponentResourceManager(typeof(MainForm));
-			canvas = new CanvasPanel();
+			ComponentResourceManager resources = new ComponentResourceManager(typeof(OreFinder));
+			viewport = new MapView();
 			toolStripMenuItem1 = new ToolStripMenuItem();
 			toolStrip1 = new ToolStrip();
+			returnToToolbox = new ToolStripButton();
+			toolStripSeparator4 = new ToolStripSeparator();
 			profileSelector = new ToolStripComboBox();
 			loadChunks = new ToolStripButton();
 			reload = new ToolStripButton();
@@ -42,9 +45,9 @@ namespace NetheriteFinder
 			yMinControl = new NumericUpDownToolStripControl();
 			yMaxControl = new NumericUpDownToolStripControl();
 			toolStripSeparator1 = new ToolStripSeparator();
+			recenter = new ToolStripButton();
 			zoomIn = new ToolStripButton();
 			zoomOut = new ToolStripButton();
-			zoomControl = new NumericUpDownToolStripControl();
 			toolStripSeparator3 = new ToolStripSeparator();
 			toolStripLabel3 = new ToolStripLabel();
 			toolStripLabel4 = new ToolStripLabel();
@@ -58,15 +61,23 @@ namespace NetheriteFinder
 			toolStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
-			// canvas
+			// viewport
 			// 
-			canvas.BackColor = SystemColors.AppWorkspace;
-			canvas.Dock = DockStyle.Fill;
-			canvas.Location = new Point(0, 26);
-			canvas.Name = "canvas";
-			canvas.Size = new Size(800, 424);
-			canvas.TabIndex = 1;
-			canvas.Paint += OnDraw;
+			viewport.AllowInteractions = true;
+			viewport.AllowPanning = true;
+			viewport.AllowZooming = true;
+			viewport.BackColor = SystemColors.AppWorkspace;
+			viewport.Dock = DockStyle.Fill;
+			viewport.LabelShadow = true;
+			viewport.Location = new Point(0, 26);
+			viewport.MaxZoom = 8;
+			viewport.MinZoom = 1;
+			viewport.Name = "viewport";
+			viewport.Size = new Size(800, 424);
+			viewport.TabIndex = 1;
+			viewport.UnitScale = 1F;
+			viewport.Zoom = 3;
+			viewport.Paint += OnDraw;
 			// 
 			// toolStripMenuItem1
 			// 
@@ -75,7 +86,7 @@ namespace NetheriteFinder
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { profileSelector, loadChunks, reload, toolStripSeparator2, toolStripLabel1, yMinControl, yMaxControl, toolStripSeparator1, zoomIn, zoomOut, zoomControl, toolStripSeparator3, toolStripLabel3, toolStripLabel4, playerXControl, toolStripLabel5, playerZControl, toolStripLabel6, playerYControl, toolStripLabel7, playerYawControl });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { returnToToolbox, toolStripSeparator4, profileSelector, loadChunks, reload, toolStripSeparator2, toolStripLabel1, yMinControl, yMaxControl, toolStripSeparator1, recenter, zoomIn, zoomOut, toolStripSeparator3, toolStripLabel3, toolStripLabel4, playerXControl, toolStripLabel5, playerZControl, toolStripLabel6, playerYControl, toolStripLabel7, playerYawControl });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 26);
@@ -83,9 +94,26 @@ namespace NetheriteFinder
 			toolStrip1.Text = "toolStrip1";
 			toolStrip1.MouseEnter += FocusStrip;
 			// 
+			// returnToToolbox
+			// 
+			returnToToolbox.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			returnToToolbox.Image = (Image)resources.GetObject("returnToToolbox.Image");
+			returnToToolbox.ImageTransparentColor = Color.Magenta;
+			returnToToolbox.Name = "returnToToolbox";
+			returnToToolbox.Size = new Size(23, 23);
+			returnToToolbox.Text = "Return to Toolbox";
+			returnToToolbox.Click += returnToToolbox_Click;
+			// 
+			// toolStripSeparator4
+			// 
+			toolStripSeparator4.Name = "toolStripSeparator4";
+			toolStripSeparator4.Size = new Size(6, 26);
+			// 
 			// profileSelector
 			// 
 			profileSelector.AutoSize = false;
+			profileSelector.DropDownStyle = ComboBoxStyle.DropDownList;
+			profileSelector.FlatStyle = FlatStyle.Flat;
 			profileSelector.Name = "profileSelector";
 			profileSelector.Size = new Size(80, 23);
 			profileSelector.SelectedIndexChanged += OnProfileChanged;
@@ -150,6 +178,17 @@ namespace NetheriteFinder
 			toolStripSeparator1.Name = "toolStripSeparator1";
 			toolStripSeparator1.Size = new Size(6, 26);
 			// 
+			// recenter
+			// 
+			recenter.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			recenter.Image = (Image)resources.GetObject("recenter.Image");
+			recenter.ImageTransparentColor = Color.Magenta;
+			recenter.Name = "recenter";
+			recenter.Size = new Size(23, 23);
+			recenter.Text = "Recenter";
+			recenter.ToolTipText = "Recenter";
+			recenter.Click += recenter_Click;
+			// 
 			// zoomIn
 			// 
 			zoomIn.DisplayStyle = ToolStripItemDisplayStyle.Image;
@@ -171,16 +210,6 @@ namespace NetheriteFinder
 			zoomOut.Text = "toolStripButton4";
 			zoomOut.ToolTipText = "Zoom Out";
 			zoomOut.Click += zoomOut_Click;
-			// 
-			// zoomControl
-			// 
-			zoomControl.Increment = new decimal(new int[] { 1, 0, 0, 0 });
-			zoomControl.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-			zoomControl.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-			zoomControl.Name = "zoomControl";
-			zoomControl.Size = new Size(35, 23);
-			zoomControl.Text = "5";
-			zoomControl.Value = new decimal(new int[] { 5, 0, 0, 0 });
 			// 
 			// toolStripSeparator3
 			// 
@@ -257,17 +286,16 @@ namespace NetheriteFinder
 			playerYawControl.Text = "0";
 			playerYawControl.Value = new decimal(new int[] { 0, 0, 0, 0 });
 			// 
-			// MainForm
+			// OreFinder
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
-			Controls.Add(canvas);
+			Controls.Add(viewport);
 			Controls.Add(toolStrip1);
-			Icon = (Icon)resources.GetObject("$this.Icon");
 			MinimumSize = new Size(400, 300);
-			Name = "MainForm";
-			Text = "NetheriteFinder";
+			Name = "OreFinder";
+			Text = "Ore Finder";
 			toolStrip1.ResumeLayout(false);
 			toolStrip1.PerformLayout();
 			ResumeLayout(false);
@@ -276,7 +304,7 @@ namespace NetheriteFinder
 
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
 
-		private NetheriteFinder.CanvasPanel canvas;
+		private WorldForgeToolbox.MapView viewport;
 
 		#endregion
 
@@ -284,9 +312,8 @@ namespace NetheriteFinder
 		private ToolStripButton loadChunks;
 		private ToolStripButton reload;
 		private ToolStripLabel toolStripLabel1;
-		private NetheriteFinder.NumericUpDownToolStripControl yMinControl;
-		private NetheriteFinder.NumericUpDownToolStripControl yMaxControl;
-		private NumericUpDownToolStripControl zoomControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl yMinControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl yMaxControl;
 		private ToolStripSeparator toolStripSeparator2;
 		private ToolStripSeparator toolStripSeparator1;
 		private ToolStripButton zoomIn;
@@ -294,13 +321,16 @@ namespace NetheriteFinder
 		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel toolStripLabel3;
 		private ToolStripLabel toolStripLabel4;
-		private NetheriteFinder.NumericUpDownToolStripControl playerXControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl playerXControl;
 		private ToolStripLabel toolStripLabel5;
-		private NetheriteFinder.NumericUpDownToolStripControl playerZControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl playerZControl;
 		private ToolStripLabel toolStripLabel6;
-		private NetheriteFinder.NumericUpDownToolStripControl playerYControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl playerYControl;
 		private ToolStripLabel toolStripLabel7;
-		private NetheriteFinder.NumericUpDownToolStripControl playerYawControl;
+		private WorldForgeToolbox.NumericUpDownToolStripControl playerYawControl;
 		private ToolStripComboBox profileSelector;
+		private ToolStripButton recenter;
+		private ToolStripButton returnToToolbox;
+		private ToolStripSeparator toolStripSeparator4;
 	}
 }

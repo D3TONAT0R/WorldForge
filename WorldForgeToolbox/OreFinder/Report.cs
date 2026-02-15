@@ -1,7 +1,7 @@
 ﻿using WorldForge;
 using WorldForge.Coordinates;
 
-namespace NetheriteFinder
+namespace WorldForgeToolbox
 {
 	public class Report
 	{

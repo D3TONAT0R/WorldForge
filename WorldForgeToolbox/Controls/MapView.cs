@@ -63,7 +63,8 @@ public class MapView : Panel
 	private Point lastMousePos;
 	private Point mousePosition;
 
-	private Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
+	public readonly Font boldFont = new Font(SystemFonts.DefaultFont, FontStyle.Bold);
+	public readonly Font smallFont = new Font("Consolas", 8);
 	private StringFormat markerLabelFormat = new StringFormat()
 	{
 		Alignment = StringAlignment.Near,
@@ -123,7 +124,7 @@ public class MapView : Panel
 	#endregion
 
 	#region Drawing functions
-	public void DrawGrid(Graphics g, Pen pen, float gridSize)
+	public void DrawGrid(Graphics g, Pen pen, float gridSize, bool showCoordinates = false)
 	{
 		var topLeft = ScreenToMapPos(Point.Empty);
 		var bottomRight = ScreenToMapPos(new Point(ClientRectangle.Width, ClientRectangle.Height));
@@ -136,12 +137,14 @@ public class MapView : Panel
 			var p1 = MapToScreenPos(x, startY);
 			var p2 = MapToScreenPos(x, endY);
 			g.DrawLine(pen, p1, p2);
+			if (showCoordinates) g.DrawString(x.ToString(), smallFont, Brushes.DimGray, p1.X + 4, 4);
 		}
 		for (float y = startY; y <= endY; y += gridSize)
 		{
 			var p1 = MapToScreenPos(startX, y);
 			var p2 = MapToScreenPos(endX, y);
 			g.DrawLine(pen, p1, p2);
+			if(showCoordinates) g.DrawString(y.ToString(), smallFont, Brushes.DimGray, 4, p1.Y + 4);
 		}
 	} 
 
@@ -162,6 +165,15 @@ public class MapView : Panel
 			g.DrawLine(p, pt.X, 0, pt.X, ClientRectangle.Height);
 		}
 	}
+
+	public void DrawLine(Graphics g, Pen pen, Vector2 start, Vector2 end)
+	{
+		var p1 = MapToScreenPos(start);
+		var p2 = MapToScreenPos(end);
+		g.DrawLine(pen, p1, p2);
+	}
+
+	public void DrawLine(Graphics g, Pen pen, float startX, float startY, float endX, float endY) => DrawLine(g, pen, new Vector2(startX, startY), new Vector2(endX, endY));
 
 	public void DrawRectangle(Graphics g, Pen pen, Vector2 pos, Vector2 size)
 	{
@@ -366,7 +378,14 @@ public class MapView : Panel
 			var moveDelta = new Vector2(e.Location.X - lastMousePos.X, e.Location.Y - lastMousePos.Y);
 			Center -= moveDelta * UnitScale / ZoomScale;
 			lastMousePos = e.Location;
+			Repaint();
 		}
 		base.OnMouseMove(e);
+	}
+
+	public void SetCenter(int playerPosX, int playerPosZ)
+	{
+		Center = new Vector2(playerPosX, playerPosZ);
+		Repaint();
 	}
 }
