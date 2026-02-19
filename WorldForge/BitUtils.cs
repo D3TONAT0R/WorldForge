@@ -100,19 +100,6 @@ namespace WorldForge
 					}
 					values[i] = v;
 				}
-				//for (int i = 0; i < arrayLength; i++)
-				//{
-				//	for (int j = 0; j < bitCount; j++)
-				//	{
-				//		int bitPos = i * bitCount + j;
-				//		int longIndex = bitPos / bitsPerLong;
-				//		int longBitPos = bitPos % bitsPerLong;
-				//		if (GetBit(compressedData[longIndex], longBitPos))
-				//		{
-				//			SetBit(ref values[i], j, true);
-				//		}
-				//	}
-				//}
 			}
 			return values;
 		}
@@ -142,6 +129,64 @@ namespace WorldForge
 		{
 			int arraySize;
 			int valuesPerLong = tightPacking ? 64 : 64 / bitsPerValue;
+			if (tightPacking)
+			{
+				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
+			}
+			else
+			{
+				arraySize = (int)Math.Ceiling((double)values.Length / valuesPerLong);
+			}
+			long[] longs = new long[arraySize];
+			int dstIndex = 0;
+			int dstPos = 0;
+			int mask = (1 << bitsPerValue) - 1;
+			if (!tightPacking)
+			{
+				int mod = 64 / bitsPerValue;
+				for(int i = 0; i < values.Length; i++)
+				{
+					long v = values[i] & mask;
+					longs[dstIndex] |= v << dstPos;
+					dstPos += bitsPerValue;
+					if((i + 1) % mod == 0)
+					{
+						dstIndex++;
+						dstPos = 0;
+					}
+				}
+			}
+			else
+			{
+				for(int i = 0; i < values.Length; i++)
+				{
+					int endPos = dstPos + bitsPerValue - 1;
+					if(endPos >= 64)
+					{
+						int remainingBits = 64 - dstPos;
+						long v = values[i] & ((1 << remainingBits) - 1);
+						longs[dstIndex] |= v << dstPos;
+						dstIndex++;
+						dstPos = 0;
+						v = (values[i] >> remainingBits) & ((1 << (bitsPerValue - remainingBits)) - 1);
+						longs[dstIndex] |= v << dstPos;
+						dstPos += bitsPerValue - remainingBits;
+					}
+					else
+					{
+						long v = values[i] & mask;
+						longs[dstIndex] |= v << dstPos;
+						dstPos += bitsPerValue;
+					}
+				}
+			}
+			return longs;
+		}
+
+		public static long[] PackBitsOld(ushort[] values, int bitsPerValue, bool tightPacking)
+		{
+			int arraySize;
+			int valuesPerLong = tightPacking ? 64 : 64 / bitsPerValue;
 			if(tightPacking)
 			{
 				arraySize = (int)Math.Ceiling((double)bitsPerValue * values.Length / 64);
@@ -166,19 +211,6 @@ namespace WorldForge
 				}
 			}
 			return longs;
-		}
-
-		public static string ToBitString(BitArray bits)
-		{
-			var sb = new StringBuilder();
-
-			for(int i = 0; i < bits.Count; i++)
-			{
-				char c = bits[i] ? '1' : '0';
-				sb.Append(c);
-			}
-
-			return sb.ToString();
 		}
 
 		public static byte ReverseBits(byte b)
@@ -245,49 +277,6 @@ namespace WorldForge
 			for(var i = 0; i < value.Length; ++i)
 				decoded += base36Digits.IndexOf(value[i]) * (long)BigInteger.Pow(base36Digits.Length, value.Length - i - 1);
 			return negative ? decoded * -1 : decoded;
-		}
-
-		///<summary>Reads a 9-bit value from a binary string, used for storing heightmaps.</summary>
-		public static ushort Read9BitValue(string bitString, int index)
-		{
-			string bits = ReverseString(bitString.Substring(index * 9, 9));
-			bits = "0000000" + bits;
-			bool[] bitArr = new bool[16];
-			for(int i = 0; i < 16; i++)
-			{
-				bitArr[i] = bits[i] == '1';
-			}
-			return Convert.ToUInt16(bits, 2);
-		}
-
-		///<summary>Reverses the given string. Useful for converting endianness of bit strings.</summary>
-		public static string ReverseString(string input)
-		{
-			char[] chrs = input.ToCharArray();
-			Array.Reverse(chrs);
-			return new string(chrs);
-		}
-
-		///<summary>Converts the byte to a bit string.</summary>
-		public static string ByteToBinary(byte b, bool bigEndian)
-		{
-			string s = Convert.ToString((int)b, 2);
-			s = s.PadLeft(8, '0');
-			if(bigEndian) s = ReverseString(s);
-			return s;
-		}
-
-		///<summary>Converts the given bit string at index to a UInt16 value.</summary>
-		public static ushort BitsToValue(string bitString, int index, int length)
-		{
-			string bits = ReverseString(bitString.Substring(index, length));
-			bits = bits.PadLeft(16, '0');
-			bool[] bitArr = new bool[16];
-			for(int i = 0; i < 16; i++)
-			{
-				bitArr[i] = bits[i] == '1';
-			}
-			return Convert.ToUInt16(bits, 2);
 		}
 
 		///<summary>Reverses the endianness of the given byte array.</summary>

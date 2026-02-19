@@ -140,51 +140,17 @@ namespace WorldForge.IO
 			short[,] hm = new short[16, 16];
 			try
 			{
-				string hmbits = "";
-				if(hmlongs.Length == 37)
+				ushort[] unpacked;
+				bool tightPacking;
+				if (hmlongs.Length == 36) tightPacking = true; //1.16 format
+				else if(hmlongs.Length == 37) tightPacking = false; //pre 1.16 "full bit range" format
+				else throw new FormatException("Unexpected packed heightmap array length: " + hmlongs.Length);
+				unpacked = BitUtils.UnpackBits(hmlongs, 9, 256, tightPacking);
+				for(int z = 0; z < 16; z++)
 				{
-					//1.16 format
-					for(int i = 0; i < 37; i++)
+					for(int x = 0; x < 16; x++)
 					{
-						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
-						string s = "";
-						for(int j = 0; j < 8; j++)
-						{
-							s += BitUtils.ByteToBinary(bytes[j], true);
-						}
-						hmbits += s.Substring(0, 63); //Remove the last unused bit
-					}
-				}
-				else
-				{
-					//pre 1.16 "full bit range" format
-					for(int i = 0; i < 36; i++)
-					{
-						byte[] bytes = BitConverter.GetBytes(hmlongs[i]);
-						for(int j = 0; j < 8; j++)
-						{
-							hmbits += BitUtils.ByteToBinary(bytes[j], true);
-						}
-					}
-				}
-				short[] hmap = new short[256];
-				for(int i = 0; i < 256; i++)
-				{
-					hmap[i] = (short)BitUtils.Read9BitValue(hmbits, i);
-				}
-
-				/*for(int i = 0; i < 256; i++) {
-					hmap[i] = (short)BitUtils.Read9BitValue(hmbits, i);
-				}*/
-				if(hmbits != null)
-				{
-					for(int z = 0; z < 16; z++)
-					{
-						for(int x = 0; x < 16; x++)
-						{
-							var value = hmap[z * 16 + x];
-							hm[x, z] = value;
-						}
+						unchecked { hm[x, z] = (short)unpacked[z * 16 + x]; }
 					}
 				}
 
