@@ -44,9 +44,7 @@ namespace WorldForge.Coordinates
 			return new BlockCoord(x * 512 + blockOffsetX, y, z * 512 + blockOffsetZ);
 		}
 
-		public string ToFileName() => $"r.{x}.{z}.mca";
-
-		public string ToFileNameMCR() => $"r.{x}.{z}.mcr";
+		public string ToFileName(bool mcr = false) => $"r.{x}.{z}.{(mcr ? "mcr" : "mca")}";
 
 		public override string ToString()
 		{

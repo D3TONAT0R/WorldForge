@@ -145,9 +145,11 @@ namespace WorldForge
 			var chunk = dim.GetRegionAtBlock(pos)?.GetChunkAtBlock(pos, false);
 			if (!GetWaterShade(block, chunk, pos, ref shade))
 			{
-				if (z - 1 >= 0 && heightmap != null)
+				var xh = x - xMin;
+				var zh = z - zMin - 1;
+				if (zh >= 0 && heightmap != null)
 				{
-					var above = heightmap[x, z - 1];
+					var above = heightmap[xh, zh];
 					if (above > y) shade = -1;
 					else if (above < y) shade = 1;
 				}

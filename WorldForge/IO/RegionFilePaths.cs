@@ -39,10 +39,8 @@ namespace WorldForge.IO
 
 		public RegionFilePaths(string mainPath, string entitiesPath, string poiPath)
 		{
-			if(string.IsNullOrEmpty(mainPath) || !File.Exists(mainPath))
-			{
-				throw new System.ArgumentException("Main region file cannot be null and must exist.", nameof(mainPath));
-			}
+			if(string.IsNullOrEmpty(mainPath)) throw new ArgumentException("Main region file cannot be null.", nameof(mainPath));
+			if (!File.Exists(mainPath)) throw new FileNotFoundException("Main region file does not exist: " + mainPath);
 			this.mainPath = mainPath;
 			this.entitiesPath = entitiesPath;
 			this.poiPath = poiPath;

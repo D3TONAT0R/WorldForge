@@ -53,18 +53,83 @@ namespace WorldForge
 			return (int)Math.Log(bitValue, 2) + 1;
 		}
 
-		public static ushort[] UnpackBits(long[] compressedData, int bitsPerInt, int arrayLength, bool tightPacking)
+		public static ushort[] UnpackBits(long[] compressedData, int bitCount, int arrayLength, bool tightPacking)
+		{
+			ushort[] values = new ushort[arrayLength];
+			int bitsPerLong = tightPacking ? 64 : (64 / bitCount) * bitCount;
+
+			if(!tightPacking)
+			{
+				int srcIndex = 0;
+				int srcPos = 0;
+				int mask = (1 << bitCount) - 1;
+				for (int i = 0; i < arrayLength; i++)
+				{
+					values[i] = (ushort)((compressedData[srcIndex] >> srcPos) & mask);
+					srcPos += bitCount;
+					if (srcPos + bitCount > bitsPerLong)
+					{
+						srcIndex++;
+						srcPos = 0;
+					}
+				}
+			}
+			else
+			{
+				int srcIndex = 0;
+				int srcPos = 0;
+				int mask = (1 << bitCount) - 1;
+				for (int i = 0; i < arrayLength; i++)
+				{
+					ushort v;
+					if (srcPos + bitCount > bitsPerLong)
+					{
+						//Extract the remaining bits from the current long
+						int remainingBits = bitsPerLong - srcPos;
+						v = (ushort)((compressedData[srcIndex] >> srcPos) & ((1 << remainingBits) - 1));
+						srcIndex++;
+						srcPos = 0;
+						//Extract the remaining bits from the next long
+						v |= (ushort)((compressedData[srcIndex] & ((1 << (bitCount - remainingBits)) - 1)) << remainingBits);
+						srcPos += bitCount - remainingBits;
+					}
+					else
+					{
+						v = (ushort)((compressedData[srcIndex] >> srcPos) & mask);
+						srcPos += bitCount;
+					}
+					values[i] = v;
+				}
+				//for (int i = 0; i < arrayLength; i++)
+				//{
+				//	for (int j = 0; j < bitCount; j++)
+				//	{
+				//		int bitPos = i * bitCount + j;
+				//		int longIndex = bitPos / bitsPerLong;
+				//		int longBitPos = bitPos % bitsPerLong;
+				//		if (GetBit(compressedData[longIndex], longBitPos))
+				//		{
+				//			SetBit(ref values[i], j, true);
+				//		}
+				//	}
+				//}
+			}
+			return values;
+		}
+
+		public static ushort[] UnpackBitsOld(long[] compressedData, int bitsPerInt, int arrayLength, bool tightPacking)
 		{
 			ushort[] values = new ushort[arrayLength];
 			int bitsPerLong = tightPacking ? 64 : (64 / bitsPerInt) * bitsPerInt;
-			for(int i = 0; i < arrayLength; i++)
+
+			for (int i = 0; i < arrayLength; i++)
 			{
-				for(int j = 0; j < bitsPerInt; j++)
+				for (int j = 0; j < bitsPerInt; j++)
 				{
 					int bitPos = i * bitsPerInt + j;
 					int longIndex = bitPos / bitsPerLong;
 					int longBitPos = bitPos % bitsPerLong;
-					if(GetBit(compressedData[longIndex], longBitPos))
+					if (GetBit(compressedData[longIndex], longBitPos))
 					{
 						SetBit(ref values[i], j, true);
 					}
@@ -72,7 +137,7 @@ namespace WorldForge
 			}
 			return values;
 		}
-		
+
 		public static long[] PackBits(ushort[] values, int bitsPerValue, bool tightPacking)
 		{
 			int arraySize;
