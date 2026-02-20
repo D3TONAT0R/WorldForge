@@ -123,7 +123,6 @@ namespace WorldForgeToolbox
 		}
 
 		private const int REGION_RES = 64;
-		private const int MAX_CONCURRENT_RENDERS = 16;
 
 		public static WorldViewer? Instance { get; private set; }
 
@@ -428,7 +427,7 @@ namespace WorldForgeToolbox
 		private void ProcessRenderQueue()
 		{
 			if (!processNewRenders) return;
-			int maxConcurrent = forceSingleMapRender.Checked ? 1 : MAX_CONCURRENT_RENDERS;
+			int maxConcurrent = forceSingleMapRender.Checked ? 1 : Environment.ProcessorCount - 2;
 			if (view != null && RunningRenderTasks < maxConcurrent)
 			{
 				foreach (var pos in visibleUnrenderedRegions.OrderBy(GetRenderPriority))

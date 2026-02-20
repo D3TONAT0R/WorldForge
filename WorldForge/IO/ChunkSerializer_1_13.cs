@@ -98,14 +98,17 @@ namespace WorldForge.IO
 					ushort[] indices = BitUtils.UnpackBits(longs, indexBitCount, 4096, UseFull64BitRange);
 
 					section.blocks = new ushort[4096];
-					for(int y = 0; y < 16; y++)
+					for(byte y = 0; y < 16; y++)
 					{
-						for(int z = 0; z < 16; z++)
+						for(byte z = 0; z < 16; z++)
 						{
-							for(int x = 0; x < 16; x++)
-							{
-								section.blocks[ChunkSection.GetArrayIndex(x, y, z)] = indices[y * 256 + z * 16 + x];
-							}
+							int dstOffset = (z << 8) + (y << 4);
+							int srcOffset = (y << 8) + (z << 4);
+							Buffer.BlockCopy(indices, srcOffset * sizeof(ushort), section.blocks, dstOffset * sizeof(ushort), 16 * sizeof(ushort));
+							//for (byte x = 0; x < 16; x++)
+							//{
+							//	section.blocks[dstOffset + x] = indices[srcOffset + x];
+							//}
 						}
 					}
 				}

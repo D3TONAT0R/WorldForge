@@ -19,6 +19,8 @@ namespace WorldForge.IO
 		private static double[] doubleBuffer;
 		[ThreadStatic]
 		private static byte[] stringByteBuffer;
+		[ThreadStatic]
+		private static StringBuilder nameBuilder;
 
 		private static void EnsureBuffers()
 		{
@@ -28,6 +30,7 @@ namespace WorldForge.IO
 				floatBuffer = new float[1];
 				doubleBuffer = new double[1];
 				stringByteBuffer = new byte[128]; //Initial size, will grow as needed
+				nameBuilder = new StringBuilder(64);
 				buffersInitialized = true;
 			}
 		}
@@ -189,7 +192,6 @@ namespace WorldForge.IO
 
 			if(tag != NBTTag.TAG_End)
 			{
-				var nameBuilder = new StringBuilder(64);
 				nameBuilder.Clear();
 				if(expectedTag == NBTTag.UNSPECIFIED)
 				{
@@ -201,6 +203,7 @@ namespace WorldForge.IO
 						nameBuilder.Append(ch);
 					}
 				}
+				string name = nameBuilder.ToString();
 
 				object value;
 				switch (tag)
@@ -250,8 +253,7 @@ namespace WorldForge.IO
 
 				if(c is NBTCompound comp)
 				{
-					//comp.Add(name, value);
-					comp.Add(nameBuilder.ToString(), value);
+					comp.Add(name, value);
 				}
 				else if(c is NBTList list)
 				{

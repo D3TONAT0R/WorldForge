@@ -88,7 +88,10 @@ namespace WorldForge.Chunks
 
 		public static int GetArrayIndex(int x, int y, int z)
 		{
-			return z * 256 + y * 16 + x;
+			unchecked
+			{
+				return (z << 8) + (y << 4) + x;
+			}
 		}
 
 		public static BlockCoord GetPositionFromArrayIndex(int i)
