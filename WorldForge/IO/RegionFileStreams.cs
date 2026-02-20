@@ -5,11 +5,11 @@ namespace WorldForge.IO
 {
 	public class RegionFileStreams : IDisposable
 	{
-		public FileStream main;
-		public FileStream entities;
-		public FileStream poi;
+		public Stream main;
+		public Stream entities;
+		public Stream poi;
 
-		public RegionFileStreams(FileStream main, FileStream entities, FileStream poi)
+		public RegionFileStreams(MemoryStream main, MemoryStream entities, MemoryStream poi)
 		{
 			this.main = main;
 			this.entities = entities;

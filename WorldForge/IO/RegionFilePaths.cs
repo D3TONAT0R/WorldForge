@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 
 namespace WorldForge.IO
 {
@@ -46,11 +47,14 @@ namespace WorldForge.IO
 			this.poiPath = poiPath;
 		}
 
-		public RegionFileStreams OpenStreams(FileMode mode)
+		public RegionFileStreams OpenStreams(SemaphoreSlim semaphore)
 		{
-			var main = new FileStream(mainPath, mode);
-			var entities = EntitiesFileExists ? new FileStream(entitiesPath, mode) : null;
-			var poi = POIFileExists ? new FileStream(poiPath, mode) : null;
+			// Use semaphore to avoid reading multiple files at the same time, causing a performance penalty.
+			semaphore?.Wait();
+			var main = new MemoryStream(File.ReadAllBytes(mainPath));
+			var entities = EntitiesFileExists ? new MemoryStream(File.ReadAllBytes(entitiesPath)) : null;
+			var poi = POIFileExists ? new MemoryStream(File.ReadAllBytes(poiPath)) : null;
+			semaphore?.Release();
 			return new RegionFileStreams(main, entities, poi);
 		}
 	}

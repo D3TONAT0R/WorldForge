@@ -101,7 +101,7 @@ namespace WorldForge.IO
 			return memoryStream;
 		} 
 
-		private static void WriteRegionFile(FileStream stream, MemoryStream[] serializedChunks)
+		private static void WriteRegionFile(Stream stream, MemoryStream[] serializedChunks)
 		{
 			int[] locations = new int[1024];
 			byte[] sizes = new byte[1024];

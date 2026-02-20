@@ -123,7 +123,7 @@ namespace WorldForgeToolbox
 		}
 
 		private const int REGION_RES = 64;
-		private const int MAX_CONCURRENT_RENDERS = 8;
+		private const int MAX_CONCURRENT_RENDERS = 16;
 
 		public static WorldViewer? Instance { get; private set; }
 

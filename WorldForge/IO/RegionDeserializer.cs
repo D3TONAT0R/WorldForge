@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using WorldForge.Chunks;
 using WorldForge.Coordinates;
@@ -93,6 +94,8 @@ namespace WorldForge.IO
 			}
 		}
 
+		private static SemaphoreSlim ioSemaphore = new SemaphoreSlim(1, 1);
+
 		public static Region PreloadRegion(RegionFilePaths filePaths, Dimension parent, GameVersion? worldSaveVersion = null)
 		{
 			Logger.Verbose($"Preloading region from {filePaths.mainPath} ...");
@@ -124,7 +127,7 @@ namespace WorldForge.IO
 		{
 			Logger.Verbose($"Loading region content ...");
 			RegionData main, entities, poi;
-			using(var streams = region.sourceFilePaths.OpenStreams(FileMode.Open))
+			using (var streams = region.sourceFilePaths.OpenStreams(ioSemaphore))
 			{
 				main = new RegionData(streams.main, region.sourceFilePaths.mainPath);
 				entities = streams.entities != null ? new RegionData(streams.entities, region.sourceFilePaths.entitiesPath) : null;
