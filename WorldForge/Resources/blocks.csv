@@ -144,9 +144,9 @@ ladder;4DIR;65;ladder;;;00
 cobblestone_stairs;STAIRS;67;stone_stairs;;;00
 oak_wall_sign;SIGN;68;wall_sign;;;00
 lever;LEVER;69;lever;a1.0.1;;00
-stone_pressure_plate;PRESSURE_PLATE;70;stone_pressure_plate;a1.0.1;;00
+stone_pressure_plate;PRPLATE;70;stone_pressure_plate;a1.0.1;;00
 iron_door;DOOR;71;iron_door;a1.0.1;;00
-oak_pressure_plate;PRESSURE_PLATE;72;wooden_pressure_plate;a1.0.1;;00
+oak_pressure_plate;PRPLATE;72;wooden_pressure_plate;a1.0.1;;00
 redstone_ore;RS_ORE;73;redstone_ore;a1.0.1;;
 redstone_ore;RS_ORE;74;lit_redstone_ore;a1.0.1;;9F
 redstone_torch;TORCH_RS;75;unlit_redstone_torch;a1.0.1;;00

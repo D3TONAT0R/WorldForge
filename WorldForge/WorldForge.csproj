@@ -34,6 +34,7 @@
     <None Remove="Resources\colormap.png" />
     <None Remove="Resources\items.csv" />
     <None Remove="Resources\mapcolors_modern.csv" />
+    <None Remove="Resources\mapcolors_vanilla_textures.csv" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +52,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\mapcolors_modern.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\mapcolors_vanilla_textures.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

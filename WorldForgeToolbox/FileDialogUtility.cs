@@ -1,10 +1,12 @@
 ﻿namespace WorldForgeToolbox;
 
-public class OpenFileUtility
+public class FileDialogUtility
 {
 	public const string REGION_FILTER = "Region files (*.mca;*.mcr)|*.mca;*.mcr";
 	public const string LEVEL_FILTER = "Level files (*.dat)|*.dat";
 	public const string NBT_DATA_FILTER = "NBT files (*.dat)|*.dat";
+	public const string CSV_PALETTE_FILTER = "Color palette files (*.csv)|*.csv";
+	public const string JAR_FILES_FILTER = "JAR files (*.jar)|*.jar";
 	public const string ALL_FILES_FILTER = "All files (*.*)|*.*";
 
 	public static bool OpenRegionDialog(string? initialDirectory, out string filePath)
@@ -65,4 +67,21 @@ public class OpenFileUtility
 	}
 
 	public static bool OpenFileDialog(out string filePath, params string[] fileFilters) => OpenFileDialog(null, out filePath, fileFilters);
+
+	public static bool SaveFileDialog(out string filePath, params string[] fileFilters)
+	{
+		using SaveFileDialog saveFileDialog = new SaveFileDialog();
+		saveFileDialog.Title = "Save file";
+		if (fileFilters.Length == 0) saveFileDialog.Filter = ALL_FILES_FILTER;
+		else saveFileDialog.Filter = string.Join("|", fileFilters);
+		DialogResult result = saveFileDialog.ShowDialog();
+		if (result == DialogResult.OK)
+		{
+			filePath = saveFileDialog.FileName;
+			// Handle the selected file path as needed
+			return true;
+		}
+		filePath = null!;
+		return false;
+	}
 }

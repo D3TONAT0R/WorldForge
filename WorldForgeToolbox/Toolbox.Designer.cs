@@ -36,6 +36,7 @@ namespace WorldForgeToolbox
 			blockDistributionViewer = new Button();
 			playerDataViewer = new Button();
 			oreFinder = new Button();
+			mapPaletteGenerator = new Button();
 			SuspendLayout();
 			// 
 			// regionViewer
@@ -112,11 +113,25 @@ namespace WorldForgeToolbox
 			oreFinder.UseVisualStyleBackColor = true;
 			oreFinder.Click += OnOreFinderClick;
 			// 
+			// mapPaletteGenerator
+			// 
+			mapPaletteGenerator.AutoSize = true;
+			mapPaletteGenerator.Dock = DockStyle.Top;
+			mapPaletteGenerator.Location = new Point(0, 150);
+			mapPaletteGenerator.Margin = new Padding(5);
+			mapPaletteGenerator.Name = "mapPaletteGenerator";
+			mapPaletteGenerator.Size = new Size(234, 25);
+			mapPaletteGenerator.TabIndex = 6;
+			mapPaletteGenerator.Text = "Map Palette Generator";
+			mapPaletteGenerator.UseVisualStyleBackColor = true;
+			mapPaletteGenerator.Click += OnMapPaletteGeneratorClick;
+			// 
 			// Toolbox
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(234, 191);
+			Controls.Add(mapPaletteGenerator);
 			Controls.Add(oreFinder);
 			Controls.Add(blockDistributionViewer);
 			Controls.Add(worldViewer);
@@ -141,5 +156,6 @@ namespace WorldForgeToolbox
         private Button blockDistributionViewer;
 		private Button playerDataViewer;
 		private Button oreFinder;
+		private Button mapPaletteGenerator;
 	}
 }

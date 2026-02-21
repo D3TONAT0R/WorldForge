@@ -159,7 +159,7 @@ public partial class RegionViewer : ToolboxForm
 				if (chunk != null)
 				{
 					if (!chunk.IsLoaded) chunk.Load(ChunkLoadFlags.Blocks);
-					var map = (WinformsBitmap)SurfaceMapGenerator.GenerateSurfaceMap(chunk, HeightmapType.AllBlocks, true, WorldForge.Maps.MapColorPalette.Modern, true);
+					var map = (WinformsBitmap)SurfaceMapGenerator.GenerateSurfaceMap(chunk, HeightmapType.AllBlocks, true, WorldForge.Maps.MapColorPalette.Default, true);
 					chunkMaps[i] = map.bitmap;
 					viewport.Invalidate();
 				}

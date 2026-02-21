@@ -34,7 +34,7 @@
 							{
 								Show(new WorldViewer(fileNameArg));
 							}
-							else if(Path.GetExtension(fileNameArg).ToLowerInvariant() == ".dat" && Path.GetFileName(Path.GetDirectoryName(fileNameArg)) == "playerdata")
+							else if (Path.GetExtension(fileNameArg).ToLowerInvariant() == ".dat" && Path.GetFileName(Path.GetDirectoryName(fileNameArg)) == "playerdata")
 							{
 								Show(new PlayerDataViewer(fileNameArg));
 							}
@@ -81,6 +81,11 @@
 		private void OnOreFinderClick(object sender, EventArgs e)
 		{
 			Show(new OreFinder());
+		}
+
+		private void OnMapPaletteGeneratorClick(object sender, EventArgs e)
+		{
+			Show(new MapColorPaletteWizard());
 		}
 
 		private void Show(Form form)

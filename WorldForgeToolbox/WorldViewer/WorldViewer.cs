@@ -197,7 +197,7 @@ namespace WorldForgeToolbox
 		{
 			if (string.IsNullOrEmpty(inputFileArg))
 			{
-				if (OpenFileUtility.OpenFileDialog(out inputFileArg, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
+				if (FileDialogUtility.OpenFileDialog(out inputFileArg, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
 				{
 					OpenWorld(inputFileArg);
 				}
@@ -476,7 +476,7 @@ namespace WorldForgeToolbox
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
 		{
-			if (OpenFileUtility.OpenFileDialog(out var file, OpenFileUtility.LEVEL_FILTER, OpenFileUtility.ALL_FILES_FILTER))
+			if (FileDialogUtility.OpenFileDialog(out var file, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
 			{
 				OpenWorld(file);
 			}
@@ -484,7 +484,7 @@ namespace WorldForgeToolbox
 
 		private void OnOpenServerWorldClick(object sender, EventArgs e)
 		{
-			if (OpenFileUtility.OpenWorldFolderDialog(out var folder))
+			if (FileDialogUtility.OpenWorldFolderDialog(out var folder))
 			{
 				OpenWorld(folder);
 			}
@@ -546,7 +546,7 @@ namespace WorldForgeToolbox
 						}
 						int bx = x * blocksPerPixel;
 						int bz = z * blocksPerPixel;
-						var color = SurfaceMapGenerator.GetSurfaceMapColor(loaded, bx, bz, HeightmapType.AllBlocks, fullRes, MapColorPalette.Modern);
+						var color = SurfaceMapGenerator.GetSurfaceMapColor(loaded, bx, bz, HeightmapType.AllBlocks, fullRes, MapColorPalette.Default);
 						//bitmap.SetPixel(x, z, color);
 						//Copy pixel data directly for better performance
 						unsafe

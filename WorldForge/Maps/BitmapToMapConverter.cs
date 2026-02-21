@@ -8,7 +8,7 @@ namespace WorldForge.Maps
 	{
 		public static MapData GenerateMap(IBitmap bitmap, Boundary? boundary = null, MapColorPalette palette = null, int dithering = 0)
 		{
-			palette = palette ?? MapColorPalette.Modern;
+			palette = palette ?? MapColorPalette.Default;
 			if(boundary == null)
 			{
 				if(bitmap.Width != 128 || bitmap.Height != 128)

@@ -59,7 +59,7 @@ namespace WorldForge
 					var aboveBlock = dim.GetBlock((x, y + 1, z));
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, MapColorPalette.Modern.GetColor(block, shade));
+					bmp.SetPixel(x - boundary.xMin, z - boundary.zMin, MapColorPalette.Default.GetColor(block, shade));
 				}
 			}
 			return bmp;
@@ -67,7 +67,7 @@ namespace WorldForge
 
 		public static IBitmap GenerateSurfaceMap(Dimension dim, Boundary boundary, HeightmapType surfaceType, bool shading, bool forceManualHeightmapCalculation = false)
 		{
-			return GenerateSurfaceMap(dim, boundary, surfaceType, shading, MapColorPalette.Modern, forceManualHeightmapCalculation);
+			return GenerateSurfaceMap(dim, boundary, surfaceType, shading, MapColorPalette.Default, forceManualHeightmapCalculation);
 		}
 
 		public static IBitmap GenerateSurfaceMap(Region r, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette, bool forceManualHeightmapCalculation = false)
@@ -104,7 +104,7 @@ namespace WorldForge
 					var aboveBlock = c.GetBlock((x, y + 1, z))?.Block;
 					if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
 
-					bmp.SetPixel(x, z, MapColorPalette.Modern.GetColor(block, shade));
+					bmp.SetPixel(x, z, MapColorPalette.Default.GetColor(block, shade));
 				}
 			}
 			return bmp;
@@ -118,7 +118,7 @@ namespace WorldForge
 			//Check for snow above the block
 			var aboveBlock = c.GetBlock((x, y + 1, z))?.Block;
 			if(aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
-			return MapColorPalette.Modern.GetColor(block, 0);
+			return MapColorPalette.Default.GetColor(block, 0);
 		}
 
 		public static BitmapColor GetSurfaceMapColor(Region r, int x, int z, HeightmapType surfaceType, bool shading, MapColorPalette colorPalette)
@@ -134,7 +134,7 @@ namespace WorldForge
 			//Check for snow above the block
 			var aboveBlock = r.GetBlock((x, y + 1, z));
 			if (aboveBlock != null && aboveBlock.ID.Matches("minecraft:snow")) block = aboveBlock;
-			return MapColorPalette.Modern.GetColor(block, shade);
+			return MapColorPalette.Default.GetColor(block, shade);
 		}
 
 

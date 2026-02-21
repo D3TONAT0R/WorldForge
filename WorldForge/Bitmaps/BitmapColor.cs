@@ -54,6 +54,16 @@ namespace WorldForge
 			a = 255;
 		}
 
+		public BitmapColor Multiply(BitmapColor other)
+		{
+			return new BitmapColor(
+				(byte)(r * other.r / 255),
+				(byte)(g * other.g / 255),
+				(byte)(b * other.b / 255),
+				(byte)(a * other.a / 255)
+			);
+		}
+
 		public static int GetClosestMapping(BitmapColor c, BitmapColor[] colorPalette)
 		{
 			int[] deviations = new int[colorPalette.Length];
@@ -104,6 +114,14 @@ namespace WorldForge
 				if(d < v) return i;
 			}
 			return 255;
+		}
+
+		public override string ToString() => ToString(a != 255);
+
+		public string ToString(bool includeAlpha)
+		{
+			if (includeAlpha) return $"({r}, {g}, {b}, {a})";
+			else return $"({r}, {g}, {b})";
 		}
 	}
 }

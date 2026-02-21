@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.IO;
 
 namespace WorldForge.Maps
 {
@@ -27,7 +29,7 @@ namespace WorldForge.Maps
 			{
 				this.name = name;
 				var channels = baseColor.Split(',').Select(byte.Parse).ToArray();
-				if(channels.Length > 3)
+				if (channels.Length > 3)
 				{
 					this.baseColor = new BitmapColor(channels[0], channels[1], channels[2], channels[3]);
 				}
@@ -52,7 +54,7 @@ namespace WorldForge.Maps
 			{
 				get
 				{
-					switch(i)
+					switch (i)
 					{
 						case 0: return baseColor;
 						case 1: return shade1;
@@ -76,20 +78,24 @@ namespace WorldForge.Maps
 		}
 
 		public static readonly ColorTone InvalidTone = new ColorTone("INVALID", new BitmapColor(255, 0, 255));
+		public static MapColorPalette VanillaTextures { get; private set; }
 		public static MapColorPalette Modern { get; private set; }
 		public static MapColorPalette Legacy112 { get; private set; }
 		public static MapColorPalette Legacy181 { get; private set; }
 		public static MapColorPalette Legacy172 { get; private set; }
 		public static MapColorPalette Original { get; private set; }
 
-		public Dictionary<NamespacedID, int> mappings = new Dictionary<NamespacedID, int>();
-		public ColorTone[] mapColorPalette;
-		
-		public List<NamespacedID> reportedMissingBlocks = new List<NamespacedID>();
+		public static MapColorPalette Default { get; set; }
+
+		public readonly Dictionary<NamespacedID, int> mappings = new Dictionary<NamespacedID, int>();
+		public readonly List<ColorTone> mapColorPalette = new List<ColorTone>();
+
+		public readonly List<NamespacedID> reportedMissingBlocks = new List<NamespacedID>();
 
 		public static void InitializePalettes()
 		{
 			Logger.Verbose("Initializing map color palettes ...");
+			VanillaTextures = new MapColorPalette("mapcolors_vanilla_textures.csv");
 			Modern = new MapColorPalette("mapcolors_modern.csv");
 			//TODO: make the other block palettes
 			/*
@@ -98,6 +104,11 @@ namespace WorldForge.Maps
 			Legacy172 = new MapColorPalette("mapcolors_1.7.2.csv");
 			Original = new MapColorPalette("mapcolors_original.csv");
 			*/
+			Default = VanillaTextures;
+		}
+
+		public MapColorPalette()
+		{
 		}
 
 		internal MapColorPalette(string resourceName)
@@ -105,24 +116,24 @@ namespace WorldForge.Maps
 			List<string> resolvedBlocks = new List<string>();
 			var text = WorldForgeManager.GetResourceAsText(resourceName);
 			var csv = new CSV(text);
-			mapColorPalette = new ColorTone[csv.data.Count];
-			for(int i = 0; i < csv.data.Count; i++)
+			mapColorPalette = new List<ColorTone>();
+			for (int i = 0; i < csv.data.Count; i++)
 			{
 				var line = csv.data[i];
-				mapColorPalette[i] = new ColorTone(line[1], line[2]);
-				if(line.ColumnCount > 3)
+				mapColorPalette.Add(new ColorTone(line[1], line[2]));
+				if (line.ColumnCount > 3)
 				{
 					var blocks = line[3].Trim().Split(',');
-					foreach(var b in blocks)
+					foreach (var b in blocks)
 					{
-						if(string.IsNullOrWhiteSpace(b)) continue;
+						if (string.IsNullOrWhiteSpace(b)) continue;
 						HandleWildcards(b, resolvedBlocks);
 						int matches = 0;
-						foreach(var r in resolvedBlocks)
+						foreach (var r in resolvedBlocks)
 						{
 							var id = new NamespacedID(r);
 							var resolvedBlockId = BlockList.Find(id, false, false);
-							if(resolvedBlockId != null)
+							if (resolvedBlockId != null)
 							{
 								mappings.Add(resolvedBlockId.ID, i);
 								matches++;
@@ -132,10 +143,10 @@ namespace WorldForge.Maps
 								//Logger.Warning($"Unknown block '{r}' from '{b}'");
 							}
 						}
-						if(matches == 0)
+						if (matches == 0)
 						{
-                            Logger.Warning($"No blocks found for pattern '{b}'");
-                        }
+							Logger.Warning($"No blocks found for pattern '{b}'");
+						}
 					}
 				}
 			}
@@ -149,8 +160,8 @@ namespace WorldForge.Maps
 				//Wood variant blocks excluding logs
 				input = input.Substring(0, input.Length - 1);
 				blocks.Add(input + "_planks");
-				blocks.Add("stripped_"+ input + "_log");
-				blocks.Add("stripped_"+ input + "_wood");
+				blocks.Add("stripped_" + input + "_log");
+				blocks.Add("stripped_" + input + "_wood");
 				blocks.Add(input + "_sign");
 				blocks.Add(input + "_wall_sign");
 				blocks.Add(input + "_hanging_sign");
@@ -236,22 +247,22 @@ namespace WorldForge.Maps
 				blocks.Add("waxed_" + input + "chiseled_copper");
 				blocks.Add(input + "copper_door");
 				blocks.Add("waxed_" + input + "copper_door");
-                blocks.Add(input + "copper_lantern");
-                blocks.Add("waxed_" + input + "copper_lantern");
-                blocks.Add(input + "copper_bars");
-                blocks.Add("waxed_" + input + "copper_bars");
-                blocks.Add(input + "copper_grate");
-                blocks.Add("waxed_" + input + "copper_grate");
-                blocks.Add(input + "copper_chain");
-                blocks.Add("waxed_" + input + "copper_chain");
-                blocks.Add(input + "lightning_rod");
+				blocks.Add(input + "copper_lantern");
+				blocks.Add("waxed_" + input + "copper_lantern");
+				blocks.Add(input + "copper_bars");
+				blocks.Add("waxed_" + input + "copper_bars");
+				blocks.Add(input + "copper_grate");
+				blocks.Add("waxed_" + input + "copper_grate");
+				blocks.Add(input + "copper_chain");
+				blocks.Add("waxed_" + input + "copper_chain");
+				blocks.Add(input + "lightning_rod");
 				blocks.Add("waxed_" + input + "lightning_rod");
 				blocks.Add(input + "copper_chest");
 				blocks.Add("waxed_" + input + "copper_chest");
-                blocks.Add(input + "copper_golem_statue");
-                blocks.Add("waxed_" + input + "copper_golem_statue");
-            }
-			else if(input.StartsWith("COLOR"))
+				blocks.Add(input + "copper_golem_statue");
+				blocks.Add("waxed_" + input + "copper_golem_statue");
+			}
+			else if (input.StartsWith("COLOR"))
 			{
 				input = input.Substring(5);
 				blocks.Add("white" + input);
@@ -270,8 +281,8 @@ namespace WorldForge.Maps
 				blocks.Add("green" + input);
 				blocks.Add("red" + input);
 				blocks.Add("black" + input);
-            }
-			else if(input.StartsWith("P"))
+			}
+			else if (input.StartsWith("P"))
 			{
 				input = input.Substring(1);
 				blocks.Add(input);
@@ -285,7 +296,7 @@ namespace WorldForge.Maps
 
 		public int GetIndex(NamespacedID id)
 		{
-			if(mappings.TryGetValue(id, out int index))
+			if (mappings.TryGetValue(id, out int index))
 			{
 				return index;
 			}
@@ -299,17 +310,63 @@ namespace WorldForge.Maps
 
 		public BitmapColor GetColor(BlockID block, int shade)
 		{
-			if(block == null)
+			if (block == null)
 			{
 				return new BitmapColor(0, 0, 0, 0);
 			}
 			shade = 1 - shade;
 			var index = GetIndex(block.ID);
-			if(index == -1)
+			if (index == -1)
 			{
 				return InvalidTone[shade];
 			}
 			return mapColorPalette[index][shade];
+		}
+
+		public void Add(BitmapColor color, NamespacedID block)
+		{
+			var tone = new ColorTone(block.id, color);
+			mapColorPalette.Add(tone);
+			mappings.Add(block, mapColorPalette.Count - 1);
+		}
+
+		public void Add(BitmapColor color, string colorName, params NamespacedID[] blocks)
+		{
+			var tone = new ColorTone(colorName, color);
+			mapColorPalette.Add(tone);
+			int index = mapColorPalette.Count - 1;
+			foreach (var block in blocks)
+			{
+				mappings.Add(block, index);
+			}
+		}
+
+		public void Save(string filename)
+		{
+			if(!Directory.Exists(Path.GetDirectoryName(filename)))
+			{
+				throw new DirectoryNotFoundException($"Directory '{Path.GetDirectoryName(filename)}' does not exist.");
+			}
+			StringBuilder csv = new StringBuilder();
+			csv.AppendLine("N;ID;R,G,B,(A);Blocks");
+			for(int i = 0; i < mapColorPalette.Count; i++)
+			{
+				var tone = mapColorPalette[i];
+				// N
+				csv.Append(i);
+				csv.Append(';');
+				// ID
+				csv.Append(tone.name);
+				csv.Append(';');
+				// R,G,B,(A)
+				csv.Append(string.Join(",", tone.GetColors()[0].r, tone.GetColors()[0].g, tone.GetColors()[0].b, tone.GetColors()[0].a));
+				csv.Append(';');
+				// Blocks
+				var blocks = mappings.Where(kv => kv.Value == i).Select(kv => kv.Key.id);
+				csv.Append(string.Join(",", blocks));
+				csv.AppendLine();
+			}
+			System.IO.File.WriteAllText(filename, csv.ToString());
 		}
 	}
 }
