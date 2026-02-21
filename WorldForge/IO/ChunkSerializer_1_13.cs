@@ -105,10 +105,6 @@ namespace WorldForge.IO
 							int dstOffset = (z << 8) + (y << 4);
 							int srcOffset = (y << 8) + (z << 4);
 							Buffer.BlockCopy(indices, srcOffset * sizeof(ushort), section.blocks, dstOffset * sizeof(ushort), 16 * sizeof(ushort));
-							//for (byte x = 0; x < 16; x++)
-							//{
-							//	section.blocks[dstOffset + x] = indices[srcOffset + x];
-							//}
 						}
 					}
 				}

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using WorldForge.Coordinates;
 using WorldForge.NBT;
@@ -26,7 +27,7 @@ namespace WorldForgeToolbox
 				nbt.Add("resolution", normalRender.bitmap.Width);
 
 				var bitmap = normalRender.bitmap;
-				var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 				var length = bitmapData.Stride * bitmapData.Height;
 				byte[] pixelData = new byte[length];
 				// Copy bitmap to byte[]

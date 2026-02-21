@@ -1,4 +1,5 @@
 ﻿using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using WorldForge;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
@@ -147,7 +148,7 @@ namespace WorldForgeToolbox
 		private Brush darkenMapBrush = new SolidBrush(Color.FromArgb(160, Color.Black));
 		private Brush outdatedMapBrush = new SolidBrush(Color.FromArgb(100, Color.Gray));
 
-		private Pen regionGridPen = new Pen(Color.Gray, 2);
+		private Pen regionGridPen = new Pen(Color.Gray, 1);
 		private Pen chunkGridPen = new Pen(Color.FromArgb(128, Color.Gray), 1);
 
 		private int _zoom = 4;
@@ -459,7 +460,7 @@ namespace WorldForgeToolbox
 				(r, token) =>
 				{
 					var wfBitmap = new WinformsBitmap(r.bitmap);
-					RenderRegionMap(region, wfBitmap, res, token);
+					RenderRegionMap(region, wfBitmap.bitmap, res, token);
 				},
 				(r, token) =>
 				{
@@ -517,7 +518,7 @@ namespace WorldForgeToolbox
 			return Math.Max(diffX, diffZ);
 		}
 
-		private void RenderRegionMap(Region region, IBitmap bitmap, int resolution, CancellationToken token)
+		private void RenderRegionMap(Region region, Bitmap bitmap, int resolution, CancellationToken token)
 		{
 			try
 			{
@@ -532,8 +533,9 @@ namespace WorldForgeToolbox
 					}
 				}
 				else loaded = region.LoadClone(true, false, WorldForge.IO.ChunkLoadFlags.Blocks);
-				bool fullRes = resolution >= 512;
-				for (int x = 0; x < resolution; x++)
+				bool fullRes = resolution == 512;
+				var data = bitmap.LockBits(new Rectangle(0, 0, resolution, resolution), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				Parallel.For(0, resolution, x =>
 				{
 					for (int z = 0; z < resolution; z++)
 					{
@@ -545,13 +547,23 @@ namespace WorldForgeToolbox
 						int bx = x * blocksPerPixel;
 						int bz = z * blocksPerPixel;
 						var color = SurfaceMapGenerator.GetSurfaceMapColor(loaded, bx, bz, HeightmapType.AllBlocks, fullRes, MapColorPalette.Modern);
-						bitmap.SetPixel(x, z, color);
+						//bitmap.SetPixel(x, z, color);
+						//Copy pixel data directly for better performance
+						unsafe
+						{
+							byte* ptr = (byte*)data.Scan0 + z * data.Stride + x * 4;
+							ptr[0] = color.b;
+							ptr[1] = color.g;
+							ptr[2] = color.r;
+							ptr[3] = color.a;
+						}
 					}
-				}
+				});
+				bitmap.UnlockBits(data);
 			}
 			catch (Exception e)
 			{
-				int i = 0;
+				throw;
 			}
 			viewport.Repaint();
 		}
