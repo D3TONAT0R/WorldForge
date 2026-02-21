@@ -11,7 +11,8 @@
 		public static ItemID Get(NamespacedID id)
 		{
 			if(ItemList.allItems.TryGetValue(id, out var b)) return b;
-			else return null;
+			if(BlockList.allBlocks.TryGetValue(id, out var block)) return block;
+			return null;
 		}
 
 		public static ItemID RegisterVanillaItem(NamespacedID id, GameVersion? versionAdded = null, ItemID substitute = null, NumericID? numericID = null)

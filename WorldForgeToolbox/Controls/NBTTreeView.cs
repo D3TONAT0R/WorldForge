@@ -56,10 +56,11 @@ namespace WorldForgeToolbox
 			}
 		}
 
-		private void Add(TreeNode node, NBTTag tag, string key, object value)
+		private void Add(TreeNode node, NBTTag nbtTag, string text, object value)
 		{
-			var childNode = new TreeNode(key);
-			childNode.ImageIndex = (int)tag;
+			var childNode = new TreeNode(text);
+			childNode.ImageIndex = (int)nbtTag;
+			childNode.Tag = value;
 			childNode.SelectedImageIndex = childNode.ImageIndex;
 			if (value is NBTCompound childComp)
 			{
@@ -127,7 +128,7 @@ namespace WorldForgeToolbox
 			ResumeLayout(false);
 
 		}
-		private TreeView treeView;
+		public TreeView treeView;
 		private ImageList icons;
 		private IContainer components;
 	}

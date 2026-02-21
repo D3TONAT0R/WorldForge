@@ -80,6 +80,7 @@
 			canvas.Name = "canvas";
 			canvas.Size = new Size(530, 425);
 			canvas.TabIndex = 0;
+			canvas.Click += OnCanvasClick;
 			canvas.MouseLeave += OnCanvasMouseLeave;
 			canvas.MouseMove += OnCanvasMouseMove;
 			// 

@@ -14,13 +14,15 @@ namespace WorldForgeToolbox
 			public readonly float y;
 			public readonly string slotInfo;
 			public readonly Func<Player, ItemStack> contentGetter;
+			public readonly Func<TreeNode> nodeGetter;
 
-			public SlotDisplay(float x, float y, string slotInfo, Func<Player, ItemStack> contentGetter)
+			public SlotDisplay(float x, float y, string slotInfo, Func<Player, ItemStack> contentGetter, Func<TreeNode> nodeGetter)
 			{
 				this.x = x;
 				this.y = y;
 				this.slotInfo = slotInfo;
 				this.contentGetter = contentGetter;
+				this.nodeGetter = nodeGetter;
 			}
 
 			public bool DrawAndCheckHover(Graphics g, Player? player, int size, Font font)
@@ -36,7 +38,7 @@ namespace WorldForgeToolbox
 					if (textures?.TryGetTexture(id.ID, out var img) ?? false)
 					{
 						var bmp = ((WinformsBitmap)img).bitmap;
-						int iconSize = size - 8;
+						int iconSize = (int)(size * 0.8f);
 						iconSize -= iconSize % 16;
 						int cx = (int)(px + size / 2);
 						int cy = (int)(py + size / 2);
@@ -44,6 +46,7 @@ namespace WorldForgeToolbox
 					}
 					else
 					{
+						g.FillRectangle(missingTextureBrush, px + size * 0.15f, py + size * 0.15f, size * 0.7f, size * 0.7f);
 						g.DrawString(id.ID.id, font, Brushes.Black, px + size / 2, py + size / 2, centerFormat);
 					}
 					if (stack.count != 1)
@@ -54,7 +57,7 @@ namespace WorldForgeToolbox
 					}
 				}
 				var rect = new RectangleF(px, py, size, size);
-				if(rect.Contains(mousePos))
+				if (rect.Contains(mousePos))
 				{
 					g.FillRectangle(hoverBrush, rect);
 					// Tooltip box
@@ -78,6 +81,7 @@ namespace WorldForgeToolbox
 		private static Brush hoverBrush = new SolidBrush(Color.FromArgb(64, Color.White));
 		private static Brush darkBevelBrush = new SolidBrush(Color.FromArgb(128, Color.Black));
 		private static Brush grayLabelBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
+		private static Brush missingTextureBrush = new SolidBrush(Color.FromArgb(100, 100, 100));
 		private static PointF[] bevelShapePoints = new PointF[6];
 		private static StringFormat centerFormat = new StringFormat()
 		{
@@ -113,10 +117,10 @@ namespace WorldForgeToolbox
 			canvas.Paint += OnDraw;
 			slotDisplays = new List<SlotDisplay>();
 			// Hotbar
-			for (int ix = 0; ix < 9; ix++)
+			for (int i = 0; i < 9; i++)
 			{
-				sbyte slot = (sbyte)ix;
-				slotDisplays.Add(new SlotDisplay(1.5f + ix, 4.5f, "Slot " + slot, p => p.inventory.GetItem(slot)));
+				sbyte slot = (sbyte)i;
+				slotDisplays.Add(new SlotDisplay(1.5f + i, 4.5f, "Slot " + slot, p => p.inventory.GetItem(slot), () => GetInventoryNode(slot)));
 			}
 			// Main inventory
 			for (int iy = 0; iy < 3; iy++)
@@ -125,22 +129,22 @@ namespace WorldForgeToolbox
 				for (int ix = 0; ix < 9; ix++)
 				{
 					sbyte slot = (sbyte)(9 + ix + iy * 9);
-					slotDisplays.Add(new SlotDisplay(1.5f + ix, y, "Slot " + slot, p => p.inventory.GetItem(slot)));
+					slotDisplays.Add(new SlotDisplay(1.5f + ix, y, "Slot " + slot, p => p.inventory.GetItem(slot), () => GetInventoryNode(slot)));
 				}
 			}
 			// Armor and offhand
-			slotDisplays.Add(new SlotDisplay(0, 0, "Head Slot", p => p.equipmentSlots.head));
-			slotDisplays.Add(new SlotDisplay(0, 1, "Chest Slot", p => p.equipmentSlots.chest));
-			slotDisplays.Add(new SlotDisplay(0, 2, "Legs Slot", p => p.equipmentSlots.legs));
-			slotDisplays.Add(new SlotDisplay(0, 3, "Feet Slot", p => p.equipmentSlots.feet));
-			slotDisplays.Add(new SlotDisplay(0, 4.5f, "Offhand Slot", p => p.equipmentSlots.offhand));
+			slotDisplays.Add(new SlotDisplay(0, 0, "Head Slot", p => p.equipmentSlots.head, () => GetEquipmentNode("head")));
+			slotDisplays.Add(new SlotDisplay(0, 1, "Chest Slot", p => p.equipmentSlots.chest, () => GetEquipmentNode("chest")));
+			slotDisplays.Add(new SlotDisplay(0, 2, "Legs Slot", p => p.equipmentSlots.legs, () => GetEquipmentNode("legs")));
+			slotDisplays.Add(new SlotDisplay(0, 3, "Feet Slot", p => p.equipmentSlots.feet, () => GetEquipmentNode("feet")));
+			slotDisplays.Add(new SlotDisplay(0, 4.5f, "Offhand Slot", p => p.equipmentSlots.offhand, () => GetEquipmentNode("offhand")));
 		}
 
 		private void OnDraw(object? sender, PaintEventArgs e)
 		{
 			int slotSize = (int)(e.ClipRectangle.Width / 11.5f);
 			int fs = Math.Max(8, slotSize / 6);
-			if(labelFont.Size != fs)
+			if (labelFont.Size != fs)
 			{
 				labelFont.Dispose();
 				labelFont = new Font(FontFamily.GenericSansSerif, fs, FontStyle.Bold);
@@ -172,8 +176,8 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(Pens.Red, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
-			g.DrawString(accountData?.GetUsername() ?? "Loading...", labelFont, grayLabelBrush, e.ClipRectangle.Width / 2f, slotSize, centerFormat);
-			if(tooltipText != null)
+			g.DrawString(accountData?.GetUsername() ?? "Loading...", labelFont, grayLabelBrush, slotSize * 6.5f, slotSize - 4, centerFormat);
+			if (tooltipText != null)
 			{
 				var tooltipSize = g.MeasureString(tooltipText, Font);
 				tooltipSize.Width += 4;
@@ -325,6 +329,61 @@ namespace WorldForgeToolbox
 		{
 			mousePos = Point.Empty;
 			canvas.Refresh();
+		}
+
+		private void OnCanvasClick(object sender, EventArgs e)
+		{
+			if(hoveredSlot != null)
+			{
+				var node = hoveredSlot.nodeGetter();
+				nbtView.treeView.SelectedNode = node;
+				node.Expand();
+				node.EnsureVisible();
+			}
+		}
+
+		private TreeNode GetInventoryNode(int index)
+		{
+			var inv = GetNode(nbtView.treeView.Nodes[0], nbtView.Data.GetAsList("Inventory"));
+			for (var i = 0; i < inv.Nodes.Count; i++)
+			{
+				var node = inv.Nodes[i];
+				var nbt = (NBTCompound)node.Tag;
+				if (nbt.TryGet("Slot", out sbyte slot) && slot == index) return node;
+			}
+			return null;
+		}
+
+		private TreeNode GetEquipmentNode(string slotName)
+		{
+			var equipmentList = nbtView.Data.GetAsCompound("equipment");
+			var eq = GetNode(nbtView.treeView.Nodes[0], equipmentList);
+			return GetNode(eq, equipmentList.GetAsCompound(slotName));
+		}
+
+		private TreeNode FindNode(string path)
+		{
+			var node = nbtView.treeView.Nodes[0];
+			var parts = path.Split('/');
+			foreach(var part in parts)
+			{
+				var next = GetNode(node, part);
+				if(next == null)
+				{
+					return node;
+				}
+				node = next;
+			}
+			return node;
+		}
+
+		private TreeNode GetNode(TreeNode parent, object tag)
+		{
+			foreach(TreeNode node in parent.Nodes)
+			{
+				if(node.Tag == tag) return node;
+			}
+			return null;
 		}
 	}
 }
