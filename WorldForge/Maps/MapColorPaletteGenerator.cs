@@ -38,12 +38,21 @@ namespace WorldForge.Maps
 					var id = baseBlock.ID;
 					var avg = GetAverageColor(jar, id);
 					BitmapColor? color;
-					if(avg != null)
+					if (avg != null)
 					{
 						color = avg.Value;
-						if(RequiresTint(baseBlock.ID, tints, out var tint))
+						if (RequiresTint(baseBlock.ID, tints, out var tint))
 						{
 							color = color.Value.Multiply(tint);
+						}
+						// Manually increase brightness of grass blocks and water to improve visibility on the map
+						if (baseBlock.ID.id == "grass_block")
+						{
+							color = color.Value.MultiplyBrightness(1.2f);
+						}
+						else if (baseBlock.ID.id == "water")
+						{
+							color = color.Value.MultiplyBrightness(1.1f);
 						}
 					}
 					else
@@ -131,6 +140,8 @@ namespace WorldForge.Maps
 			switch(id.id)
 			{
 				case "grass_block":
+					tint = tints.grass;
+					return true;
 				case "short_grass":
 				case "tall_grass":
 				case "fern":

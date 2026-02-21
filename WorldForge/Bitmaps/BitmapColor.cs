@@ -57,10 +57,20 @@ namespace WorldForge
 		public BitmapColor Multiply(BitmapColor other)
 		{
 			return new BitmapColor(
-				(byte)(r * other.r / 255),
-				(byte)(g * other.g / 255),
-				(byte)(b * other.b / 255),
-				(byte)(a * other.a / 255)
+				(byte)Math.Min(r * other.r / 255, 255),
+				(byte)Math.Min(g * other.g / 255, 255),
+				(byte)Math.Min(b * other.b / 255, 255),
+				(byte)Math.Min(a * other.a / 255, 255)
+			);
+		}
+
+		public BitmapColor MultiplyBrightness(float multiplier)
+		{
+			return new BitmapColor(
+				(byte)Math.Min(r * multiplier, 255),
+				(byte)Math.Min(g * multiplier, 255),
+				(byte)Math.Min(b * multiplier, 255),
+				a
 			);
 		}
 
