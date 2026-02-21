@@ -98,7 +98,7 @@ namespace WorldForgeToolbox
 			if (data != null) return;
 			if (string.IsNullOrEmpty(inputFileArg))
 			{
-				FileDialogUtility.OpenFileDialog(out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.ALL_FILES_FILTER);
+				FileDialogUtility.OpenFileDialog("PlayerData", out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.ALL_FILES_FILTER);
 			}
 			if (inputFileArg != null)
 			{
@@ -154,7 +154,7 @@ namespace WorldForgeToolbox
 
 		private void openFileButton_Click(object sender, EventArgs e)
 		{
-			if (FileDialogUtility.OpenFileDialog(out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.ALL_FILES_FILTER))
+			if (FileDialogUtility.OpenFileDialog("PlayerData", out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.ALL_FILES_FILTER))
 			{
 				OpenFile(inputFileArg);
 			}

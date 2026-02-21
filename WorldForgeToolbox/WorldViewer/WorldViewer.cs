@@ -197,7 +197,7 @@ namespace WorldForgeToolbox
 		{
 			if (string.IsNullOrEmpty(inputFileArg))
 			{
-				if (FileDialogUtility.OpenFileDialog(out inputFileArg, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
+				if (FileDialogUtility.OpenFileDialog("WorldViewer", out inputFileArg, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
 				{
 					OpenWorld(inputFileArg);
 				}
@@ -476,7 +476,7 @@ namespace WorldForgeToolbox
 
 		private void OnOpenWorldClick(object sender, EventArgs e)
 		{
-			if (FileDialogUtility.OpenFileDialog(out var file, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
+			if (FileDialogUtility.OpenFileDialog("WorldViewer", out var file, FileDialogUtility.LEVEL_FILTER, FileDialogUtility.ALL_FILES_FILTER))
 			{
 				OpenWorld(file);
 			}
@@ -484,7 +484,7 @@ namespace WorldForgeToolbox
 
 		private void OnOpenServerWorldClick(object sender, EventArgs e)
 		{
-			if (FileDialogUtility.OpenWorldFolderDialog(out var folder))
+			if (FileDialogUtility.OpenWorldFolderDialog("ServerWorldViewer", out var folder))
 			{
 				OpenWorld(folder);
 			}

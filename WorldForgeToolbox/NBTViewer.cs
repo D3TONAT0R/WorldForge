@@ -17,7 +17,7 @@ namespace WorldForgeToolbox
 			if (data != null) return;
 			if(string.IsNullOrEmpty(inputFileArg))
 			{
-				FileDialogUtility.OpenFileDialog(out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.REGION_FILTER, FileDialogUtility.ALL_FILES_FILTER);
+				FileDialogUtility.OpenFileDialog("NBTViewer", out inputFileArg, FileDialogUtility.NBT_DATA_FILTER, FileDialogUtility.REGION_FILTER, FileDialogUtility.ALL_FILES_FILTER);
 			}
 			if (inputFileArg != null)
 			{

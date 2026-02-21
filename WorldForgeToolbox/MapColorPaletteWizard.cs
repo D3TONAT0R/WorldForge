@@ -52,9 +52,9 @@ namespace WorldForgeToolbox
 
 		private void generateFromJar_Click(object sender, EventArgs e)
 		{
-			if(FileDialogUtility.OpenFileDialog(out string jarPath, "Minecraft JAR files (*.jar)|*.jar"))
+			if(FileDialogUtility.OpenFileDialog("MinecraftJar", out string jarPath, "Minecraft JAR files (*.jar)|*.jar"))
 			{
-				palette = MapColorPaletteGenerator.CreateFromMinecraftJar(jarPath, MapColorPalette.Default);
+				palette = MapColorPaletteGenerator.CreateFromMinecraftJar(jarPath, MapColorPalette.Modern);
 			}
 			save.Enabled = palette != null;
 			UpdateGridView();
@@ -63,7 +63,7 @@ namespace WorldForgeToolbox
 		private void save_Click(object sender, EventArgs e)
 		{
 			if (palette == null) return;
-			if (FileDialogUtility.SaveFileDialog(out string savePath, FileDialogUtility.CSV_PALETTE_FILTER))
+			if (FileDialogUtility.SaveFileDialog("SavePalette", out string savePath, FileDialogUtility.CSV_PALETTE_FILTER))
 			{
 				palette.Save(savePath);
 				MessageBox.Show("Palette saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);

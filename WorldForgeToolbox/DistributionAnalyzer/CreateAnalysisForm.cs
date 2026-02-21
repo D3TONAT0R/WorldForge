@@ -64,7 +64,7 @@ namespace WorldForgeToolbox
 
 		private void browseButton_Click(object sender, EventArgs e)
 		{
-			if (FileDialogUtility.OpenFileDialog(out var file, FileDialogUtility.ALL_FILES_FILTER, FileDialogUtility.REGION_FILTER, FileDialogUtility.LEVEL_FILTER))
+			if (FileDialogUtility.OpenFileDialog("AnalysisPath", out var file, FileDialogUtility.ALL_FILES_FILTER, FileDialogUtility.REGION_FILTER, FileDialogUtility.LEVEL_FILTER))
 			{
 				filePathTextBox.Text = file;
 			}
