@@ -80,6 +80,8 @@
 			canvas.Name = "canvas";
 			canvas.Size = new Size(530, 425);
 			canvas.TabIndex = 0;
+			canvas.MouseLeave += OnCanvasMouseLeave;
+			canvas.MouseMove += OnCanvasMouseMove;
 			// 
 			// toolStrip1
 			// 

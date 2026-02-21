@@ -8,6 +8,65 @@ namespace WorldForgeToolbox
 {
 	public partial class PlayerDataViewer : ToolboxForm
 	{
+		private class SlotDisplay
+		{
+			public readonly float x;
+			public readonly float y;
+			public readonly string slotInfo;
+			public readonly Func<Player, ItemStack> contentGetter;
+
+			public SlotDisplay(float x, float y, string slotInfo, Func<Player, ItemStack> contentGetter)
+			{
+				this.x = x;
+				this.y = y;
+				this.slotInfo = slotInfo;
+				this.contentGetter = contentGetter;
+			}
+
+			public bool DrawAndCheckHover(Graphics g, Player? player, int size, Font font)
+			{
+				var px = (x + 0.5f) * size;
+				var py = (y + 0.5f) * size;
+				ItemStack stack = null;
+				if (player != null) stack = contentGetter(player);
+				DrawBeveledRectangle(g, px, py, size, size, size / 16f, true);
+				if (stack != null && !stack.IsNull && stack.item.id != null)
+				{
+					var id = stack.item.id;
+					if (textures?.TryGetTexture(id.ID, out var img) ?? false)
+					{
+						var bmp = ((WinformsBitmap)img).bitmap;
+						int iconSize = size - 8;
+						iconSize -= iconSize % 16;
+						int cx = (int)(px + size / 2);
+						int cy = (int)(py + size / 2);
+						g.DrawImage(bmp, cx - iconSize / 2, cy - iconSize / 2, iconSize, iconSize);
+					}
+					else
+					{
+						g.DrawString(id.ID.id, font, Brushes.Black, px + size / 2, py + size / 2, centerFormat);
+					}
+					if (stack.count != 1)
+					{
+						string count = "x" + stack.count;
+						g.DrawString(count, labelFont, Brushes.Black, px + size - size / 16f + 2, py + size - size / 16f + 2, bottomRightFormat);
+						g.DrawString(count, labelFont, Brushes.White, px + size - size / 16f, py + size - size / 16f, bottomRightFormat);
+					}
+				}
+				var rect = new RectangleF(px, py, size, size);
+				if(rect.Contains(mousePos))
+				{
+					g.FillRectangle(hoverBrush, rect);
+					// Tooltip box
+					tooltipText = slotInfo + "\n";
+					if (stack == null || stack.IsNull) tooltipText += "(Empty)";
+					else tooltipText += $"{stack.item.id?.ID} x{stack.count}";
+					return true;
+				}
+				return false;
+			}
+		}
+
 		private string filename;
 		private NBTCompound? data;
 		private PlayerData? playerData;
@@ -15,61 +74,95 @@ namespace WorldForgeToolbox
 
 		private static ItemTextures? textures;
 
-		private StringFormat centerFormat = new StringFormat()
+		private static Brush lightBevelBrush = new SolidBrush(Color.FromArgb(128, Color.White));
+		private static Brush hoverBrush = new SolidBrush(Color.FromArgb(64, Color.White));
+		private static Brush darkBevelBrush = new SolidBrush(Color.FromArgb(128, Color.Black));
+		private static Brush grayLabelBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
+		private static PointF[] bevelShapePoints = new PointF[6];
+		private static StringFormat centerFormat = new StringFormat()
 		{
 			Alignment = StringAlignment.Center,
 			LineAlignment = StringAlignment.Center
 		};
-		private StringFormat bottomRightFormat = new StringFormat()
+		private static StringFormat bottomRightFormat = new StringFormat()
 		{
 			Alignment = StringAlignment.Far,
 			LineAlignment = StringAlignment.Far
 		};
-		private StringFormat bottomLeftFormat = new StringFormat()
+		private static StringFormat bottomLeftFormat = new StringFormat()
 		{
 			Alignment = StringAlignment.Near,
 			LineAlignment = StringAlignment.Far
 		};
-		private StringFormat centerLeftFormat = new StringFormat()
+		private static StringFormat centerLeftFormat = new StringFormat()
 		{
 			Alignment = StringAlignment.Near,
 			LineAlignment = StringAlignment.Center
 		};
+		private static Font labelFont = new Font(FontFamily.GenericSansSerif, 12, FontStyle.Bold);
+
+		private List<SlotDisplay> slotDisplays;
+
+		private static Point mousePos;
+		private static SlotDisplay hoveredSlot;
+		private static string tooltipText = null;
 
 		public PlayerDataViewer(string? inputFile) : base(inputFile)
 		{
 			InitializeComponent();
 			canvas.Paint += OnDraw;
+			slotDisplays = new List<SlotDisplay>();
+			// Hotbar
+			for (int ix = 0; ix < 9; ix++)
+			{
+				sbyte slot = (sbyte)ix;
+				slotDisplays.Add(new SlotDisplay(1.5f + ix, 4.5f, "Slot " + slot, p => p.inventory.GetItem(slot)));
+			}
+			// Main inventory
+			for (int iy = 0; iy < 3; iy++)
+			{
+				var y = 3f - iy;
+				for (int ix = 0; ix < 9; ix++)
+				{
+					sbyte slot = (sbyte)(9 + ix + iy * 9);
+					slotDisplays.Add(new SlotDisplay(1.5f + ix, y, "Slot " + slot, p => p.inventory.GetItem(slot)));
+				}
+			}
+			// Armor and offhand
+			slotDisplays.Add(new SlotDisplay(0, 0, "Head Slot", p => p.equipmentSlots.head));
+			slotDisplays.Add(new SlotDisplay(0, 1, "Chest Slot", p => p.equipmentSlots.chest));
+			slotDisplays.Add(new SlotDisplay(0, 2, "Legs Slot", p => p.equipmentSlots.legs));
+			slotDisplays.Add(new SlotDisplay(0, 3, "Feet Slot", p => p.equipmentSlots.feet));
+			slotDisplays.Add(new SlotDisplay(0, 4.5f, "Offhand Slot", p => p.equipmentSlots.offhand));
 		}
 
 		private void OnDraw(object? sender, PaintEventArgs e)
 		{
+			int slotSize = (int)(e.ClipRectangle.Width / 11.5f);
+			int fs = Math.Max(8, slotSize / 6);
+			if(labelFont.Size != fs)
+			{
+				labelFont.Dispose();
+				labelFont = new Font(FontFamily.GenericSansSerif, fs, FontStyle.Bold);
+			}
 			var g = e.Graphics;
 			g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 			g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 			g.Clear(Color.Gray);
+			tooltipText = null;
+			hoveredSlot = null;
 			if (data == null || playerData == null)
 			{
 				g.DrawString("No player data loaded.", Font, Brushes.Black, e.ClipRectangle, centerFormat);
 				return;
 			}
-			int w = (int)(e.ClipRectangle.Width / 11.5f);
-			for (int iy = 0; iy < 4; iy++)
+			foreach (var slot in slotDisplays)
 			{
-				var y = 4f - iy;
-				if (iy == 0) y += 0.5f;
-				for (int ix = 0; ix < 9; ix++)
+				if (slot.DrawAndCheckHover(g, playerData?.player, slotSize, Font))
 				{
-					sbyte slot = (sbyte)(ix + iy * 9);
-					var x = 1.5f + ix;
-					DrawSlot(g, x, y, w, playerData.player.inventory.GetItem(slot));
+					hoveredSlot = slot;
 				}
 			}
-			DrawSlot(g, 0, 0, w, playerData.player.equipmentSlots.head);
-			DrawSlot(g, 0, 1, w, playerData.player.equipmentSlots.chest);
-			DrawSlot(g, 0, 2, w, playerData.player.equipmentSlots.legs);
-			DrawSlot(g, 0, 3, w, playerData.player.equipmentSlots.feet);
-			DrawSlot(g, 0, 4.5f, w, playerData.player.equipmentSlots.offhand);
 			var avatar = accountData?.GetAvatar();
 			if (avatar != null)
 			{
@@ -79,30 +172,38 @@ namespace WorldForgeToolbox
 			{
 				g.DrawRectangle(Pens.Red, 16, e.ClipRectangle.Height - 80, 64, 64);
 			}
-			g.DrawString(accountData?.GetUsername() ?? "Loading...", Font, Brushes.Black, e.ClipRectangle.Width / 2f, w, centerFormat);
+			g.DrawString(accountData?.GetUsername() ?? "Loading...", labelFont, grayLabelBrush, e.ClipRectangle.Width / 2f, slotSize, centerFormat);
+			if(tooltipText != null)
+			{
+				var tooltipSize = g.MeasureString(tooltipText, Font);
+				tooltipSize.Width += 4;
+				tooltipSize.Height += 4;
+				var tooltipRect = new RectangleF(mousePos.X + 4, mousePos.Y - tooltipSize.Height - 4, tooltipSize.Width, tooltipSize.Height);
+				if (tooltipRect.Right > g.VisibleClipBounds.Right) tooltipRect.X = g.VisibleClipBounds.Right - tooltipRect.Width;
+				if (tooltipRect.Top < g.VisibleClipBounds.Top) tooltipRect.Y = g.VisibleClipBounds.Top;
+				g.FillRectangle(Brushes.LightYellow, tooltipRect);
+				g.DrawRectangle(Pens.Black, tooltipRect.X, tooltipRect.Y, tooltipRect.Width, tooltipRect.Height);
+				tooltipRect.Inflate(-2, -2);
+				g.DrawString(tooltipText, Font, Brushes.Black, tooltipRect, centerLeftFormat);
+			}
 		}
 
-		private void DrawSlot(Graphics g, float x, float y, int size, ItemStack? stack)
+		private static void DrawBeveledRectangle(Graphics g, float x, float y, float width, float height, float bevelWidth, bool down)
 		{
-			x += 0.5f;
-			y += 0.5f;
-			x *= size;
-			y *= size;
-			g.DrawRectangle(Pens.Black, x, y, size, size);
-			if (stack != null && !stack.IsNull && stack.item.id != null)
-			{
-				var id = stack.item.id;
-				if(textures?.TryGetTexture(id.ID, out var img) ?? false)
-				{
-					var bmp = ((WinformsBitmap)img).bitmap;
-					int iconSize = size - size % 16;
-					int cx = (int)(x + size / 2);
-					int cy = (int)(y + size / 2);
-					g.DrawImage(bmp, cx - iconSize / 2, cy - iconSize / 2, iconSize, iconSize);
-				}
-				g.DrawString(id.ID.id, Font, Brushes.Black, x + size / 2, y + size / 2, centerFormat);
-				g.DrawString("x" + stack.count, Font, Brushes.Black, x + size - 2, y + size - 2, bottomRightFormat);
-			}
+			bevelShapePoints[0] = new PointF(x, y);
+			bevelShapePoints[1] = new PointF(x + width, y);
+			bevelShapePoints[2] = new PointF(x + width - bevelWidth, y + bevelWidth);
+			bevelShapePoints[3] = new PointF(x + bevelWidth, y + bevelWidth);
+			bevelShapePoints[4] = new PointF(x + bevelWidth, y + height - bevelWidth);
+			bevelShapePoints[5] = new PointF(x, y + height);
+			g.FillPolygon(down ? darkBevelBrush : lightBevelBrush, bevelShapePoints);
+			bevelShapePoints[0] = new PointF(x + width, y);
+			bevelShapePoints[1] = new PointF(x + width, y + height);
+			bevelShapePoints[2] = new PointF(x, y + height);
+			bevelShapePoints[3] = new PointF(x + bevelWidth, y + height - bevelWidth);
+			bevelShapePoints[4] = new PointF(x + width - bevelWidth, y + height - bevelWidth);
+			bevelShapePoints[5] = new PointF(x + width - bevelWidth, y + bevelWidth);
+			g.FillPolygon(down ? lightBevelBrush : darkBevelBrush, bevelShapePoints);
 		}
 
 		protected override void OnShown(EventArgs e)
@@ -211,7 +312,19 @@ namespace WorldForgeToolbox
 			{
 				textures = ItemTextures.CreateFomMinecraftJar(jarPath, BlockList.allBlocks.Values, ItemList.allItems.Values);
 			}
-			Invalidate(true);
+			canvas.Refresh();
+		}
+
+		private void OnCanvasMouseMove(object sender, MouseEventArgs e)
+		{
+			mousePos = e.Location;
+			canvas.Refresh();
+		}
+
+		private void OnCanvasMouseLeave(object sender, EventArgs e)
+		{
+			mousePos = Point.Empty;
+			canvas.Refresh();
 		}
 	}
 }
