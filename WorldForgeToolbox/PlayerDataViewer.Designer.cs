@@ -34,11 +34,13 @@
 			canvas = new CanvasPanel();
 			toolStrip1 = new ToolStrip();
 			toolboxButton = new ToolStripButton();
-			showInWorldViewer = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			openFileButton = new ToolStripButton();
 			toolStripSeparator2 = new ToolStripSeparator();
 			showGeneralStatistics = new ToolStripButton();
+			showInWorldViewer = new ToolStripButton();
+			toolStripSeparator3 = new ToolStripSeparator();
+			loadTexturesFromJar = new ToolStripButton();
 			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
 			splitContainer1.Panel1.SuspendLayout();
 			splitContainer1.Panel2.SuspendLayout();
@@ -81,7 +83,7 @@
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton, toolStripSeparator2, showGeneralStatistics, showInWorldViewer });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator1, openFileButton, toolStripSeparator2, showGeneralStatistics, showInWorldViewer, toolStripSeparator3, loadTexturesFromJar });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -97,16 +99,6 @@
 			toolboxButton.Size = new Size(23, 22);
 			toolboxButton.Text = "Return to Toolbox";
 			toolboxButton.Click += toolboxButton_Click;
-			// 
-			// showInWorldViewer
-			// 
-			showInWorldViewer.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			showInWorldViewer.Image = (Image)resources.GetObject("showInWorldViewer.Image");
-			showInWorldViewer.ImageTransparentColor = Color.Magenta;
-			showInWorldViewer.Name = "showInWorldViewer";
-			showInWorldViewer.Size = new Size(23, 22);
-			showInWorldViewer.Text = "Show in World Viewer";
-			showInWorldViewer.Click += showInWorldViewer_Click;
 			// 
 			// toolStripSeparator1
 			// 
@@ -137,6 +129,31 @@
 			showGeneralStatistics.Size = new Size(23, 22);
 			showGeneralStatistics.Text = "Show General Statistics";
 			showGeneralStatistics.Click += showGeneralStatistics_Click;
+			// 
+			// showInWorldViewer
+			// 
+			showInWorldViewer.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			showInWorldViewer.Image = (Image)resources.GetObject("showInWorldViewer.Image");
+			showInWorldViewer.ImageTransparentColor = Color.Magenta;
+			showInWorldViewer.Name = "showInWorldViewer";
+			showInWorldViewer.Size = new Size(23, 22);
+			showInWorldViewer.Text = "Show in World Viewer";
+			showInWorldViewer.Click += showInWorldViewer_Click;
+			// 
+			// toolStripSeparator3
+			// 
+			toolStripSeparator3.Name = "toolStripSeparator3";
+			toolStripSeparator3.Size = new Size(6, 25);
+			// 
+			// loadTexturesFromJar
+			// 
+			loadTexturesFromJar.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			loadTexturesFromJar.Image = (Image)resources.GetObject("loadTexturesFromJar.Image");
+			loadTexturesFromJar.ImageTransparentColor = Color.Magenta;
+			loadTexturesFromJar.Name = "loadTexturesFromJar";
+			loadTexturesFromJar.Size = new Size(23, 22);
+			loadTexturesFromJar.Text = "Load Textures from JAR";
+			loadTexturesFromJar.Click += loadTexturesFromJar_Click;
 			// 
 			// PlayerDataViewer
 			// 
@@ -169,5 +186,7 @@
 		private ToolStripSeparator toolStripSeparator2;
 		private ToolStripButton showGeneralStatistics;
 		private ToolStripButton showInWorldViewer;
+		private ToolStripSeparator toolStripSeparator3;
+		private ToolStripButton loadTexturesFromJar;
 	}
 }

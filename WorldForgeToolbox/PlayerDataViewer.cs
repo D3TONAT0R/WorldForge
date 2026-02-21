@@ -1,6 +1,8 @@
 ﻿using WorldForge;
 using WorldForge.Items;
+using WorldForge.Maps;
 using WorldForge.NBT;
+using WorldForge.Textures;
 
 namespace WorldForgeToolbox
 {
@@ -10,6 +12,8 @@ namespace WorldForgeToolbox
 		private NBTCompound? data;
 		private PlayerData? playerData;
 		private PlayerAccountData? accountData;
+
+		private static ItemTextures? textures;
 
 		private StringFormat centerFormat = new StringFormat()
 		{
@@ -87,8 +91,16 @@ namespace WorldForgeToolbox
 			g.DrawRectangle(Pens.Black, x, y, size, size);
 			if (stack != null && !stack.IsNull && stack.item.id != null)
 			{
-				string id = stack.item.id.ID.id;
-				g.DrawString(id, Font, Brushes.Black, x + size / 2, y + size / 2, centerFormat);
+				var id = stack.item.id;
+				if(textures?.TryGetTexture(id.ID, out var img) ?? false)
+				{
+					var bmp = ((WinformsBitmap)img).bitmap;
+					int iconSize = size - size % 16;
+					int cx = (int)(x + size / 2);
+					int cy = (int)(y + size / 2);
+					g.DrawImage(bmp, cx - iconSize / 2, cy - iconSize / 2, iconSize, iconSize);
+				}
+				g.DrawString(id.ID.id, Font, Brushes.Black, x + size / 2, y + size / 2, centerFormat);
 				g.DrawString("x" + stack.count, Font, Brushes.Black, x + size - 2, y + size - 2, bottomRightFormat);
 			}
 		}
@@ -191,6 +203,15 @@ namespace WorldForgeToolbox
 			{
 				MessageBox.Show("No world was found at this location", "World not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void loadTexturesFromJar_Click(object sender, EventArgs e)
+		{
+			if (FileDialogUtility.OpenFileDialog("MinecraftJar", out string jarPath, "Minecraft JAR files (*.jar)|*.jar"))
+			{
+				textures = ItemTextures.CreateFomMinecraftJar(jarPath, BlockList.allBlocks.Values, ItemList.allItems.Values);
+			}
+			Invalidate(true);
 		}
 	}
 }
