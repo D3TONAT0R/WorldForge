@@ -12,6 +12,7 @@ namespace WorldForgeToolbox
 	{
 		private class DimensionView
 		{
+			public bool isFromDisk;
 			public Server? server;
 			public World world;
 			public Dimension dimension;
@@ -22,6 +23,8 @@ namespace WorldForgeToolbox
 			public Dictionary<UUID, PlayerAccountData> playerAccountDatas = new Dictionary<UUID, PlayerAccountData>();
 
 			public bool Dirty { get; private set; }
+
+			public bool IsFromDisk => world.SourceDirectory != null;
 
 			public DimensionView(string file, bool isServer, bool loadMapCache = true)
 			{
@@ -41,6 +44,17 @@ namespace WorldForgeToolbox
 				cancellationTokenSource = new CancellationTokenSource();
 				if (loadMapCache) LoadOrCreateRenderCache();
 				else maps = new RegionMapCache();
+			}
+
+			public DimensionView(World world)
+			{
+				this.world = world;
+				if (world.HasOverworld && world.Overworld.regions.Count > 0) dimension = world.Overworld;
+				else if (world.HasNether && world.Nether.regions.Count > 0) dimension = world.Nether;
+				else if (world.HasTheEnd && world.TheEnd.regions.Count > 0) dimension = world.TheEnd;
+				dimension ??= world.Overworld ?? world.Nether ?? world.TheEnd;
+				cancellationTokenSource = new CancellationTokenSource();
+				maps = new RegionMapCache();
 			}
 
 			public void Dispose(bool saveCache = true)
@@ -70,6 +84,7 @@ namespace WorldForgeToolbox
 
 			public void SaveRenderCache()
 			{
+				if (!IsFromDisk) throw new InvalidOperationException("Cannot save render cache for a newly created world.");
 				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
 				if (!Directory.Exists(Path.GetDirectoryName(cachePath))) return;
 				maps.Save(cachePath);
@@ -78,6 +93,11 @@ namespace WorldForgeToolbox
 
 			public void LoadOrCreateRenderCache()
 			{
+				if (!IsFromDisk)
+				{
+					maps = new RegionMapCache();
+					return;
+				}
 				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
 				maps = File.Exists(cachePath) ? RegionMapCache.Load(cachePath) : new RegionMapCache();
 				Dirty = false;
@@ -86,10 +106,13 @@ namespace WorldForgeToolbox
 			public void ClearRenderCache(bool deleteCacheFile)
 			{
 				maps.Clear();
-				var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
-				if (File.Exists(cachePath) && deleteCacheFile)
+				if (IsFromDisk)
 				{
-					File.Delete(cachePath);
+					var cachePath = Path.Combine(dimension.AbsoluteSourceDirectory, "region_map_cache.dat");
+					if (File.Exists(cachePath) && deleteCacheFile)
+					{
+						File.Delete(cachePath);
+					}
 				}
 				Dirty = false;
 			}
@@ -225,6 +248,18 @@ namespace WorldForgeToolbox
 			if (view?.world.SourceDirectory == file) return;
 			view?.Dispose();
 			view = new DimensionView(file, isServer);
+			InitializeView();
+		}
+
+		public void OpenWorld(World world)
+		{
+			view?.Dispose();
+			view = new DimensionView(world);
+			InitializeView();
+		}
+
+		private void InitializeView()
+		{
 			float x;
 			float z;
 			if (focusPosition.HasValue)
