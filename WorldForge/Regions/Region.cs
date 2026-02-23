@@ -162,7 +162,7 @@ namespace WorldForge.Regions
 		/// <summary>
 		/// Gets the chunk containing the block's position
 		/// </summary>
-		public Chunk GetChunkAtBlock(BlockCoord coord, bool allowNewChunks)
+		public Chunk GetChunkAtBlock(BlockCoord2D coord, bool allowNewChunks)
 		{
 			LoadIfRequired();
 			var chunk = coord.Chunk.LocalRegionPos;
@@ -173,7 +173,7 @@ namespace WorldForge.Regions
 			return chunks[chunk.x, chunk.z];
 		}
 
-		public bool TryGetChunkAtBlock(BlockCoord coord, out Chunk chunk)
+		public bool TryGetChunkAtBlock(BlockCoord2D coord, out Chunk chunk)
 		{
 			LoadIfRequired();
 			var c = coord.Chunk.LocalRegionPos;
@@ -244,6 +244,30 @@ namespace WorldForge.Regions
 			if(chunk != null)
 			{
 				chunk.SetBlock(pos.LocalChunkCoords, block);
+				return true;
+			}
+			return false;
+		}
+
+		///<summary>Sets a vertical column of the given block state at the given location.</summary>
+		public bool SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockState block, bool allowNewChunks = false)
+		{
+			var chunk = GetChunkAtBlock(pos, allowNewChunks);
+			if(chunk != null)
+			{
+				chunk.SetBlockColumn(pos.LocalChunkCoords, y1, y2, block);
+				return true;
+			}
+			return false;
+		}
+
+		///<summary>Sets a vertical column of the given block type at the given location.</summary>
+		public bool SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockID block, bool allowNewChunks = false)
+		{
+			var chunk = GetChunkAtBlock(pos, allowNewChunks);
+			if(chunk != null)
+			{
+				chunk.SetBlockColumn(pos.LocalChunkCoords, y1, y2, block);
 				return true;
 			}
 			return false;

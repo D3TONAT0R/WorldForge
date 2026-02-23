@@ -317,13 +317,13 @@ namespace WorldForge
 		}
 
 		/// <summary>Gets the region at the given block coordinates, if present</summary>
-		public Region GetRegionAtBlock(BlockCoord pos)
+		public Region GetRegionAtBlock(BlockCoord2D pos)
 		{
 			regions.TryGetValue(pos.Region, out var region);
 			return region;
 		}
 
-		public bool TryGetRegionAtBlock(BlockCoord pos, out Region region)
+		public bool TryGetRegionAtBlock(BlockCoord2D pos, out Region region)
 		{
 			return regions.TryGetValue(pos.Region, out region);
 		}
@@ -453,10 +453,29 @@ namespace WorldForge
 			{
 				return r.SetBlock(pos.LocalRegionCoords, block, allowNewChunks);
 			}
-			else
+			return false;
+		}
+
+		///<summary>Sets a vertical column of the given block state at the given location.</summary>
+		public bool SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockState block, bool allowNewChunks = false)
+		{
+			var r = GetRegionAtBlock(pos);
+			if (r != null)
 			{
-				return false;
+				return r.SetBlockColumn(pos, y1, y2, block, allowNewChunks);
 			}
+			return false;
+		}
+
+		///<summary>Sets a vertical column of the given block type at the given location.</summary>
+		public bool SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockID block, bool allowNewChunks = false)
+		{
+			var r = GetRegionAtBlock(pos.To3D(0));
+			if (r != null)
+			{
+				return r.SetBlockColumn(pos, y1, y2, block, allowNewChunks);
+			}
+			return false;
 		}
 
 		///<summary>Gets the tile entity for the block at the given location (if available).</summary>

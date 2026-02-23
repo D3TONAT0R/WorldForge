@@ -11,9 +11,9 @@ namespace WorldForge.Coordinates
 		public int x;
 		public int z;
 
-		public RegionLocation Region => new RegionLocation(MathUtils.FastDivFloor(x, 512), MathUtils.FastDivFloor(z, 512));
+		public RegionLocation Region => new RegionLocation(x >> 9, z >> 9);
 
-		public ChunkCoord Chunk => new ChunkCoord(MathUtils.FastDivFloor(x, 16), MathUtils.FastDivFloor(z, 16));
+		public ChunkCoord Chunk => new ChunkCoord(x >> 4, z >> 4);
 
 		public BlockCoord2D LocalRegionCoords => new BlockCoord2D(x & 511, z & 511);
 

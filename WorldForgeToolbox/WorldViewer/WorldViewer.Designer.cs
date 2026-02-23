@@ -34,6 +34,7 @@
 			toolStripSeparator5 = new ToolStripSeparator();
 			openWorld = new ToolStripButton();
 			openServerWorld = new ToolStripButton();
+			editLevelDat = new ToolStripButton();
 			toolStripSeparator1 = new ToolStripSeparator();
 			dimensionSelector = new ToolStripSplitButton();
 			toolStripSeparator2 = new ToolStripSeparator();
@@ -55,14 +56,15 @@
 			viewport = new MapView();
 			statusStrip1 = new StatusStrip();
 			statusLabel = new ToolStripStatusLabel();
-			editLevelDat = new ToolStripButton();
+			newWorld = new ToolStripButton();
+			toolStripSeparator7 = new ToolStripSeparator();
 			toolStrip1.SuspendLayout();
 			statusStrip1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, openWorld, openServerWorld, editLevelDat, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolboxButton, toolStripSeparator5, openWorld, openServerWorld, editLevelDat, toolStripSeparator1, dimensionSelector, toolStripSeparator2, resumeMapRender, pauseMapRender, regenerateOutdatedMaps, toolStripSeparator3, saveMapCacheButton, deleteMapCacheButton, forceSingleMapRender, toolStripSeparator4, zoomIn, zoomOut, jumpToSpawn, toolStripSeparator6, toggleGrid, togglePlayers, toggleOpacity, toolStripSeparator7, newWorld });
 			toolStrip1.Location = new Point(0, 0);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(800, 25);
@@ -103,6 +105,16 @@
 			openServerWorld.Size = new Size(23, 22);
 			openServerWorld.Text = "Open Server World ...";
 			openServerWorld.Click += OnOpenServerWorldClick;
+			// 
+			// editLevelDat
+			// 
+			editLevelDat.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			editLevelDat.Image = (Image)resources.GetObject("editLevelDat.Image");
+			editLevelDat.ImageTransparentColor = Color.Magenta;
+			editLevelDat.Name = "editLevelDat";
+			editLevelDat.Size = new Size(23, 22);
+			editLevelDat.Text = "Edit level.dat";
+			editLevelDat.Click += editLevelDat_Click;
 			// 
 			// toolStripSeparator1
 			// 
@@ -264,7 +276,7 @@
 			toggleOpacity.ToolTipText = "Toggle Map Opacity";
 			toggleOpacity.Click += ToggleMapOpacity;
 			// 
-			// canvas
+			// viewport
 			// 
 			viewport.AllowInteractions = true;
 			viewport.AllowPanning = true;
@@ -298,15 +310,20 @@
 			statusLabel.Size = new Size(300, 17);
 			statusLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
-			// editLevelDat
+			// newWorld
 			// 
-			editLevelDat.DisplayStyle = ToolStripItemDisplayStyle.Image;
-			editLevelDat.Image = (Image)resources.GetObject("editLevelDat.Image");
-			editLevelDat.ImageTransparentColor = Color.Magenta;
-			editLevelDat.Name = "editLevelDat";
-			editLevelDat.Size = new Size(23, 22);
-			editLevelDat.Text = "Edit level.dat";
-			editLevelDat.Click += editLevelDat_Click;
+			newWorld.DisplayStyle = ToolStripItemDisplayStyle.Image;
+			newWorld.Image = (Image)resources.GetObject("newWorld.Image");
+			newWorld.ImageTransparentColor = Color.Magenta;
+			newWorld.Name = "newWorld";
+			newWorld.Size = new Size(23, 22);
+			newWorld.Text = "New World";
+			newWorld.Click += newWorld_Click;
+			// 
+			// toolStripSeparator7
+			// 
+			toolStripSeparator7.Name = "toolStripSeparator7";
+			toolStripSeparator7.Size = new Size(6, 25);
 			// 
 			// WorldViewer
 			// 
@@ -356,5 +373,7 @@
 		public ToolStripButton togglePlayers;
 		private ToolStripButton openServerWorld;
 		private ToolStripButton editLevelDat;
+		private ToolStripSeparator toolStripSeparator7;
+		private ToolStripButton newWorld;
 	}
 }

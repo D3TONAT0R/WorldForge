@@ -1,6 +1,9 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using WorldForge;
+using WorldForge.Biomes;
+using WorldForge.Builders;
+using WorldForge.Builders.PostProcessors;
 using WorldForge.Coordinates;
 using WorldForge.Maps;
 using Region = WorldForge.Regions.Region;
@@ -12,7 +15,6 @@ namespace WorldForgeToolbox
 	{
 		private class DimensionView
 		{
-			public bool isFromDisk;
 			public Server? server;
 			public World world;
 			public Dimension dimension;
@@ -60,7 +62,7 @@ namespace WorldForgeToolbox
 			public void Dispose(bool saveCache = true)
 			{
 				cancellationTokenSource?.Cancel();
-				if (saveCache && Dirty) SaveRenderCache();
+				if (saveCache && Dirty && IsFromDisk) SaveRenderCache();
 				maps = null!;
 				world = null!;
 				dimension = null!;
@@ -73,7 +75,7 @@ namespace WorldForgeToolbox
 
 			public DialogResult SaveIfRequiredAndConfirmedByUser()
 			{
-				if (Dirty)
+				if (Dirty && IsFromDisk)
 				{
 					var result = MessageBox.Show("Save modified render cache?", "Unsaved Render Cache", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 					if (result == DialogResult.Yes) SaveRenderCache();
@@ -562,7 +564,7 @@ namespace WorldForgeToolbox
 				if (region.IsLoaded)
 				{
 					loaded = region.Clone();
-					foreach(var chunk in loaded.chunks)
+					foreach (var chunk in loaded.chunks)
 					{
 						if (chunk != null && !chunk.IsLoaded) chunk.Load(WorldForge.IO.ChunkLoadFlags.Blocks);
 					}
@@ -716,7 +718,7 @@ namespace WorldForgeToolbox
 			{
 				if (view.dimension.TryGetRegion(hoveredRegion.Value, out var r))
 				{
-					if(r.sourceFilePaths != null && File.Exists(r.sourceFilePaths.mainPath))
+					if (r.sourceFilePaths != null && File.Exists(r.sourceFilePaths.mainPath))
 					{
 						var viewer = new RegionViewer(r.sourceFilePaths.mainPath);
 						viewer.Show();
@@ -774,6 +776,7 @@ namespace WorldForgeToolbox
 
 		private void SaveMapCacheButtonClick(object sender, EventArgs e)
 		{
+			if (view?.IsFromDisk ?? false) return;
 			view?.SaveRenderCache();
 		}
 
@@ -834,10 +837,10 @@ namespace WorldForgeToolbox
 
 		private void editLevelDat_Click(object sender, EventArgs e)
 		{
-			if(view.world != null)
+			if (view.world != null)
 			{
 				string levelDatPath = Path.Combine(view.world.SourceDirectory, "level.dat");
-				if(File.Exists(levelDatPath))
+				if (File.Exists(levelDatPath))
 				{
 					var viewer = new NBTViewer(levelDatPath);
 					viewer.Show();
@@ -847,6 +850,40 @@ namespace WorldForgeToolbox
 					MessageBox.Show("No level.dat file was found.", "File not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
+		}
+
+		private void newWorld_Click(object sender, EventArgs e)
+		{
+			var world = CreateTestWorld();
+			OpenWorld(world);
+		}
+
+		private static World CreateTestWorld()
+		{
+			int MIN_CHUNK = -64;
+			int MAX_CHUNK = 64;
+			var world = World.Create(GameVersion.DefaultVersion, "New World");
+			var overworld = world.Overworld;
+			overworld.DefaultBiome = BiomeIDs.Get("forest");
+			overworld.InitializeArea(MIN_CHUNK >> 5, MIN_CHUNK >> 5, (MAX_CHUNK - 1) >> 5, (MAX_CHUNK - 1) >> 5);
+			var stone = new BlockState(BlockList.Find("stone"));
+			Parallel.For(MIN_CHUNK, MAX_CHUNK, cx =>
+			{
+				for (int bx = 0; bx < 16; bx++)
+				{
+					int x = (cx << 4) + bx;
+					for (int z = MIN_CHUNK * 16; z < MAX_CHUNK * 16; z++)
+					{
+						overworld.SetBlockColumn(new BlockCoord2D(x, z), 0, 64, stone, true);
+					}
+				}
+			});
+			var chain = new PostProcessingChain();
+			chain.AddProcessor(new NaturalSurfaceGenerator());
+			chain.AddProcessor(new VegetationGenerator());
+			var context = new PostProcessContext(overworld, new Boundary(MIN_CHUNK * 16, MIN_CHUNK * 16, MAX_CHUNK * 16 - 1, MAX_CHUNK * 16 - 1));
+			chain.Process(context);
+			return world;
 		}
 	}
 }

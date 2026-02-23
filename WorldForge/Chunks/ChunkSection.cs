@@ -55,12 +55,12 @@ namespace WorldForge.Chunks
 		public void SetBlock(int x, int y, int z, BlockState block)
 		{
 			if(!HasBlocksDefined) InitializeBlocks();
-			ushort? index = GetPaletteIndex(block);
-			if(index == null)
+			ushort index = GetPaletteIndex(block) ?? AddBlockToPalette(block);
+			if(index == 3)
 			{
-				index = AddBlockToPalette(block);
+				int i = 0;
 			}
-			blocks[GetArrayIndex(x, y, z)] = (ushort)index;
+			blocks[GetArrayIndex(x, y, z)] = index;
 		}
 
 		public void SetBlock(int x, int y, int z, ushort paletteIndex)
@@ -69,12 +69,22 @@ namespace WorldForge.Chunks
 			blocks[GetArrayIndex(x, y, z)] = paletteIndex;
 		}
 
+		public void SetBlockColumn(int x, int z, int y1, int y2, BlockState block)
+		{
+			if (!HasBlocksDefined) InitializeBlocks();
+			ushort index = GetPaletteIndex(block) ?? AddBlockToPalette(block);
+			for(int y = y1; y <= y2; y++)
+			{
+				blocks[GetArrayIndex(x, y, z)] = index;
+			}
+		}
+
 		public ushort? GetPaletteIndex(BlockState state)
 		{
 			if(!HasBlocksDefined) return null;
-			for(short i = 0; i < palette.Count; i++)
+			for(ushort i = 0; i < palette.Count; i++)
 			{
-				if(palette[i].Compare(state)) return (ushort)i;
+				if(palette[i].Compare(state)) return i;
 			}
 			return null;
 		}

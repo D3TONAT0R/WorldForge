@@ -200,12 +200,23 @@ namespace WorldForge.Chunks
 			GetChunkSectionForYCoord(pos.y, true).SetBlock(pos.x, pos.y & 0xF, pos.z, block);
 		}
 
-		public void SetBlock(BlockCoord pos, BlockID block)
+		public void SetBlock(BlockCoord pos, BlockID block) => SetBlock(pos, BlockState.Simple(block));
+
+		public void SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockState block)
 		{
 			if (!IsLoaded) Load();
-			var state = BlockState.Simple(block);
-			GetChunkSectionForYCoord(pos.y, true).SetBlock(pos.x, pos.y & 0xF, pos.z, state);
+			sbyte sy1 = (sbyte)(y1 >> 4);
+			sbyte sy2 = (sbyte)(y2 >> 4);
+			for(sbyte s = sy1; s <= sy2; s++)
+			{
+				var sec = GetChunkSectionForYCoord(s, true);
+				int localY1 = s == sy1 ? (y1 & 0xF) : 0;
+				int localY2 = s == sy2 ? (y2 & 0xF) : 15;
+				sec.SetBlockColumn(pos.x, pos.z, localY1, localY2, block);
+			}
 		}
+
+		public void SetBlockColumn(BlockCoord2D pos, int y1, int y2, BlockID block) => SetBlockColumn(pos, y1, y2, BlockState.Simple(block));
 
 		///<summary>Gets the tile entity for the block at the given chunk coordinate (if available).</summary>
 		public TileEntity GetTileEntity(BlockCoord pos)
@@ -243,7 +254,7 @@ namespace WorldForge.Chunks
 
 		public ChunkSection GetChunkSectionForYCoord(int y, bool allowNew)
 		{
-			sbyte sectionY = (sbyte)MathUtils.FastDivFloor(y, 16);
+			sbyte sectionY = (sbyte)(y >> 4);
 			if (Sections.TryGetValue(sectionY, out var section))
 			{
 				return section;
