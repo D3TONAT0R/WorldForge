@@ -43,39 +43,30 @@ namespace WorldForge.Builders.PostProcessors
 		protected override void OnProcessSurface(Dimension dimension, BlockCoord pos, int pass, float mask)
 		{
 			//Place grass on top & 3 layers of dirt below
-			if(pos.y > WaterLevel)
+			if (pos.y > WaterLevel)
 			{
 				bool sand = Surface == SurfaceType.Sand || (Surface == SurfaceType.BiomeBased && dimension.GetBiome(pos) == desert);
-				if(!sand)
+				if (!sand)
 				{
 					dimension.SetBlock(pos, grassBlock);
-					for(int i = 1; i <= 3; i++)
-					{
-						dimension.SetBlock((pos.x, pos.y - i, pos.z), dirtBlock);
-					}
+					dimension.SetBlockColumn(pos.XZ, pos.y - 1, pos.y - 4, dirtBlock);
 				}
 				else
 				{
-					for(int i = 0; i <= 4; i++)
-					{
-						dimension.SetBlock((pos.x, pos.y - i, pos.z), sandBlock);
-					}
+					dimension.SetBlockColumn(pos.XZ, pos.y, pos.y - 4, sandBlock);
 				}
 			}
 			else
 			{
-				for(int i = 0; i < 4; i++)
-				{
-					dimension.SetBlock((pos.x, pos.y - i, pos.z), gravelBlock);
-				}
+				dimension.SetBlockColumn(pos.XZ, pos.y, pos.y - 4, gravelBlock);
 			}
 			//Fill the terrain with water up to the waterLevel
-			if(WaterLevel != int.MinValue && pos.y <= WaterLevel)
+			if (WaterLevel != int.MinValue && pos.y <= WaterLevel)
 			{
-				for(int y = pos.y; y <= WaterLevel; y++)
+				for (int y = pos.y; y <= WaterLevel; y++)
 				{
 					var newPos = new BlockCoord(pos.x, y, pos.z);
-					if(dimension.IsAirOrNull(newPos)) dimension.SetBlock(newPos, waterBlock);
+					if (dimension.IsAirOrNull(newPos)) dimension.SetBlock(newPos, waterBlock);
 				}
 			}
 		}

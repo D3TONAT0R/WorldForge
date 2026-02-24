@@ -153,7 +153,7 @@ namespace WorldForge.Builders.PostProcessors
 
 		public override PostProcessType PostProcessorType => PostProcessType.Surface;
 
-		public override bool UseMultithreading => false;
+		public override bool UseMultithreading => true;
 
 		public VegetationGenerator()
 		{

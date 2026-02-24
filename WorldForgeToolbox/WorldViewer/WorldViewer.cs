@@ -584,7 +584,6 @@ namespace WorldForgeToolbox
 						int bx = x * blocksPerPixel;
 						int bz = z * blocksPerPixel;
 						var color = SurfaceMapGenerator.GetSurfaceMapColor(loaded, bx, bz, HeightmapType.AllBlocks, fullRes, MapColorPalette.Default);
-						//bitmap.SetPixel(x, z, color);
 						//Copy pixel data directly for better performance
 						unsafe
 						{
@@ -860,8 +859,8 @@ namespace WorldForgeToolbox
 
 		private static World CreateTestWorld()
 		{
-			int MIN_CHUNK = -64;
-			int MAX_CHUNK = 64;
+			int MIN_CHUNK = -128;
+			int MAX_CHUNK = 128;
 			var world = World.Create(GameVersion.DefaultVersion, "New World");
 			var overworld = world.Overworld;
 			overworld.DefaultBiome = BiomeIDs.Get("forest");
@@ -880,6 +879,7 @@ namespace WorldForgeToolbox
 			});
 			var chain = new PostProcessingChain();
 			chain.AddProcessor(new NaturalSurfaceGenerator());
+			//chain.AddProcessor(new VegetationGenerator() { FixedGeneratorType = VegetationGenerator.GeneratorType.GrassOnly });
 			chain.AddProcessor(new VegetationGenerator());
 			var context = new PostProcessContext(overworld, new Boundary(MIN_CHUNK * 16, MIN_CHUNK * 16, MAX_CHUNK * 16 - 1, MAX_CHUNK * 16 - 1));
 			chain.Process(context);

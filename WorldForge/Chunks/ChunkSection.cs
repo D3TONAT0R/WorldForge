@@ -39,19 +39,25 @@ namespace WorldForge.Chunks
 
 		public void InitializeBlocks(BlockState block = null)
 		{
-			if (blocks != null && palette != null) throw new InvalidOperationException("Blocks have already been initialized for this section.");
-			block = block ?? BlockState.Air;
-			blocks = new ushort[16 * 16 * 16];
-			palette = new List<BlockState>
+			lock (lockObj)
 			{
-				block
-			};
+				if (blocks != null && palette != null) throw new InvalidOperationException("Blocks have already been initialized for this section.");
+				block = block ?? BlockState.Air;
+				blocks = new ushort[16 * 16 * 16];
+				palette = new List<BlockState>
+				{
+					block
+				};
+			}
 		}
 
 		public BlockState GetBlock(int x, int y, int z)
 		{
-			if (!HasBlocksDefined) return BlockState.Air;
-			return palette[blocks[GetArrayIndex(x, y, z)]];
+			lock (lockObj)
+			{
+				if (!HasBlocksDefined) return BlockState.Air;
+				return palette[blocks[GetArrayIndex(x, y, z)]];
+			}
 		}
 
 		public void SetBlock(int x, int y, int z, BlockState block)
@@ -75,22 +81,28 @@ namespace WorldForge.Chunks
 
 		public void SetBlockColumn(int x, int z, int y1, int y2, BlockState block)
 		{
-			if (!HasBlocksDefined) InitializeBlocks();
-			ushort index = GetPaletteIndex(block) ?? AddBlockToPalette(block);
-			for (int y = y1; y <= y2; y++)
+			lock (lockObj)
 			{
-				blocks[GetArrayIndex(x, y, z)] = index;
+				if (!HasBlocksDefined) InitializeBlocks();
+				ushort index = GetPaletteIndex(block) ?? AddBlockToPalette(block);
+				for (int y = y1; y <= y2; y++)
+				{
+					blocks[GetArrayIndex(x, y, z)] = index;
+				}
 			}
 		}
 
 		public ushort? GetPaletteIndex(BlockState state)
 		{
-			if (!HasBlocksDefined) return null;
-			for (ushort i = 0; i < palette.Count; i++)
+			lock (lockObj)
 			{
-				if (palette[i].Compare(state)) return i;
+				if (!HasBlocksDefined) return null;
+				for (ushort i = 0; i < palette.Count; i++)
+				{
+					if (palette[i].Compare(state)) return i;
+				}
+				return null;
 			}
-			return null;
 		}
 
 		private ushort AddBlockToPalette(BlockState block)
@@ -118,13 +130,16 @@ namespace WorldForge.Chunks
 
 		public bool IsEmpty()
 		{
-			if (blocks == null) return true;
-			foreach (var j in blocks)
+			lock (lockObj)
 			{
-				int index = j;
-				if (!palette[index].Compare(BlockState.Air)) return false;
+				if (blocks == null) return true;
+				foreach (var j in blocks)
+				{
+					int index = j;
+					if (!palette[index].Compare(BlockState.Air)) return false;
+				}
+				return true;
 			}
-			return true;
 		}
 
 		#endregion
@@ -133,18 +148,24 @@ namespace WorldForge.Chunks
 
 		public void InitializeBiomes(BiomeID biome = null)
 		{
-			if (biomes != null && biomePalette != null) throw new InvalidOperationException("Biomes have already been initialized for this section.");
-			biome = biome ?? chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
-			biomePalette = new List<BiomeID>();
-			biomePalette.Add(biome);
-			biomes = new byte[16, 4, 16];
+			lock (lockObj)
+			{
+				if (biomes != null && biomePalette != null) throw new InvalidOperationException("Biomes have already been initialized for this section.");
+				biome = biome ?? chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
+				biomePalette = new List<BiomeID>();
+				biomePalette.Add(biome);
+				biomes = new byte[16, 4, 16];
+			}
 		}
 
 		public BiomeID GetBiome(int x, int y, int z)
 		{
-			if (!HasBiomesDefined) return null;
-			var index = biomes[x & 0xF, (y / 4) & 3, z & 0xF];
-			return biomePalette[index];
+			lock (lockObj)
+			{
+				if (!HasBiomesDefined) return null;
+				var index = biomes[x & 0xF, (y / 4) & 3, z & 0xF];
+				return biomePalette[index];
+			}
 		}
 
 		public BiomeID GetBiome(int x, int z)
@@ -154,80 +175,95 @@ namespace WorldForge.Chunks
 
 		public byte? GetBiomePaletteIndex(BiomeID biome)
 		{
-			for (byte i = 0; i < biomePalette.Count; i++)
+			lock (lockObj)
 			{
-				if (biomePalette[i].Compare(biome)) return i;
+				for (byte i = 0; i < biomePalette.Count; i++)
+				{
+					if (biomePalette[i].Compare(biome)) return i;
+				}
+				return null;
 			}
-			return null;
 		}
 
 		public BiomeID GetPredominantBiomeAt4x4(int x4, int y4, int z4)
 		{
-			Dictionary<byte, byte> indexCounts = new Dictionary<byte, byte>();
-			if (!HasBiomesDefined) return chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
-			for (int x1 = 0; x1 < 4; x1++)
+			lock (lockObj)
 			{
-				for (int z1 = 0; z1 < 4; z1++)
+				Dictionary<byte, byte> indexCounts = new Dictionary<byte, byte>();
+				if (!HasBiomesDefined) return chunk.ParentDimension?.DefaultBiome ?? BiomeID.TheVoid;
+				for (int x1 = 0; x1 < 4; x1++)
 				{
-					var b = biomes[x4 * 4 + x1, y4, z4 * 4 + z1];
-					if (!indexCounts.ContainsKey(b))
+					for (int z1 = 0; z1 < 4; z1++)
 					{
-						indexCounts.Add(b, 0);
+						var b = biomes[x4 * 4 + x1, y4, z4 * 4 + z1];
+						if (!indexCounts.ContainsKey(b))
+						{
+							indexCounts.Add(b, 0);
+						}
+						indexCounts[b]++;
 					}
-					indexCounts[b]++;
 				}
-			}
-			BiomeID biome = BiomeID.TheVoid;
-			int maxCells = 0;
-			foreach (var k in indexCounts.Keys)
-			{
-				if (indexCounts[k] > maxCells)
+				BiomeID biome = BiomeID.TheVoid;
+				int maxCells = 0;
+				foreach (var k in indexCounts.Keys)
 				{
-					maxCells = indexCounts[k];
-					biome = biomePalette[k];
+					if (indexCounts[k] > maxCells)
+					{
+						maxCells = indexCounts[k];
+						biome = biomePalette[k];
+					}
 				}
+				return biome;
 			}
-			return biome;
 		}
 
 		public void SetBiome(int x, int y, int z, BiomeID biome)
 		{
-			//NOTE: biomes have a vertical resolution of 4 blocks
-			if (biomes == null) InitializeBiomes();
-			x &= 0xF;
-			y &= 0xF;
-			z &= 0xF;
 			lock (lockObj)
 			{
-				var index = GetBiomePaletteIndex(biome);
-				if (index.HasValue)
+				//NOTE: biomes have a vertical resolution of 4 blocks
+				if (biomes == null) InitializeBiomes();
+				x &= 0xF;
+				y &= 0xF;
+				z &= 0xF;
+				lock (lockObj)
 				{
-					biomes[x, y / 4, z] = index.Value;
-				}
-				else
-				{
-					biomePalette.Add(biome);
-					biomes[x, y / 4, z] = (byte)(biomePalette.Count - 1);
+					var index = GetBiomePaletteIndex(biome);
+					if (index.HasValue)
+					{
+						biomes[x, y / 4, z] = index.Value;
+					}
+					else
+					{
+						biomePalette.Add(biome);
+						biomes[x, y / 4, z] = (byte)(biomePalette.Count - 1);
+					}
 				}
 			}
 		}
 
 		public void SetBiome3D4x4(int x, int y, int z, BiomeID biome)
 		{
-			for (int x1 = x / 4; x1 < x / 4 + 1; x1++)
+			lock (lockObj)
 			{
-				for (int z1 = z / 4; z1 < z / 4 + 1; z1++)
+				for (int x1 = x / 4; x1 < x / 4 + 1; x1++)
 				{
-					SetBiome(x1, y / 4, z1, biome);
+					for (int z1 = z / 4; z1 < z / 4 + 1; z1++)
+					{
+						SetBiome(x1, y / 4, z1, biome);
+					}
 				}
 			}
 		}
 
 		public void SetBiomeColumn(int x, int z, BiomeID biome)
 		{
-			for (int y = 0; y < 16; y += 4)
+			lock (lockObj)
 			{
-				SetBiome(x, y, z, biome);
+				for (int y = 0; y < 16; y += 4)
+				{
+					SetBiome(x, y, z, biome);
+				}
 			}
 		}
 
@@ -237,8 +273,11 @@ namespace WorldForge.Chunks
 
 		public LightValue GetLight(BlockCoord pos)
 		{
-			if (lighting == null) return LightValue.None;
-			return lighting[pos.x, pos.y, pos.z];
+			lock (lockObj)
+			{
+				if (lighting == null) return LightValue.None;
+				return lighting[pos.x, pos.y, pos.z];
+			}
 		}
 
 		public void SetLight(BlockCoord pos, LightValue value)
